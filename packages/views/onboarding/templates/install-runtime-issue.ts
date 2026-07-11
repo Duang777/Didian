@@ -27,11 +27,11 @@ export const INSTALL_RUNTIME_ISSUE_TITLE = {
   ja: "ステップ1 — agent を使うために runtime を接続する",
 } as const;
 
-const en = `Welcome to Multica.
+const en = `Welcome to Didian.
 
-Agents need a runtime before they can execute work. You can still use Multica as a lightweight project-management workspace while you install one.
+Agents need a runtime before they can execute work. You can still use Didian as a lightweight project-management workspace while you install one.
 
-## Try Multica first
+## Try Didian first
 
 Before the runtime is ready, you can:
 
@@ -56,7 +56,7 @@ For English users, the fastest first path is Codex:
 4. Confirm your terminal can find it:
    which codex
    codex --version
-5. Restart the Multica daemon:
+5. Restart the Didian daemon:
    multica daemon restart
    If you use the desktop app, restarting the app is enough.
 6. Return to Runtimes and refresh. You should see a Codex runtime online.
@@ -64,11 +64,11 @@ For English users, the fastest first path is Codex:
 
 Codex reference: https://developers.openai.com/codex/cli
 
-When the runtime is connected, you can create Multica Helper for a guided first run.`;
+When the runtime is connected, you can create Didian Helper for a guided first run.`;
 
-const zh = `欢迎来到 Multica。
+const zh = `欢迎来到 Didian。
 
-智能体需要先连上运行时才能执行工作。运行时还没准备好时,你也可以先把 Multica 当作轻量项目管理工具体验起来。
+智能体需要先连上运行时才能执行工作。运行时还没准备好时,你也可以先把 Didian 当作轻量项目管理工具体验起来。
 
 ## 先体验项目管理功能
 
@@ -96,7 +96,7 @@ const zh = `欢迎来到 Multica。
 3. 在你想让 Kimi 工作的项目目录里启动一次:
    kimi
 4. 首次启动后输入 /login,按提示完成 Kimi Code 或 API key 配置。
-5. 重启 Multica 守护进程:
+5. 重启 Didian 守护进程:
    multica daemon restart
    如果你用桌面端,重启 app 即可。
 6. 回到 Runtimes 页面刷新。你应该能看到一个在线的 Kimi 运行时。
@@ -104,13 +104,13 @@ const zh = `欢迎来到 Multica。
 
 Kimi CLI 官方文档:https://moonshotai.github.io/kimi-cli/zh/guides/getting-started.html
 
-运行时连上后,你就可以创建 Multica Helper,开始一次有智能体参与的上手引导。`;
+运行时连上后,你就可以创建 Didian Helper,开始一次有智能体参与的上手引导。`;
 
-const ko = `Multica에 오신 것을 환영합니다.
+const ko = `Didian에 오신 것을 환영합니다.
 
-agent가 작업을 실행하려면 먼저 runtime이 필요합니다. runtime을 설치하는 동안에도 Multica를 가벼운 프로젝트 관리 워크스페이스로 먼저 사용할 수 있습니다.
+agent가 작업을 실행하려면 먼저 runtime이 필요합니다. runtime을 설치하는 동안에도 Didian를 가벼운 프로젝트 관리 워크스페이스로 먼저 사용할 수 있습니다.
 
-## 먼저 Multica를 사용해 보기
+## 먼저 Didian를 사용해 보기
 
 runtime이 준비되기 전에는 다음을 해볼 수 있습니다:
 
@@ -135,7 +135,7 @@ runtime이 준비되기 전에는 다음을 해볼 수 있습니다:
 4. 터미널에서 찾을 수 있는지 확인합니다:
    which codex
    codex --version
-5. Multica daemon을 재시작합니다:
+5. Didian daemon을 재시작합니다:
    multica daemon restart
    데스크톱 앱을 사용한다면 앱을 재시작해도 됩니다.
 6. Runtimes로 돌아가 새로고침합니다. Codex runtime이 online으로 보여야 합니다.
@@ -143,13 +143,13 @@ runtime이 준비되기 전에는 다음을 해볼 수 있습니다:
 
 Codex 참고 문서: https://developers.openai.com/codex/cli
 
-runtime이 연결되면 Multica Helper를 만들어 안내를 받으며 첫 실행을 시작할 수 있습니다.`;
+runtime이 연결되면 Didian Helper를 만들어 안내를 받으며 첫 실행을 시작할 수 있습니다.`;
 
-const ja = `Multica へようこそ。
+const ja = `Didian へようこそ。
 
-agent が作業を実行するには、まず runtime が必要です。runtime をインストールしている間も、Multica を軽量なプロジェクト管理ワークスペースとして先に使うことができます。
+agent が作業を実行するには、まず runtime が必要です。runtime をインストールしている間も、Didian を軽量なプロジェクト管理ワークスペースとして先に使うことができます。
 
-## まず Multica を使ってみる
+## まず Didian を使ってみる
 
 runtime が準備できる前に、次のことを試せます:
 
@@ -174,7 +174,7 @@ runtime が準備できる前に、次のことを試せます:
 4. ターミナルから見つけられるか確認します:
    which codex
    codex --version
-5. Multica daemon を再起動します:
+5. Didian daemon を再起動します:
    multica daemon restart
    デスクトップアプリを使っている場合は、アプリを再起動するだけで十分です。
 6. Runtimes に戻って再読み込みします。Codex runtime が online と表示されるはずです。
@@ -182,7 +182,7 @@ runtime が準備できる前に、次のことを試せます:
 
 Codex のリファレンス: https://developers.openai.com/codex/cli
 
-runtime が接続されたら、Multica Helper を作成して、案内付きの最初の実行を始められます。`;
+runtime が接続されたら、Didian Helper を作成して、案内付きの最初の実行を始められます。`;
 
 export const INSTALL_RUNTIME_ISSUE_BODY = { en, zh, ko, ja } as const;
 

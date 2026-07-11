@@ -96,7 +96,7 @@ describe("SourceBackfillModal", () => {
   it("does not render when there is no user", () => {
     renderModal();
     expect(
-      screen.queryByText(/How did you hear about Multica/i),
+      screen.queryByText(/How did you hear about Didian/i),
     ).not.toBeInTheDocument();
   });
 
@@ -108,7 +108,7 @@ describe("SourceBackfillModal", () => {
     });
     renderModal();
     expect(
-      screen.queryByText(/How did you hear about Multica/i),
+      screen.queryByText(/How did you hear about Didian/i),
     ).not.toBeInTheDocument();
   });
 
@@ -121,7 +121,7 @@ describe("SourceBackfillModal", () => {
     renderModal();
     await waitFor(() => {
       expect(
-        screen.getByText(/How did you hear about Multica/i),
+        screen.getByText(/How did you hear about Didian/i),
       ).toBeInTheDocument();
     });
   });
@@ -189,7 +189,7 @@ describe("SourceBackfillModal", () => {
     });
     renderModal();
     expect(
-      screen.queryByText(/How did you hear about Multica/i),
+      screen.queryByText(/How did you hear about Didian/i),
     ).not.toBeInTheDocument();
   });
 
@@ -253,19 +253,19 @@ describe("SourceBackfillModal", () => {
       // Immediately after mount: still hidden — the workspace gets a
       // beat to render before the modal floats in.
       expect(
-        screen.queryByText(/How did you hear about Multica/i),
+        screen.queryByText(/How did you hear about Didian/i),
       ).not.toBeInTheDocument();
       await act(async () => {
         await vi.advanceTimersByTimeAsync(699);
       });
       expect(
-        screen.queryByText(/How did you hear about Multica/i),
+        screen.queryByText(/How did you hear about Didian/i),
       ).not.toBeInTheDocument();
       await act(async () => {
         await vi.advanceTimersByTimeAsync(50);
       });
       expect(
-        screen.queryByText(/How did you hear about Multica/i),
+        screen.queryByText(/How did you hear about Didian/i),
       ).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
@@ -281,7 +281,7 @@ describe("SourceBackfillModal", () => {
     });
     renderModal();
     expect(
-      screen.queryByText(/How did you hear about Multica/i),
+      screen.queryByText(/How did you hear about Didian/i),
     ).not.toBeInTheDocument();
   });
 });
