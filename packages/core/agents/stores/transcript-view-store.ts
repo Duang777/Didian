@@ -49,7 +49,7 @@ export const useTranscriptViewStore = create<TranscriptViewState>()(
       setDefaultExpanded: (defaultExpanded) => set({ defaultExpanded }),
     }),
     {
-      name: "multica_transcript_view",
+      name: "didian_transcript_view",
       storage: createJSONStorage(() => defaultStorage),
       partialize: (state) => ({
         sortDirection: state.sortDirection,

@@ -47,7 +47,7 @@ func (h *Handler) ListCloudRuntimeNodes(w http.ResponseWriter, r *http.Request) 
 func (h *Handler) CreateCloudRuntimeNode(w http.ResponseWriter, r *http.Request) {
 	// Cloud now mints a node-scoped mcn_ PAT itself during /api/v1/nodes
 	// and injects it into the EC2 instance via SSM bootstrap (see
-	// multica-cloud docs/api/node-pat.md). We no longer forward the
+	// didian-cloud docs/api/node-pat.md). We no longer forward the
 	// caller's mul_ PAT — Fleet doesn't need it, and propagating a
 	// long-lived user PAT into a remote machine widened the blast
 	// radius of any node compromise. Hence the handler now mirrors

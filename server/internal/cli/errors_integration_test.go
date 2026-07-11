@@ -71,7 +71,7 @@ func TestHelperStatusErrorsAreClassified(t *testing.T) {
 		wantExit int
 		wantCopy string
 	}{
-		{http.StatusUnauthorized, ExitAuth, "multica login"},
+		{http.StatusUnauthorized, ExitAuth, "didian login"},
 		{http.StatusForbidden, ExitAuth, "permission"},
 		{http.StatusNotFound, ExitNotFound, "not found"},
 		{http.StatusUnprocessableEntity, ExitValidation, "title is required"},
@@ -126,12 +126,12 @@ func TestHelperStatusErrorsAreClassified(t *testing.T) {
 // TestCommandContextNotTruncatedBelowHTTPTimeout proves the must-fix: a
 // command-level context derived from APIContext never cancels a request before
 // the configured transport timeout. Previously commands hardcoded a 15s
-// context that truncated a longer MULTICA_HTTP_TIMEOUT.
+// context that truncated a longer DIDIAN_HTTP_TIMEOUT.
 func TestCommandContextNotTruncatedBelowHTTPTimeout(t *testing.T) {
 	withLang(t, "en_US.UTF-8")
 	// Use a short transport timeout so the test runs fast; the command budget
 	// (transport + grace) is what we assert is NOT the limiting factor.
-	t.Setenv("MULTICA_HTTP_TIMEOUT", "400ms")
+	t.Setenv("DIDIAN_HTTP_TIMEOUT", "400ms")
 
 	if APITimeout() <= httpTimeout() {
 		t.Fatalf("APITimeout (%v) must be strictly greater than httpTimeout (%v)", APITimeout(), httpTimeout())
@@ -189,42 +189,42 @@ func TestCommandContextNotTruncatedBelowHTTPTimeout(t *testing.T) {
 }
 
 // TestAPITimeoutRespectsEnv verifies the command budget tracks
-// MULTICA_HTTP_TIMEOUT and the AtLeast floor.
+// DIDIAN_HTTP_TIMEOUT and the AtLeast floor.
 func TestAPITimeoutRespectsEnv(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		t.Setenv("MULTICA_HTTP_TIMEOUT", "")
+		t.Setenv("DIDIAN_HTTP_TIMEOUT", "")
 		if got, want := APITimeout(), defaultHTTPTimeout+apiContextGrace; got != want {
 			t.Errorf("APITimeout = %v, want %v", got, want)
 		}
 	})
 	t.Run("env override raises both transport and command budget", func(t *testing.T) {
-		t.Setenv("MULTICA_HTTP_TIMEOUT", "90s")
+		t.Setenv("DIDIAN_HTTP_TIMEOUT", "90s")
 		if got, want := APITimeout(), 90*time.Second+apiContextGrace; got != want {
 			t.Errorf("APITimeout = %v, want %v", got, want)
 		}
 	})
 	t.Run("AtLeast floor wins when larger", func(t *testing.T) {
-		t.Setenv("MULTICA_HTTP_TIMEOUT", "10s")
+		t.Setenv("DIDIAN_HTTP_TIMEOUT", "10s")
 		if got, want := AtLeastAPITimeout(60*time.Second), 60*time.Second; got != want {
 			t.Errorf("AtLeastAPITimeout = %v, want %v", got, want)
 		}
 	})
 	t.Run("AtLeast budget wins when larger than floor", func(t *testing.T) {
-		t.Setenv("MULTICA_HTTP_TIMEOUT", "120s")
+		t.Setenv("DIDIAN_HTTP_TIMEOUT", "120s")
 		if got, want := AtLeastAPITimeout(60*time.Second), 120*time.Second+apiContextGrace; got != want {
 			t.Errorf("AtLeastAPITimeout = %v, want %v", got, want)
 		}
 	})
 	// The login workspace-creation poll uses a short 10s floor to stay
-	// responsive, but it must still honor MULTICA_HTTP_TIMEOUT (it is not a
+	// responsive, but it must still honor DIDIAN_HTTP_TIMEOUT (it is not a
 	// silent exception to the env-override promise). With the env unset the
 	// budget is at least the 10s floor; with the env raised it scales up.
 	t.Run("login poll 10s floor honors env override", func(t *testing.T) {
-		t.Setenv("MULTICA_HTTP_TIMEOUT", "")
+		t.Setenv("DIDIAN_HTTP_TIMEOUT", "")
 		if got := AtLeastAPITimeout(10 * time.Second); got < 10*time.Second {
 			t.Errorf("AtLeastAPITimeout(10s) = %v, want >= 10s floor", got)
 		}
-		t.Setenv("MULTICA_HTTP_TIMEOUT", "90s")
+		t.Setenv("DIDIAN_HTTP_TIMEOUT", "90s")
 		if got, want := AtLeastAPITimeout(10*time.Second), 90*time.Second+apiContextGrace; got != want {
 			t.Errorf("AtLeastAPITimeout(10s) with env=90s = %v, want %v", got, want)
 		}

@@ -1,11 +1,11 @@
 ---
 title: AI コーディングツール対応表
-description: Multica は 14 個の AI コーディングツールをサポートしています。すべて同じインターフェースを実装していますが、機能の詳細は大きく異なります。
+description: Didian は 14 個の AI コーディングツールをサポートしています。すべて同じインターフェースを実装していますが、機能の詳細は大きく異なります。
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Multica は **14 個の AI コーディングツール**を標準でサポートしています。これらはすべて同じインターフェース（キューへの投入、ディスパッチ、実行、結果の返却）を実装しているため、同じ Multica ボードからどれでも動かすことができます。**しかし機能の詳細は大きく異なります**: セッション再開が実際に動作するか、MCP をサポートするか、スキルファイルがどこに置かれるか、モデルをどう選択するか。このページがその完全な対応表です。
+Didian は **14 個の AI コーディングツール**を標準でサポートしています。これらはすべて同じインターフェース（キューへの投入、ディスパッチ、実行、結果の返却）を実装しているため、同じ Didian ボードからどれでも動かすことができます。**しかし機能の詳細は大きく異なります**: セッション再開が実際に動作するか、MCP をサポートするか、スキルファイルがどこに置かれるか、モデルをどう選択するか。このページがその完全な対応表です。
 
 エージェントを作成するときにツールを選ぶ際のガイダンスは、[エージェントの作成と構成](/agents-create)を参照してください。
 
@@ -40,11 +40,11 @@ Anthropic が提供します。**新規ユーザーにとって第一の選択�
 
 ### CodeBuddy
 
-Tencent が提供します。Claude Code 互換の CLI エージェントです — Multica は Claude Code と同じ stream-json プロトコルで駆動するため、セッション再開が動作し（`--resume` 経由）、MCP 構成は `--mcp-config` で渡され、スキルは Claude Code の `.claude/skills/` レイアウトを使用します。モデルは動的に探索されます。
+Tencent が提供します。Claude Code 互換の CLI エージェントです — Didian は Claude Code と同じ stream-json プロトコルで駆動するため、セッション再開が動作し（`--resume` 経由）、MCP 構成は `--mcp-config` で渡され、スキルは Claude Code の `.claude/skills/` レイアウトを使用します。モデルは動的に探索されます。
 
 ### Codex
 
-OpenAI が提供します。JSON-RPC 2.0 を使用し、ステートフルな能力がより強く、よりきめ細かい承認メカニズム（`exec_command` および `patch_apply` に対する手動承認）を備えています。MCP 構成はタスクごとの `$CODEX_HOME/config.toml` に書き込まれます。**セッション再開は動作します** — Multica は Codex app-server の `thread/resume` で再開します。保存済み thread が見つからない、または古い場合は、新しい thread にフォールバックしてタスクを続行します。
+OpenAI が提供します。JSON-RPC 2.0 を使用し、ステートフルな能力がより強く、よりきめ細かい承認メカニズム（`exec_command` および `patch_apply` に対する手動承認）を備えています。MCP 構成はタスクごとの `$CODEX_HOME/config.toml` に書き込まれます。**セッション再開は動作します** — Didian は Codex app-server の `thread/resume` で再開します。保存済み thread が見つからない、または古い場合は、新しい thread にフォールバックしてタスクを続行します。
 
 ### Copilot
 
@@ -52,7 +52,7 @@ GitHub が提供します。モデルルーティングは GitHub アカウン�
 
 ### Cursor
 
-Anysphere が提供し、Cursor エディターに対応する CLI です。**セッション再開は動作します** — 現在の Cursor Agent の stream-json イベントには `session_id` が含まれ、Multica は次回実行時に `--resume <id>` でそれを渡します。MCP 構成はタスクワークスペースの `.cursor/mcp.json` に書き込まれ、Cursor のプロジェクト approval ファイルはタスクごとの `CURSOR_DATA_DIR` 配下に置かれるため、管理対象 MCP server はユーザーのグローバル Cursor approvals に依存しません。
+Anysphere が提供し、Cursor エディターに対応する CLI です。**セッション再開は動作します** — 現在の Cursor Agent の stream-json イベントには `session_id` が含まれ、Didian は次回実行時に `--resume <id>` でそれを渡します。MCP 構成はタスクワークスペースの `.cursor/mcp.json` に書き込まれ、Cursor のプロジェクト approval ファイルはタスクごとの `CURSOR_DATA_DIR` 配下に置かれるため、管理対象 MCP server はユーザーのグローバル Cursor approvals に依存しません。
 
 ### Hermes
 
@@ -64,7 +64,7 @@ Nous Research が提供します。ACP プロトコルを使用します（Kimi 
 ["-p", "research"]
 ```
 
-`"-p research"` のように 1 つの文字列へまとめないでください。Multica は配列の各要素を 1 つの argv エントリとしてツールへ渡します。`custom_args` はエージェントごとに設定します — [エージェントの作成と構成](/agents-create)を参照してください。
+`"-p research"` のように 1 つの文字列へまとめないでください。Didian は配列の各要素を 1 つの argv エントリとしてツールへ渡します。`custom_args` はエージェントごとに設定します — [エージェントの作成と構成](/agents-create)を参照してください。
 
 ### Kimi
 
@@ -76,11 +76,11 @@ Amazon が提供します。`kiro-cli acp` を通じて stdio 上で ACP を使�
 
 ### OpenCode
 
-SST が提供するオープンソースです。利用可能なモデルと model variant を動的に探索します（CLI の構成ファイルをスキャン）。セッション再開が動作し、エージェントの `mcp_config` フィールドを消費します。Multica は `OPENCODE_CONFIG_CONTENT` 環境変数でインライン注入するため、エージェントの MCP server はタスク workdir の `opencode.json`（エージェントまたはユーザーが所有するファイル）を書き換えずに OpenCode に届きます。モデルが variant を公開している場合、Multica はそれをエージェントの thinking selector として表示し、選択値を `opencode run --variant` で OpenCode に渡します。**自分のモデルカタログをカスタマイズしたい、いじるのが好きなユーザーに適しています。**
+SST が提供するオープンソースです。利用可能なモデルと model variant を動的に探索します（CLI の構成ファイルをスキャン）。セッション再開が動作し、エージェントの `mcp_config` フィールドを消費します。Didian は `OPENCODE_CONFIG_CONTENT` 環境変数でインライン注入するため、エージェントの MCP server はタスク workdir の `opencode.json`（エージェントまたはユーザーが所有するファイル）を書き換えずに OpenCode に届きます。モデルが variant を公開している場合、Didian はそれをエージェントの thinking selector として表示し、選択値を `opencode run --variant` で OpenCode に渡します。**自分のモデルカタログをカスタマイズしたい、いじるのが好きなユーザーに適しています。**
 
 ### OpenClaw
 
-オープンソースプロジェクトであり、CLI エージェントオーケストレーターです。MCP 構成は Multica のタスクごとの config wrapper 経由で書き込まれます。**モデルはエージェント層にバインドされます**（`openclaw agents add --model`） — タスクごとに上書きできません。構成は厳格に制御されます: ユーザーは `--model` や `--system-prompt` を渡せず、エージェント登録時の構成が決定します。
+オープンソースプロジェクトであり、CLI エージェントオーケストレーターです。MCP 構成は Didian のタスクごとの config wrapper 経由で書き込まれます。**モデルはエージェント層にバインドされます**（`openclaw agents add --model`） — タスクごとに上書きできません。構成は厳格に制御されます: ユーザーは `--model` や `--system-prompt` を渡せず、エージェント登録時の構成が決定します。
 
 ### Pi
 
@@ -92,7 +92,7 @@ Alibaba が提供します。エージェント型のコーディング CLI で�
 
 ### Trae
 
-ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う製品で、オープンソースの `bytedance/trae-agent` ではありません）です。ACP ネイティブのため、Multica は `traecli acp serve --yolo` で stdio 経由で駆動します。Kiro や Qoder と同じトランスポートです。セッション再開は ACP `session/load` で動作し、MCP 構成は ACP `mcpServers` として渡され、モデルは動的に探索されて `session/set_model` でタスクごとに切り替えられます。スキルは `.traecli/skills/` にコピーされます。
+ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う製品で、オープンソースの `bytedance/trae-agent` ではありません）です。ACP ネイティブのため、Didian は `traecli acp serve --yolo` で stdio 経由で駆動します。Kiro や Qoder と同じトランスポートです。セッション再開は ACP `session/load` で動作し、MCP 構成は ACP `mcpServers` として渡され、モデルは動的に探索されて `session/set_model` でタスクごとに切り替えられます。スキルは `.traecli/skills/` にコピーされます。
 
 ## セッション再開: 実際にサポートするツール
 
@@ -102,7 +102,7 @@ ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う�
 
 **14 個のツールのうち、`mcp_config` を実際に消費するのは 11 個です: Claude Code、CodeBuddy、Codex、Cursor、Hermes、Kimi、Kiro CLI、OpenCode、OpenClaw、Qoder、Trae CLI**。残りの 3 個はこのフィールドを受け取りますが、**無視します** — エラーも警告もなく、構成はただ効果を発揮しません。
 
-接続方式はツールごとに異なります: Claude Code と CodeBuddy は `--mcp-config` と `--strict-mcp-config` で受け取り、Codex は daemon 管理の `mcp_servers` ブロックをタスクごとの `$CODEX_HOME/config.toml` に書き込み、Cursor は `.cursor/mcp.json` とタスクごとの `CURSOR_DATA_DIR` 配下のプロジェクト approval を書き込みます。Hermes、Kimi、Kiro CLI、Qoder、Trae CLI は ACP `mcpServers` で受け取ります。OpenCode は `OPENCODE_CONFIG_CONTENT` 環境変数でインライン構成を受け取り、OpenClaw は Multica のタスクごとの config wrapper 経由で `mcp.servers` を受け取ります。OpenCode の経路はプロジェクトの `opencode.json` を書き換えません。
+接続方式はツールごとに異なります: Claude Code と CodeBuddy は `--mcp-config` と `--strict-mcp-config` で受け取り、Codex は daemon 管理の `mcp_servers` ブロックをタスクごとの `$CODEX_HOME/config.toml` に書き込み、Cursor は `.cursor/mcp.json` とタスクごとの `CURSOR_DATA_DIR` 配下のプロジェクト approval を書き込みます。Hermes、Kimi、Kiro CLI、Qoder、Trae CLI は ACP `mcpServers` で受け取ります。OpenCode は `OPENCODE_CONFIG_CONTENT` 環境変数でインライン構成を受け取り、OpenClaw は Didian のタスクごとの config wrapper 経由で `mcp.servers` を受け取ります。OpenCode の経路はプロジェクトの `opencode.json` を書き換えません。
 
 <Callout type="warning">
 エージェント構成で `mcp_config` を設定しても、MCP 列に ✅ がないツールを選んだ場合、MCP サーバーはそのエージェントに**何の効果**も及ぼしません。MCP 連携はツールごとに実装されています。
@@ -110,7 +110,7 @@ ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う�
 
 ## スキルファイルが置かれる場所
 
-各ツールは**それぞれ独自の**スキル探索パスを使用します。タスクが実行される前に、Multica デーモンがワークスペースのスキルファイルを対応するパスにコピーします。
+各ツールは**それぞれ独自の**スキル探索パスを使用します。タスクが実行される前に、Didian デーモンがワークスペースのスキルファイルを対応するパスにコピーします。
 
 | ツール | パス | ネイティブ探索か |
 |---|---|---|
@@ -131,7 +131,7 @@ ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う�
 
 フォールバックパスを使うツールが実際にこのディレクトリを読み取るかどうかは、そのツール自体のドキュメントによって異なり、保証されません。Hermes / OpenClaw でスキルが適用されない場合は、まずこの点を確認してください。
 
-ネイティブなプロジェクトレベルのパスでは、リポジトリスコープの探索は想定された挙動です。チェックアウトされたリポジトリが対応するディレクトリをすでに含んでいる場合、基盤となるツールはそのコミット済みスキルを自分で検出できます。そのリポジトリで使うためだけに、これらの repo skills を Multica へインポートする必要はありません。Multica はそれらのリポジトリファイルをそのまま保持します。ワークスペーススキルの自然なディレクトリ名が同じ場合、デーモンは `review-helper-multica` のような衝突しない兄弟ディレクトリへワークスペースコピーを書き込みます。
+ネイティブなプロジェクトレベルのパスでは、リポジトリスコープの探索は想定された挙動です。チェックアウトされたリポジトリが対応するディレクトリをすでに含んでいる場合、基盤となるツールはそのコミット済みスキルを自分で検出できます。そのリポジトリで使うためだけに、これらの repo skills を Didian へインポートする必要はありません。Didian はそれらのリポジトリファイルをそのまま保持します。ワークスペーススキルの自然なディレクトリ名が同じ場合、デーモンは `review-helper-didian` のような衝突しない兄弟ディレクトリへワークスペースコピーを書き込みます。
 
 スキルの作成と使用については、[スキル](/skills)を参照してください。
 
@@ -139,5 +139,5 @@ ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う�
 
 - [エージェントの作成と構成](/agents-create) — エージェントに使うツールを選ぶ
 - [タスク](/tasks) — タスクのライフサイクルとセッション再開のメカニズム
-- [デーモンとランタイム](/daemon-runtimes) — ツールが実行される場所と Multica への接続方法
+- [デーモンとランタイム](/daemon-runtimes) — ツールが実行される場所と Didian への接続方法
 - [エージェントランタイムのインストール](/install-agent-runtime) — サポートされる 14 個のツールそれぞれのインストールと認証

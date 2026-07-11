@@ -1,6 +1,6 @@
 // Package execenv manages isolated per-task execution environments for the daemon.
 // Each task gets its own directory with injected context files. Repositories are
-// checked out on demand by the agent via `multica repo checkout`.
+// checked out on demand by the agent via `didian repo checkout`.
 package execenv
 
 import (
@@ -35,7 +35,7 @@ type ProjectResourceForEnv struct {
 
 // PrepareParams holds all inputs needed to set up an execution environment.
 type PrepareParams struct {
-	WorkspacesRoot string // base path for all envs (e.g., ~/multica_workspaces)
+	WorkspacesRoot string // base path for all envs (e.g., ~/didian_workspaces)
 	WorkspaceID    string // workspace UUID — tasks are grouped under this
 	TaskID         string // task UUID — used for directory name
 	AgentName      string // for git branch naming only
@@ -195,7 +195,7 @@ func PredictRootDir(workspacesRoot, workspaceID, taskID string) string {
 
 // Prepare creates an isolated execution environment for a task.
 // The workdir starts empty (no repo checkouts). The agent checks out repos
-// on demand via `multica repo checkout <url>`.
+// on demand via `didian repo checkout <url>`.
 func Prepare(params PrepareParams, logger *slog.Logger) (*Environment, error) {
 	if params.WorkspacesRoot == "" {
 		return nil, fmt.Errorf("execenv: workspaces root is required")
@@ -213,7 +213,7 @@ func Prepare(params PrepareParams, logger *slog.Logger) (*Environment, error) {
 	// removed while the daemon runs is restored before the agent spawns. The
 	// per-workdir marker written below only covers cwds inside the workdir;
 	// the root marker keeps the CLI fail-closed guard active for subprocesses
-	// that lose all MULTICA_* env vars AND escape above the workdir. Non-fatal:
+	// that lose all DIDIAN_* env vars AND escape above the workdir. Non-fatal:
 	// without it the workdir marker still protects the common case.
 	if err := EnsureWorkspacesRootMarker(params.WorkspacesRoot); err != nil && logger != nil {
 		logger.Warn("execenv: workspaces root marker not written; fail-closed guard limited to the task workdir", "error", err)
@@ -388,8 +388,8 @@ func Reuse(params ReuseParams, logger *slog.Logger) *Environment {
 	// On reuse the workdir still holds the prior run's issue_context.md and
 	// skill directories; without clearing them first, writeSkillFiles sees
 	// its own earlier output occupying the canonical slug and falls back to
-	// a collision-free sibling (issue-review, issue-review-multica,
-	// issue-review-multica-2, …), accumulating a fresh duplicate on every
+	// a collision-free sibling (issue-review, issue-review-didian,
+	// issue-review-didian-2, …), accumulating a fresh duplicate on every
 	// re-dispatch to the same issue. allocateCollisionFreeSkillDir exists to
 	// dodge *user*-owned skill dirs (the local_directory flow), not our own
 	// prior writes, so we undo them via the prior manifest first and let the
@@ -403,7 +403,7 @@ func Reuse(params ReuseParams, logger *slog.Logger) *Environment {
 	//      CleanupSidecars alone can't do this — it preserves any recorded dir
 	//      the agent populated (correct on the local_directory teardown path),
 	//      which would otherwise keep the canonical slug occupied and push the
-	//      refresh back to issue-review-multica.
+	//      refresh back to issue-review-didian.
 	//   2. CleanupSidecars rolls back the remaining sidecar files
 	//      (issue_context.md, project resources) and the manifest itself.
 	//

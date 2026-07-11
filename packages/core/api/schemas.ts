@@ -1009,7 +1009,7 @@ export const EMPTY_INBOX_UNREAD_SUMMARY: InboxWorkspaceUnread[] = [];
 // ---------------------------------------------------------------------------
 // Billing schemas (cloud-billing proxy surface)
 //
-// All billing JSON we receive comes from multica-cloud verbatim — we proxy
+// All billing JSON we receive comes from didian-cloud verbatim — we proxy
 // the bytes without re-shaping. These schemas use `loose()` so a future
 // non-breaking field addition on the cloud side doesn't crash us; required
 // fields are still strictly enforced. EMPTY_* constants supply the

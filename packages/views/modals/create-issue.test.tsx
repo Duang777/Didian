@@ -412,12 +412,12 @@ describe("CreateIssueModal", () => {
       filename: "shot.png",
       url: "https://cdn.example.test/shot.png",
       download_url: "https://cdn.example.test/shot.png?Signature=fresh",
-      markdown_url: "https://multica-api.copilothub.ai/api/attachments/11111111-2222-3333-4444-555555555555/download",
+      markdown_url: "https://didian-api.copilothub.ai/api/attachments/11111111-2222-3333-4444-555555555555/download",
       content_type: "image/png",
       size_bytes: 123,
       created_at: "2026-06-12T00:00:00Z",
       link: "https://cdn.example.test/shot.png",
-      markdownLink: "https://multica-api.copilothub.ai/api/attachments/11111111-2222-3333-4444-555555555555/download",
+      markdownLink: "https://didian-api.copilothub.ai/api/attachments/11111111-2222-3333-4444-555555555555/download",
     });
     mockCreateIssue.mockResolvedValue({
       id: "issue-123",
@@ -558,7 +558,7 @@ describe("CreateIssueModal", () => {
       filename: "shot.png",
       url: "https://cdn.example.test/shot.png",
       download_url: "",
-      markdown_url: "https://multica-api.copilothub.ai/api/attachments/11111111-2222-3333-4444-555555555555/download",
+      markdown_url: "https://didian-api.copilothub.ai/api/attachments/11111111-2222-3333-4444-555555555555/download",
       content_type: "image/png",
       size_bytes: 123,
       created_at: "2026-06-12T00:00:00Z",
@@ -599,7 +599,7 @@ describe("CreateIssueModal", () => {
       filename: "kept.png",
       url: "https://cdn.example.test/kept.png",
       download_url: "",
-      markdown_url: "https://multica-api.copilothub.ai/api/attachments/11111111-2222-3333-4444-555555555555/download",
+      markdown_url: "https://didian-api.copilothub.ai/api/attachments/11111111-2222-3333-4444-555555555555/download",
       content_type: "image/png",
       size_bytes: 123,
       created_at: "2026-06-12T00:00:00Z",
@@ -609,7 +609,7 @@ describe("CreateIssueModal", () => {
       id: "99999999-8888-7777-6666-555555555555",
       filename: "deleted.png",
       url: "https://cdn.example.test/deleted.png",
-      markdown_url: "https://multica-api.copilothub.ai/api/attachments/99999999-8888-7777-6666-555555555555/download",
+      markdown_url: "https://didian-api.copilothub.ai/api/attachments/99999999-8888-7777-6666-555555555555/download",
     };
     mockDraftStore.draft.title = "Image draft";
     mockDraftStore.draft.description = `![kept.png](${referenced.markdown_url})`;

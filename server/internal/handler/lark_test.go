@@ -14,7 +14,7 @@ import (
 )
 
 // Lark-handler unit tests focus on the no-config short-circuits —
-// verifying that a self-host deployment without MULTICA_LARK_SECRET_KEY
+// verifying that a self-host deployment without DIDIAN_LARK_SECRET_KEY
 // does NOT serve revoke / redeem / install, and that list degrades
 // gracefully to an empty response so the Integrations tab still
 // renders. Happy-path flows (begin device-flow + poll status; token

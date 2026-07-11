@@ -5,7 +5,7 @@ description: 代码命名规范、i18n 翻译术语表、中文风格指南的�
 
 本页是代码命名规范、i18n 翻译术语表、中文风格指南的唯一权威来源。原本散落在 `packages/views/locales/glossary.md` 和各处注释里的规则现在都收拢到这里。
 
-写 Multica 代码、改翻译、写中文产品文案，都从这一页查。
+写 Didian 代码、改翻译、写中文产品文案，都从这一页查。
 
 ---
 
@@ -88,16 +88,16 @@ Conventional 格式：`feat(scope)`、`fix(scope)`、`refactor(scope)`、`docs`�
 
 ### 核心区分：实体 vs 概念
 
-Multica 的产品名词分两类：
+Didian 的产品名词分两类：
 
-- **实体（typed entity）** —— 有 URL、有数据库 row、是 API 响应里某种 type 的东西。中文里**用小写英文**呈现，视觉上像类型名，告诉读者"这是 Multica 系统里的特定实体"。
+- **实体（typed entity）** —— 有 URL、有数据库 row、是 API 响应里某种 type 的东西。中文里**用小写英文**呈现，视觉上像类型名，告诉读者"这是 Didian 系统里的特定实体"。
 - **概念（concept）** —— 不是数据库实体的普通名词。**完整翻译成中文**，CN 用户看不到生硬的英文。
 
 这套规则与 `apps/docs/content/docs/*.zh.mdx` 完全对齐 —— docs 是已经实战 20+ 篇的 CN voice 标准。
 
 ### 实体词的混合规则（`issue` / `skill` / `task`）
 
-`issue` / `skill` / `task` 是 Multica 的核心实体。schema 字段、API 字段、产品 UI 标签都用英文。中文里采用**混合规则** —— 词出现在哪里决定怎么写：
+`issue` / `skill` / `task` 是 Didian 的核心实体。schema 字段、API 字段、产品 UI 标签都用英文。中文里采用**混合规则** —— 词出现在哪里决定怎么写：
 
 | 场景 | 写法 | 例 |
 | --- | --- | --- |
@@ -115,7 +115,7 @@ Multica 的产品名词分两类：
 **为什么 `issue` / `skill` / `task` 不强制译，而 `project` / `autopilot` 必译**：
 
 - **`issue` / `task`**：dev 团队习惯说英文，"任务"在中文里和"工作"几乎同义太空泛，"工单"是 IT 工单语义，"议题"是 GitHub 风格但用户场景不匹配 —— 三个候选都不如 `issue` 准确。**但**在长篇 doc 正文里，重复 50 次 `task` 节奏不顺，所以正文允许用 `执行任务`，UI 短句、状态名仍保持小写英文。
-- **`skill`**：Multica 特有概念，没有公认中文译法。
+- **`skill`**：Didian 特有概念，没有公认中文译法。
 - **`project` 翻成「项目」**：中文里早就稳定的日常词。飞书 / Tower / Teambition / PingCode / GitHub Projects 中文版 0 例外都翻译成「项目」，没有产品保留 `project`。
 - **`autopilot` 翻成「自动化」**：autopilot 在中文里联想到特斯拉的「自动驾驶」，跟产品功能（按周期跑 task）对应不上。Notion / 飞书都用「自动化」，是行业共识。
 
@@ -142,7 +142,7 @@ Multica 的产品名词分两类：
 
 | 类别 | 词 |
 | --- | --- |
-| 品牌 | **Multica**、GitHub、Slack、Google、Anthropic、OpenAI、Claude、Codex、Cursor、Linear、Jira |
+| 品牌 | **Didian**、GitHub、Slack、Google、Anthropic、OpenAI、Claude、Codex、Cursor、Linear、Jira |
 | 缩写 | API、CLI、URL、SDK、OAuth、JWT、SSO、WebSocket、HTTP、JSON、YAML、SQL |
 
 ### 完整翻译 —— 通用 UI 词

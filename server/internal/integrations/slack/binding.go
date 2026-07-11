@@ -20,7 +20,7 @@ import (
 // This file is the Slack user-binding token flow: an unbound Slack user who
 // messages the bot gets a "link your account" prompt (minted here, delivered by
 // the OutboundReplier), clicks through to the in-product redeem page, and their
-// Slack user id is bound to their Multica account. It mirrors
+// Slack user id is bound to their Didian account. It mirrors
 // lark.BindingTokenService but runs on the generic channel_* queries with
 // channel_type='slack' (lark's ChannelStore hardcodes 'feishu').
 
@@ -33,7 +33,7 @@ var (
 	// opaque error for all three avoids a replay timing oracle.
 	ErrBindingTokenInvalid = errors.New("slack: binding token invalid or expired")
 	// ErrBindingAlreadyAssigned: this Slack user id is already bound to a
-	// different Multica user (account transfer must go through explicit unbind).
+	// different Didian user (account transfer must go through explicit unbind).
 	ErrBindingAlreadyAssigned = errors.New("slack: user id is already bound to a different user")
 	// ErrBindingNotWorkspaceMember: the redeemer is not a member of the token's
 	// workspace. Translated to 403 at the HTTP boundary.
@@ -92,9 +92,9 @@ func (s *BindingTokenService) Mint(ctx context.Context, workspaceID, installatio
 }
 
 // RedeemAndBind atomically consumes a raw token and binds the Slack user id to
-// multicaUserID (taken from the session, never from the token). Returns
+// didianUserID (taken from the session, never from the token). Returns
 // ErrBindingTokenInvalid / ErrBindingAlreadyAssigned / ErrBindingNotWorkspaceMember.
-func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, multicaUserID pgtype.UUID) (RedeemedBindingToken, error) {
+func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, didianUserID pgtype.UUID) (RedeemedBindingToken, error) {
 	if s.tx == nil {
 		return RedeemedBindingToken{}, errors.New("slack: BindingTokenService missing TxStarter")
 	}
@@ -116,7 +116,7 @@ func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, mul
 	// Explicit membership gate (no member FK): returning before Commit rolls the
 	// consume back, so a non-member's attempt does not burn the token.
 	if _, err := qtx.GetMemberByUserAndWorkspace(ctx, db.GetMemberByUserAndWorkspaceParams{
-		UserID:      multicaUserID,
+		UserID:      didianUserID,
 		WorkspaceID: row.WorkspaceID,
 	}); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -127,14 +127,14 @@ func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, mul
 
 	if _, err := qtx.CreateChannelUserBinding(ctx, db.CreateChannelUserBindingParams{
 		WorkspaceID:    row.WorkspaceID,
-		MulticaUserID:  multicaUserID,
+		DidianUserID:   didianUserID,
 		InstallationID: row.InstallationID,
 		ChannelType:    string(TypeSlack),
 		ChannelUserID:  row.ChannelUserID,
 		Config:         []byte(`{}`),
 	}); err != nil {
 		// pgx.ErrNoRows means the existing binding points at a different user —
-		// the ON CONFLICT DO UPDATE WHERE multica_user_id=… gating rejected it.
+		// the ON CONFLICT DO UPDATE WHERE didian_user_id=… gating rejected it.
 		if errors.Is(err, pgx.ErrNoRows) {
 			return RedeemedBindingToken{}, ErrBindingAlreadyAssigned
 		}

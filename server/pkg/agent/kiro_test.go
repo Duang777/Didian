@@ -325,7 +325,7 @@ while IFS= read -r line; do
       printf '{"jsonrpc":"2.0","id":%s,"result":{"sessionId":"ses_comment_done"}}\n' "$id"
       ;;
     *'"method":"session/prompt"'*)
-      printf '{"jsonrpc":"2.0","method":"session/notification","params":{"sessionId":"ses_comment_done","update":{"type":"ToolCall","toolCallId":"tc-comment","name":"Shell","status":"pending","parameters":{"command":"multica issue comment add issue-1 --content-file ./reply.md"}}}}\n'
+      printf '{"jsonrpc":"2.0","method":"session/notification","params":{"sessionId":"ses_comment_done","update":{"type":"ToolCall","toolCallId":"tc-comment","name":"Shell","status":"pending","parameters":{"command":"didian issue comment add issue-1 --content-file ./reply.md"}}}}\n'
       printf '{"jsonrpc":"2.0","method":"session/notification","params":{"sessionId":"ses_comment_done","update":{"type":"ToolCallUpdate","toolCallId":"tc-comment","status":"completed","name":"Shell","output":"created comment"}}}\n'
       printf '{"jsonrpc":"2.0","id":%s,"error":{"code":-32603,"message":"Internal error","data":"Kiro failed to generate a response"}}\n' "$id"
       exit 0
@@ -391,17 +391,17 @@ func TestKiroIssueCommentAddCommand(t *testing.T) {
 		command string
 		want    bool
 	}{
-		{"multica issue comment add issue-1 --content-file ./reply.md", true},
-		{"./multica issue comment add issue-1 --content-file ./reply.md", true},
-		{"/usr/local/bin/multica issue comment add issue-1 --content-file ./reply.md", true},
-		{"MULTICA_TOKEN=x multica issue comment add issue-1 --content-file ./reply.md", true},
-		{"FOO=1 BAR=2 ./multica issue comment add issue-1", true},
-		{`sh -c "multica issue comment add issue-1 --content-file ./reply.md"`, true},
-		{`bash -c 'multica issue comment add issue-1'`, true},
-		{`/bin/sh -c "multica issue comment add issue-1"`, true},
-		{"multica issue get issue-1", false},
-		{"echo multica issue comment add issue-1", false},
-		{`sh -c "echo multica issue comment add issue-1"`, false},
+		{"didian issue comment add issue-1 --content-file ./reply.md", true},
+		{"./didian issue comment add issue-1 --content-file ./reply.md", true},
+		{"/usr/local/bin/didian issue comment add issue-1 --content-file ./reply.md", true},
+		{"DIDIAN_TOKEN=x didian issue comment add issue-1 --content-file ./reply.md", true},
+		{"FOO=1 BAR=2 ./didian issue comment add issue-1", true},
+		{`sh -c "didian issue comment add issue-1 --content-file ./reply.md"`, true},
+		{`bash -c 'didian issue comment add issue-1'`, true},
+		{`/bin/sh -c "didian issue comment add issue-1"`, true},
+		{"didian issue get issue-1", false},
+		{"echo didian issue comment add issue-1", false},
+		{`sh -c "echo didian issue comment add issue-1"`, false},
 		{"FOO=bar", false},
 		{"", false},
 	}
@@ -511,7 +511,7 @@ func TestKiroBackendInvokesACPWithTrustAllTools(t *testing.T) {
 	session, err := backend.Execute(ctx, "prompt-ignored", ExecOptions{
 		Model:      "bogus-model",
 		Timeout:    5 * time.Second,
-		CustomArgs: []string{"acp", "--trust-tools", "shell", "-a", "--agent", "multica"},
+		CustomArgs: []string{"acp", "--trust-tools", "shell", "-a", "--agent", "didian"},
 	})
 	if err != nil {
 		t.Fatalf("execute: %v", err)
@@ -543,7 +543,7 @@ func TestKiroBackendInvokesACPWithTrustAllTools(t *testing.T) {
 			}
 		}
 	}
-	if strings.Join(lines, "\n") != strings.Join([]string{"acp", "--trust-all-tools", "--agent", "multica"}, "\n") {
+	if strings.Join(lines, "\n") != strings.Join([]string{"acp", "--trust-all-tools", "--agent", "didian"}, "\n") {
 		t.Errorf("unexpected argv after filtering: %q", lines)
 	}
 }

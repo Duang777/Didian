@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-09 (rewritten — initial research had a wrong claim about
 mention syntax, see *Decision Log* below).
-**Scope:** `apps/mobile/` — choosing a markdown renderer for Multica iOS that
+**Scope:** `apps/mobile/` — choosing a markdown renderer for Didian iOS that
 matches the web/desktop feature set.
 
 **Target requirements:**
@@ -88,7 +88,7 @@ Plus a preprocess (`packages/views/editor/utils/preprocess.ts`):
 | `react-native-enriched-markdown` (Software Mansion) | Reject (now) | No custom inline component support yet (mention chips would need a roadmap feature). Revisit in 6-12 months |
 | `react-native-awesome-gallery` (lightbox) | Reject | Last release 2024-07, 18+ months stale. Reanimated v3 dependency met but maintenance signal is bad |
 | **`react-native-image-viewing`** (jobtoday) | **Pick for lightbox** | Pure TS, simple API (`<ImageView visible imageIndex images=[]/>`), zero animation deps |
-| **`expo-image`** | **Pick for inline** | First-party Expo, on-disk cache, `contentFit` API, `transition` prop. Same engine the rest of the Multica stack will use for avatars later |
+| **`expo-image`** | **Pick for inline** | First-party Expo, on-disk cache, `contentFit` API, `transition` prop. Same engine the rest of the Didian stack will use for avatars later |
 
 ---
 
@@ -99,7 +99,7 @@ apps/mobile/
 ├── lib/markdown/
 │   ├── index.ts                  # Public API: <Markdown content="..." />
 │   ├── markdown.tsx              # Wraps react-native-marked w/ our renderer + preprocess
-│   ├── renderer.tsx              # MulticaRenderer extends Renderer — overrides link, image
+│   ├── renderer.tsx              # DidianRenderer extends Renderer — overrides link, image
 │   ├── preprocess.ts             # Mention-shortcode + file-card rewrite, idempotent
 │   ├── mention-chip.tsx          # member / agent / issue chip components
 │   ├── markdown-image.tsx        # expo-image + auto aspect ratio + tap-to-lightbox dispatch
@@ -117,7 +117,7 @@ The adapter boundary stays thin so swapping the engine later (e.g. once `react-n
 
 ```tsx
 // lib/markdown/renderer.tsx (sketch)
-class MulticaRenderer extends Renderer {
+class DidianRenderer extends Renderer {
   link(text: string, href: string) {
     if (href.startsWith("mention://")) {
       const [, , type, id] = href.split("/");
@@ -359,7 +359,7 @@ visibly improves CJK wrapping at line edges. Set it on every paragraph
 
 ### Tiptap-emitted markdown serialization
 
-[Tiptap's default `clipboardTextSerializer`](https://tiptap.dev/docs/editor/extensions/nodes/hard-break) emits `\n\n` between paragraphs and `\n` only for explicit `HardBreak` nodes (Shift+Enter). Bare single `\n` inside a paragraph is rare in Multica content (everything that lands in our DB went through tiptap). So `marked.lexer({ breaks: true })`:
+[Tiptap's default `clipboardTextSerializer`](https://tiptap.dev/docs/editor/extensions/nodes/hard-break) emits `\n\n` between paragraphs and `\n` only for explicit `HardBreak` nodes (Shift+Enter). Bare single `\n` inside a paragraph is rare in Didian content (everything that lands in our DB went through tiptap). So `marked.lexer({ breaks: true })`:
 
 - Is **harmless** for tiptap content.
 - Is **defensive** for non-tiptap input (paste, IME, future API ingestion paths).

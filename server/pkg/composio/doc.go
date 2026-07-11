@@ -1,7 +1,7 @@
 // Package composio is a small, standalone Go SDK for the Composio v3.1 REST API.
 //
 // It is intentionally self-contained: the only third-party dependency is
-// [github.com/go-resty/resty/v2]. It does not import any Multica-specific
+// [github.com/go-resty/resty/v2]. It does not import any Didian-specific
 // package, so it can be reused by other Go services or extracted into its
 // own module unchanged.
 //

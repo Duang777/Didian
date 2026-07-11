@@ -148,7 +148,7 @@ func TestEnrichMergeForward(t *testing.T) {
 	fake := newEnricherFake()
 	fake.byID["om_forward"] = []LarkMessage{
 		{MessageID: "om_forward", MessageType: "merge_forward", SenderID: "ou_bohan", SenderType: "user", Content: `{"content":"Merged and Forwarded Message"}`},
-		textMsg("c1", "ou_jiayuan", "你们线上的 Multica 能用吗", "1000"),
+		textMsg("c1", "ou_jiayuan", "你们线上的 Didian 能用吗", "1000"),
 		textMsg("c2", "ou_jiayuan", "我这边无法登录", "2000"),
 		textMsg("c3", "ou_bohan", "我这边 web 和 desktop 都能登陆", "3000"),
 		{MessageID: "c4", MessageType: "image", SenderID: "ou_jiayuan", SenderType: "user", Content: `{"image_key":"img_x"}`, CreateTime: "4000"},
@@ -158,7 +158,7 @@ func TestEnrichMergeForward(t *testing.T) {
 	out := enrich(t, fake, in, InboundEnricherConfig{})
 
 	want := `<forwarded_messages count="4">
-[User 1]: 你们线上的 Multica 能用吗
+[User 1]: 你们线上的 Didian 能用吗
 [User 1]: 我这边无法登录
 [User 2]: 我这边 web 和 desktop 都能登陆
 [User 1]: [Image]

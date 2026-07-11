@@ -27,12 +27,12 @@ import (
 // itself. It takes the invoker's natural-language description as a prompt and
 // enqueues a quick-create task against the installation's agent — the very same
 // pipeline as the web "quick create" modal (TaskService.EnqueueQuickCreateTask).
-// The agent turns the prompt into a well-formed `multica issue create` in the
+// The agent turns the prompt into a well-formed `didian issue create` in the
 // background, so the issue gets a proper title + structured description instead
 // of the raw one-liner the user typed. Because creation is asynchronous, the
 // command replies with a PRIVATE (ephemeral) acknowledgement via the command's
 // response_url — there is no issue number to hand back yet — and the agent's
-// completion surfaces to the invoker as a Multica inbox notification through the
+// completion surfaces to the invoker as a Didian inbox notification through the
 // shared quick-create completion path. It starts no chat session / chat run.
 //
 // The installation routing and identity + membership checks mirror the message
@@ -45,11 +45,11 @@ const issueSlashCommand = "/issue"
 // User-facing ephemeral replies. Kept terse; only the invoker sees them.
 const (
 	slashUsageText           = "Tell me what to file, e.g. `/issue the login button does nothing on Safari`."
-	slashQueuedText          = "✅ On it — I'm turning that into an issue. You'll get a Multica notification when it's ready."
-	slashNotMemberText       = "You're not a member of this Multica workspace, so I can't file an issue for you."
-	slashLinkAccountFallback = "Link your Slack account to Multica first, then try `/issue` again."
+	slashQueuedText          = "✅ On it — I'm turning that into an issue. You'll get a Didian notification when it's ready."
+	slashNotMemberText       = "You're not a member of this Didian workspace, so I can't file an issue for you."
+	slashLinkAccountFallback = "Link your Slack account to Didian first, then try `/issue` again."
 	slashInternalErrorText   = "⚠️ Something went wrong creating the issue. Please try again."
-	slashDisabledText        = "This Slack app isn't connected to Multica (or was disconnected). Ask a workspace admin to reconnect it."
+	slashDisabledText        = "This Slack app isn't connected to Didian (or was disconnected). Ask a workspace admin to reconnect it."
 )
 
 // slashQueries is the narrow slice of generated queries the slash-command
@@ -228,7 +228,7 @@ func (p *SlashCommandProcessor) resolveInstallation(ctx context.Context, appID, 
 	}, nil
 }
 
-// resolveUser maps the Slack user id to the bound Multica user, re-checking
+// resolveUser maps the Slack user id to the bound Didian user, re-checking
 // workspace membership (no binding→member FK). Returns engine.ErrSenderUnbound
 // or engine.ErrSenderNotMember for the product cases.
 func (p *SlashCommandProcessor) resolveUser(ctx context.Context, inst engine.ResolvedInstallation, slackUserID string) (pgtype.UUID, error) {
@@ -243,7 +243,7 @@ func (p *SlashCommandProcessor) resolveUser(ctx context.Context, inst engine.Res
 		return pgtype.UUID{}, err
 	}
 	if _, err := p.q.GetMemberByUserAndWorkspace(ctx, db.GetMemberByUserAndWorkspaceParams{
-		UserID:      binding.MulticaUserID,
+		UserID:      binding.DidianUserID,
 		WorkspaceID: inst.WorkspaceID,
 	}); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -251,7 +251,7 @@ func (p *SlashCommandProcessor) resolveUser(ctx context.Context, inst engine.Res
 		}
 		return pgtype.UUID{}, err
 	}
-	return binding.MulticaUserID, nil
+	return binding.DidianUserID, nil
 }
 
 // bindingText mints a single-use binding token and returns a "link your account"
@@ -270,6 +270,6 @@ func (p *SlashCommandProcessor) bindingText(ctx context.Context, inst engine.Res
 	bindURL := p.appURL + p.bindingPath + "?token=" + url.QueryEscape(token.Raw)
 	// Wrap the URL as an explicit Slack link so the base64url token's `_`/`-`
 	// are not mangled by mrkdwn (same reasoning as the replier).
-	return "👋 To file issues, link your Slack account to Multica: <" +
+	return "👋 To file issues, link your Slack account to Didian: <" +
 		bindURL + "|link your account>\n(This link expires in 15 minutes.)"
 }

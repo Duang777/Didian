@@ -32,8 +32,8 @@ type AppConfig struct {
 	// previous shape for the common managed-cloud case (#3433).
 	WorkspaceCreationDisabled bool `json:"workspace_creation_disabled,omitempty"`
 	// Public daemon setup config consumed by the web app at runtime so
-	// self-hosted instances can show `multica setup self-host` commands
-	// with the operator's own domains instead of Multica Cloud defaults.
+	// self-hosted instances can show `didian setup self-host` commands
+	// with the operator's own domains instead of Didian Cloud defaults.
 	DaemonServerURL string `json:"daemon_server_url,omitempty"`
 	DaemonAppURL    string `json:"daemon_app_url,omitempty"`
 
@@ -83,8 +83,8 @@ func (h *Handler) GetConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func daemonSetupURLsFromEnv() (string, string) {
-	serverURL := normalizePublicURL(os.Getenv("MULTICA_PUBLIC_URL"))
-	appURL := normalizePublicURL(os.Getenv("MULTICA_APP_URL"))
+	serverURL := normalizePublicURL(os.Getenv("DIDIAN_PUBLIC_URL"))
+	appURL := normalizePublicURL(os.Getenv("DIDIAN_APP_URL"))
 	if appURL == "" {
 		appURL = normalizePublicURL(os.Getenv("FRONTEND_ORIGIN"))
 	}
@@ -106,16 +106,16 @@ func normalizePublicURL(raw string) string {
 }
 
 // isOfficialCloudDaemonConfig reports whether this deployment is the official
-// Multica Cloud, identified by its frontend host alone (multica.ai /
-// app.multica.ai). The daemon setup for the managed cloud is always
-// `multica setup` (which hardcodes api.multica.ai), so the per-deployment URLs
-// must be omitted from /api/config even when MULTICA_PUBLIC_URL is unset or
-// misconfigured. Previously this also required serverURL==api.multica.ai, so a
-// cloud deployment that forgot MULTICA_PUBLIC_URL fell through and emitted a
-// `setup self-host --server-url https://multica.ai` command — pointing the
+// Didian Cloud, identified by its frontend host alone (didian.ai /
+// app.didian.ai). The daemon setup for the managed cloud is always
+// `didian setup` (which hardcodes api.didian.ai), so the per-deployment URLs
+// must be omitted from /api/config even when DIDIAN_PUBLIC_URL is unset or
+// misconfigured. Previously this also required serverURL==api.didian.ai, so a
+// cloud deployment that forgot DIDIAN_PUBLIC_URL fell through and emitted a
+// `setup self-host --server-url https://didian.ai` command — pointing the
 // daemon's backend at the frontend (no /health, no WebSocket proxy).
 func isOfficialCloudDaemonConfig(appURL string) bool {
-	return urlHostEquals(appURL, "multica.ai") || urlHostEquals(appURL, "app.multica.ai")
+	return urlHostEquals(appURL, "didian.ai") || urlHostEquals(appURL, "app.didian.ai")
 }
 
 func urlHostEquals(raw, want string) bool {

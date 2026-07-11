@@ -25,7 +25,7 @@ const (
 	// agent run. 0 = no cap: a run is bounded only by the inactivity watchdogs
 	// (DefaultAgentIdleWatchdog / DefaultAgentToolWatchdog), so a session that keeps emitting events is
 	// never killed merely for running long (MUL-3064). Operators who want a
-	// hard ceiling for cost/resource control can set MULTICA_AGENT_TIMEOUT.
+	// hard ceiling for cost/resource control can set DIDIAN_AGENT_TIMEOUT.
 	DefaultAgentTimeout                   = 0
 	DefaultCodexSemanticInactivityTimeout = 10 * time.Minute
 	// DefaultAgentIdleWatchdog is the per-task safety net that force-stops a
@@ -39,7 +39,7 @@ const (
 	// where the model streams a single message for many minutes without any
 	// daemon-visible activity — see MUL-2300. 30 min keeps the safety net for
 	// truly stuck runs (dockerd hang) while leaving headroom for long writes.
-	// Set MULTICA_AGENT_IDLE_WATCHDOG=0 to disable.
+	// Set DIDIAN_AGENT_IDLE_WATCHDOG=0 to disable.
 	DefaultAgentIdleWatchdog = 30 * time.Minute
 	// DefaultAgentToolWatchdog bounds how long a single tool call may stay in
 	// flight (tool_use emitted, no tool_result and no other message) before the
@@ -48,7 +48,7 @@ const (
 	// legitimately runs silently for many minutes — but with no wall-clock cap
 	// (DefaultAgentTimeout = 0) a backend that emits tool_use and never the
 	// matching tool_result would otherwise run forever. This is the backstop for
-	// that stuck-tool case (MUL-3064). Set MULTICA_AGENT_TOOL_WATCHDOG=0 to
+	// that stuck-tool case (MUL-3064). Set DIDIAN_AGENT_TOOL_WATCHDOG=0 to
 	// disable, in which case an in-flight tool never force-stops the run.
 	DefaultAgentToolWatchdog       = 2 * time.Hour
 	DefaultRuntimeName             = "Local Agent"
@@ -67,7 +67,7 @@ const (
 // always cheap to recreate (`pnpm install`, `next build`, `turbo build`). Things
 // like `dist/`, `build/`, `.cache/` or `.venv/` may legitimately hold source or
 // release output in some repos and are NOT included by default — set
-// MULTICA_GC_ARTIFACT_PATTERNS to extend the list per deployment.
+// DIDIAN_GC_ARTIFACT_PATTERNS to extend the list per deployment.
 var DefaultGCArtifactPatterns = []string{"node_modules", ".next", ".turbo"}
 
 // Config holds all daemon configuration.
@@ -77,11 +77,11 @@ type Config struct {
 	LegacyDaemonIDs                []string // historical daemon_ids this machine may have registered under; reported at register time so the server can merge old runtime rows
 	DeviceName                     string
 	RuntimeName                    string
-	CLIVersion                     string                // multica CLI version (e.g. "0.1.13")
+	CLIVersion                     string                // didian CLI version (e.g. "0.1.13")
 	LaunchedBy                     string                // "desktop" when spawned by the Electron app, empty for standalone
 	Profile                        string                // profile name (empty = default)
 	Agents                         map[string]AgentEntry // keyed by provider: claude, codebuddy, codex, copilot, opencode, openclaw, hermes, pi, cursor, kimi, kiro, antigravity, qoder, traecli
-	WorkspacesRoot                 string                // base path for execution envs (default: ~/multica_workspaces)
+	WorkspacesRoot                 string                // base path for execution envs (default: ~/didian_workspaces)
 	KeepEnvAfterTask               bool                  // preserve env after task for debugging
 	HealthPort                     int                   // local HTTP port for health checks (default: 19514)
 	MaxConcurrentTasks             int                   // max tasks running in parallel (default: 20)
@@ -91,7 +91,7 @@ type Config struct {
 	GCOrphanTTL                    time.Duration         // clean orphan dirs with no meta, or dirs whose issue gc-check returns 404, once they exceed this age (default: 72h). The 404 path uses the same TTL — a scoped-down token can't instantly wipe live workspaces.
 	GCArtifactTTL                  time.Duration         // when a task has been completed for at least this long but its issue is still open, drop regenerable artifacts (default: 12h, set 0 to disable)
 	GCArtifactPatterns             []string              // basename patterns whose subtrees are removed during artifact cleanup (default: node_modules, .next, .turbo)
-	AutoUpdateEnabled              bool                  // periodically check for a newer CLI release and self-update when idle (default: true on Multica Cloud, false on self-host)
+	AutoUpdateEnabled              bool                  // periodically check for a newer CLI release and self-update when idle (default: true on Didian Cloud, false on self-host)
 	AutoUpdateCheckInterval        time.Duration         // how often the auto-update loop polls for a new release (default: 6h)
 	PollInterval                   time.Duration
 	HeartbeatInterval              time.Duration
@@ -106,7 +106,7 @@ type Config struct {
 	// ProfileCommandOverrides maps a custom runtime profile_id -> the absolute
 	// executable path to use for that profile on THIS machine (MUL-3284).
 	// Sourced from the local CLI config (cli.CLIConfig.ProfileCommandOverrides),
-	// written by `multica runtime profile set-path`. appendProfileRuntimes
+	// written by `didian runtime profile set-path`. appendProfileRuntimes
 	// prefers a matching, executable override over resolving the profile's
 	// command_name on PATH. nil/empty means "always resolve via PATH".
 	ProfileCommandOverrides map[string]string
@@ -140,7 +140,7 @@ type Overrides struct {
 // and optional CLI flag overrides.
 func LoadConfig(overrides Overrides) (Config, error) {
 	// Server URL: override > env > default
-	rawServerURL := envOrDefault("MULTICA_SERVER_URL", DefaultServerURL)
+	rawServerURL := envOrDefault("DIDIAN_SERVER_URL", DefaultServerURL)
 	if overrides.ServerURL != "" {
 		rawServerURL = overrides.ServerURL
 	}
@@ -156,13 +156,13 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	// instead of a launchctl env hack. We translate those fields into the
 	// same env vars the rest of LoadConfig already honors:
 	//
-	//   - MULTICA_OPENCLAW_PATH: read by probe() via envOrDefault for the
+	//   - DIDIAN_OPENCLAW_PATH: read by probe() via envOrDefault for the
 	//     binary lookup; pre-existing path.
 	//   - OPENCLAW_STATE_DIR:    OpenClaw's own env var; the daemon already
 	//     forwards it to spawned children via mergeEnv (server/pkg/agent/...).
 	//
 	// Precedence is "env wins over config wins over default" — same shape
-	// users already get with MULTICA_OPENCLAW_PATH today. We achieve it with
+	// users already get with DIDIAN_OPENCLAW_PATH today. We achieve it with
 	// LookupEnv guards: if the user already exported the env var (in their
 	// shell, via launchctl, or via the systemd unit), we leave it alone;
 	// otherwise we Setenv from the config file. This keeps every downstream
@@ -206,7 +206,7 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	// resolveAgentsViaLoginShell for the details and constraints.
 	//
 	// Laziness matters: the happy path (every agent on the daemon's PATH or
-	// pinned to an explicit MULTICA_*_PATH) must not pay the cost of
+	// pinned to an explicit DIDIAN_*_PATH) must not pay the cost of
 	// spawning the user's login shell — that touches their rc files and
 	// adds startup latency that scales with whatever they put in there. We
 	// only fork a shell when a bare command name actually missed LookPath.
@@ -229,7 +229,7 @@ func LoadConfig(overrides Overrides) (Config, error) {
 			}, true
 		}
 		// The shell fallback only rescues bare command names. An operator
-		// who pinned MULTICA_*_PATH to an absolute or relative path that
+		// who pinned DIDIAN_*_PATH to an absolute or relative path that
 		// doesn't exist should hard-miss, not silently get a different
 		// binary.
 		if strings.ContainsAny(cmd, "/\\") {
@@ -257,73 +257,73 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	}
 
 	agents := map[string]AgentEntry{}
-	if e, ok := probe("MULTICA_CLAUDE_PATH", "claude", "MULTICA_CLAUDE_MODEL"); ok {
+	if e, ok := probe("DIDIAN_CLAUDE_PATH", "claude", "DIDIAN_CLAUDE_MODEL"); ok {
 		agents["claude"] = e
 	}
-	if e, ok := probe("MULTICA_CODEX_PATH", "codex", "MULTICA_CODEX_MODEL"); ok {
+	if e, ok := probe("DIDIAN_CODEX_PATH", "codex", "DIDIAN_CODEX_MODEL"); ok {
 		agents["codex"] = e
 	}
-	if e, ok := probe("MULTICA_OPENCODE_PATH", "opencode", "MULTICA_OPENCODE_MODEL"); ok {
+	if e, ok := probe("DIDIAN_OPENCODE_PATH", "opencode", "DIDIAN_OPENCODE_MODEL"); ok {
 		agents["opencode"] = e
 	}
-	if e, ok := probe("MULTICA_OPENCLAW_PATH", "openclaw", "MULTICA_OPENCLAW_MODEL"); ok {
+	if e, ok := probe("DIDIAN_OPENCLAW_PATH", "openclaw", "DIDIAN_OPENCLAW_MODEL"); ok {
 		agents["openclaw"] = e
 	}
-	if e, ok := probe("MULTICA_HERMES_PATH", "hermes", "MULTICA_HERMES_MODEL"); ok {
+	if e, ok := probe("DIDIAN_HERMES_PATH", "hermes", "DIDIAN_HERMES_MODEL"); ok {
 		agents["hermes"] = e
 	}
-	if e, ok := probe("MULTICA_PI_PATH", "pi", "MULTICA_PI_MODEL"); ok {
+	if e, ok := probe("DIDIAN_PI_PATH", "pi", "DIDIAN_PI_MODEL"); ok {
 		agents["pi"] = e
 	}
-	if e, ok := probe("MULTICA_CURSOR_PATH", "cursor-agent", "MULTICA_CURSOR_MODEL"); ok {
+	if e, ok := probe("DIDIAN_CURSOR_PATH", "cursor-agent", "DIDIAN_CURSOR_MODEL"); ok {
 		agents["cursor"] = e
 	}
-	if e, ok := probe("MULTICA_COPILOT_PATH", "copilot", "MULTICA_COPILOT_MODEL"); ok {
+	if e, ok := probe("DIDIAN_COPILOT_PATH", "copilot", "DIDIAN_COPILOT_MODEL"); ok {
 		agents["copilot"] = e
 	}
-	if e, ok := probe("MULTICA_KIMI_PATH", "kimi", "MULTICA_KIMI_MODEL"); ok {
+	if e, ok := probe("DIDIAN_KIMI_PATH", "kimi", "DIDIAN_KIMI_MODEL"); ok {
 		agents["kimi"] = e
 	}
-	if e, ok := probe("MULTICA_KIRO_PATH", "kiro-cli", "MULTICA_KIRO_MODEL"); ok {
+	if e, ok := probe("DIDIAN_KIRO_PATH", "kiro-cli", "DIDIAN_KIRO_MODEL"); ok {
 		agents["kiro"] = e
 	}
-	if e, ok := probe("MULTICA_CODEBUDDY_PATH", "codebuddy", "MULTICA_CODEBUDDY_MODEL"); ok {
+	if e, ok := probe("DIDIAN_CODEBUDDY_PATH", "codebuddy", "DIDIAN_CODEBUDDY_MODEL"); ok {
 		agents["codebuddy"] = e
 	}
 	// agy 1.0.6 added a `--model` flag (MUL-3125), so Antigravity now takes a
-	// model env like every other backend. MULTICA_ANTIGRAVITY_MODEL seeds the
+	// model env like every other backend. DIDIAN_ANTIGRAVITY_MODEL seeds the
 	// daemon-wide default; its value is the exact `agy models` display string
 	// (e.g. "Claude Opus 4.6 (Thinking)"), not a provider/model slug.
-	if e, ok := probe("MULTICA_ANTIGRAVITY_PATH", "agy", "MULTICA_ANTIGRAVITY_MODEL"); ok {
+	if e, ok := probe("DIDIAN_ANTIGRAVITY_PATH", "agy", "DIDIAN_ANTIGRAVITY_MODEL"); ok {
 		agents["antigravity"] = e
 	}
-	qoderPath := envOrDefault("MULTICA_QODER_PATH", "qodercli")
+	qoderPath := envOrDefault("DIDIAN_QODER_PATH", "qodercli")
 	if path, err := resolveAgentExecutablePath(qoderPath); err == nil {
 		agents["qoder"] = AgentEntry{
 			Path:  path,
-			Model: strings.TrimSpace(os.Getenv("MULTICA_QODER_MODEL")),
+			Model: strings.TrimSpace(os.Getenv("DIDIAN_QODER_MODEL")),
 		}
 	}
 	// ByteDance official TRAE CLI (the `traecli` binary from https://docs.trae.cn/cli),
-	// driven over ACP via `traecli acp serve --yolo`. MULTICA_TRAECLI_MODEL seeds
+	// driven over ACP via `traecli acp serve --yolo`. DIDIAN_TRAECLI_MODEL seeds
 	// the daemon-wide default model (a model id from the user's logged-in traecli
 	// catalog).
-	if e, ok := probe("MULTICA_TRAECLI_PATH", "traecli", "MULTICA_TRAECLI_MODEL"); ok {
+	if e, ok := probe("DIDIAN_TRAECLI_PATH", "traecli", "DIDIAN_TRAECLI_MODEL"); ok {
 		agents["traecli"] = e
 	}
 	if len(agents) == 0 {
 		return Config{}, fmt.Errorf("no agent CLI found: install claude, codebuddy, codex, copilot, opencode, openclaw, hermes, pi, cursor-agent, kimi, kiro-cli, agy, qodercli, or traecli and ensure it is on PATH")
 	}
 
-	claudeArgs, err := shellArgsFromEnv("MULTICA_CLAUDE_ARGS")
+	claudeArgs, err := shellArgsFromEnv("DIDIAN_CLAUDE_ARGS")
 	if err != nil {
 		return Config{}, err
 	}
-	codexArgs, err := shellArgsFromEnv("MULTICA_CODEX_ARGS")
+	codexArgs, err := shellArgsFromEnv("DIDIAN_CODEX_ARGS")
 	if err != nil {
 		return Config{}, err
 	}
-	codebuddyArgs, err := shellArgsFromEnv("MULTICA_CODEBUDDY_ARGS")
+	codebuddyArgs, err := shellArgsFromEnv("DIDIAN_CODEBUDDY_ARGS")
 	if err != nil {
 		return Config{}, err
 	}
@@ -335,7 +335,7 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	}
 
 	// Durations: override > env > default
-	pollInterval, err := durationFromEnv("MULTICA_DAEMON_POLL_INTERVAL", DefaultPollInterval)
+	pollInterval, err := durationFromEnv("DIDIAN_DAEMON_POLL_INTERVAL", DefaultPollInterval)
 	if err != nil {
 		return Config{}, err
 	}
@@ -343,7 +343,7 @@ func LoadConfig(overrides Overrides) (Config, error) {
 		pollInterval = overrides.PollInterval
 	}
 
-	heartbeatInterval, err := durationFromEnv("MULTICA_DAEMON_HEARTBEAT_INTERVAL", DefaultHeartbeatInterval)
+	heartbeatInterval, err := durationFromEnv("DIDIAN_DAEMON_HEARTBEAT_INTERVAL", DefaultHeartbeatInterval)
 	if err != nil {
 		return Config{}, err
 	}
@@ -351,7 +351,7 @@ func LoadConfig(overrides Overrides) (Config, error) {
 		heartbeatInterval = overrides.HeartbeatInterval
 	}
 
-	agentTimeout, err := durationFromEnv("MULTICA_AGENT_TIMEOUT", DefaultAgentTimeout)
+	agentTimeout, err := durationFromEnv("DIDIAN_AGENT_TIMEOUT", DefaultAgentTimeout)
 	if err != nil {
 		return Config{}, err
 	}
@@ -359,7 +359,7 @@ func LoadConfig(overrides Overrides) (Config, error) {
 		agentTimeout = *overrides.AgentTimeout
 	}
 
-	codexSemanticInactivityTimeout, err := durationFromEnv("MULTICA_CODEX_SEMANTIC_INACTIVITY_TIMEOUT", DefaultCodexSemanticInactivityTimeout)
+	codexSemanticInactivityTimeout, err := durationFromEnv("DIDIAN_CODEX_SEMANTIC_INACTIVITY_TIMEOUT", DefaultCodexSemanticInactivityTimeout)
 	if err != nil {
 		return Config{}, err
 	}
@@ -367,22 +367,22 @@ func LoadConfig(overrides Overrides) (Config, error) {
 		codexSemanticInactivityTimeout = overrides.CodexSemanticInactivityTimeout
 	}
 
-	// MULTICA_AGENT_IDLE_WATCHDOG=0 disables the per-task idle watchdog. We
+	// DIDIAN_AGENT_IDLE_WATCHDOG=0 disables the per-task idle watchdog. We
 	// route 0 through durationFromEnv so the operator can opt out without
 	// patching the binary; any positive duration overrides DefaultAgentIdleWatchdog.
-	agentIdleWatchdog, err := durationFromEnv("MULTICA_AGENT_IDLE_WATCHDOG", DefaultAgentIdleWatchdog)
+	agentIdleWatchdog, err := durationFromEnv("DIDIAN_AGENT_IDLE_WATCHDOG", DefaultAgentIdleWatchdog)
 	if err != nil {
 		return Config{}, err
 	}
 
-	// MULTICA_AGENT_TOOL_WATCHDOG=0 disables the in-flight-tool backstop; any
+	// DIDIAN_AGENT_TOOL_WATCHDOG=0 disables the in-flight-tool backstop; any
 	// positive duration overrides DefaultAgentToolWatchdog.
-	agentToolWatchdog, err := durationFromEnv("MULTICA_AGENT_TOOL_WATCHDOG", DefaultAgentToolWatchdog)
+	agentToolWatchdog, err := durationFromEnv("DIDIAN_AGENT_TOOL_WATCHDOG", DefaultAgentToolWatchdog)
 	if err != nil {
 		return Config{}, err
 	}
 
-	maxConcurrentTasks, err := intFromEnv("MULTICA_DAEMON_MAX_CONCURRENT_TASKS", DefaultMaxConcurrentTasks)
+	maxConcurrentTasks, err := intFromEnv("DIDIAN_DAEMON_MAX_CONCURRENT_TASKS", DefaultMaxConcurrentTasks)
 	if err != nil {
 		return Config{}, err
 	}
@@ -397,9 +397,9 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	// The persistent UUID is written once to `<profile-dir>/daemon.id` and
 	// then reused forever so hostname drift (.local suffix, system rename,
 	// mDNS state, profile switch) no longer mints a new runtime identity.
-	// Callers may still pin a specific id via MULTICA_DAEMON_ID or the
+	// Callers may still pin a specific id via DIDIAN_DAEMON_ID or the
 	// override field (e.g. for tests or embedded environments).
-	daemonID := strings.TrimSpace(os.Getenv("MULTICA_DAEMON_ID"))
+	daemonID := strings.TrimSpace(os.Getenv("DIDIAN_DAEMON_ID"))
 	if overrides.DaemonID != "" {
 		daemonID = overrides.DaemonID
 	}
@@ -416,7 +416,7 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	legacyDaemonIDs := LegacyDaemonIDs(host, profile)
 	// Pre-change (#1220) daemon identity was stored per profile, which means
 	// the same machine could end up with multiple leftover daemon.id files
-	// — e.g. ~/.multica/daemon.id (default) plus ~/.multica/profiles/<x>/
+	// — e.g. ~/.didian/daemon.id (default) plus ~/.didian/profiles/<x>/
 	// daemon.id. Surface those UUIDs so the server can merge their runtime
 	// rows into the canonical machine UUID. Fatal-free: a broken profiles
 	// dir shouldn't block startup.
@@ -424,21 +424,21 @@ func LoadConfig(overrides Overrides) (Config, error) {
 		legacyDaemonIDs = append(legacyDaemonIDs, uuids...)
 	}
 	// Strip anything that collides with the resolved daemon_id (e.g. when
-	// the user explicitly pins MULTICA_DAEMON_ID=<hostname>, or when the
+	// the user explicitly pins DIDIAN_DAEMON_ID=<hostname>, or when the
 	// canonical id was itself promoted from a pre-change profile file).
 	legacyDaemonIDs = filterLegacyIDs(legacyDaemonIDs, daemonID)
 
-	deviceName := envOrDefault("MULTICA_DAEMON_DEVICE_NAME", host)
+	deviceName := envOrDefault("DIDIAN_DAEMON_DEVICE_NAME", host)
 	if overrides.DeviceName != "" {
 		deviceName = overrides.DeviceName
 	}
 
-	runtimeName := envOrDefault("MULTICA_AGENT_RUNTIME_NAME", DefaultRuntimeName)
+	runtimeName := envOrDefault("DIDIAN_AGENT_RUNTIME_NAME", DefaultRuntimeName)
 	if overrides.RuntimeName != "" {
 		runtimeName = overrides.RuntimeName
 	}
 
-	// Workspaces root: override > env > default (~/multica_workspaces or ~/multica_workspaces_<profile>)
+	// Workspaces root: override > env > default (~/didian_workspaces or ~/didian_workspaces_<profile>)
 	workspacesRoot, err := ResolveWorkspacesRoot(profile, overrides.WorkspacesRoot)
 	if err != nil {
 		return Config{}, err
@@ -451,42 +451,42 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	}
 
 	// Keep env after task: env > default (false)
-	keepEnv := os.Getenv("MULTICA_KEEP_ENV_AFTER_TASK") == "true" || os.Getenv("MULTICA_KEEP_ENV_AFTER_TASK") == "1"
+	keepEnv := os.Getenv("DIDIAN_KEEP_ENV_AFTER_TASK") == "true" || os.Getenv("DIDIAN_KEEP_ENV_AFTER_TASK") == "1"
 
 	// GC config: env > defaults
 	gcEnabled := true
-	if v := os.Getenv("MULTICA_GC_ENABLED"); v == "false" || v == "0" {
+	if v := os.Getenv("DIDIAN_GC_ENABLED"); v == "false" || v == "0" {
 		gcEnabled = false
 	}
-	gcInterval, err := durationFromEnv("MULTICA_GC_INTERVAL", DefaultGCInterval)
+	gcInterval, err := durationFromEnv("DIDIAN_GC_INTERVAL", DefaultGCInterval)
 	if err != nil {
 		return Config{}, err
 	}
-	gcTTL, err := durationFromEnv("MULTICA_GC_TTL", DefaultGCTTL)
+	gcTTL, err := durationFromEnv("DIDIAN_GC_TTL", DefaultGCTTL)
 	if err != nil {
 		return Config{}, err
 	}
-	gcOrphanTTL, err := durationFromEnv("MULTICA_GC_ORPHAN_TTL", DefaultGCOrphanTTL)
+	gcOrphanTTL, err := durationFromEnv("DIDIAN_GC_ORPHAN_TTL", DefaultGCOrphanTTL)
 	if err != nil {
 		return Config{}, err
 	}
-	gcArtifactTTL, err := durationFromEnv("MULTICA_GC_ARTIFACT_TTL", DefaultGCArtifactTTL)
+	gcArtifactTTL, err := durationFromEnv("DIDIAN_GC_ARTIFACT_TTL", DefaultGCArtifactTTL)
 	if err != nil {
 		return Config{}, err
 	}
-	gcArtifactPatterns := patternsFromEnv("MULTICA_GC_ARTIFACT_PATTERNS", DefaultGCArtifactPatterns)
+	gcArtifactPatterns := patternsFromEnv("DIDIAN_GC_ARTIFACT_PATTERNS", DefaultGCArtifactPatterns)
 
 	// Auto-update config: default -> env override -> CLI override.
 	//
-	// Default is opt-in on Multica Cloud (api.multica.ai) and opt-out for
+	// Default is opt-in on Didian Cloud (api.didian.ai) and opt-out for
 	// self-hosted instances. Self-host operators frequently run a fork with
 	// their own patches, and silently upgrading their daemon to an upstream
 	// GitHub release would clobber that work; they also commonly stay on an
 	// older server build, which a fresh CLI may no longer talk to. Keeping
 	// auto-update off by default for self-host avoids both footguns (MUL-2381).
-	// Operators on either side can flip the default with MULTICA_DAEMON_AUTO_UPDATE.
+	// Operators on either side can flip the default with DIDIAN_DAEMON_AUTO_UPDATE.
 	autoUpdateEnabled := isOfficialCloudServer(serverBaseURL)
-	if v := strings.TrimSpace(os.Getenv("MULTICA_DAEMON_AUTO_UPDATE")); v != "" {
+	if v := strings.TrimSpace(os.Getenv("DIDIAN_DAEMON_AUTO_UPDATE")); v != "" {
 		switch strings.ToLower(v) {
 		case "false", "0", "no", "off":
 			autoUpdateEnabled = false
@@ -497,7 +497,7 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	if overrides.DisableAutoUpdate {
 		autoUpdateEnabled = false
 	}
-	autoUpdateInterval, err := durationFromEnv("MULTICA_DAEMON_AUTO_UPDATE_INTERVAL", DefaultAutoUpdateCheckInterval)
+	autoUpdateInterval, err := durationFromEnv("DIDIAN_DAEMON_AUTO_UPDATE_INTERVAL", DefaultAutoUpdateCheckInterval)
 	if err != nil {
 		return Config{}, err
 	}
@@ -538,14 +538,14 @@ func LoadConfig(overrides Overrides) (Config, error) {
 	}, nil
 }
 
-// officialCloudHost is the hostname of Multica's hosted cloud. It's the only
+// officialCloudHost is the hostname of Didian's hosted cloud. It's the only
 // origin we treat as "official" for the auto-update default — staging,
-// preview, and any future *.multica.ai subdomains are deliberately excluded
+// preview, and any future *.didian.ai subdomains are deliberately excluded
 // so they inherit the safer self-host default until explicitly opted in.
-const officialCloudHost = "api.multica.ai"
+const officialCloudHost = "api.didian.ai"
 
 // isOfficialCloudServer reports whether the resolved server base URL points
-// at Multica's hosted cloud. Used to pick the auto-update default: cloud
+// at Didian's hosted cloud. Used to pick the auto-update default: cloud
 // users run a server that publishes the matching CLI release, so opt-in
 // self-update is safe; self-host users may run a fork or pin to an older
 // server, so the default flips to off. Matching is host-only and
@@ -562,7 +562,7 @@ func isOfficialCloudServer(baseURL string) bool {
 func NormalizeServerBaseURL(raw string) (string, error) {
 	u, err := url.Parse(strings.TrimSpace(raw))
 	if err != nil {
-		return "", fmt.Errorf("invalid MULTICA_SERVER_URL: %w", err)
+		return "", fmt.Errorf("invalid DIDIAN_SERVER_URL: %w", err)
 	}
 	switch u.Scheme {
 	case "ws":
@@ -571,7 +571,7 @@ func NormalizeServerBaseURL(raw string) (string, error) {
 		u.Scheme = "https"
 	case "http", "https":
 	default:
-		return "", fmt.Errorf("MULTICA_SERVER_URL must use ws, wss, http, or https")
+		return "", fmt.Errorf("DIDIAN_SERVER_URL must use ws, wss, http, or https")
 	}
 	if u.Path == "/ws" {
 		u.Path = ""
@@ -584,24 +584,24 @@ func NormalizeServerBaseURL(raw string) (string, error) {
 
 // ResolveWorkspacesRoot returns the absolute path that the daemon and CLI
 // should treat as the workspaces root. Resolution order: explicit override >
-// MULTICA_WORKSPACES_ROOT env > default ($HOME/multica_workspaces, or
-// $HOME/multica_workspaces_<profile> for a named profile). Read-only callers
-// (e.g. `multica daemon disk-usage`) use this directly so they pick the same
+// DIDIAN_WORKSPACES_ROOT env > default ($HOME/didian_workspaces, or
+// $HOME/didian_workspaces_<profile> for a named profile). Read-only callers
+// (e.g. `didian daemon disk-usage`) use this directly so they pick the same
 // directory the running daemon would have picked.
 func ResolveWorkspacesRoot(profile, override string) (string, error) {
-	root := strings.TrimSpace(os.Getenv("MULTICA_WORKSPACES_ROOT"))
+	root := strings.TrimSpace(os.Getenv("DIDIAN_WORKSPACES_ROOT"))
 	if override != "" {
 		root = override
 	}
 	if root == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
-			return "", fmt.Errorf("resolve home directory: %w (set MULTICA_WORKSPACES_ROOT to override)", err)
+			return "", fmt.Errorf("resolve home directory: %w (set DIDIAN_WORKSPACES_ROOT to override)", err)
 		}
 		if profile != "" {
-			root = filepath.Join(home, "multica_workspaces_"+profile)
+			root = filepath.Join(home, "didian_workspaces_"+profile)
 		} else {
-			root = filepath.Join(home, "multica_workspaces")
+			root = filepath.Join(home, "didian_workspaces")
 		}
 	}
 	abs, err := filepath.Abs(root)
@@ -616,7 +616,7 @@ func ResolveWorkspacesRoot(profile, override string) (string, error) {
 // disk-usage CLI uses this to make sure the "artifact size" it reports
 // matches what the GC would actually reclaim.
 func ArtifactPatternsFromEnv() []string {
-	return patternsFromEnv("MULTICA_GC_ARTIFACT_PATTERNS", DefaultGCArtifactPatterns)
+	return patternsFromEnv("DIDIAN_GC_ARTIFACT_PATTERNS", DefaultGCArtifactPatterns)
 }
 
 // patternsFromEnv reads a comma-separated list from env. Patterns containing
@@ -657,7 +657,7 @@ func shellArgsFromEnv(name string) ([]string, error) {
 // resolveAgentExecutablePath returns the concrete executable path the daemon
 // should keep for an agent command. Bare command names are pinned to the path
 // resolved during startup so later PATH changes cannot redirect task launches.
-// When ~/.multica/hooks shadows a real agent binary, skip that hooks directory:
+// When ~/.didian/hooks shadows a real agent binary, skip that hooks directory:
 // previously generated hook wrappers can execute the same command name and
 // recurse forever if the daemon records or launches the wrapper.
 func resolveAgentExecutablePath(cmd string) (string, error) {
@@ -668,20 +668,20 @@ func resolveAgentExecutablePath(cmd string) (string, error) {
 	if strings.ContainsAny(cmd, "/\\") {
 		return resolved, nil
 	}
-	if isInMulticaHooksDir(resolved) {
-		if unshadowed, err := lookPathExcludingMulticaHooks(cmd); err == nil {
+	if isInDidianHooksDir(resolved) {
+		if unshadowed, err := lookPathExcludingDidianHooks(cmd); err == nil {
 			return unshadowed, nil
 		}
 	}
 	return canonicalExecutablePath(resolved), nil
 }
 
-func lookPathExcludingMulticaHooks(cmd string) (string, error) {
+func lookPathExcludingDidianHooks(cmd string) (string, error) {
 	for _, dir := range filepath.SplitList(os.Getenv("PATH")) {
 		if dir == "" {
 			dir = "."
 		}
-		if isMulticaHooksDir(dir) {
+		if isDidianHooksDir(dir) {
 			continue
 		}
 		candidate := filepath.Join(dir, cmd)
@@ -692,19 +692,19 @@ func lookPathExcludingMulticaHooks(cmd string) (string, error) {
 	return "", exec.ErrNotFound
 }
 
-func isInMulticaHooksDir(path string) bool {
+func isInDidianHooksDir(path string) bool {
 	if path == "" {
 		return false
 	}
-	return isMulticaHooksDir(filepath.Dir(path))
+	return isDidianHooksDir(filepath.Dir(path))
 }
 
-func isMulticaHooksDir(dir string) bool {
+func isDidianHooksDir(dir string) bool {
 	home, err := os.UserHomeDir()
 	if err != nil || home == "" {
 		return false
 	}
-	return samePathDir(dir, filepath.Join(home, ".multica", "hooks"))
+	return samePathDir(dir, filepath.Join(home, ".didian", "hooks"))
 }
 
 func samePathDir(a, b string) bool {
@@ -747,7 +747,7 @@ func isExecutableFile(path string) bool {
 }
 
 // defaultAgentCommandNames lists the command names the agent probe loop tries
-// before any MULTICA_*_PATH override is applied. Kept in sync with the
+// before any DIDIAN_*_PATH override is applied. Kept in sync with the
 // `probe(...)` calls in LoadConfig — the shell-fallback resolver uses this
 // list to pre-fetch canonical paths for every known agent in a single shell
 // invocation, instead of paying the cost-per-miss.
@@ -827,7 +827,7 @@ var supportedLoginShells = map[string]struct{}{
 //     path) and per-shell paths the shell happened not to fully canonicalise.
 //   - Agent names are restricted to the bare set in defaultAgentCommandNames
 //     (`[A-Za-z0-9._-]` only); we inline them into the script unquoted to
-//     keep the script readable. Custom MULTICA_*_PATH values never reach this
+//     keep the script readable. Custom DIDIAN_*_PATH values never reach this
 //     resolver — those go through exec.LookPath directly.
 func resolveAgentsViaLoginShell(names []string) map[string]string {
 	out := map[string]string{}
@@ -898,7 +898,7 @@ func resolveAgentsViaLoginShell(names []string) map[string]string {
 //     than hand back garbage),
 //  5. canonicalises the directory via `cd ... && pwd -P` so symlinked prefix
 //     dirs (fnm/nvm/volta) collapse to stable paths,
-//  6. if the resolved path lives in ~/.multica/hooks, searches the same
+//  6. if the resolved path lives in ~/.didian/hooks, searches the same
 //     shell-expanded PATH for the first executable outside that hooks dir,
 //  7. prints `<name>\t<canonical_path>` one entry per line for the caller.
 //
@@ -930,7 +930,7 @@ func buildLoginShellResolveScript(names []string) string {
 	b.WriteString("  case \"$p\" in /*) ;; *) continue ;; esac\n")
 	b.WriteString("  d=$(dirname \"$p\") && f=$(basename \"$p\") && c=$(cd \"$d\" 2>/dev/null && pwd -P) || continue\n")
 	b.WriteString("  hc=\"\"\n")
-	b.WriteString("  if [ -n \"${HOME:-}\" ]; then hd=\"$HOME/.multica/hooks\"; hc=$(cd \"$hd\" 2>/dev/null && pwd -P) || hc=\"\"; fi\n")
+	b.WriteString("  if [ -n \"${HOME:-}\" ]; then hd=\"$HOME/.didian/hooks\"; hc=$(cd \"$hd\" 2>/dev/null && pwd -P) || hc=\"\"; fi\n")
 	b.WriteString("  if [ -n \"$hc\" ] && [ \"$c\" = \"$hc\" ]; then\n")
 	b.WriteString("    oldIFS=$IFS; IFS=:\n")
 	b.WriteString("    for d2 in $PATH; do\n")
@@ -987,7 +987,7 @@ func openclawOverrideFrom(cfg cli.CLIConfig) *cli.OpenClawOverride {
 //
 // Side-effecting on os.Setenv is intentional and scoped:
 //
-//   - The two vars touched (MULTICA_OPENCLAW_PATH, OPENCLAW_STATE_DIR) are
+//   - The two vars touched (DIDIAN_OPENCLAW_PATH, OPENCLAW_STATE_DIR) are
 //     OpenClaw-specific. Other backends do not read them; setting them in the
 //     daemon process has no observable effect on, e.g., Claude Code or Codex
 //     spawn behavior.
@@ -1000,8 +1000,8 @@ func applyOpenclawOverride(oc *cli.OpenClawOverride) {
 		return
 	}
 	if oc.BinaryPath != "" {
-		if _, set := os.LookupEnv("MULTICA_OPENCLAW_PATH"); !set {
-			_ = os.Setenv("MULTICA_OPENCLAW_PATH", oc.BinaryPath)
+		if _, set := os.LookupEnv("DIDIAN_OPENCLAW_PATH"); !set {
+			_ = os.Setenv("DIDIAN_OPENCLAW_PATH", oc.BinaryPath)
 		}
 	}
 	if oc.StateDir != "" {

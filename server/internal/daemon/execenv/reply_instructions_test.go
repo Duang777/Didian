@@ -12,7 +12,7 @@ import (
 // `--content-stdin` + HEREDOC mandate (#1795 / #1851 / MUL-2904) was kept
 // for years to defend against backtick / `$()` substitution in the body,
 // but the heredoc/flag boundary turned out to be fragile in its own right:
-// when a model wrapped extra flags around the heredoc on `multica issue
+// when a model wrapped extra flags around the heredoc on `didian issue
 // create`, the flags got swallowed into stdin and silently dropped (OXY-78,
 // OXY-76). The file path defeats both classes — the body never reaches the
 // shell, and all flags live on one shell-token line.
@@ -29,7 +29,7 @@ func TestBuildCommentReplyInstructionsCodexLinux(t *testing.T) {
 	got := BuildCommentReplyInstructions("codex", issueID, triggerID)
 
 	for _, want := range []string{
-		"multica issue comment add " + issueID + " --parent " + triggerID + " --content-file ./reply.md",
+		"didian issue comment add " + issueID + " --parent " + triggerID + " --content-file ./reply.md",
 		"Write the reply body to a UTF-8 file",
 		"`--content-file`",
 		"#4182",
@@ -85,7 +85,7 @@ func TestBuildCommentReplyInstructionsNonCodexLinux(t *testing.T) {
 				got := BuildCommentReplyInstructions(provider, issueID, triggerID)
 
 				for _, want := range []string{
-					"multica issue comment add " + issueID + " --parent " + triggerID + " --content-file ./reply.md",
+					"didian issue comment add " + issueID + " --parent " + triggerID + " --content-file ./reply.md",
 					"Write the reply body to a UTF-8 file",
 					"`--content-file`",
 					"#4182",
@@ -137,7 +137,7 @@ func TestBuildCommentReplyInstructionsWindowsUsesContentFile(t *testing.T) {
 		t.Run(provider+"/windows", func(t *testing.T) {
 			got := BuildCommentReplyInstructions(provider, issueID, triggerID)
 			for _, want := range []string{
-				"multica issue comment add " + issueID + " --parent " + triggerID + " --content-file",
+				"didian issue comment add " + issueID + " --parent " + triggerID + " --content-file",
 				"On Windows, write the reply body to a UTF-8 file",
 				"Do NOT pipe via `--content-stdin`",
 				"silently drops non-ASCII",
@@ -199,7 +199,7 @@ func TestInjectRuntimeConfigCommentTriggerUsesHelper(t *testing.T) {
 	s := string(content)
 	for _, want := range []string{
 		triggerID,
-		"multica issue comment add " + issueID + " --parent " + triggerID,
+		"didian issue comment add " + issueID + " --parent " + triggerID,
 		"do NOT reuse --parent values from previous turns",
 	} {
 		if !strings.Contains(s, want) {
@@ -244,7 +244,7 @@ func TestInjectRuntimeConfigWindowsCommentTriggerHasNoStdin(t *testing.T) {
 			s := string(data)
 
 			for _, want := range []string{
-				"multica issue comment add " + issueID + " --parent " + triggerID + " --content-file",
+				"didian issue comment add " + issueID + " --parent " + triggerID + " --content-file",
 				"--content-file",
 				"On Windows, write the reply body to a UTF-8 file",
 			} {

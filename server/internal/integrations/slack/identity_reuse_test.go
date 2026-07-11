@@ -50,7 +50,7 @@ func (f *fakeIdentityQueries) CreateChannelUserBinding(_ context.Context, arg db
 }
 
 // TestResolveSenderReuse covers the identity resolver's decision to reuse an
-// existing account link across installations of the same Slack team + Multica
+// existing account link across installations of the same Slack team + Didian
 // workspace, instead of re-prompting the user for every new Slack app.
 func TestResolveSenderReuse(t *testing.T) {
 	const senderID = "U123"
@@ -73,7 +73,7 @@ func TestResolveSenderReuse(t *testing.T) {
 	msg.Source.SenderID = senderID
 
 	t.Run("direct binding resolves without a reuse lookup or write", func(t *testing.T) {
-		f := &fakeIdentityQueries{binding: db.ChannelUserBinding{MulticaUserID: userID}}
+		f := &fakeIdentityQueries{binding: db.ChannelUserBinding{DidianUserID: userID}}
 		got, err := (&identityResolver{q: f}).ResolveSender(context.Background(), inst("T1"), msg)
 		if err != nil {
 			t.Fatalf("ResolveSender err = %v", err)
@@ -89,7 +89,7 @@ func TestResolveSenderReuse(t *testing.T) {
 	t.Run("unlinked sender reuses a same-team link and materializes it", func(t *testing.T) {
 		f := &fakeIdentityQueries{
 			bindErr:  pgx.ErrNoRows,
-			reusable: db.ChannelUserBinding{MulticaUserID: userID, InstallationID: instA},
+			reusable: db.ChannelUserBinding{DidianUserID: userID, InstallationID: instA},
 		}
 		got, err := (&identityResolver{q: f}).ResolveSender(context.Background(), inst("T1"), msg)
 		if err != nil {
@@ -107,7 +107,7 @@ func TestResolveSenderReuse(t *testing.T) {
 		if f.createCalls != 1 {
 			t.Fatalf("reused link must be materialized on THIS installation, create ran %d", f.createCalls)
 		}
-		if f.createWith.InstallationID != instB || f.createWith.MulticaUserID != userID || f.createWith.ChannelUserID != senderID {
+		if f.createWith.InstallationID != instB || f.createWith.DidianUserID != userID || f.createWith.ChannelUserID != senderID {
 			t.Errorf("materialized binding args = %+v (want install=%v user=%v sender=%q)", f.createWith, instB, userID, senderID)
 		}
 	})
@@ -126,7 +126,7 @@ func TestResolveSenderReuse(t *testing.T) {
 	t.Run("reusable link whose user left the workspace prompts a fresh link", func(t *testing.T) {
 		f := &fakeIdentityQueries{
 			bindErr:   pgx.ErrNoRows,
-			reusable:  db.ChannelUserBinding{MulticaUserID: userID, InstallationID: instA},
+			reusable:  db.ChannelUserBinding{DidianUserID: userID, InstallationID: instA},
 			memberErr: pgx.ErrNoRows,
 		}
 		_, err := (&identityResolver{q: f}).ResolveSender(context.Background(), inst("T1"), msg)
@@ -150,7 +150,7 @@ func TestResolveSenderReuse(t *testing.T) {
 	})
 
 	t.Run("directly-bound non-member surfaces not-member", func(t *testing.T) {
-		f := &fakeIdentityQueries{binding: db.ChannelUserBinding{MulticaUserID: userID}, memberErr: pgx.ErrNoRows}
+		f := &fakeIdentityQueries{binding: db.ChannelUserBinding{DidianUserID: userID}, memberErr: pgx.ErrNoRows}
 		_, err := (&identityResolver{q: f}).ResolveSender(context.Background(), inst("T1"), msg)
 		if !errors.Is(err, engine.ErrSenderNotMember) {
 			t.Fatalf("err = %v, want ErrSenderNotMember", err)

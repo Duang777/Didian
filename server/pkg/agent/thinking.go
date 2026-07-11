@@ -642,7 +642,7 @@ func anyModelSupportsThinkingValue(models []Model, value string) bool {
 // providerThinkingEnums is the server-side accept-list for runtimes with a
 // fixed reasoning-effort vocabulary. Codex and OpenCode are deliberately
 // absent because their values come from daemon-local model catalogs, which can
-// gain new tokens without a Multica release.
+// gain new tokens without a Didian release.
 //
 // The server doesn't have local CLI binaries, so it cannot do per-model
 // discovery the way the daemon can. Fixed-catalog providers use this enum;

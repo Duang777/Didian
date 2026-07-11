@@ -169,7 +169,7 @@ func TestUserBindingConfigRoundTrip(t *testing.T) {
 	in := UserBinding{
 		ID:             uuidFrom(0x55),
 		WorkspaceID:    uuidFrom(0x22),
-		MulticaUserID:  uuidFrom(0x66),
+		DidianUserID:   uuidFrom(0x66),
 		InstallationID: uuidFrom(0x11),
 		ChannelUserID:  "ou_sender",
 		UnionID:        pgtype.Text{String: "on_union_777", Valid: true},
@@ -181,7 +181,7 @@ func TestUserBindingConfigRoundTrip(t *testing.T) {
 	got, err := userBindingFromRow(db.ChannelUserBinding{
 		ID:             in.ID,
 		WorkspaceID:    in.WorkspaceID,
-		MulticaUserID:  in.MulticaUserID,
+		DidianUserID:   in.DidianUserID,
 		InstallationID: in.InstallationID,
 		ChannelUserID:  in.ChannelUserID,
 		Config:         cfg,
@@ -189,7 +189,7 @@ func TestUserBindingConfigRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("userBindingFromRow: %v", err)
 	}
-	if got.UnionID != in.UnionID || got.ChannelUserID != in.ChannelUserID || got.MulticaUserID != in.MulticaUserID {
+	if got.UnionID != in.UnionID || got.ChannelUserID != in.ChannelUserID || got.DidianUserID != in.DidianUserID {
 		t.Fatalf("user binding round-trip mismatch: %+v", got)
 	}
 }

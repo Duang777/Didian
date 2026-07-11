@@ -141,7 +141,7 @@ export const useAutopilotsViewStore = create<AutopilotsViewState>()(
       clearFilters: () => set({ filters: EMPTY_AUTOPILOT_FILTERS }),
     }),
     {
-      name: "multica_autopilots_view",
+      name: "didian_autopilots_view",
       storage: createJSONStorage(() =>
         createWorkspaceAwareStorage(defaultStorage),
       ),

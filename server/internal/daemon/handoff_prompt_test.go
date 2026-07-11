@@ -22,8 +22,8 @@ func TestBuildPrompt_HandoffNote_AssignmentBranch(t *testing.T) {
 	if strings.Contains(out, "quick-create assistant") {
 		t.Fatalf("handoff task must not use the quick-create prompt branch:\n%s", out)
 	}
-	// Still an assignment task: should point the agent at `multica issue get`.
-	if !strings.Contains(out, "multica issue get issue-123") {
+	// Still an assignment task: should point the agent at `didian issue get`.
+	if !strings.Contains(out, "didian issue get issue-123") {
 		t.Fatalf("expected assignment prompt body:\n%s", out)
 	}
 }

@@ -18,7 +18,7 @@ const builtinSkillsRoot = "builtin_skills"
 // runtime brief intentionally leaves to skills.
 //
 // Layout: builtin_skills/<name>/SKILL.md plus optional supporting files. The
-// <name> directory carries a "multica-" prefix so its on-disk slug can never
+// <name> directory carries a "didian-" prefix so its on-disk slug can never
 // collide with a workspace skill a user authored (see writeSkillFiles, which
 // derives the skill directory from AgentSkillData.Name).
 func (s *TaskService) BuiltinSkills() []AgentSkillData {

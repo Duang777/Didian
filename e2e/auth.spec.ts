@@ -4,9 +4,9 @@ import { createTestApi, loginAsDefault, openWorkspaceMenu, waitForPageText } fro
 test.describe("Authentication", () => {
   test("login page renders correctly", async ({ page }) => {
     await page.goto("/login", { waitUntil: "domcontentloaded" });
-    await waitForPageText(page, "Sign in to Multica");
+    await waitForPageText(page, "Sign in to Didian");
 
-    await expect(page.getByText("Sign in to Multica")).toBeVisible();
+    await expect(page.getByText("Sign in to Didian")).toBeVisible();
     await expect(page.getByRole("textbox", { name: "Email" })).toBeVisible();
     await expect(page.getByPlaceholder("you@example.com")).toBeVisible();
     await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
@@ -28,7 +28,7 @@ test.describe("Authentication", () => {
 
     await page.goto(`/${workspace.slug}/issues`, { waitUntil: "domcontentloaded" });
     await page.waitForURL("**/login", { timeout: 10000, waitUntil: "domcontentloaded" });
-    await waitForPageText(page, "Sign in to Multica");
+    await waitForPageText(page, "Sign in to Didian");
   });
 
   test("logout redirects to /login", async ({ page }) => {
@@ -40,7 +40,7 @@ test.describe("Authentication", () => {
     await page.getByRole("menuitem", { name: "Log out" }).click();
 
     await page.waitForURL("**/login", { timeout: 10000, waitUntil: "domcontentloaded" });
-    await waitForPageText(page, "Sign in to Multica");
+    await waitForPageText(page, "Sign in to Didian");
     await expect(page).toHaveURL(/\/login/);
   });
 });

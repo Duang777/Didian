@@ -63,7 +63,7 @@ type Installation struct {
 type UserBinding struct {
 	ID             pgtype.UUID
 	WorkspaceID    pgtype.UUID
-	MulticaUserID  pgtype.UUID
+	DidianUserID   pgtype.UUID
 	InstallationID pgtype.UUID
 	ChannelUserID  string
 	UnionID        pgtype.Text
@@ -199,7 +199,7 @@ func userBindingFromRow(row db.ChannelUserBinding) (UserBinding, error) {
 	return UserBinding{
 		ID:             row.ID,
 		WorkspaceID:    row.WorkspaceID,
-		MulticaUserID:  row.MulticaUserID,
+		DidianUserID:   row.DidianUserID,
 		InstallationID: row.InstallationID,
 		ChannelUserID:  row.ChannelUserID,
 		UnionID:        textOrNull(cfg.UnionID),

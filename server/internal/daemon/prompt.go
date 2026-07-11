@@ -28,7 +28,7 @@ func BuildPrompt(task Task, provider string) string {
 		return buildQuickCreatePrompt(task)
 	}
 	var b strings.Builder
-	b.WriteString("You are running as a local coding agent for a Multica workspace.\n\n")
+	b.WriteString("You are running as a local coding agent for a Didian workspace.\n\n")
 	fmt.Fprintf(&b, "Your assigned issue ID is: %s\n\n", task.IssueID)
 	// Assignment handoff (MUL-3375): a free-text instruction the person who
 	// assigned/promoted this issue left for you. Frame it as a handoff, not a
@@ -37,22 +37,22 @@ func BuildPrompt(task Task, provider string) string {
 		b.WriteString("You were handed this issue with a handoff note. Treat it as the assigner's scoping instruction for this run; follow it before doing anything broader, and do not reply to it as if it were a comment:\n\n")
 		fmt.Fprintf(&b, "> %s\n\n", task.HandoffNote)
 	}
-	fmt.Fprintf(&b, "Start by running `multica issue get %s --output json` to understand your task, then complete it.\n", task.IssueID)
-	fmt.Fprintf(&b, "For comment history, follow the rule in your runtime workflow file (assignment-triggered tasks treat the read as mandatory). Start with `multica issue comment list %s --recent 10 --output json` to read the 10 most recently active threads, then page older threads via the stderr `Next thread cursor: ...` line and the matching `--before` / `--before-id` until you have enough history. Resolved threads come back folded — `--full` to expand. `--since <RFC3339>` is still available for incremental polling and may combine with `--recent`.\n", task.IssueID)
+	fmt.Fprintf(&b, "Start by running `didian issue get %s --output json` to understand your task, then complete it.\n", task.IssueID)
+	fmt.Fprintf(&b, "For comment history, follow the rule in your runtime workflow file (assignment-triggered tasks treat the read as mandatory). Start with `didian issue comment list %s --recent 10 --output json` to read the 10 most recently active threads, then page older threads via the stderr `Next thread cursor: ...` line and the matching `--before` / `--before-id` until you have enough history. Resolved threads come back folded — `--full` to expand. `--since <RFC3339>` is still available for incremental polling and may combine with `--recent`.\n", task.IssueID)
 	return b.String()
 }
 
 // buildQuickCreatePrompt constructs a prompt for quick-create tasks. The
 // user typed a single natural-language sentence in the create-issue modal;
-// the agent's job is to translate it into one `multica issue create` CLI
+// the agent's job is to translate it into one `didian issue create` CLI
 // invocation, using its judgment to decide whether fetching referenced URLs
 // would produce a better issue. No issue exists yet, so the agent must NOT
-// call `multica issue get` or attempt to comment — there's nothing to read
+// call `didian issue get` or attempt to comment — there's nothing to read
 // or reply to.
 func buildQuickCreatePrompt(task Task) string {
 	var b strings.Builder
-	b.WriteString("You are running as a quick-create assistant for a Multica workspace.\n\n")
-	b.WriteString("A user captured the following input via the quick-create modal. There is NO existing issue. Your job is to create a well-formed issue from this input with a single `multica issue create` command.\n\n")
+	b.WriteString("You are running as a quick-create assistant for a Didian workspace.\n\n")
+	b.WriteString("A user captured the following input via the quick-create modal. There is NO existing issue. Your job is to create a well-formed issue from this input with a single `didian issue create` command.\n\n")
 	fmt.Fprintf(&b, "User input:\n> %s\n\n", task.QuickCreatePrompt)
 
 	b.WriteString("Field rules:\n\n")
@@ -63,7 +63,7 @@ func buildQuickCreatePrompt(task Task) string {
 	// description — the core optimization
 	b.WriteString("- **description**: The description is the executing agent's primary context. Aim for high fidelity — they should grasp the user's intent as if they had read the raw input themselves. Use a two-section structure:\n\n")
 	b.WriteString("  1. **User request** — Faithfully restate what the user wants in their own words. Preserve specific names, identifiers, file paths, code snippets, and technical terms verbatim. Strip non-spec material before writing it (this is removal, not paraphrasing): verbal routing wrappers about creating the issue or routing it (e.g. \"create an issue\", \"分配给 X\", \"让 @X 处理\") and pure conversational fillers (e.g. \"对吧？\"). When in doubt, keep it.\n\n")
-	b.WriteString("     CC exception: `multica issue create` has no `--subscriber` flag, and the platform auto-subscribes members whose `[@Name](mention://member/<uuid>)` link appears in the description. When the user wrote \"cc @Y\", strip the verbal \"cc\" wrapper from the User request body and append a final `CC: <mention link(s)>` line to the description so the cc routing still fires.\n\n")
+	b.WriteString("     CC exception: `didian issue create` has no `--subscriber` flag, and the platform auto-subscribes members whose `[@Name](mention://member/<uuid>)` link appears in the description. When the user wrote \"cc @Y\", strip the verbal \"cc\" wrapper from the User request body and append a final `CC: <mention link(s)>` line to the description so the cc routing still fires.\n\n")
 	b.WriteString("  2. **Context** — include ONLY when the input cited external resources AND you successfully fetched them AND they produced verifiable facts worth recording. Summarize facts only (e.g. \"PR #45 changes auth to JWT\"), not interpretation or unsolicited reference implementations. If you have nothing factual to add, omit the section entirely — never use it as an apology log for resources you could not fetch.\n\n")
 	b.WriteString("  Hard rules: never invent requirements, implementation details, or acceptance criteria the user did not express; never reduce multi-sentence input to a single vague sentence; never echo the title.\n\n")
 	b.WriteString("  Passing the description: a short, single-line body with no code, quotes, backticks, `$()`, or other special characters may go inline via `--description \"...\"`. Anything multi-line, or containing code snippets / file paths / quotes / backticks / `$()` / special characters, or otherwise long — which quick-create descriptions usually are — MUST be written to `./description.md` and passed with `--description-file ./description.md`; passing rich text inline lets the shell rewrite or truncate it (MUL-2904). That file MUST live inside your current working directory (e.g. `./description.md`) — never `/tmp` or any machine-shared path, where a different run may have left a stale file that would silently become this issue's description. If the file write fails for any reason, stop and fix it; never run `--description-file` against a file whose write did not succeed.\n\n")
@@ -73,7 +73,7 @@ func buildQuickCreatePrompt(task Task) string {
 
 	// assignee
 	b.WriteString("- **assignee**:\n")
-	b.WriteString("    - When the user names someone (\"assign to X\" / \"@X\"), call `multica workspace member list --output json`, `multica agent list --output json`, and `multica squad list --output json` and find the matching entity by display name. Squads are first-class assignees too — a squad name (e.g. \"Super Human\") routes work to the squad leader, who then delegates. On a clean unambiguous match, prefer `--assignee-id <uuid>` using the `user_id` (member) or `id` (agent or squad) from that JSON — UUID matching is exact and robust to name collisions in workspaces with overlapping names. `--assignee <name>` (fuzzy) is acceptable as a fallback when names are unambiguous. On no match or ambiguous match, do NOT pass either flag — instead append a final line to the description: `Unrecognized assignee: X`.\n")
+	b.WriteString("    - When the user names someone (\"assign to X\" / \"@X\"), call `didian workspace member list --output json`, `didian agent list --output json`, and `didian squad list --output json` and find the matching entity by display name. Squads are first-class assignees too — a squad name (e.g. \"Super Human\") routes work to the squad leader, who then delegates. On a clean unambiguous match, prefer `--assignee-id <uuid>` using the `user_id` (member) or `id` (agent or squad) from that JSON — UUID matching is exact and robust to name collisions in workspaces with overlapping names. `--assignee <name>` (fuzzy) is acceptable as a fallback when names are unambiguous. On no match or ambiguous match, do NOT pass either flag — instead append a final line to the description: `Unrecognized assignee: X`.\n")
 	b.WriteString("    - Treat bare @-routing as an assignee directive even when the user did not write the English word \"assign\". This includes Chinese imperatives like `让 @独立团 review 这个 PR`, `给 @X 处理`, or `交给 @X`; strip the leading `@`/`＠` before matching display names. Do not keep that routing wrapper or `@Name` in the description unless it is a true CC-style notification rather than ownership. If the matched entity is a squad, pass the squad's `id` as `--assignee-id`, not the leader agent's id.\n")
 	agentID := ""
 	agentName := ""
@@ -130,10 +130,10 @@ func buildQuickCreatePrompt(task Task) string {
 
 	// output format
 	b.WriteString("Output format:\n")
-	b.WriteString("- Run exactly one `multica issue create --output json` invocation. Do not retry for any reason — even on non-zero exit. The issue may already exist; another attempt would create a duplicate.\n")
+	b.WriteString("- Run exactly one `didian issue create --output json` invocation. Do not retry for any reason — even on non-zero exit. The issue may already exist; another attempt would create a duplicate.\n")
 	b.WriteString("- Parse the JSON response to read the created issue's `identifier` (preferred) or `id` (fallback). Do not scrape human output and do not assume any workspace issue prefix such as `MUL-`; workspaces can use custom prefixes.\n")
 	b.WriteString("- After success, print exactly one line: `Created <identifier-or-id>: <title>` and exit. No commentary, no follow-up tool calls.\n")
-	b.WriteString("- Do NOT call `multica issue get` or `multica issue comment add` — there is no issue to query or comment on.\n")
+	b.WriteString("- Do NOT call `didian issue get` or `didian issue comment add` — there is no issue to query or comment on.\n")
 	b.WriteString("- On CLI error or JSON parse error, exit with the error as the only output. The platform writes a failure notification automatically.\n")
 	return b.String()
 }
@@ -146,7 +146,7 @@ func buildQuickCreatePrompt(task Task) string {
 // previous turn's --parent UUID.
 func buildCommentPrompt(task Task, provider string) string {
 	var b strings.Builder
-	b.WriteString("You are running as a local coding agent for a Multica workspace.\n\n")
+	b.WriteString("You are running as a local coding agent for a Didian workspace.\n\n")
 	fmt.Fprintf(&b, "Your assigned issue ID is: %s\n\n", task.IssueID)
 	if task.TriggerCommentContent != "" {
 		authorLabel := "A user"
@@ -192,19 +192,19 @@ func buildCommentPrompt(task Task, provider string) string {
 				b.WriteString(":\n")
 				fmt.Fprintf(&b, "  > %s\n", strings.ReplaceAll(strings.TrimSpace(cc.Content), "\n", "\n  > "))
 			}
-			fmt.Fprintf(&b, "\nIf you need the surrounding discussion for any of them, fetch its thread with `multica issue comment list %s --thread <thread-id> --tail 30 --output json` using the thread id shown above.\n\n", task.IssueID)
+			fmt.Fprintf(&b, "\nIf you need the surrounding discussion for any of them, fetch its thread with `didian issue comment list %s --thread <thread-id> --tail 30 --output json` using the thread id shown above.\n\n", task.IssueID)
 		} else if len(task.CoalescedCommentIDs) > 0 {
-			fmt.Fprintf(&b, "This run also covers %d earlier comment(s) posted before it started — you must read and address them too, not just the one above: %s. These may be in DIFFERENT threads, so do not assume they share the triggering thread; fetch each by pulling the issue-wide discussion with `multica issue comment list %s --recent 30 --output json` (expand with `--full` if a thread is folded) and locate the ids above.\n\n",
+			fmt.Fprintf(&b, "This run also covers %d earlier comment(s) posted before it started — you must read and address them too, not just the one above: %s. These may be in DIFFERENT threads, so do not assume they share the triggering thread; fetch each by pulling the issue-wide discussion with `didian issue comment list %s --recent 30 --output json` (expand with `--full` if a thread is folded) and locate the ids above.\n\n",
 				len(task.CoalescedCommentIDs), strings.Join(task.CoalescedCommentIDs, ", "), task.IssueID)
 		}
 		if task.TriggerAuthorType == "agent" {
 			b.WriteString("⚠️ The triggering comment was posted by another agent. Decide whether a reply is warranted. If you produced actual work this turn (investigated, fixed something, answered a real question), post the result as a normal reply — that is NOT a noise comment, and the standard rule that final results must be delivered via comment still applies. If the triggering comment was a pure acknowledgment, thanks, or sign-off AND you produced no work this turn, do NOT reply — and do NOT post a comment saying 'No reply needed' or similar. Simply exit with no output. Silence is the preferred way to end agent-to-agent threads. If you do reply, do not @mention the other agent as a sign-off (that re-triggers them and starts a loop).\n\n")
 		}
 		if task.Agent != nil && strings.Contains(task.Agent.Instructions, "## Squad Operating Protocol") {
-			fmt.Fprintf(&b, "⚠️ **Squad leader no_action rule:** If you decide no action is needed, call `multica squad activity %s no_action --reason \"...\"` and EXIT. DO NOT post any comment — not even one that says \"no action needed\" or \"exiting silently\". The squad activity call records your decision; a comment is redundant noise.\n\n", task.IssueID)
+			fmt.Fprintf(&b, "⚠️ **Squad leader no_action rule:** If you decide no action is needed, call `didian squad activity %s no_action --reason \"...\"` and EXIT. DO NOT post any comment — not even one that says \"no action needed\" or \"exiting silently\". The squad activity call records your decision; a comment is redundant noise.\n\n", task.IssueID)
 		}
 	}
-	fmt.Fprintf(&b, "Start by running `multica issue get %s --output json` to understand your task, then decide how to proceed.\n\n", task.IssueID)
+	fmt.Fprintf(&b, "Start by running `didian issue get %s --output json` to understand your task, then decide how to proceed.\n\n", task.IssueID)
 	// Comment-reading pointer. Warm path with new comments: issue-wide
 	// since-delta count, but steer the agent to read the triggering thread
 	// first. Warm resumed path with no new comments: the trigger is already
@@ -218,7 +218,7 @@ func buildCommentPrompt(task Task, provider string) string {
 	} else if cold := execenv.BuildColdCommentsHint(task.IssueID, task.TriggerCommentID, task.TriggerThreadID); cold != "" {
 		b.WriteString(cold)
 	} else {
-		fmt.Fprintf(&b, "Read the discussion: `multica issue comment list %s --recent 10 --output json` (resolved threads come back folded — `--full` to expand).\n\n", task.IssueID)
+		fmt.Fprintf(&b, "Read the discussion: `didian issue comment list %s --recent 10 --output json` (resolved threads come back folded — `--full` to expand).\n\n", task.IssueID)
 	}
 	// Reply routing. When this run coalesced comments spanning MORE THAN ONE
 	// root thread, answer each thread in its own thread instead of dumping one
@@ -302,30 +302,30 @@ func buildChatPrompt(task Task) string {
 	// the creator prompting the agent (MUL-4230).
 	if task.ChatIntro {
 		var b strings.Builder
-		b.WriteString("You are running as a chat assistant for a Multica workspace.\n")
+		b.WriteString("You are running as a chat assistant for a Didian workspace.\n")
 		b.WriteString("You were just created, and this is the very first message in a direct chat with the person who created you. They have not written anything yet — you are opening the conversation. Send a short, warm, first-person introduction: who you are, what you're good at, and how they can work with you. Do NOT phrase it as an answer to a question or repeat any prompt back; just introduce yourself as if you reached out first.\n")
 		return b.String()
 	}
 
 	var b strings.Builder
-	b.WriteString("You are running as a chat assistant for a Multica workspace.\n")
+	b.WriteString("You are running as a chat assistant for a Didian workspace.\n")
 	b.WriteString("A user is chatting with you directly. Respond to their message.\n\n")
 	// Channel awareness (MUL-3871). When the session is backed by an IM channel,
 	// the agent must KNOW it is operating inside that channel — otherwise an ask
-	// like "what did you just talk about" sends it to read Multica instead of the
+	// like "what did you just talk about" sends it to read Didian instead of the
 	// Slack conversation. State it explicitly, point reads at the channel (not
-	// Multica), and teach the two read commands, telling the agent which to start
+	// Didian), and teach the two read commands, telling the agent which to start
 	// with based on where it was @mentioned. A web-only chat session gets no such
-	// block — its history is the Multica chat_session the agent already resumes.
+	// block — its history is the Didian chat_session the agent already resumes.
 	if task.ChatChannelType != "" {
 		platform := channelDisplayName(task.ChatChannelType)
-		fmt.Fprintf(&b, "You are operating inside a %s conversation — not the Multica web app. This conversation and its history live in %s, NOT in Multica; never look in Multica issues or comments for it. The message below may be only what triggered you. Read the conversation with:\n", platform, platform)
-		b.WriteString("- `multica chat history --output json` — the channel overview: recent top-level messages, each thread tagged with a `thread_id` and `reply_count`. It does NOT expand thread contents.\n")
-		b.WriteString("- `multica chat thread [<thread_id>] --output json` — read one thread's messages; omit the id to read the thread you are in, or pass a `thread_id` from the overview to read a specific thread.\n")
+		fmt.Fprintf(&b, "You are operating inside a %s conversation — not the Didian web app. This conversation and its history live in %s, NOT in Didian; never look in Didian issues or comments for it. The message below may be only what triggered you. Read the conversation with:\n", platform, platform)
+		b.WriteString("- `didian chat history --output json` — the channel overview: recent top-level messages, each thread tagged with a `thread_id` and `reply_count`. It does NOT expand thread contents.\n")
+		b.WriteString("- `didian chat thread [<thread_id>] --output json` — read one thread's messages; omit the id to read the thread you are in, or pass a `thread_id` from the overview to read a specific thread.\n")
 		if task.ChatInThread {
-			b.WriteString("You were @mentioned inside a thread: start with `multica chat thread` to read it; if you need the wider channel, run `multica chat history` and open a specific thread with `multica chat thread <thread_id>`.\n")
+			b.WriteString("You were @mentioned inside a thread: start with `didian chat thread` to read it; if you need the wider channel, run `didian chat history` and open a specific thread with `didian chat thread <thread_id>`.\n")
 		} else {
-			b.WriteString("You were @mentioned at the channel top level: start with `multica chat history` to see the channel, then read a specific thread's contents with `multica chat thread <thread_id>`.\n")
+			b.WriteString("You were @mentioned at the channel top level: start with `didian chat history` to see the channel, then read a specific thread's contents with `didian chat thread <thread_id>`.\n")
 		}
 		// These reads are the agent's private context-gathering; narrating them
 		// into a chat reply reads as noise (the user reported every reply being
@@ -368,7 +368,7 @@ func buildChatPrompt(task Task) string {
 	// the CLI. We deliberately do NOT inline the URL: chat attachments
 	// live behind a signed CDN with a short TTL, so by the time the agent
 	// has finished thinking the URL embedded in the markdown body may
-	// have expired. `multica attachment download <id>` re-signs at click
+	// have expired. `didian attachment download <id>` re-signs at click
 	// time and is the only reliable path.
 	if len(task.ChatMessageAttachments) > 0 {
 		b.WriteString("\nAttachments on this message:\n")
@@ -379,8 +379,8 @@ func buildChatPrompt(task Task) string {
 				fmt.Fprintf(&b, "- id=%s filename=%q\n", a.ID, a.Filename)
 			}
 		}
-		b.WriteString("Use `multica attachment download <id>` to fetch each file locally before referring to it.\n")
-		b.WriteString("When creating an issue that should preserve one of these attachments, pass `--attachment-id <id>` to `multica issue create` in addition to keeping the attachment markdown inline.\n")
+		b.WriteString("Use `didian attachment download <id>` to fetch each file locally before referring to it.\n")
+		b.WriteString("When creating an issue that should preserve one of these attachments, pass `--attachment-id <id>` to `didian issue create` in addition to keeping the attachment markdown inline.\n")
 	}
 	return b.String()
 }
@@ -398,8 +398,8 @@ func channelDisplayName(channelType string) string {
 // buildAutopilotPrompt constructs a prompt for run_only autopilot tasks.
 func buildAutopilotPrompt(task Task) string {
 	var b strings.Builder
-	b.WriteString("You are running as a local coding agent for a Multica workspace.\n\n")
-	b.WriteString("This task was triggered by an Autopilot in run-only mode. There is no assigned Multica issue for this run.\n\n")
+	b.WriteString("You are running as a local coding agent for a Didian workspace.\n\n")
+	b.WriteString("This task was triggered by an Autopilot in run-only mode. There is no assigned Didian issue for this run.\n\n")
 	fmt.Fprintf(&b, "Autopilot run ID: %s\n", task.AutopilotRunID)
 	if task.AutopilotID != "" {
 		fmt.Fprintf(&b, "Autopilot ID: %s\n", task.AutopilotID)
@@ -423,10 +423,10 @@ func buildAutopilotPrompt(task Task) string {
 		b.WriteString("No additional autopilot instructions were provided. Inspect the autopilot configuration before proceeding.\n\n")
 	}
 	if task.AutopilotID != "" {
-		fmt.Fprintf(&b, "Start by running `multica autopilot get %s --output json` if you need the full autopilot configuration, then complete the instructions above.\n", task.AutopilotID)
+		fmt.Fprintf(&b, "Start by running `didian autopilot get %s --output json` if you need the full autopilot configuration, then complete the instructions above.\n", task.AutopilotID)
 	} else {
 		b.WriteString("Complete the instructions above.\n")
 	}
-	b.WriteString("Do not run `multica issue get`; this run does not have an issue ID.\n")
+	b.WriteString("Do not run `didian issue get`; this run does not have an issue ID.\n")
 	return b.String()
 }

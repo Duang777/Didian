@@ -351,7 +351,7 @@ func TestValidateThinkingLevelCodexPerModelFallbackCatalog(t *testing.T) {
 }
 
 // TestParseCodexModelCatalog_PreservesFutureEfforts pins the dynamic-catalog
-// contract: a future Codex effort should reach the picker without a Multica
+// contract: a future Codex effort should reach the picker without a Didian
 // code update, pass the server's safe-token gate, and remain scoped to the
 // model that advertised it.
 func TestParseCodexModelCatalog_PreservesFutureEfforts(t *testing.T) {

@@ -30,12 +30,12 @@ func NewDaemonWSCollector(m *daemonws.Metrics) *DaemonWSCollector {
 		wakeupPublishedTotal: newDaemonWSDesc("wakeup_published_total", "Total daemon wakeups published to the Redis relay."),
 		wakeupPublishErrors:  newDaemonWSDesc("wakeup_publish_errors_total", "Total daemon wakeup Redis publish errors."),
 		wakeupReceivedTotal:  newDaemonWSDesc("wakeup_received_total", "Total daemon wakeups received from the Redis relay."),
-		wakeupDeliveredTotal: prometheus.NewDesc("multica_daemonws_wakeup_delivered_total", "Total daemon wakeup local delivery attempts.", []string{"result"}, nil),
+		wakeupDeliveredTotal: prometheus.NewDesc("didian_daemonws_wakeup_delivered_total", "Total daemon wakeup local delivery attempts.", []string{"result"}, nil),
 	}
 }
 
 func newDaemonWSDesc(name, help string) *prometheus.Desc {
-	return prometheus.NewDesc("multica_daemonws_"+name, help, nil, nil)
+	return prometheus.NewDesc("didian_daemonws_"+name, help, nil, nil)
 }
 
 func (c *DaemonWSCollector) Describe(ch chan<- *prometheus.Desc) {

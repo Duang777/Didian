@@ -16,7 +16,7 @@ import type { TestApiClient } from "./fixtures";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || "8080"}`;
 const DATABASE_URL =
-  process.env.DATABASE_URL ?? "postgres://multica:multica@localhost:5432/multica?sslmode=disable";
+  process.env.DATABASE_URL ?? "postgres://didian:didian@localhost:5432/didian?sslmode=disable";
 
 interface UploadRow {
   id: string;

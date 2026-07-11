@@ -3,15 +3,15 @@
 -- product can list / disconnect connections and build per-user MCP sessions
 -- without round-tripping Composio on every read.
 --
--- No foreign keys / cascades by design: Multica enforces cross-table
+-- No foreign keys / cascades by design: Didian enforces cross-table
 -- relationships at the application layer (see migration 118 dropping the
 -- agent_task_queue.initiator_user_id FK). user_id is a "user".id but is left
 -- unconstrained here so a user delete does not require a migration-ordered
 -- cascade across integration tables.
 --
--- composio_user_id always equals the Multica user_id.String() — the
+-- composio_user_id always equals the Didian user_id.String() — the
 -- application keeps that mapping as an invariant so a Composio session can be
--- created from the Multica user id alone. It is stored explicitly so a future
+-- created from the Didian user id alone. It is stored explicitly so a future
 -- change to the mapping does not silently break already-connected accounts.
 CREATE TABLE user_composio_connection (
     id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),

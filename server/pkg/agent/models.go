@@ -306,11 +306,11 @@ func claudeStaticModels() []Model {
 // + thinking picker contract as dynamic discovery.
 func codexStaticModels() []Model {
 	// `Default` here is NOT a user-facing "default model" badge — the picker
-	// stopped rendering that (Multica follows the CLI config when the model is
+	// stopped rendering that (Didian follows the CLI config when the model is
 	// unset). It only marks the current flagship for the "default must track
 	// the latest release" catalog guard
 	// (TestCodexStaticModelsMatchVerifiedFallbackCatalog,
-	// multica#2009). It is deliberately NOT used to validate effort for an
+	// didian#2009). It is deliberately NOT used to validate effort for an
 	// empty (follow-CLI-config) model: that config can resolve to any model,
 	// so ValidateThinkingLevel fails an empty codex model closed rather than
 	// borrowing this entry's catalog (which alone advertises `ultra`) — see
@@ -360,8 +360,8 @@ func codexStaticModels() []Model {
 func discoverTraecliModels(ctx context.Context, executablePath string) ([]Model, error) {
 	return discoverACPModels(ctx, executablePath, acpDiscoveryProvider{
 		defaultBin:   "traecli",
-		clientName:   "multica-model-discovery",
-		tmpdirPrefix: "multica-traecli-discovery-",
+		clientName:   "didian-model-discovery",
+		tmpdirPrefix: "didian-traecli-discovery-",
 		acpArgs:      []string{"acp", "serve", "--yolo"},
 	})
 }
@@ -471,7 +471,7 @@ func discoverOpenCodeModels(ctx context.Context, executablePath string) ([]Model
 	// Newer opencode (1.15+) syncs its hosted free-model catalog over the
 	// network on `opencode models`, which can take ~6s; the previous 5s cap
 	// timed out and returned an empty list, so the runtime showed online but
-	// the model picker was empty. See multica-ai/multica#3627.
+	// the model picker was empty. See didian-ai/didian#3627.
 	runCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(runCtx, executablePath, "models", "--verbose")
@@ -796,9 +796,9 @@ func isPiDiscoveryNoise(line string) bool {
 func discoverHermesModels(ctx context.Context, executablePath string) ([]Model, error) {
 	return discoverACPModels(ctx, executablePath, acpDiscoveryProvider{
 		defaultBin:   "hermes",
-		clientName:   "multica-model-discovery",
+		clientName:   "didian-model-discovery",
 		extraEnv:     []string{"HERMES_YOLO_MODE=1"},
-		tmpdirPrefix: "multica-hermes-discovery-",
+		tmpdirPrefix: "didian-hermes-discovery-",
 	})
 }
 
@@ -813,8 +813,8 @@ func discoverHermesModels(ctx context.Context, executablePath string) ([]Model, 
 func discoverKimiModels(ctx context.Context, executablePath string) ([]Model, error) {
 	return discoverACPModels(ctx, executablePath, acpDiscoveryProvider{
 		defaultBin:   "kimi",
-		clientName:   "multica-model-discovery",
-		tmpdirPrefix: "multica-kimi-discovery-",
+		clientName:   "didian-model-discovery",
+		tmpdirPrefix: "didian-kimi-discovery-",
 	})
 }
 
@@ -823,8 +823,8 @@ func discoverKimiModels(ctx context.Context, executablePath string) ([]Model, er
 func discoverKiroModels(ctx context.Context, executablePath string) ([]Model, error) {
 	return discoverACPModels(ctx, executablePath, acpDiscoveryProvider{
 		defaultBin:   "kiro-cli",
-		clientName:   "multica-model-discovery",
-		tmpdirPrefix: "multica-kiro-discovery-",
+		clientName:   "didian-model-discovery",
+		tmpdirPrefix: "didian-kiro-discovery-",
 	})
 }
 
@@ -850,8 +850,8 @@ func discoverKiroModels(ctx context.Context, executablePath string) ([]Model, er
 func discoverCopilotModels(ctx context.Context, executablePath string) ([]Model, error) {
 	models, err := discoverACPModels(ctx, executablePath, acpDiscoveryProvider{
 		defaultBin:   "copilot",
-		clientName:   "multica-model-discovery",
-		tmpdirPrefix: "multica-copilot-discovery-",
+		clientName:   "didian-model-discovery",
+		tmpdirPrefix: "didian-copilot-discovery-",
 		acpArgs:      []string{"--acp"},
 	})
 	if err != nil || len(models) == 0 {
@@ -869,9 +869,9 @@ func discoverCopilotModels(ctx context.Context, executablePath string) ([]Model,
 func discoverQoderModels(ctx context.Context, executablePath string) ([]Model, error) {
 	return discoverACPModels(ctx, executablePath, acpDiscoveryProvider{
 		defaultBin:   "qodercli",
-		clientName:   "multica-model-discovery",
+		clientName:   "didian-model-discovery",
 		acpArgs:      []string{"--yolo", "--acp"},
-		tmpdirPrefix: "multica-qoder-discovery-",
+		tmpdirPrefix: "didian-qoder-discovery-",
 	})
 }
 

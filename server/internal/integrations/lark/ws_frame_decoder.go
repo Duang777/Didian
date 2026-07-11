@@ -302,7 +302,7 @@ func normalizeChatType(t string) ChatType {
 //
 // The bot's stable identifier across WS perspectives is `union_id` —
 // see MUL-2671 group-@-mention triage. In a Lark group with several
-// Multica bots, each bot's WS receives the event, and Lark fills
+// Didian bots, each bot's WS receives the event, and Lark fills
 // `mentions[].id.open_id` with the per-app form for whichever bot it
 // is talking to: bot X's WS sees X's payload-form open_id when bot Y
 // was @-ed, and a different payload-form open_id when X itself was

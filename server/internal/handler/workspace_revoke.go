@@ -119,8 +119,8 @@ func (h *Handler) revokeAndRemoveMember(ctx context.Context, workspaceID, userID
 	// The inbound path also re-checks membership (see ChannelStore.IsWorkspaceMember),
 	// but pruning stops a stale binding from lingering across a remove/re-add.
 	if err := qtx.DeleteChannelUserBindingsByWorkspaceMember(ctx, db.DeleteChannelUserBindingsByWorkspaceMemberParams{
-		WorkspaceID:   workspaceID,
-		MulticaUserID: userID,
+		WorkspaceID:  workspaceID,
+		DidianUserID: userID,
 	}); err != nil {
 		return empty, err
 	}

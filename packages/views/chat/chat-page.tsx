@@ -92,7 +92,7 @@ export function ChatPage() {
   }, [c.activeSessionId]);
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: "multica_chat_layout",
+    id: "didian_chat_layout",
   });
 
   const handleSelect = (session: ChatSession) => {

@@ -20,7 +20,7 @@ import (
 func TestExecuteBackfillUpdatesOnlyEligibleCodexRowsAndRebuildsRollup(t *testing.T) {
 	adminURL := os.Getenv("DATABASE_URL")
 	if adminURL == "" {
-		adminURL = "postgres://multica:multica@localhost:5432/multica?sslmode=disable"
+		adminURL = "postgres://didian:didian@localhost:5432/didian?sslmode=disable"
 	}
 
 	ctx := context.Background()
@@ -28,7 +28,7 @@ func TestExecuteBackfillUpdatesOnlyEligibleCodexRowsAndRebuildsRollup(t *testing
 		t.Skip("integration test requires Postgres at DATABASE_URL")
 	}
 
-	tmpDB := fmt.Sprintf("multica_codex_usage_backfill_%d", time.Now().UnixNano())
+	tmpDB := fmt.Sprintf("didian_codex_usage_backfill_%d", time.Now().UnixNano())
 	if err := testCreateDatabase(ctx, adminURL, tmpDB); err != nil {
 		t.Fatalf("create temp database %s: %v", tmpDB, err)
 	}

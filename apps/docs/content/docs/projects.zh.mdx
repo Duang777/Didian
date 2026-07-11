@@ -5,7 +5,7 @@ description: 把相关的 issue 归为一组当成一个单元来跟进 —— �
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Multica 里的**项目**（project）是相关 [issue](/issues) 的容器。当一摊工作比单个 issue 大、又比整个工作区小的时候用它 —— 一次发布、一次迁移、一个分多块做的功能、一个会拆出多个线索的调研。
+Didian 里的**项目**（project）是相关 [issue](/issues) 的容器。当一摊工作比单个 issue 大、又比整个工作区小的时候用它 —— 一次发布、一次迁移、一个分多块做的功能、一个会拆出多个线索的调研。
 
 每个项目有名字、图标、描述、**负责人**（lead，可以是成员，也可以是 [智能体](/agents)）、**状态**（`planned` / `in_progress` / `paused` / `completed` / `cancelled`）、**优先级**（`urgent` / `high` / `medium` / `low` / `none`），以及一个根据关联 issue 状态自动算出来的**进度**百分比。
 
@@ -23,7 +23,7 @@ Multica 里的**项目**（project）是相关 [issue](/issues) 的容器。当�
 
 ## 关联 resources
 
-每个项目有一个 **Resources** 区，可以挂 GitHub 仓库。挂上之后，被分配到这个项目里 issue 的 [智能体](/agents) 在执行 task 时可以读写这些仓库 —— Multica 会把仓库 URL 作为上下文传给 [守护进程](/daemon-runtimes)。
+每个项目有一个 **Resources** 区，可以挂 GitHub 仓库。挂上之后，被分配到这个项目里 issue 的 [智能体](/agents) 在执行 task 时可以读写这些仓库 —— Didian 会把仓库 URL 作为上下文传给 [守护进程](/daemon-runtimes)。
 
 Resources 是项目级别的；多个项目要共享同一个仓库，要分别挂上。
 
@@ -46,4 +46,4 @@ Resources 是项目级别的；多个项目要共享同一个仓库，要分别�
 
 - [Issues](/issues) —— 项目里装的工作单元
 - [智能体担任项目负责人](/agents) —— 什么时候由智能体当 lead 合适
-- [Multica 怎么运转](/how-multica-works) —— 整体视图
+- [Didian 怎么运转](/how-didian-works) —— 整体视图

@@ -18,7 +18,7 @@
 -- =====================
 -- lark_installation
 -- =====================
--- One row per (workspace, agent) — each Multica Agent owns at most one
+-- One row per (workspace, agent) — each Didian Agent owns at most one
 -- Lark PersonalAgent Bot. `app_secret_encrypted` is the ciphertext
 -- produced by the application-layer secretbox helper; never plaintext.
 CREATE TABLE lark_installation (
@@ -59,7 +59,7 @@ CREATE INDEX idx_lark_installation_lease ON lark_installation(ws_lease_expires_a
 -- =====================
 -- lark_user_binding
 -- =====================
--- Maps a Lark `open_id` to a Multica user, per-installation. open_id is
+-- Maps a Lark `open_id` to a Didian user, per-installation. open_id is
 -- per-app, so the same Lark user has different open_ids across different
 -- installations — the binding is therefore keyed on (installation, open_id),
 -- not open_id alone. `union_id` is captured opportunistically for future
@@ -74,15 +74,15 @@ CREATE INDEX idx_lark_installation_lease ON lark_installation(ws_lease_expires_a
 --      lark_installation(id, workspace_id), so a binding row cannot
 --      claim a workspace different from its installation's workspace.
 --
---   2. The composite FK on (workspace_id, multica_user_id) targets
+--   2. The composite FK on (workspace_id, didian_user_id) targets
 --      member(workspace_id, user_id) with ON DELETE CASCADE, so when a
---      Multica user is removed from the workspace the stale Lark
+--      Didian user is removed from the workspace the stale Lark
 --      binding is removed in the same transaction. There is no path
 --      where lark_user_binding can outlive workspace membership.
 CREATE TABLE lark_user_binding (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id     UUID NOT NULL,
-    multica_user_id  UUID NOT NULL,
+    didian_user_id  UUID NOT NULL,
     installation_id  UUID NOT NULL,
     lark_open_id     TEXT NOT NULL,
     union_id         TEXT,
@@ -95,23 +95,23 @@ CREATE TABLE lark_user_binding (
         REFERENCES lark_installation(id, workspace_id)
         ON DELETE CASCADE,
     -- Workspace membership integrity. Composite FK guarantees the
-    -- (workspace_id, multica_user_id) pair still exists in member; when
+    -- (workspace_id, didian_user_id) pair still exists in member; when
     -- the user is removed from the workspace, the binding cascades away.
     CONSTRAINT lark_user_binding_member_fk
-        FOREIGN KEY (workspace_id, multica_user_id)
+        FOREIGN KEY (workspace_id, didian_user_id)
         REFERENCES member(workspace_id, user_id)
         ON DELETE CASCADE
 );
 
 CREATE INDEX idx_lark_user_binding_user
-    ON lark_user_binding(multica_user_id, workspace_id);
+    ON lark_user_binding(didian_user_id, workspace_id);
 CREATE INDEX idx_lark_user_binding_workspace_open
     ON lark_user_binding(workspace_id, lark_open_id);
 
 -- =====================
 -- lark_chat_session_binding
 -- =====================
--- One Lark chat (`chat_id`) ↔ one Multica `chat_session`. The Lark side
+-- One Lark chat (`chat_id`) ↔ one Didian `chat_session`. The Lark side
 -- doesn't distinguish p2p vs group at the routing layer, but we keep
 -- `lark_chat_type` for product behavior (group sessions only ingest
 -- @-Bot / reply-Bot messages; p2p ingests everything).
@@ -218,7 +218,7 @@ CREATE INDEX idx_lark_inbound_audit_reason
 -- =====================
 -- lark_outbound_card_message
 -- =====================
--- Maps a Multica task (or session bootstrap "thinking…" card) to the
+-- Maps a Didian task (or session bootstrap "thinking…" card) to the
 -- Lark interactive card message we're patching. Per-task, not per-session
 -- — a chat_session can host many runs and a session-level field would
 -- create card aliasing bugs. `task_id` may be NULL for the initial
@@ -246,7 +246,7 @@ CREATE INDEX idx_lark_outbound_card_session
 -- lark_binding_token
 -- =====================
 -- Short-lived (≤ 15 min), single-use token for the "you're not bound yet,
--- click here" flow that links a Lark `open_id` to a Multica user. The
+-- click here" flow that links a Lark `open_id` to a Didian user. The
 -- hash (not the raw token) is stored so a DB leak doesn't grant binding
 -- capability. Replay is blocked by `consumed_at IS NOT NULL`.
 CREATE TABLE lark_binding_token (

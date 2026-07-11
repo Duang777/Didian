@@ -311,7 +311,7 @@ export class ApiClient {
     if (typeof document === "undefined") return null;
     const match = document.cookie
       .split("; ")
-      .find((c) => c.startsWith("multica_csrf="));
+      .find((c) => c.startsWith("didian_csrf="));
     return match ? match.split("=")[1] ?? null : null;
   }
 
@@ -1002,8 +1002,8 @@ export class ApiClient {
   }
 
   // ---------------------------------------------------------------------
-  // Cloud Billing — proxies to multica-cloud /api/v1/billing/*. The
-  // multica-api server stamps X-User-ID and forwards bytes; everything
+  // Cloud Billing — proxies to didian-cloud /api/v1/billing/*. The
+  // didian-api server stamps X-User-ID and forwards bytes; everything
   // here is upstream-shaped. See packages/core/types/billing.ts for the
   // response field documentation.
   // ---------------------------------------------------------------------

@@ -18,7 +18,7 @@ import (
 // eligible for an in-place renewal. The daemon polls every ~3 days, so a 7-day
 // threshold guarantees at least one renewal attempt while the token still has
 // ≥ 4 days of validity left — enough margin to absorb a transient network
-// failure before the user actually has to re-run `multica login`.
+// failure before the user actually has to re-run `didian login`.
 const PATRenewThreshold = 7 * 24 * time.Hour
 
 // PATRenewExtension is how far into the future a renewed PAT's expires_at is
@@ -154,7 +154,7 @@ type RenewPATResponse struct {
 //
 // Only mul_ PATs may be renewed: a cookie/JWT session has no PAT row to
 // extend, and an mat_ task token is single-purpose and short-lived. mcn_
-// cloud-node PATs are owned by Multica Cloud Fleet, not us — we don't even
+// cloud-node PATs are owned by Didian Cloud Fleet, not us — we don't even
 // see the expiry locally.
 func (h *Handler) RenewCurrentPersonalAccessToken(w http.ResponseWriter, r *http.Request) {
 	userID, ok := requireUserID(w, r)

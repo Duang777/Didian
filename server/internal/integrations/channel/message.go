@@ -52,7 +52,7 @@ type Source struct {
 	ChannelType Type
 
 	// ChatID is the platform conversation identifier. One ChatID maps to
-	// one Multica chat_session via the channel_chat_session_binding.
+	// one Didian chat_session via the channel_chat_session_binding.
 	ChatID string
 
 	// ChatType discriminates direct from group conversations.
@@ -84,7 +84,7 @@ type Source struct {
 type MediaRef struct {
 	// Type is the normalized media kind (image / file / audio / video).
 	Type MsgType
-	// StorageKey locates the persisted object in Multica object storage.
+	// StorageKey locates the persisted object in Didian object storage.
 	StorageKey string
 	// Filename is the original display name, when the platform supplies
 	// one.

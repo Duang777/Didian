@@ -1,11 +1,11 @@
 # Product Analytics
 
-Multica's product analytics live in the **operational database** and in
+Didian's product analytics live in the **operational database** and in
 **Prometheus / Grafana**. This document is the catalogue of instrumentation and
 its history.
 
-See [MUL-1122](https://github.com/multica-ai/multica) for the original design
-context and [MUL-4127](https://github.com/multica-ai/multica) for the PostHog
+See [MUL-1122](https://github.com/didian-ai/didian) for the original design
+context and [MUL-4127](https://github.com/didian-ai/didian) for the PostHog
 retirement below.
 
 > **MUL-4127 — PostHog retired for product analytics.** PostHog had become a
@@ -34,7 +34,7 @@ retirement below.
 >   `client_crash` / `client_unresponsive` — error / crash monitoring that has
 >   no DB equivalent. Identity (`$identify` / `$set`) is retained only to attach
 >   those.
-> - The `multica_signup_source` attribution cookie (`captureSignupSource`,
+> - The `didian_signup_source` attribution cookie (`captureSignupSource`,
 >   independent of `$pageview`) is kept: it still feeds the `signup_source`
 >   Prometheus label. Persisting the raw source-channel / country to the DB —
 >   the one signal PostHog uniquely held — is tracked separately.
@@ -59,7 +59,7 @@ events leave the process unless the operator explicitly opts in**.
 
 ### Self-hosted instances
 
-Self-hosters should **never inherit a Multica-issued `POSTHOG_API_KEY`** —
+Self-hosters should **never inherit a Didian-issued `POSTHOG_API_KEY`** —
 that would route their users' behavior to our analytics project. The
 defaults guarantee this:
 
@@ -143,7 +143,7 @@ The v0 core dashboard must use only `core_loop` plus the specific
 `onboarding_support` steps used by the activation funnel. Acquisition,
 feedback, and system/noise events stay in separate dashboards. The
 `operational` row is **not shipped to PostHog** — those signals live in
-Grafana via `multica_*` business counters (see `server/internal/metrics`).
+Grafana via `didian_*` business counters (see `server/internal/metrics`).
 
 ## Standard core properties
 
@@ -183,7 +183,7 @@ OAuth entry points (`findOrCreateUser` is the single emission site).
 | Property | Type | Description |
 |---|---|---|
 | `email_domain` | string | Lower-cased domain portion of the user's email. |
-| `signup_source` | string | Opaque attribution bundle from the frontend cookie `multica_signup_source` (UTM + referrer). Empty when the cookie is absent. |
+| `signup_source` | string | Opaque attribution bundle from the frontend cookie `didian_signup_source` (UTM + referrer). Empty when the cookie is absent. |
 | `auth_method` | string | Optional. `"google"` for Google OAuth signups. Absent for verification-code signups. |
 
 Historical PostHog person properties (`$set_once`) — **no longer emitted** since
@@ -192,7 +192,7 @@ MUL-4127, because `signup` is now Prometheus-only and never reaches PostHog:
 | Property | Type | Description |
 |---|---|---|
 | `email` | string | Full email. Was never broadcast per-event. |
-| `signup_source` | string | Attribution bundle. Today only its bucketed form survives, as the `multica_signup_total{signup_source}` Prometheus label (see `NormalizeSignupSource`); it is no longer set as a person property for segmentation. |
+| `signup_source` | string | Attribution bundle. Today only its bucketed form survives, as the `didian_signup_total{signup_source}` Prometheus label (see `NormalizeSignupSource`); it is no longer set as a person property for segmentation. |
 
 ### `workspace_created`
 
@@ -231,7 +231,7 @@ extra query, no race.
 | `runtime_mode` | string | Currently `local`; reserved for cloud runtimes. |
 | `provider` | string | e.g. `"codex"`, `"claude"`. |
 | `runtime_version` | string | Version of the agent runtime binary. |
-| `cli_version` | string | Version of the `multica` CLI that registered it. |
+| `cli_version` | string | Version of the `didian` CLI that registered it. |
 
 `distinct_id` is the authenticated owner's user id when the daemon was
 registered via a member's JWT/PAT; daemon-token registrations fall back to
@@ -324,20 +324,20 @@ sets in `server/internal/metrics/labels.go`):
 
 | Metric | Type | Labels |
 |---|---|---|
-| `multica_agent_task_enqueued_total` | counter | `source`, `runtime_mode` |
-| `multica_agent_task_dispatched_total` | counter | `source`, `runtime_mode` |
-| `multica_agent_task_started_total` | counter | `source`, `runtime_mode`, `provider` |
-| `multica_agent_task_terminal_total` | counter | `source`, `runtime_mode`, `terminal_status` |
-| `multica_agent_task_failed_total` | counter | `source`, `runtime_mode`, `failure_reason` |
-| `multica_agent_task_queue_wait_seconds` | histogram | `source`, `runtime_mode` |
-| `multica_agent_task_run_seconds` | histogram | `source`, `runtime_mode`, `terminal_status` |
-| `multica_agent_task_total_seconds` | histogram | `source`, `runtime_mode`, `terminal_status` |
+| `didian_agent_task_enqueued_total` | counter | `source`, `runtime_mode` |
+| `didian_agent_task_dispatched_total` | counter | `source`, `runtime_mode` |
+| `didian_agent_task_started_total` | counter | `source`, `runtime_mode`, `provider` |
+| `didian_agent_task_terminal_total` | counter | `source`, `runtime_mode`, `terminal_status` |
+| `didian_agent_task_failed_total` | counter | `source`, `runtime_mode`, `failure_reason` |
+| `didian_agent_task_queue_wait_seconds` | histogram | `source`, `runtime_mode` |
+| `didian_agent_task_run_seconds` | histogram | `source`, `runtime_mode`, `terminal_status` |
+| `didian_agent_task_total_seconds` | histogram | `source`, `runtime_mode`, `terminal_status` |
 
 - `terminal_status` is the task's final `agent_task_queue.status` —
   `completed` / `failed` / `cancelled`. There is **no** separate
   completed/cancelled metric: all three land on
-  `multica_agent_task_terminal_total{terminal_status=…}`. Failures
-  additionally increment `multica_agent_task_failed_total` carrying the coarse
+  `didian_agent_task_terminal_total{terminal_status=…}`. Failures
+  additionally increment `didian_agent_task_failed_total` carrying the coarse
   `failure_reason` (`agent_task_queue.failure_reason`, default `agent_error`).
 - Task wall-clock lives in the `*_seconds` histograms (queue wait / run /
   total), replacing the old `duration_ms` event property.
@@ -403,9 +403,9 @@ events" are expressible without the property. No information is lost.
 
 `issue_executed` is the canonical core-loop success signal. Since MUL-4127 it is
 metrics-only like every server event: recorded to Prometheus as
-`multica_issue_executed_total{source}` (not PostHog) and backed in the DB by
+`didian_issue_executed_total{source}` (not PostHog) and backed in the DB by
 `issue.first_executed_at`. Per-task completion counts live in Grafana via
-`BusinessMetrics.RecordTaskTerminal`; use `multica_issue_executed_total` for the
+`BusinessMetrics.RecordTaskTerminal`; use `didian_issue_executed_total` for the
 activation funnel and break down by `source` as needed.
 
 ### `team_invite_sent`
@@ -686,7 +686,7 @@ sent from a pre-workspace surface.
     workspace. Omitted on pre-workspace surfaces.
 
 - Attribution is NOT a separate event; UTM + referrer origin are written
-  to the `multica_signup_source` cookie on the first anonymous pageview
+  to the `didian_signup_source` cookie on the first anonymous pageview
   and read by the backend's `signup` emission. The cookie carries a JSON
   payload URL-encoded at write time (`encodeURIComponent`) and
   URL-decoded at read time (`url.QueryUnescape`) — the JSON is never
@@ -698,7 +698,7 @@ sent from a pre-workspace surface.
 
 Per-task completion is no longer shipped to PostHog. Task success now
 reconciles **DB ↔ Prometheus** instead of DB ↔ PostHog: the
-`BusinessMetrics.RecordTaskTerminal` counter (exported as a `multica_*` task
+`BusinessMetrics.RecordTaskTerminal` counter (exported as a `didian_*` task
 metric) should track the operational source of truth:
 
 ```sql
@@ -717,7 +717,7 @@ is missing or the metrics pipeline is unhealthy.
 
 `issue_executed` remains the product-level success signal (at most one per
 issue). Since MUL-4127 it is Prometheus-only, so reconcile
-`multica_issue_executed_total` against `issue.first_executed_at` rather than a
+`didian_issue_executed_total` against `issue.first_executed_at` rather than a
 PostHog event.
 
 ## Governance

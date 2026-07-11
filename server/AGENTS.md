@@ -8,7 +8,7 @@
 - Runtime 注册、心跳和任务队列生命周期。
 - Daemon endpoints 和 task-scoped credentials。
 - 数据库迁移和 sqlc 生成的数据访问代码。
-- `server/cmd/multica` 下的 CLI 命令。
+- `server/cmd/didian` 下的 CLI 命令。
 
 ## 资源工作台方向
 

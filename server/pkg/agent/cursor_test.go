@@ -255,10 +255,10 @@ func TestCursorUsageModelFallback(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name             string
-		evtModel         string
-		configuredModel  string
-		want             string
+		name            string
+		evtModel        string
+		configuredModel string
+		want            string
 	}{
 		{"event model wins", "gpt-5.3-codex", "composer-2.5", "gpt-5.3-codex"},
 		{"configured model fallback", "", "composer-2.5", "composer-2.5"},

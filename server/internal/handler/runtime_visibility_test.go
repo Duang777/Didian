@@ -76,14 +76,14 @@ func runtimeVisibilityFixture(t *testing.T) (runtimeID, runtimeOwnerID, plainMem
 
 	if err := testPool.QueryRow(ctx, `
 		INSERT INTO "user" (name, email)
-		VALUES ('Runtime Owner', 'runtime-owner@multica.test')
+		VALUES ('Runtime Owner', 'runtime-owner@didian.test')
 		RETURNING id
 	`).Scan(&runtimeOwnerID); err != nil {
 		t.Fatalf("create runtime owner user: %v", err)
 	}
 	t.Cleanup(func() {
 		testPool.Exec(context.Background(),
-			`DELETE FROM "user" WHERE email = 'runtime-owner@multica.test'`)
+			`DELETE FROM "user" WHERE email = 'runtime-owner@didian.test'`)
 	})
 
 	if _, err := testPool.Exec(ctx, `
@@ -95,14 +95,14 @@ func runtimeVisibilityFixture(t *testing.T) (runtimeID, runtimeOwnerID, plainMem
 
 	if err := testPool.QueryRow(ctx, `
 		INSERT INTO "user" (name, email)
-		VALUES ('Plain Runtime Member', 'plain-runtime-member@multica.test')
+		VALUES ('Plain Runtime Member', 'plain-runtime-member@didian.test')
 		RETURNING id
 	`).Scan(&plainMemberID); err != nil {
 		t.Fatalf("create plain member user: %v", err)
 	}
 	t.Cleanup(func() {
 		testPool.Exec(context.Background(),
-			`DELETE FROM "user" WHERE email = 'plain-runtime-member@multica.test'`)
+			`DELETE FROM "user" WHERE email = 'plain-runtime-member@didian.test'`)
 	})
 
 	if _, err := testPool.Exec(ctx, `

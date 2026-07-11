@@ -69,13 +69,13 @@ describe("ConnectRemoteDialog", () => {
   it("uses cloud setup commands by default", () => {
     const { baseElement } = renderDialog();
 
-    expect(baseElement).toHaveTextContent("multica setup");
-    expect(baseElement).not.toHaveTextContent("multica setup self-host");
+    expect(baseElement).toHaveTextContent("didian setup");
+    expect(baseElement).not.toHaveTextContent("didian setup self-host");
     expect(baseElement).toHaveTextContent(
-      "multica config set server_url https://api.multica.ai",
+      "didian config set server_url https://api.didian.ai",
     );
     expect(baseElement).toHaveTextContent(
-      "multica config set app_url https://multica.ai",
+      "didian config set app_url https://didian.ai",
     );
   });
 
@@ -86,13 +86,13 @@ describe("ConnectRemoteDialog", () => {
     });
 
     expect(baseElement).toHaveTextContent(
-      "multica setup self-host --server-url https://api.example.com --app-url https://app.example.com",
+      "didian setup self-host --server-url https://api.example.com --app-url https://app.example.com",
     );
     expect(baseElement).toHaveTextContent(
-      "multica config set server_url https://api.example.com",
+      "didian config set server_url https://api.example.com",
     );
     expect(baseElement).toHaveTextContent(
-      "multica config set app_url https://app.example.com",
+      "didian config set app_url https://app.example.com",
     );
   });
 
@@ -100,7 +100,7 @@ describe("ConnectRemoteDialog", () => {
     const { baseElement } = renderDialog();
 
     const setupCode = Array.from(baseElement.querySelectorAll("code")).find((node) =>
-      node.textContent?.includes("multica setup"),
+      node.textContent?.includes("didian setup"),
     );
 
     expect(setupCode).toHaveClass(...ligatureClasses);
@@ -110,7 +110,7 @@ describe("ConnectRemoteDialog", () => {
     const { baseElement } = renderDialog();
 
     const tokenCode = Array.from(baseElement.querySelectorAll("code")).find((node) =>
-      node.textContent?.includes("multica login --token <YOUR_TOKEN>"),
+      node.textContent?.includes("didian login --token <YOUR_TOKEN>"),
     );
 
     expect(tokenCode).toHaveClass(...ligatureClasses);

@@ -176,7 +176,7 @@ type DaemonRegisterRequest struct {
 	// and tasks keep working without manual intervention.
 	LegacyDaemonIDs []string `json:"legacy_daemon_ids"`
 	DeviceName      string   `json:"device_name"`
-	CLIVersion      string   `json:"cli_version"` // multica CLI version
+	CLIVersion      string   `json:"cli_version"` // didian CLI version
 	LaunchedBy      string   `json:"launched_by"` // "desktop" when spawned by the Electron app
 	Runtimes        []struct {
 		Name    string `json:"name"`
@@ -1627,7 +1627,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 							Label:        label,
 						})
 						// Lift github_repo resources into the daemon's repo list
-						// so `multica repo checkout` and the meta-skill render
+						// so `didian repo checkout` and the meta-skill render
 						// them as the issue's repos.
 						if row.ResourceType == "github_repo" {
 							var payload struct {
@@ -1855,8 +1855,8 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 			}
 			// Flag a channel-backed session so the daemon makes the agent aware
 			// it is operating inside Slack — read this conversation's history
-			// from the channel via `multica chat history` / `multica chat thread`,
-			// not from Multica (MUL-3871). Empty for a web-only chat session.
+			// from the channel via `didian chat history` / `didian chat thread`,
+			// not from Didian (MUL-3871). Empty for a web-only chat session.
 			// ChatInThread tells the agent which command to start with: the
 			// latest trigger was a thread reply iff its reply-target thread
 			// (last_thread_id) differs from its own message id (a top-level
@@ -1908,7 +1908,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 			// last assistant row, which also covers a debounced burst (MUL-2968:
 			// "看上海天气" then "还有青岛" must both be delivered) — so a rolling
 			// deploy never replays their history. Attachments are collected per
-			// included message so the agent can `multica attachment download <id>`
+			// included message so the agent can `didian attachment download <id>`
 			// (the inline markdown URL is signed + 30-min expiring on the CDN).
 			var unanswered []db.ChatMessage
 			var inputLoadErr error
@@ -2031,7 +2031,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 			// When the user picked a project in the modal, surface its title
 			// and resources to the daemon so the agent has the same context
 			// it would for an issue-bound task: the prompt template can name
-			// the project, and `multica repo checkout` sees the project's
+			// the project, and `didian repo checkout` sees the project's
 			// github_repo resources instead of the workspace fallback.
 			var projectRepos []RepoData
 			if qc.ProjectID != "" {
@@ -2146,7 +2146,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Workspace isolation check: the daemon uses this response's workspace_id
-	// as the only authority for MULTICA_WORKSPACE_ID in the agent env. An
+	// as the only authority for DIDIAN_WORKSPACE_ID in the agent env. An
 	// empty value would make the CLI silently fall back to the user-global
 	// config and talk to whatever workspace the user happened to last
 	// configure; a value that doesn't match the runtime's workspace means
@@ -2192,7 +2192,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Mint a task-scoped `mat_` token bound to (agent, task, workspace,
-	// owner). The daemon will inject this as MULTICA_TOKEN into the agent
+	// owner). The daemon will inject this as DIDIAN_TOKEN into the agent
 	// process instead of its own credential, so any API call the agent
 	// makes — even one that strips X-Agent-ID / X-Task-ID headers — is
 	// recognized server-side as actor=agent, closing the lateral-movement

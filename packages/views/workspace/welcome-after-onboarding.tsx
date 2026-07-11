@@ -177,7 +177,7 @@ async function findOrCreateHelper(
       runtime_id: runtimeId,
       visibility: "workspace",
       max_concurrent_tasks: 6,
-      template: "multica_helper",
+      template: "didian_helper",
     });
   })();
 

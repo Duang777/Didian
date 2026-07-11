@@ -4,7 +4,7 @@ import { TestApiClient } from "./fixtures";
 const DEFAULT_E2E_NAME = "E2E User";
 const E2E_WORKER = process.env.TEST_PARALLEL_INDEX ?? process.env.TEST_WORKER_INDEX ?? "0";
 const E2E_RUN_ID = process.env.E2E_RUN_ID ?? `${Date.now().toString(36)}-${process.pid.toString(36)}`;
-const DEFAULT_E2E_EMAIL = `e2e-${E2E_WORKER}-${E2E_RUN_ID}@multica.ai`;
+const DEFAULT_E2E_EMAIL = `e2e-${E2E_WORKER}-${E2E_RUN_ID}@didian.ai`;
 const DEFAULT_E2E_WORKSPACE = `e2e-workspace-${E2E_WORKER}-${E2E_RUN_ID}`;
 
 async function waitForIssuesPage(page: Page) {
@@ -49,8 +49,8 @@ export async function loginAsDefault(page: Page): Promise<string> {
   }
 
   await page.addInitScript((t) => {
-    localStorage.setItem("multica_token", t);
-    localStorage.setItem("multica:chat:isOpen", "false");
+    localStorage.setItem("didian_token", t);
+    localStorage.setItem("didian:chat:isOpen", "false");
   }, token);
   await page.goto(`/${workspace.slug}/issues`, { waitUntil: "domcontentloaded" });
   await waitForIssuesPage(page);
@@ -72,7 +72,7 @@ export async function createTestApi(): Promise<TestApiClient> {
 export async function preferManualCreateMode(page: Page) {
   await page.evaluate(() => {
     localStorage.setItem(
-      "multica_create_mode",
+      "didian_create_mode",
       JSON.stringify({ state: { lastMode: "manual" }, version: 0 }),
     );
   });

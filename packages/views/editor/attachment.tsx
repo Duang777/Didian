@@ -210,7 +210,7 @@ function absolutizeMediaURL(rawUrl: string): string {
 //   - `record.markdown_url` — the durable URL the server picked for
 //                             persistence (MUL-3192 / `buildMarkdownURL`):
 //                             public CDN passthrough when the storage is
-//                             public-readable, or `MULTICA_PUBLIC_URL +
+//                             public-readable, or `DIDIAN_PUBLIC_URL +
 //                             /api/attachments/<id>/download` for
 //                             private-bucket modes. Aligned with the
 //                             server-side policy by construction, so it

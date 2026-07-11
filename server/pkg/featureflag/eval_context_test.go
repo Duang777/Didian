@@ -13,10 +13,10 @@ func TestEvalContextLookup(t *testing.T) {
 		Attributes:  map[string]string{"plan": "pro", "country": ""},
 	}
 	tests := []struct {
-		name   string
-		key    string
-		value  string
-		found  bool
+		name  string
+		key   string
+		value string
+		found bool
 	}{
 		{"user_id", "user_id", "u-1", true},
 		{"workspace_id", "workspace_id", "w-2", true},

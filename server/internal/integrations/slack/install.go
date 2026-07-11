@@ -19,7 +19,7 @@ import (
 // This file is the Slack install backend (MUL-3666). Slack uses the
 // bring-your-own-app (BYO) model: the workspace admin creates their own Slack
 // app, installs it to their Slack workspace, and pastes its bot token (xoxb-) +
-// app-level token (xapp-) into Multica (the paste path lives in byo_install.go).
+// app-level token (xapp-) into Didian (the paste path lives in byo_install.go).
 // The InstallService owns the at-rest encryption of those tokens — so no caller
 // can write a channel_installation with a plaintext token — plus the shared
 // persistInstall transaction and the list / get / revoke management surface.
@@ -28,11 +28,11 @@ var (
 	// ErrInstallationNotFound surfaces "no row matches in this workspace".
 	ErrInstallationNotFound = errors.New("slack installation not found")
 	// ErrTeamOwnedByAnotherWorkspace is returned when the pasted Slack app is
-	// already connected to a live owner in a DIFFERENT Multica workspace — it
+	// already connected to a live owner in a DIFFERENT Didian workspace — it
 	// would collide with the (channel_type, app_id) routing index. A Slack app is
 	// one bot identity and maps to one agent; reusing it here requires
 	// disconnecting it in the other workspace first.
-	ErrTeamOwnedByAnotherWorkspace = errors.New("slack: this Slack app is already connected to a different Multica workspace")
+	ErrTeamOwnedByAnotherWorkspace = errors.New("slack: this Slack app is already connected to a different Didian workspace")
 	// ErrTeamOwnedBySameWorkspace is returned when the app is already connected to
 	// a DIFFERENT (live, non-archived) agent in the SAME workspace. The old
 	// catch-all wrongly blamed "another workspace"; naming the same-workspace case
@@ -145,7 +145,7 @@ const pgUniqueViolation = "23505"
 //
 // The (channel_type, app_id) routing index is the only OTHER unique constraint,
 // and it is NOT this upsert's conflict target, so a unique violation here means
-// the pasted Slack app is already connected to a DIFFERENT agent or Multica
+// the pasted Slack app is already connected to a DIFFERENT agent or Didian
 // workspace — refuse it (ErrTeamOwnedByAnotherWorkspace) rather than steal it.
 // No chat-session retire is needed: a row's agent_id never changes (it is part
 // of the key), so existing sessions stay valid for the same agent.

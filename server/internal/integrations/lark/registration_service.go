@@ -345,7 +345,7 @@ func (s *RegistrationService) BeginInstall(ctx context.Context, p BeginInstallPa
 	//
 	// We keep the agent: its name pre-fills the bot name on Lark's
 	// PersonalAgent creation form (see botNamePreset) so the installed
-	// bot reads "<agent> - Multica" instead of "{用户姓名}的智能助手".
+	// bot reads "<agent> - Didian" instead of "{用户姓名}的智能助手".
 	agent, err := s.authQueries.GetAgentInWorkspace(ctx, db.GetAgentInWorkspaceParams{
 		ID:          p.AgentID,
 		WorkspaceID: p.WorkspaceID,
@@ -622,7 +622,7 @@ func (s *RegistrationService) finishSuccess(ctx context.Context, sess *registrat
 	if err := s.binder.BindInstallerTx(ctx, qtx, InstallerBindParams{
 		WorkspaceID:    sess.workspaceID,
 		InstallationID: inst.ID,
-		MulticaUserID:  sess.initiatorID,
+		DidianUserID:   sess.initiatorID,
 		LarkOpenID:     res.OpenID,
 	}); err != nil {
 		s.cfg.Logger.Warn("lark registration: bind installer",
@@ -652,7 +652,7 @@ func (s *RegistrationService) finishSuccess(ctx context.Context, sess *registrat
 // liveOwnerConflictMessage builds the user-facing copy for a rebind refused
 // because the Feishu app's routing slot is held by a LIVE owner. It names which
 // kind of owner so the user knows how to recover, instead of the old catch-all
-// "connected to a different Multica workspace" that lied when the real owner sat
+// "connected to a different Didian workspace" that lied when the real owner sat
 // in the SAME workspace (#4810). Looked up on the base pool, not the aborted
 // upsert tx. If the slot turns out free (a concurrent disconnect between the
 // upsert and this read), a generic message is enough — the user can just retry.
@@ -663,7 +663,7 @@ func (s *RegistrationService) liveOwnerConflictMessage(ctx context.Context, requ
 	}
 	switch {
 	case owner.WorkspaceID != requestingWorkspaceID:
-		return "This Feishu app is already connected to a different Multica workspace. Disconnect it there before connecting it here."
+		return "This Feishu app is already connected to a different Didian workspace. Disconnect it there before connecting it here."
 	case owner.AgentArchivedAt.Valid:
 		return "This Feishu app is connected to an archived agent in this workspace. Restore that agent, or disconnect its bot, before connecting it here."
 	default:
@@ -714,17 +714,17 @@ func uuidEqual(a, b pgtype.UUID) bool {
 
 // botNamePreset builds the display name we pre-fill on Lark's
 // PersonalAgent creation form so the installed bot reads
-// "<agent> - Multica" instead of Lark's auto-generated
+// "<agent> - Didian" instead of Lark's auto-generated
 // "{用户姓名}的智能助手". Lark treats this as a default the installer can
 // still edit; we never get to lock the final name. A blank agent name
 // (defensive — Agent.Name is NOT NULL in schema) degrades to plain
-// "Multica" rather than a dangling " - Multica".
+// "Didian" rather than a dangling " - Didian".
 func botNamePreset(agentName string) string {
 	name := strings.TrimSpace(agentName)
 	if name == "" {
-		return "Multica"
+		return "Didian"
 	}
-	return name + " - Multica"
+	return name + " - Didian"
 }
 
 // uuidString is the package-local UUID-to-string helper defined in

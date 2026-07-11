@@ -18,8 +18,8 @@ import (
 // ChatChannelHistoryReader reads a chat session's bound IM-channel history. The
 // Slack reader (slack.History) satisfies it; a future platform registers its
 // own. Two operations back the two agent commands: ChannelOverview is the
-// channel table-of-contents (`multica chat history`), Thread reads one thread's
-// messages (`multica chat thread [id]`). Both are scoped server-side to the
+// channel table-of-contents (`didian chat history`), Thread reads one thread's
+// messages (`didian chat thread [id]`). Both are scoped server-side to the
 // session's own channel (MUL-3871).
 type ChatChannelHistoryReader interface {
 	ChannelOverview(ctx context.Context, chatSessionID pgtype.UUID, opts channel.HistoryOptions) (channel.HistoryPage, error)
@@ -40,9 +40,9 @@ type ChatChannelHistoryResponse struct {
 	Note string `json:"note,omitempty"`
 }
 
-// GetChatChannelHistory serves `multica chat history` — the channel overview:
+// GetChatChannelHistory serves `didian chat history` — the channel overview:
 // recent top-level messages, each thread tagged with its id + reply count (no
-// thread contents). The agent drills into a thread with `multica chat thread`.
+// thread contents). The agent drills into a thread with `didian chat thread`.
 func (h *Handler) GetChatChannelHistory(w http.ResponseWriter, r *http.Request) {
 	sessionID, ok := h.chatHistorySession(w, r)
 	if !ok {
@@ -56,7 +56,7 @@ func (h *Handler) GetChatChannelHistory(w http.ResponseWriter, r *http.Request) 
 	h.respondChatHistory(w, r, sessionID, page, err)
 }
 
-// GetChatThread serves `multica chat thread [id]` — one thread's messages. With
+// GetChatThread serves `didian chat thread [id]` — one thread's messages. With
 // ?id it reads that specific thread; without, the thread the session is in. The
 // channel stays server-pinned to the session, so the id is only a within-channel
 // locator.

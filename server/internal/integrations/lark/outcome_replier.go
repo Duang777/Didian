@@ -91,16 +91,16 @@ type LarkOutcomeReplier struct {
 	bindingSvc   BindingTokenMinter
 	credentials  CredentialsResolver
 	queries      OutcomeReplierQueries
-	appURL       string // e.g. https://multica.example, trailing slash trimmed
+	appURL       string // e.g. https://didian.example, trailing slash trimmed
 	bindingPath  string // path component of the binding URL, default "/lark/bind"
 	noticeHeader string // header text used by the offline/archived cards
 	log          *slog.Logger
 }
 
-// OutcomeReplierConfig wires the production replier. AppURL is the Multica web
+// OutcomeReplierConfig wires the production replier. AppURL is the Didian web
 // app host the user clicks into to redeem the binding token or open an issue
-// (e.g. https://multica.example). It comes from MULTICA_APP_URL and is
-// intentionally separate from MULTICA_PUBLIC_URL, which is the backend/API
+// (e.g. https://didian.example). It comes from DIDIAN_APP_URL and is
+// intentionally separate from DIDIAN_PUBLIC_URL, which is the backend/API
 // public URL used for webhook and daemon-facing endpoints. Empty means the
 // binding flow can only log the open_id, not produce a clickable card. The
 // other fields default at construction.
@@ -130,7 +130,7 @@ func NewLarkOutcomeReplier(cfg OutcomeReplierConfig) OutcomeReplier {
 		return NewNoopOutcomeReplier(log)
 	}
 	if cfg.AppURL == "" {
-		log.Warn("lark outcome replier: MULTICA_APP_URL not set; binding prompt CTA will not work")
+		log.Warn("lark outcome replier: DIDIAN_APP_URL not set; binding prompt CTA will not work")
 	}
 	bindingPath := cfg.BindingPath
 	if bindingPath == "" {
@@ -146,7 +146,7 @@ func NewLarkOutcomeReplier(cfg OutcomeReplierConfig) OutcomeReplier {
 		queries:      cfg.Queries,
 		appURL:       strings.TrimRight(cfg.AppURL, "/"),
 		bindingPath:  bindingPath,
-		noticeHeader: "Multica",
+		noticeHeader: "Didian",
 		log:          log,
 	}
 }
@@ -232,7 +232,7 @@ func (r *LarkOutcomeReplier) sendBindingPrompt(ctx context.Context, inst Install
 // as a plain text message. We deliberately send text rather than an
 // interactive card so the confirmation flows inline with the rest of
 // the Lark conversation — consistent with how chat replies render
-// after MUL-2671's plain-text refactor. The link to Multica is
+// after MUL-2671's plain-text refactor. The link to Didian is
 // included on its own line so Lark's auto-linker turns it into a
 // tappable URL.
 func (r *LarkOutcomeReplier) sendIssueCreated(ctx context.Context, inst Installation, msg InboundMessage, res DispatchResult) error {
@@ -276,7 +276,7 @@ func inboundReplyTarget(msg InboundMessage) ReplyTarget {
 // issueCreatedText composes the user-facing confirmation. Identifier
 // always wins over a bare number — DispatchResult.IssueIdentifier
 // already encodes the workspace prefix when available. AppURL is optional:
-// when empty (self-host operators who haven't configured MULTICA_APP_URL) the
+// when empty (self-host operators who haven't configured DIDIAN_APP_URL) the
 // message still confirms the issue, just without a deep link the user can tap.
 func issueCreatedText(res DispatchResult, appURL string) string {
 	identifier := res.IssueIdentifier

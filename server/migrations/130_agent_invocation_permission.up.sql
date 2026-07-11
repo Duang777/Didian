@@ -39,7 +39,7 @@ COMMENT ON COLUMN agent.permission_mode IS
 -- agent_invocation_target
 -- ----------------------------------------------------------------------------
 --
--- NO foreign keys by design (Multica migration rule, matching the MUL-3515 §4
+-- NO foreign keys by design (Didian migration rule, matching the MUL-3515 §4
 -- channel_* generalization): relationships are maintained in the application
 -- layer, not by the database. Concretely:
 --   * agent_id  — cleaned up alongside agent hard-deletes

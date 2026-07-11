@@ -71,7 +71,7 @@ describe("contentReferencesAttachment", () => {
     id: ID,
     url: "/uploads/workspaces/ws/legacy.png",
     download_url: "https://cdn.example.com/workspaces/ws/file.png?Signature=fresh",
-    markdown_url: `https://multica-api.copilothub.ai/api/attachments/${ID}/download`,
+    markdown_url: `https://didian-api.copilothub.ai/api/attachments/${ID}/download`,
   };
 
   it("matches when the markdown uses the stable download path", () => {
@@ -121,7 +121,7 @@ describe("contentReferencesAttachment", () => {
   // Regression — issue DESCRIPTION editor binding (Desktop image render).
   //
   // The editor persists the durable `markdown_url`
-  // (`<MULTICA_PUBLIC_URL>/api/attachments/<id>/download`) into the body,
+  // (`<DIDIAN_PUBLIC_URL>/api/attachments/<id>/download`) into the body,
   // NOT the raw storage `a.url`. The description composer used to bind
   // pending uploads with `md.includes(a.url)`, which never matched this
   // shape, so the upload was never linked via `attachment_ids`. After a

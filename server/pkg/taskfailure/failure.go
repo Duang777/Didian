@@ -13,7 +13,7 @@
 // stored failure_reason is already refined when the row is first
 // persisted, and so server / daemon / cloud share a single source of
 // truth for the canonical 21 values. PR1 of the Grafana board plan
-// ([MUL-2946](https://multica/issues/MUL-2946)). Subsequent PRs use
+// ([MUL-2946](https://didian/issues/MUL-2946)). Subsequent PRs use
 // AllReasons() to pre-warm the Prometheus failure_reason label set.
 //
 // The 21 canonical values fall into two groups:
@@ -53,7 +53,7 @@ type Reason string
 const agentErrorPrefix = "agent_error."
 
 const (
-	// Platform / scheduler side: failure attributable to Multica
+	// Platform / scheduler side: failure attributable to Didian
 	// infrastructure rather than anything the agent process did. These
 	// are emitted by server-side sweepers (ExpireStaleQueuedTasks,
 	// FailStaleTasks, FailTasksForOfflineRuntimes,
@@ -82,7 +82,7 @@ const (
 
 	// ReasonIterationLimit: the agent reached its per-run iteration
 	// cap and emitted a fallback "I reached the iteration limit"
-	// message. Treated as platform-side because it is a Multica-imposed
+	// message. Treated as platform-side because it is a Didian-imposed
 	// budget rather than an external API rejection.
 	ReasonIterationLimit Reason = "iteration_limit"
 

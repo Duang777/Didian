@@ -57,7 +57,7 @@ type InstallerBinder interface {
 type InstallerBindParams struct {
 	WorkspaceID    pgtype.UUID
 	InstallationID pgtype.UUID
-	MulticaUserID  pgtype.UUID // the installer's Multica account
+	DidianUserID   pgtype.UUID // the installer's Didian account
 	LarkOpenID     OpenID      // the installer's per-installation open_id
 }
 
@@ -119,7 +119,7 @@ func (s *BindingTokenService) Mint(ctx context.Context, workspaceID, installatio
 
 // RedeemAndBind atomically consumes a raw token and writes the
 // lark_user_binding row in a single DB transaction. The redeemer's
-// identity is the supplied multicaUserID (taken from the session by
+// identity is the supplied didianUserID (taken from the session by
 // the handler, never from the token), so a stolen token cannot bind
 // a Lark open_id to an attacker's account.
 //
@@ -130,7 +130,7 @@ func (s *BindingTokenService) Mint(ctx context.Context, workspaceID, installatio
 //     oracle for replay races.
 //
 //   - ErrBindingAlreadyAssigned: a binding already exists for this
-//     (installation, open_id), pointing at a DIFFERENT Multica user.
+//     (installation, open_id), pointing at a DIFFERENT Didian user.
 //     The token is NOT consumed in this case — we roll back so the
 //     correct holder of the existing binding is not disrupted and
 //     ops can still revoke the surplus token explicitly. Account
@@ -143,7 +143,7 @@ func (s *BindingTokenService) Mint(ctx context.Context, workspaceID, installatio
 // On the happy path the consume + bind commit together: a successful
 // return guarantees both the consumed_at write and the binding row
 // landed; a returned error guarantees neither did.
-func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, multicaUserID pgtype.UUID) (RedeemedBindingToken, error) {
+func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, didianUserID pgtype.UUID) (RedeemedBindingToken, error) {
 	if s.tx == nil {
 		return RedeemedBindingToken{}, errors.New("lark: BindingTokenService missing TxStarter")
 	}
@@ -167,7 +167,7 @@ func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, mul
 	// check it here. Returning before Commit rolls the consume back, so
 	// a non-member's attempt does not burn the token — same outcome the
 	// FK violation produced.
-	isMember, err := qtx.IsWorkspaceMember(ctx, row.WorkspaceID, multicaUserID)
+	isMember, err := qtx.IsWorkspaceMember(ctx, row.WorkspaceID, didianUserID)
 	if err != nil {
 		return RedeemedBindingToken{}, fmt.Errorf("check membership: %w", err)
 	}
@@ -177,13 +177,13 @@ func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, mul
 
 	_, err = qtx.CreateLarkUserBinding(ctx, CreateUserBindingParams{
 		WorkspaceID:    row.WorkspaceID,
-		MulticaUserID:  multicaUserID,
+		DidianUserID:   didianUserID,
 		InstallationID: row.InstallationID,
 		ChannelUserID:  row.ChannelUserID,
 	})
 	if err != nil {
 		// pgx.ErrNoRows here means the conflict row exists but its
-		// multica_user_id differs from ours, so the WHERE clause on
+		// didian_user_id differs from ours, so the WHERE clause on
 		// the ON CONFLICT DO UPDATE rejected the rebind. See the
 		// comment on CreateChannelUserBinding in queries/channel.sql.
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -226,7 +226,7 @@ func (s *BindingTokenService) RedeemAndBind(ctx context.Context, raw string, mul
 //     inventing one would only widen the attack surface.
 //
 // The underlying CreateLarkUserBinding query is idempotent on
-// (installation_id, lark_open_id) when multica_user_id matches (the
+// (installation_id, lark_open_id) when didian_user_id matches (the
 // ON CONFLICT DO UPDATE gating spelled out on the SQL), so a
 // re-install by the same user is a no-op metadata refresh. A
 // re-install by a DIFFERENT user surfaces as ErrBindingAlreadyAssigned
@@ -242,7 +242,7 @@ func (s *BindingTokenService) BindInstallerTx(ctx context.Context, qtx *ChannelS
 	// Explicit membership gate, replacing the removed member FK
 	// (MUL-3515 §4): the installer must be a member of the workspace
 	// they are binding into.
-	isMember, err := q.IsWorkspaceMember(ctx, p.WorkspaceID, p.MulticaUserID)
+	isMember, err := q.IsWorkspaceMember(ctx, p.WorkspaceID, p.DidianUserID)
 	if err != nil {
 		return fmt.Errorf("check membership: %w", err)
 	}
@@ -251,7 +251,7 @@ func (s *BindingTokenService) BindInstallerTx(ctx context.Context, qtx *ChannelS
 	}
 	_, err = q.CreateLarkUserBinding(ctx, CreateUserBindingParams{
 		WorkspaceID:    p.WorkspaceID,
-		MulticaUserID:  p.MulticaUserID,
+		DidianUserID:   p.DidianUserID,
 		InstallationID: p.InstallationID,
 		ChannelUserID:  string(p.LarkOpenID),
 	})
@@ -274,7 +274,7 @@ var ErrBindingTokenInvalid = errors.New("binding token invalid or expired")
 
 // ErrBindingAlreadyAssigned is returned by RedeemAndBind when a
 // lark_user_binding row already exists for the (installation,
-// open_id) pair and points at a different Multica user. Account
+// open_id) pair and points at a different Didian user. Account
 // transfer must go through an explicit unbind flow; a binding token
 // cannot be used to grab an already-bound open_id from another user.
 var ErrBindingAlreadyAssigned = errors.New("lark open_id is already bound to a different user")

@@ -15,7 +15,7 @@ description: 给项目挂上有类型的指针（GitHub 仓库、本地目录，
 - 每个资源有一个 `resource_type`（比如 `github_repo`、`local_directory`），以及一个 `resource_ref`（按 `resource_type` 定型的 JSON 负载）。
 - 加新资源类型只需要加一个字符串 + 一个 handler。**不需要 schema 迁移，不需要重写前端。**
 
-这个形状是有意的 —— 跟 Multica 里 agent provider 的设计完全一致：一个 `type` 判别字段 + 一个有类型的 payload。schema 保持稳定，未来加"Notion 页面"、"Google Doc"、"上传文件"、"外部 URL"都是小型的、增量的改动。
+这个形状是有意的 —— 跟 Didian 里 agent provider 的设计完全一致：一个 `type` 判别字段 + 一个有类型的 payload。schema 保持稳定，未来加"Notion 页面"、"Google Doc"、"上传文件"、"外部 URL"都是小型的、增量的改动。
 
 目前内置两种资源类型：[`github_repo`](#resource-type-github_repo)（每次任务克隆出独立 worktree）和 [`local_directory`](#resource-type-local_directory)（直接在某台守护进程所在机器的目录里运行）。
 
@@ -50,7 +50,7 @@ description: 给项目挂上有类型的指针（GitHub 仓库、本地目录，
 }
 ```
 
-跟 `github_repo` 相比的取舍是有意的：只有绑定的那台守护进程会使用这个本地目录执行任务，而且 **同一个目录上的任务串行执行**，不再并行。换来的是：你的现有 checkout、当前分支、未提交的脏改动一切照旧 —— Multica 不会重新 clone。
+跟 `github_repo` 相比的取舍是有意的：只有绑定的那台守护进程会使用这个本地目录执行任务，而且 **同一个目录上的任务串行执行**，不再并行。换来的是：你的现有 checkout、当前分支、未提交的脏改动一切照旧 —— Didian 不会重新 clone。
 
 ### 什么时候选 `local_directory`、什么时候继续用 `github_repo`
 
@@ -65,7 +65,7 @@ description: 给项目挂上有类型的指针（GitHub 仓库、本地目录，
 下面两种场景下推荐选 `local_directory`：
 
 1. **重新 clone 的成本过高** —— 几十 GB 的游戏 checkout、带大量 LFS 资源的 monorepo、或者任何场景下 `git clone` 的耗时会盖过实际工作量。你拿并发能力换"零 clone"的运行。
-2. **改动很细碎，需要频繁在本地 review** —— 你在反复打磨某个组件，几分钟就要切回编辑器看一眼智能体改了什么；与其每次去 `~/multica_workspaces/` 翻一个新 worktree，不如让它就在你已有的 checkout 里干活。
+2. **改动很细碎，需要频繁在本地 review** —— 你在反复打磨某个组件，几分钟就要切回编辑器看一眼智能体改了什么；与其每次去 `~/didian_workspaces/` 翻一个新 worktree，不如让它就在你已有的 checkout 里干活。
 
 两种情况下你接受的取舍是同一个：**当前版本没有任何文件级的写入锁**。"同一目录上的任务串行执行"这一道闸是唯一防止两个 issue 的智能体同时改同一份文件的保护。如果你把两个 issue 的智能体都指向同一个 `local_directory`，它们的任务会排队、而不是并行 —— 这是有意的。如果需要在同一份代码上真正的并行，请继续用 `github_repo`。
 
@@ -82,17 +82,17 @@ description: 给项目挂上有类型的指针（GitHub 仓库、本地目录，
 也可以用 CLI（即便环境是纯网页端也行，只要你自己提供守护进程 ID）：
 
 ```bash
-multica project resource add <project-id> \
+didian project resource add <project-id> \
   --type local_directory \
   --local-path /Users/me/code/big-game \
   --daemon-id <daemon-uuid> \
   --ref-label "主开发目录"        # 可选
 
-multica project resource update <project-id> <resource-id> \
+didian project resource update <project-id> <resource-id> \
   --local-path /Users/me/code/big-game-new
 ```
 
-`--daemon-id` 可以通过 `multica daemon list` 拿到。CLI 也接受 `--ref '<json>'` 这种通用形式，直接传 payload。
+`--daemon-id` 可以通过 `didian daemon list` 拿到。CLI 也接受 `--ref '<json>'` 这种通用形式，直接传 payload。
 
 ### 路径规则
 
@@ -104,7 +104,7 @@ multica project resource update <project-id> <resource-id> \
 - 不能是系统根目录或整个用户配置区 —— `/`、`/Users`、`/home`、`/root`、`/etc`、`/tmp`、`/var`、`/usr`、`/opt`、`/Users/Shared`、你自己的 `$HOME`、任意 Windows 盘根（`C:\`、`D:\`…），以及 `C:\Users` / `C:\ProgramData` / `C:\Program Files` / `C:\Program Files (x86)` / `C:\Windows`。
 - 指向上述任何路径的 symlink 也会被拒；macOS 的 canonical 别名（比如手动输入 `/private/tmp`）和 `/tmp` 受同样的限制。
 
-黑名单故意做得激进 —— 选你自己的 home 目录就意味着 Multica 的运行时文件会出现在你账号的根下，这不会是任何人想要的结果。请选一个子目录（一般就是你具体的项目 checkout）。
+黑名单故意做得激进 —— 选你自己的 home 目录就意味着 Didian 的运行时文件会出现在你账号的根下，这不会是任何人想要的结果。请选一个子目录（一般就是你具体的项目 checkout）。
 
 ### 每台守护进程每个项目最多一条
 
@@ -116,7 +116,7 @@ multica project resource update <project-id> <resource-id> \
 
 实际会碰到两种跨资源的组合：
 
-- **同一个项目同时挂 `github_repo` 和 `local_directory`。** 在拥有匹配 `local_directory` 绑定的那台守护进程上，本地目录 **优先**：智能体跑在你的目录里，这次任务不会为项目的 `github_repo` 创建或使用 worktree。（每工作区的仓库缓存可能仍会照常 sync，这层是和具体任务无关的后台行为。）`github_repo` 的 URL 仍然会出现在 `.multica/project/resources.json` 和智能体的 `## Repositories` 段里供参考，但智能体真正在编辑的工作树是你的本地目录，不是 worktree。在 **没有** 匹配 `local_directory` 行的其他守护进程上（不同机器、或者那位队友还没挂本地目录），任务按原本的 `github_repo` worktree 流程走。本质上 `local_directory` 是某台守护进程对 worktree 路径的一个覆盖。
+- **同一个项目同时挂 `github_repo` 和 `local_directory`。** 在拥有匹配 `local_directory` 绑定的那台守护进程上，本地目录 **优先**：智能体跑在你的目录里，这次任务不会为项目的 `github_repo` 创建或使用 worktree。（每工作区的仓库缓存可能仍会照常 sync，这层是和具体任务无关的后台行为。）`github_repo` 的 URL 仍然会出现在 `.didian/project/resources.json` 和智能体的 `## Repositories` 段里供参考，但智能体真正在编辑的工作树是你的本地目录，不是 worktree。在 **没有** 匹配 `local_directory` 行的其他守护进程上（不同机器、或者那位队友还没挂本地目录），任务按原本的 `github_repo` worktree 流程走。本质上 `local_directory` 是某台守护进程对 worktree 路径的一个覆盖。
 - **同一个项目挂两个 `local_directory`。** 每个 `local_directory` 只能绑一台守护进程，所以这只会发生在两台不同机器之间（同一台机器上想加第二条会被 API 当场拒掉，见上一节）。任务的去向由智能体 runtime 绑定决定，不是由"哪台守护进程有本地目录"决定 —— 任务会落到承载这条智能体 runtime 的那台守护进程上，由它挑出匹配自己 ID 的那一行、忽略其他行。这里没有负载均衡：如果你想让某台机器跑某条任务，请把任务派给绑在那台机器 runtime 上的智能体。
 
 如果某台守护进程没有匹配这个项目的 `local_directory` 行，**不会**因为别处有人绑了就被拦下 —— 它的任务会照常走项目里的其他资源（一般就是 `github_repo` 那条 fallback 路径）。`local_directory` 只对它绑定的那台守护进程生效。
@@ -127,16 +127,16 @@ multica project resource update <project-id> <resource-id> \
 
 1. 再次校验路径（按上面那套规则）。
 2. 以 symlink 解析后的真实路径为 key 取一把"目录锁" —— 即便两条路径走不同路由（一条经过 symlink，一条直接）指向同一个文件夹，也会被串行化。
-3. 把智能体的 `CLAUDE.md` / `AGENTS.md`（以及 `.multica/project/resources.json`）**写进你的目录**。智能体就在那里工作，跟你自己打开这个文件夹后启动它是一样的体验。
-4. Multica 自己的运行时产物（`output/`、`logs/`、`.gc_meta.json`）放在 **你目录之外** 的一个独立 envRoot 里。
+3. 把智能体的 `CLAUDE.md` / `AGENTS.md`（以及 `.didian/project/resources.json`）**写进你的目录**。智能体就在那里工作，跟你自己打开这个文件夹后启动它是一样的体验。
+4. Didian 自己的运行时产物（`output/`、`logs/`、`.gc_meta.json`）放在 **你目录之外** 的一个独立 envRoot 里。
 
 如果第一条任务还在跑、第二条针对同一目录的任务又来了，第二条会停在 **Waiting for local directory（等待本地目录释放）** 状态。这个状态在所有相关 UI 都看得见 —— 聊天里的任务状态条、智能体横幅、执行记录、活动指示器；等待中的任务会被计入该智能体的"排队"占用。取消等待中的任务会立即释放它的槽位；取消正在跑的那条会让下一条立即顶上。
 
 等待没有超时 —— 一条等待中的任务会一直等到锁释放、或者被用户/智能体取消为止。
 
-### Multica 会写、不会动什么
+### Didian 会写、不会动什么
 
-- **会写入** `CLAUDE.md` / `AGENTS.md`（或对应 provider 的等价文件）以及 `.multica/project/resources.json` 到目录根 —— 这样智能体才有自己的元 skill 和资源清单。如果不想把这些提交到 git，请加进 `.gitignore`。
+- **会写入** `CLAUDE.md` / `AGENTS.md`（或对应 provider 的等价文件）以及 `.didian/project/resources.json` 到目录根 —— 这样智能体才有自己的元 skill 和资源清单。如果不想把这些提交到 git，请加进 `.gitignore`。
 - **会写入** 智能体决定做出的所有代码改动 —— 跟你自己在本地跑这个智能体没有区别。
 - **永远不会物理删除** 你的目录或里面任何内容。垃圾回收对路径是有判断的：对 `local_directory` 的 envRoot，它只会清自己挂在 `workspacesRoot` 下的 `output/` 与 `logs/`，**完全不碰** 你的目录。
 
@@ -146,7 +146,7 @@ multica project resource update <project-id> <resource-id> \
 
 - **不会自动切分支。** 智能体跑在你当前 checkout 的分支上。如果分支选择重要，请在分发任务前自己切换好。
 - **不会保护脏工作区，也不会自动 commit。** 未提交的改动智能体看得到、可能就地修改，不会被 stash。请把这个目录当作真实的工作区来对待，重要的运行前自己先 commit。
-- **不会自动开 PR。** 任务结束后，改动就停在它实际做出来的分支上 —— Multica 不会 push、不会开 PR。需要 push、需要 PR 的话请自己来。
+- **不会自动开 PR。** 任务结束后，改动就停在它实际做出来的分支上 —— Didian 不会 push、不会开 PR。需要 push、需要 PR 的话请自己来。
 - **`waiting_local_directory` 只显示状态，不显示是谁占着。** 这个徽标只告诉你"任务在等"，不会告诉你具体是哪条任务、哪个路径正在持有目录。
 
 这些都列在 local-directory 工作的"智能体任务生命周期"后续项里；在那之前，请把 `local_directory` 当作"智能体在你的目录里跑，跟你自己跑没区别"来用。
@@ -161,18 +161,18 @@ multica project resource update <project-id> <resource-id> \
 # 创建 + 挂资源一步到位。资源是在同一个事务里挂上的 ——
 # 任何一个资源不合法都会让整个 create 回滚，绝不会出现
 # "项目建好了但资源只挂了一半"的状态。
-multica project create \
+didian project create \
   --title "Agent UX 2026" \
-  --repo https://github.com/multica-ai/multica
+  --repo https://github.com/didian-ai/didian
 
 # 后续管理资源
-multica project resource list <project-id>
-multica project resource add  <project-id> --type github_repo --url <url>
-multica project resource remove <project-id> <resource-id>
+didian project resource list <project-id>
+didian project resource add  <project-id> --type github_repo --url <url>
+didian project resource remove <project-id> <resource-id>
 
 # 任何服务器认识的 resource_type 都可以用这个通用入口 ——
 # 加新类型时不需要改 CLI：
-multica project resource add <project-id> \
+didian project resource add <project-id> \
   --type notion_page \
   --ref '{"page_id":"…","title":"…"}'
 ```
@@ -183,7 +183,7 @@ multica project resource add <project-id> \
 
 当守护进程为一个项目内的 issue 启动智能体时，会发生两件事：
 
-### 1. `.multica/project/resources.json`
+### 1. `.didian/project/resources.json`
 
 API 响应的结构化透传，写进智能体的工作目录里：
 
@@ -196,7 +196,7 @@ API 响应的结构化透传，写进智能体的工作目录里：
       "id": "…",
       "resource_type": "github_repo",
       "resource_ref": {
-        "url": "https://github.com/multica-ai/multica",
+        "url": "https://github.com/didian-ai/didian",
         "default_branch_hint": "main"
       }
     }
@@ -215,12 +215,12 @@ Skill、辅助脚本、或者智能体自己想拿到本次运行**精确的**�
 
 This issue belongs to **Agent UX 2026**.
 
-Project resources (also written to `.multica/project/resources.json`):
+Project resources (also written to `.didian/project/resources.json`):
 
-- **GitHub repo**: https://github.com/multica-ai/multica (default branch: `main`)
+- **GitHub repo**: https://github.com/didian-ai/didian (default branch: `main`)
 
 Resources are pointers — open them only when relevant to the task. For
-`github_repo` resources, use `multica repo checkout <url>` to fetch the code.
+`github_repo` resources, use `didian repo checkout <url>` to fetch the code.
 ```
 
 这段文字故意做得很精简：完整 payload 已经写到磁盘上了，prompt 只是给智能体一个定位 —— 让它知道项目存在、知道挂了什么。
@@ -249,14 +249,14 @@ Resources are pointers — open them only when relevant to the task. For
 - **项目挂了至少一条 `github_repo` 资源** → 仅显示项目挂的仓库。工作区绑定的仓库会被隐藏，避免智能体猜哪一个属于这个 issue。
 - **项目没挂 `github_repo` 资源（或 issue 根本不在项目里）** → 回落到工作区的仓库列表，跟以前一样。
 
-这样可以把智能体的工作集压紧：项目把仓库说清楚了，那就是权威答案。而 `.multica/project/resources.json` 里始终带着完整列表，需要查看全部资源的 skill 仍然能拿到。
+这样可以把智能体的工作集压紧：项目把仓库说清楚了，那就是权威答案。而 `.didian/project/resources.json` 里始终带着完整列表，需要查看全部资源的 skill 仍然能拿到。
 
-守护进程在 checkout 这一侧也是配套的：当任务带着项目级别的 `github_repo` URL 进来时，这些 URL 会被合并进每工作区的白名单，并在智能体启动前同步进本地仓库缓存。所以即便某个项目仓库 URL 没被绑到工作区，`multica repo checkout` 也能正常处理它，不会以"未配置"为由拒绝。白名单的划分只是内部实现：工作区绑定的 URL 和任务级别的 URL 分开记录，工作区仓库列表的刷新不会顺手吊销某条项目 URL。
+守护进程在 checkout 这一侧也是配套的：当任务带着项目级别的 `github_repo` URL 进来时，这些 URL 会被合并进每工作区的白名单，并在智能体启动前同步进本地仓库缓存。所以即便某个项目仓库 URL 没被绑到工作区，`didian repo checkout` 也能正常处理它，不会以"未配置"为由拒绝。白名单的划分只是内部实现：工作区绑定的 URL 和任务级别的 URL 分开记录，工作区仓库列表的刷新不会顺手吊销某条项目 URL。
 
 ## 当前**不**做的事
 
 - **跨项目共享**。每条资源现在只能挂在一个项目上。
 - **按 skill 划定资源可见性**。所有资源对智能体本次运行里的每个 skill 都可见；按类型过滤是后续工作。
-- **缓存 / 同步**。`github_repo` 目前只是元数据 —— checkout 仍然按需走 `multica repo checkout`。Notion / Google Docs 之类的文档文本缓存会随对应类型一起到位。
+- **缓存 / 同步**。`github_repo` 目前只是元数据 —— checkout 仍然按需走 `didian repo checkout`。Notion / Google Docs 之类的文档文本缓存会随对应类型一起到位。
 
 这些是有意的留白 —— 第一版的目标是用最小的活动部件去验证这个抽象。

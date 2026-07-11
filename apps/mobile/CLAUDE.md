@@ -111,7 +111,7 @@ If a working pattern exists, **import or copy-adapt it**. If it almost-fits but 
 
 Why: every "I'll just write a fresh one" produced one of the 21 legacy components. The codebase already paid the cost of figuring out the iOS-correct shape for inbox rows, picker sheets, status icons — don't re-pay it.
 
-**Principle 2 — defaults first.** When you use any RNR component, accept its default variant, default size, default spacing, default palette. Do NOT add wrapper layers, "improved" defaults, or `variant="multicaCustom"` styles unless a concrete product need demands it. Reaching for shadcn defaults is correct; reaching for a hand-tuned version of them is the failure mode.
+**Principle 2 — defaults first.** When you use any RNR component, accept its default variant, default size, default spacing, default palette. Do NOT add wrapper layers, "improved" defaults, or `variant="didianCustom"` styles unless a concrete product need demands it. Reaching for shadcn defaults is correct; reaching for a hand-tuned version of them is the failure mode.
 
 **Principle 3 — iOS native > RNR > discuss.** When you need a new interaction, walk this waterfall in order, stop at the first hit:
 

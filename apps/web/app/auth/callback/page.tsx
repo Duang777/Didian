@@ -48,7 +48,7 @@ function CallbackContent() {
     const nextUrl = sanitizeNextUrl(nextPart ? nextPart.slice(5) : null);
 
     // CLI callback params — carried across the Google OAuth round-trip so
-    // headless/WSL2 `multica login` can receive the JWT after browser-based
+    // headless/WSL2 `didian login` can receive the JWT after browser-based
     // Google auth completes.
     const cliCallbackPart = stateParts.find((p) => p.startsWith("cli_callback:"));
     const cliStatePart = stateParts.find((p) => p.startsWith("cli_state:"));
@@ -85,7 +85,7 @@ function CallbackContent() {
         .googleLogin(code, redirectUri)
         .then(({ token }) => {
           setDesktopToken(token);
-          window.location.href = `multica://auth/callback?token=${encodeURIComponent(token)}`;
+          window.location.href = `didian://auth/callback?token=${encodeURIComponent(token)}`;
         })
         .catch((err) => {
           setError(err instanceof Error ? err.message : "Login failed");
@@ -108,7 +108,7 @@ function CallbackContent() {
 
           // 2. Un-onboarded users may have pending invitations on their
           //    email even when no `next=` was carried (came from a fresh
-          //    login on app.multica.ai instead of clicking the email link,
+          //    login on app.didian.ai instead of clicking the email link,
           //    or `state` was lost across the round-trip). Look them up by
           //    email and route to the batch /invitations page if any.
           //    Already-onboarded users skip this lookup — their new invites
@@ -148,9 +148,9 @@ function CallbackContent() {
       <div className="flex min-h-screen items-center justify-center">
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Opening Multica</CardTitle>
+            <CardTitle className="text-2xl">Opening Didian</CardTitle>
             <CardDescription>
-              You should see a prompt to open the Multica desktop app. If
+              You should see a prompt to open the Didian desktop app. If
               nothing happens, click the button below.
             </CardDescription>
           </CardHeader>
@@ -158,10 +158,10 @@ function CallbackContent() {
             <Button
               variant="outline"
               onClick={() => {
-                window.location.href = `multica://auth/callback?token=${encodeURIComponent(desktopToken)}`;
+                window.location.href = `didian://auth/callback?token=${encodeURIComponent(desktopToken)}`;
               }}
             >
-              Open Multica Desktop
+              Open Didian Desktop
             </Button>
           </CardContent>
         </Card>

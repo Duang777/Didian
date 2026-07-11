@@ -303,7 +303,7 @@ const commentHardCap = 2000
 //
 // Both values must be set together so the cursor can tie-break entries
 // landing in the same microsecond. The cursor for the next page is
-// emitted via the X-Multica-Next-Before / X-Multica-Next-Before-Id
+// emitted via the X-Didian-Next-Before / X-Didian-Next-Before-Id
 // response headers.
 //
 // Combination rules (kept narrow on purpose — Elon flagged the matrix risk):
@@ -604,8 +604,8 @@ func (h *Handler) ListComments(w http.ResponseWriter, r *http.Request) {
 	// body so the default flat-array response shape — which the desktop UI
 	// and existing callers depend on — is unchanged.
 	if result.NextBefore != "" && result.NextBeforeID != "" {
-		w.Header().Set("X-Multica-Next-Before", result.NextBefore)
-		w.Header().Set("X-Multica-Next-Before-Id", result.NextBeforeID)
+		w.Header().Set("X-Didian-Next-Before", result.NextBefore)
+		w.Header().Set("X-Didian-Next-Before-Id", result.NextBeforeID)
 	}
 
 	writeJSON(w, http.StatusOK, resp)

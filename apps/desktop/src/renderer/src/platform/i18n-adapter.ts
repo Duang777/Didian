@@ -1,6 +1,6 @@
 import type { LocaleAdapter, SupportedLocale } from "@didian/core/i18n";
 
-const STORAGE_KEY = "multica-locale";
+const STORAGE_KEY = "didian-locale";
 
 // Desktop adapter:
 //   - User choice: localStorage (set by Settings switcher).

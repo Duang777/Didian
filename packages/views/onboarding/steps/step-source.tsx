@@ -22,7 +22,7 @@ import { StepQuestion, type QuestionOption } from "./step-question";
 import { useT } from "../../i18n";
 
 /**
- * Step 1 — "How did you hear about Multica?" Pure attribution, does
+ * Step 1 — "How did you hear about Didian?" Pure attribution, does
  * not influence the agent template recommendation.
  */
 export function StepSource({

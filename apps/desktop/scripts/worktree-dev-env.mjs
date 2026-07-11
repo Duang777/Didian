@@ -18,7 +18,7 @@ import { basename, join } from "node:path";
 
 // Worktree renderer ports start at 5174 so they never reuse 5173 — the primary
 // checkout's default — even when a worktree's offset is 0 (e.g. POSIX cksum of
-// "/tmp/multica-3494" is 1189739000, and 1189739000 % 1000 === 0). Range 5174–6173.
+// "/tmp/didian-3494" is 1189739000, and 1189739000 % 1000 === 0). Range 5174–6173.
 const RENDERER_PORT_BASE = 5174;
 const OFFSET_MODULO = 1000;
 
@@ -67,7 +67,7 @@ export function rendererPortForPath(path) {
 // The dev app then shows e.g. "Didian Canary mul-3724-194" in Cmd+Tab and gets
 // its own userData / single-instance lock under that name. The offset is what
 // makes the lock unique: the folder name alone collides for worktrees that share
-// a basename at different paths (e.g. /a/multica vs /b/multica) or whose names
+// a basename at different paths (e.g. /a/didian vs /b/didian) or whose names
 // slug to the same fallback — those would share one lock and the second Electron
 // would still be blocked.
 export function appSuffixForPath(path) {

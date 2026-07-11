@@ -118,7 +118,7 @@ func TestCreateAgentFromTemplate_PublicToWithMemberTarget(t *testing.T) {
 	}
 
 	// Fresh member to grant invocation access to.
-	targetUserID := createPermissionTestMember(t, "template-invoke-target@multica.ai")
+	targetUserID := createPermissionTestMember(t, "template-invoke-target@didian.ai")
 
 	w := httptest.NewRecorder()
 	testHandler.CreateAgentFromTemplate(w, newRequest("POST", "/api/agents/from-template?workspace_id="+testWorkspaceID, map[string]any{

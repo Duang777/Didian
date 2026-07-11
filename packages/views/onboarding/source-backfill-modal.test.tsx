@@ -42,7 +42,7 @@ function setUser(partial: Record<string, unknown> | null) {
 function wipeDismissCounters() {
   for (let i = window.localStorage.length - 1; i >= 0; i--) {
     const k = window.localStorage.key(i);
-    if (k && k.startsWith("multica.source_backfill.dismiss.")) {
+    if (k && k.startsWith("didian.source_backfill.dismiss.")) {
       window.localStorage.removeItem(k);
     }
   }
@@ -273,7 +273,7 @@ describe("SourceBackfillModal", () => {
   });
 
   it("does not open once the per-user dismiss cap is reached on this browser", () => {
-    window.localStorage.setItem("multica.source_backfill.dismiss.u1", "3");
+    window.localStorage.setItem("didian.source_backfill.dismiss.u1", "3");
     setUser({
       id: "u1",
       onboarded_at: "2026-01-01T00:00:00Z",

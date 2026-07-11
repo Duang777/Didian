@@ -37,7 +37,7 @@ const (
 	// defaultLarkBaseURL is the mainland 飞书 open-platform host. It is the
 	// fallback host for an installation whose region is feishu (or unset);
 	// Region.OpenPlatformBaseURL maps region=lark to open.larksuite.com.
-	// Operators do NOT set MULTICA_LARK_HTTP_BASE_URL to pick a cloud
+	// Operators do NOT set DIDIAN_LARK_HTTP_BASE_URL to pick a cloud
 	// anymore — the per-installation region does that automatically. The
 	// env var remains only as a deployment-wide override (proxy / mock /
 	// single-cloud staging); tests substitute an httptest.Server URL.
@@ -50,7 +50,7 @@ const (
 
 	// defaultRequestTimeout is the per-call HTTP timeout. Lark's API
 	// is normally well under 1s; we leave headroom for cross-region
-	// latency from a self-hosted Multica deployment to feishu.cn.
+	// latency from a self-hosted Didian deployment to feishu.cn.
 	defaultRequestTimeout = 10 * time.Second
 
 	// Lark's "invalid tenant_access_token" / "tenant_access_token
@@ -93,7 +93,7 @@ func (c HTTPClientConfig) withDefaults() HTTPClientConfig {
 	// An empty BaseURL means "no deployment-wide override" — each call
 	// then resolves its host from InstallationCredentials.Region (see
 	// resolveBaseURL), so one client serves both Feishu and Lark. A
-	// non-empty BaseURL (MULTICA_LARK_HTTP_BASE_URL, or an httptest URL
+	// non-empty BaseURL (DIDIAN_LARK_HTTP_BASE_URL, or an httptest URL
 	// in tests) forces every region to that host.
 	c.BaseURL = strings.TrimRight(c.BaseURL, "/")
 	if c.HTTPClient == nil {
@@ -111,7 +111,7 @@ func (c HTTPClientConfig) withDefaults() HTTPClientConfig {
 // NewHTTPAPIClient constructs the real APIClient that speaks to Lark's
 // open platform over HTTPS. Per-installation credentials flow in via
 // each call's InstallationCredentials parameter; tokens are cached
-// keyed by app_id so a single Multica server reuses Lark's
+// keyed by app_id so a single Didian server reuses Lark's
 // tenant_access_token across calls to the same app.
 func NewHTTPAPIClient(cfg HTTPClientConfig) APIClient {
 	cfg = cfg.withDefaults()
@@ -208,7 +208,7 @@ func (c *httpAPIClient) tenantAccessToken(ctx context.Context, creds Installatio
 }
 
 // resolveBaseURL picks the open-platform host for one call. An explicit
-// cfg.BaseURL (MULTICA_LARK_HTTP_BASE_URL, or an httptest URL in tests)
+// cfg.BaseURL (DIDIAN_LARK_HTTP_BASE_URL, or an httptest URL in tests)
 // overrides every region and routes all traffic there. With no override,
 // the host comes from the installation's region, so Feishu and Lark
 // installations served by the same process each reach their own cloud.
@@ -990,14 +990,14 @@ func bindingPromptTemplate(bindURL string) (string, error) {
 		"config": map[string]any{"wide_screen_mode": true},
 		"header": map[string]any{
 			"template": "blue",
-			"title":    map[string]any{"tag": "plain_text", "content": "Multica"},
+			"title":    map[string]any{"tag": "plain_text", "content": "Didian"},
 		},
 		"elements": []any{
 			map[string]any{
 				"tag": "div",
 				"text": map[string]any{
 					"tag":     "lark_md",
-					"content": "你还没有绑定 Multica 账户。点击下方按钮完成绑定后即可使用此 Agent。",
+					"content": "你还没有绑定 Didian 账户。点击下方按钮完成绑定后即可使用此 Agent。",
 				},
 			},
 			map[string]any{

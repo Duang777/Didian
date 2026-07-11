@@ -41,10 +41,10 @@ describe("worktree-dev-env", () => {
   });
 
   it("never reuses 5173 even when the offset is 0", () => {
-    // POSIX cksum("/tmp/multica-3494") === 1189739000, % 1000 === 0
-    expect(offsetForPath("/tmp/multica-3494")).toBe(0);
-    expect(rendererPortForPath("/tmp/multica-3494")).toBe(5174);
-    expect(rendererPortForPath("/tmp/multica-3494")).not.toBe(5173);
+    // POSIX cksum("/tmp/didian-1987") === 1423423000, % 1000 === 0
+    expect(offsetForPath("/tmp/didian-1987")).toBe(0);
+    expect(rendererPortForPath("/tmp/didian-1987")).toBe(5174);
+    expect(rendererPortForPath("/tmp/didian-1987")).not.toBe(5173);
   });
 
   it("suffix is '<folder>-<offset>' so it stays recognizable and unique", () => {
@@ -59,11 +59,11 @@ describe("worktree-dev-env", () => {
   });
 
   it("disambiguates worktrees that share a folder name at different paths", () => {
-    // Same basename "multica", different parent dirs → different offsets/suffixes,
+    // Same basename "didian", different parent dirs → different offsets/suffixes,
     // so each gets its own single-instance lock.
-    expect(offsetForPath("/tmp/a/multica")).not.toBe(offsetForPath("/tmp/b/multica"));
-    expect(appSuffixForPath("/tmp/a/multica")).not.toBe(
-      appSuffixForPath("/tmp/b/multica"),
+    expect(offsetForPath("/tmp/a/didian")).not.toBe(offsetForPath("/tmp/b/didian"));
+    expect(appSuffixForPath("/tmp/a/didian")).not.toBe(
+      appSuffixForPath("/tmp/b/didian"),
     );
   });
 

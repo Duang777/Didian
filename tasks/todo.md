@@ -110,7 +110,7 @@
 
 ## Task 5A：Didian 用户可见品牌清理
 
-**描述：** 先把用户直接看到的 Multica 品牌表层迁移为 Didian，同时保留 `@didian/*` 包名、CLI binary、protocol scheme、本地配置目录和数据库/API 技术标识，避免在同一切片里破坏运行链路。
+**描述：** 先把用户直接看到的 Didian 品牌表层迁移为 Didian，同时保留 `@didian/*` 包名、CLI binary、protocol scheme、本地配置目录和数据库/API 技术标识，避免在同一切片里破坏运行链路。
 
 **验收标准：**
 - [x] Web/desktop 可见文案使用 Didian。
@@ -162,7 +162,7 @@
 
 ## Task 5C：CLI、daemon、protocol 和持久化标识迁移
 
-**描述：** 分阶段迁移 `multica` CLI、desktop protocol、`~/.multica` 本地目录、server command、release asset、metrics/env/API 等深层技术标识。需要保留兼容别名或迁移路径，不能和 UI 品牌替换混在一起。
+**描述：** 分阶段迁移 `didian` CLI、desktop protocol、`~/.didian` 本地目录、server command、release asset、metrics/env/API 等深层技术标识。需要保留兼容别名或迁移路径，不能和 UI 品牌替换混在一起。
 
 **验收标准：**
 - [ ] 旧 CLI/protocol/config 用户有明确兼容路径。
@@ -179,7 +179,7 @@
 **依赖：** Task 5B
 
 **可能触及文件：**
-- `server/cmd/multica/*`
+- `server/cmd/didian/*`
 - `apps/desktop/src/main/daemon-manager.ts`
 - `apps/desktop/src/main/cli-*`
 - `apps/desktop/electron-builder.yml`

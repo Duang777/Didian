@@ -43,14 +43,14 @@ describe("CreateWorkspaceForm", () => {
 
   it("shows the brand host as the URL prefix when no app URL is configured", () => {
     renderForm();
-    expect(screen.getByText("multica.ai/")).toBeInTheDocument();
+    expect(screen.getByText("didian.ai/")).toBeInTheDocument();
   });
 
   it("shows the deployment host as the URL prefix for self-hosted instances", () => {
-    configStore.setState({ daemonAppUrl: "https://multica.example.com" });
+    configStore.setState({ daemonAppUrl: "https://didian.example.com" });
     renderForm();
-    expect(screen.getByText("multica.example.com/")).toBeInTheDocument();
-    expect(screen.queryByText("multica.ai/")).not.toBeInTheDocument();
+    expect(screen.getByText("didian.example.com/")).toBeInTheDocument();
+    expect(screen.queryByText("didian.ai/")).not.toBeInTheDocument();
   });
 
   it("auto-generates slug from name until user edits slug", () => {

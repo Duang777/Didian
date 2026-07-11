@@ -9,7 +9,7 @@ import { api } from "@didian/core/api";
 import { useHasOnboarded } from "@didian/core/paths";
 import { setCurrentWorkspace } from "@didian/core/platform";
 import { ThemeProvider } from "@didian/ui/components/common/theme-provider";
-import { MulticaIcon } from "@didian/ui/components/common/multica-icon";
+import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 import { Toaster } from "@didian/ui/components/ui/sonner";
 import { DesktopLoginPage } from "./pages/login";
 import { DesktopShell } from "./components/desktop-layout";
@@ -84,13 +84,13 @@ function AppContent() {
     : null;
 
   // Tell the main process which backend URL we talk to, so daemon-manager
-  // can pick the matching CLI profile (server_url from ~/.multica config).
+  // can pick the matching CLI profile (server_url from ~/.didian config).
   useEffect(() => {
     if (!runtimeConfig) return;
     window.daemonAPI.setTargetApiUrl(runtimeConfig.apiUrl);
   }, [runtimeConfig]);
 
-  // Listen for invite IDs delivered via deep link (multica://invite/<id>).
+  // Listen for invite IDs delivered via deep link (didian://invite/<id>).
   // We open the overlay regardless of login state — if the user isn't logged
   // in, InvitePage's queries will fail and render the "not found" state,
   // which is acceptable; the expected pre-flight happens in the web app
@@ -101,7 +101,7 @@ function AppContent() {
     });
   }, []);
 
-  // Listen for auth token delivered via deep link (multica://auth/callback?token=...).
+  // Listen for auth token delivered via deep link (didian://auth/callback?token=...).
   // daemonAPI.syncToken is handled separately by the [user] effect below, which
   // fires whenever a user logs in (deep link, session restore, account switch).
   useEffect(() => {
@@ -127,7 +127,7 @@ function AppContent() {
   // Sync token and start the daemon whenever the user logs in.
   useEffect(() => {
     if (!user) return;
-    const token = localStorage.getItem("multica_token");
+    const token = localStorage.getItem("didian_token");
     if (!token) return;
     const userId = user.id;
     (async () => {
@@ -271,7 +271,7 @@ function AppContent() {
   if (isLoading || bootstrapping) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <MulticaIcon className="size-6 animate-pulse" />
+        <DidianIcon className="size-6 animate-pulse" />
       </div>
     );
   }
@@ -285,7 +285,7 @@ function BlockingRuntimeConfigError({ message }: { message: string }) {
       <div className="max-w-xl rounded-lg border bg-card p-6 shadow-sm">
         <h1 className="text-lg font-semibold">Desktop configuration error</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Multica Desktop could not load <code>~/.multica/desktop.json</code>. Fix or remove the file and restart the app.
+          Didian Desktop could not load <code>~/.didian/desktop.json</code>. Fix or remove the file and restart the app.
         </p>
         <pre className="mt-4 whitespace-pre-wrap rounded-md bg-muted p-3 text-xs text-muted-foreground">
           {message}

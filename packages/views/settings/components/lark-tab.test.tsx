@@ -68,7 +68,7 @@ vi.mock("@didian/core/workspace/queries", () => ({
 }));
 
 // useActorName is the workspace-wide identity helper. The Installation
-// row uses it to render the Multica agent's name in place of the raw
+// row uses it to render the Didian agent's name in place of the raw
 // Lark app_id. Stubbing it here decouples LarkTab tests from the agent
 // list query plumbing.
 const agentNameByIdRef = vi.hoisted(() => ({
@@ -710,13 +710,13 @@ describe("LarkInstallDialog (polling terminal errors)", () => {
 
 // The Connected bots list used to surface Lark's raw cli_… app_id and
 // ou_… bot_open_id, which are meaningless to product users. The row now
-// renders the Multica agent's avatar + name (joined via inst.agent_id),
+// renders the Didian agent's avatar + name (joined via inst.agent_id),
 // since the binding is 1:1 with an Agent. These tests pin that identity
 // rendering so the row never regresses to leaking the cli_ prefix.
 describe("LarkTab connected bots list (agent identity rendering)", () => {
   beforeEach(resetFixtures);
 
-  it("renders the Multica agent's name and avatar instead of the raw Lark app_id / bot_open_id", () => {
+  it("renders the Didian agent's name and avatar instead of the raw Lark app_id / bot_open_id", () => {
     agentNameByIdRef.current = new Map([["agent-1", "Bohan's Helper"]]);
     installationsRef.current.installations = [
       {

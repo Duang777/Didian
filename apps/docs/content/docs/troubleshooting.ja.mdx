@@ -1,40 +1,40 @@
 ---
 title: トラブルシューティング
-description: Multica をセルフホストする際によく遭遇する問題 — 症状、原因、診断方法、解決方法。
+description: Didian をセルフホストする際によく遭遇する問題 — 症状、原因、診断方法、解決方法。
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-症状から問題を探してください。各項目では**症状 / 考えられる原因 / 診断方法 / 解決方法**を提供します。お使いの状況が一覧にない場合は、[GitHub](https://github.com/multica-ai/multica/issues) にイシューを登録してください。
+症状から問題を探してください。各項目では**症状 / 考えられる原因 / 診断方法 / 解決方法**を提供します。お使いの状況が一覧にない場合は、[GitHub](https://github.com/didian-ai/didian/issues) にイシューを登録してください。
 
 ## デーモンがサーバーに接続できない
 
-**症状**: [`multica daemon`](/cli) の `status` コマンドが `offline` または `connection refused` を表示します。サーバーログに `/api/daemon/register` や `/api/daemon/heartbeat` のリクエストが見当たりません。デーモンの仕組みについては[デーモンとランタイム](/daemon-runtimes)を参照してください。
+**症状**: [`didian daemon`](/cli) の `status` コマンドが `offline` または `connection refused` を表示します。サーバーログに `/api/daemon/register` や `/api/daemon/heartbeat` のリクエストが見当たりません。デーモンの仕組みについては[デーモンとランタイム](/daemon-runtimes)を参照してください。
 
 **考えられる原因**:
 
-1. **`MULTICA_SERVER_URL` が誤ったアドレスを指している** — デフォルト値は `ws://localhost:8080/ws` で、セルフホスト時は自分のサーバーアドレスに変更する必要があります
+1. **`DIDIAN_SERVER_URL` が誤ったアドレスを指している** — デフォルト値は `ws://localhost:8080/ws` で、セルフホスト時は自分のサーバーアドレスに変更する必要があります
 2. **ネットワーク / ファイアウォールによるブロック** — デーモンとサーバーが同じネットワークにいない、またはアウトバウンドトラフィックがブロックされている
-3. **トークンが期限切れまたは無効** — `multica login` を一度も実行していない、または PAT が取り消された
+3. **トークンが期限切れまたは無効** — `didian login` を一度も実行していない、または PAT が取り消された
 4. **サーバーが登録を拒否した** — ログインしたアカウントが対象のワークスペースに所属していない（register が 403 を返す）
 5. **DNS 解決の失敗** — デーモンのマシンでホスト名が解決されない
 
 **診断方法**:
 
 ```bash
-multica daemon logs --lines 100    # look for daemon-side errors
-echo $MULTICA_SERVER_URL          # confirm the address is set
+didian daemon logs --lines 100    # look for daemon-side errors
+echo $DIDIAN_SERVER_URL          # confirm the address is set
 curl -i http://<server-host>:8080/health   # hit the server directly
 curl -i http://<server-host>:8080/readyz  # include DB + migration readiness
-cat ~/.multica/config.json        # verify api_token exists
-multica workspace list            # confirm you're a member of the target workspace
+cat ~/.didian/config.json        # verify api_token exists
+didian workspace list            # confirm you're a member of the target workspace
 ```
 
-**解決方法**: 上記の各原因を 1 つずつ対処してください。最もよくある 2 つの解決策は、**`MULTICA_SERVER_URL` を変更してデーモンを再起動する**こと（`multica daemon restart`）と、**ログインし直す**こと（`multica logout && multica login`）です。
+**解決方法**: 上記の各原因を 1 つずつ対処してください。最もよくある 2 つの解決策は、**`DIDIAN_SERVER_URL` を変更してデーモンを再起動する**こと（`didian daemon restart`）と、**ログインし直す**こと（`didian logout && didian login`）です。
 
 ## タスクが `queued` で止まる
 
-**症状**: エージェントにイシューを割り当てた後、イシューの状態はすぐに `in_progress` に変わりますが、長時間経ってもページにエージェント実行の兆候が見えません。`multica daemon status` はデーモンを `online` と表示しています。
+**症状**: エージェントにイシューを割り当てた後、イシューの状態はすぐに `in_progress` に変わりますが、長時間経ってもページにエージェント実行の兆候が見えません。`didian daemon status` はデーモンを `online` と表示しています。
 
 **考えられる原因**（頻度順）:
 
@@ -47,19 +47,19 @@ multica workspace list            # confirm you're a member of the target worksp
 **診断方法**:
 
 ```bash
-multica daemon status --output json       # runtime list + last_seen_at
-multica agent list                         # check agent archived state
-multica issue show <issue-id>             # inspect task history
+didian daemon status --output json       # runtime list + last_seen_at
+didian agent list                         # check agent archived state
+didian issue show <issue-id>             # inspect task history
 ```
 
 サーバー側（セルフホスト）では、`"no_tasks"` / `"no_capacity"` を grep してクレームの結果を確認できます。
 
 **解決方法**:
 
-- 同時実行が満杯 → 実行中のタスクが終わるのを待つか、`multica agent update <id> --max-concurrent-tasks 10` で上限を引き上げてください
+- 同時実行が満杯 → 実行中のタスクが終わるのを待つか、`didian agent update <id> --max-concurrent-tasks 10` で上限を引き上げてください
 - 同一イシューの順次実行 → 前のタスクが終わるのを待つか、別のエージェントに割り当て直してください
-- エージェントがアーカイブされている → `multica agent restore <id>`
-- ランタイム未登録 → `multica daemon restart` するとデーモンが再登録します
+- エージェントがアーカイブされている → `didian agent restore <id>`
+- ランタイム未登録 → `didian daemon restart` するとデーモンが再登録します
 
 ## WebSocket が接続できない
 
@@ -80,7 +80,7 @@ multica issue show <issue-id>             # inspect task history
 
 **解決方法**:
 
-- Origin エラー → サーバーの `.env` に `FRONTEND_ORIGIN=https://multica.yourdomain.com` を設定（またはカンマ区切りの `CORS_ALLOWED_ORIGINS`）し、サーバーを再起動してください
+- Origin エラー → サーバーの `.env` に `FRONTEND_ORIGIN=https://didian.yourdomain.com` を設定（またはカンマ区切りの `CORS_ALLOWED_ORIGINS`）し、サーバーを再起動してください
 - プロトコルの不一致 → `FRONTEND_ORIGIN` のプロトコルがフロントエンドと一致しているか確認してください
 - リバースプロキシ → Nginx に `proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade";` を追加してください
 - クッキーの期限切れ → ページを再読み込みしてログインし直してください
@@ -128,11 +128,11 @@ SMTP の経路はすべての失敗を失敗した段階とともにラップす
 
 | 記録されたエラー | 意味 | 解決方法 |
 |---|---|---|
-| `smtp dial <host>:<port>: dial tcp …: connect: connection refused` / `i/o timeout` | バックエンドコンテナが relay に到達できない — host が誤っている、port が誤っている、ファイアウォール、または relay が待ち受けていない | コンテナ内部から `SMTP_HOST` / `SMTP_PORT` が解決されるか確認してください（`docker compose -f docker-compose.selfhost.yml exec backend nslookup <host>` および `nc -vz <host> <port>`）。Multica を実行するホストから relay へのファイアウォールを開放してください |
+| `smtp dial <host>:<port>: dial tcp …: connect: connection refused` / `i/o timeout` | バックエンドコンテナが relay に到達できない — host が誤っている、port が誤っている、ファイアウォール、または relay が待ち受けていない | コンテナ内部から `SMTP_HOST` / `SMTP_PORT` が解決されるか確認してください（`docker compose -f docker-compose.selfhost.yml exec backend nslookup <host>` および `nc -vz <host> <port>`）。Didian を実行するホストから relay へのファイアウォールを開放してください |
 | `smtp starttls: x509: certificate signed by unknown authority`（または `certificate is not valid for any names`） | relay がプライベート CA / 自己署名証明書を使用しており、コンテナの信頼ストアがそれを拒否している | CA をコンテナにインストールするか、relay が信頼できるネットワークセグメント上で到達可能であることを確認したうえでのみ `SMTP_TLS_INSECURE=true` を設定してください |
 | `smtp auth: 535 5.7.8 Authentication credentials invalid`（または `534`/`530`） | `SMTP_USERNAME` / `SMTP_PASSWORD` が誤っている、または relay が `PLAIN` 以外の認証方式を要求している | メール管理者にサービスアカウントの認証情報を再確認してください。Exchange の匿名内部 relay の場合は両方を空のままにします（`SMTP_USERNAME=`、`SMTP_PASSWORD=`） |
 | `smtp MAIL FROM: 550 5.7.1 Client does not have permissions to send as this sender` | relay が `RESEND_FROM_EMAIL` をエンベロープ送信者として受け入れない — 典型的な Exchange の「anonymous users not allowed」または DMARC アラインメントの問題 | `RESEND_FROM_EMAIL` を relay が受け入れるドメインに設定してください。Exchange では receive connector で送信元 IP に `ms-Exch-SMTP-Accept-Any-Sender` を付与してください |
-| `smtp RCPT TO <addr>: 550 5.7.1 Unable to relay` | relay の receive connector が、あなたのサブネットから外部の受信者への中継を許可していない（外部ドメインと通信する匿名内部 relay で最も多い） | 招待を内部の受信者に制限するか、Multica ホストのサブネットを Exchange の「Anonymous Users → Relay」権限リストに追加してください |
+| `smtp RCPT TO <addr>: 550 5.7.1 Unable to relay` | relay の receive connector が、あなたのサブネットから外部の受信者への中継を許可していない（外部ドメインと通信する匿名内部 relay で最も多い） | 招待を内部の受信者に制限するか、Didian ホストのサブネットを Exchange の「Anonymous Users → Relay」権限リストに追加してください |
 | `smtp DATA` / `smtp write body` / `smtp end data` | セッションは受け入れられたが relay が本文を破棄した — 通常はメッセージサイズ制限、コンテンツフィルタリング、または送信途中の接続リセットが原因 | relay のログで同じ `Message-ID`（ログには `<unixnano>@<host>` 形式）を確認してください。必要であればメッセージサイズの上限を引き上げてください |
 
 `MAIL FROM`、`RCPT TO`、`DATA` のエラーは常に relay の応答コードとともに記録されるため、反対側の Exchange / Postfix のログと突き合わせることができます。認証コードと招待トークンは、ラップされたエラーに**決して**含まれません。
@@ -148,7 +148,7 @@ SMTP の経路はすべての失敗を失敗した段階とともにラップす
 - host / port の誤り → `SMTP_HOST` / `SMTP_PORT` を調整してバックエンドを再起動してください。サポートされる relay モードは[認証設定 → Option B: SMTP relay](/auth-setup)を参照してください
 - 証明書の不一致 → relay の CA をコンテナにインストールするか、信頼できるネットワークセグメントで一時的に `SMTP_TLS_INSECURE=true` を設定してください
 - 認証の失敗 → 認証情報を再確認してください。匿名内部 relay の場合は `SMTP_USERNAME` と `SMTP_PASSWORD` を空のままにしてください
-- `Unable to relay` → 内部の受信者に制限するか、Exchange の receive connector で Multica ホストの IP に中継権限を付与してください
+- `Unable to relay` → 内部の受信者に制限するか、Exchange の receive connector で Didian ホストの IP に中継権限を付与してください
 
 ## 固定のローカルテストコードが動作しない
 
@@ -156,23 +156,23 @@ SMTP の経路はすべての失敗を失敗した段階とともにラップす
 
 **考えられる原因**（相互に排他的）:
 
-1. **`MULTICA_DEV_VERIFICATION_CODE` が空** — 固定コードはデフォルトで無効です
+1. **`DIDIAN_DEV_VERIFICATION_CODE` が空** — 固定コードはデフォルトで無効です
 2. **`APP_ENV=production`** — これは**正しい**プロダクション構成です。固定のローカルテストコードはプロダクションでは無視されます
 3. **構成されたコードが 6 桁でない** — このショートカットは 6 桁の値のみを受け付けます
 
 **診断方法**:
 
 ```bash
-cat .env | grep -E 'APP_ENV|MULTICA_DEV_VERIFICATION_CODE'
-docker exec <container> env | grep -E 'APP_ENV|MULTICA_DEV_VERIFICATION_CODE'
+cat .env | grep -E 'APP_ENV|DIDIAN_DEV_VERIFICATION_CODE'
+docker exec <container> env | grep -E 'APP_ENV|DIDIAN_DEV_VERIFICATION_CODE'
 ```
 
 インボックス（スパムを含む）で実際の認証コードを確認してください。
 
 **解決方法**:
 
-- プロダクションでは `MULTICA_DEV_VERIFICATION_CODE` を空のままにし、Resend を構成して実際のコードを使用してください
-- ローカル開発や内部テストの場合は、サーバーログから生成されたコードをコピーするか、`APP_ENV=development` と `MULTICA_DEV_VERIFICATION_CODE=888888` を設定してください — 公開インスタンスでは固定コードを絶対に有効にしないでください（詳細は[サインインとサインアップの構成 → 固定のローカルテストコード](/auth-setup#fixed-local-testing-codes)を参照）
+- プロダクションでは `DIDIAN_DEV_VERIFICATION_CODE` を空のままにし、Resend を構成して実際のコードを使用してください
+- ローカル開発や内部テストの場合は、サーバーログから生成されたコードをコピーするか、`APP_ENV=development` と `DIDIAN_DEV_VERIFICATION_CODE=888888` を設定してください — 公開インスタンスでは固定コードを絶対に有効にしないでください（詳細は[サインインとサインアップの構成 → 固定のローカルテストコード](/auth-setup#fixed-local-testing-codes)を参照）
 
 ## 使用量ダッシュボードが 0 のままになる
 
@@ -181,7 +181,7 @@ docker exec <container> env | grep -E 'APP_ENV|MULTICA_DEV_VERIFICATION_CODE'
 **考えられる原因**:
 
 1. **`rollup_task_usage_hourly()` がクレームされていない** — 使用量 / ランタイムのダッシュボードは派生テーブル `task_usage_hourly` から読み取り、このテーブルはその関数によって埋められます。MUL-2957 以降、バックエンドは DB バックドのスケジューラー（`sys_cron_executions`）を介してこの rollup をインプロセスで実行します。古いビルド、未適用の migration `113`、またはレプリカが残っていない長時間のバックエンド停止があると、最近の SUCCESS 行のないテーブルが残ることがあります。
-2. **`pg_cron` は互換性のために構成されているが誤ったデータベースを指している** — `pg_cron.database_name` のデフォルトは `postgres` です。Multica データベース名が異なる場合、スケジュールされたジョブは `rollup_task_usage_hourly()` を一切見つけられません。インプロセススケジューラーはこれに依存しませんが、もしインプロセススケジューラーを除去して `pg_cron` に依存している場合、DB 名は一致しなければなりません。
+2. **`pg_cron` は互換性のために構成されているが誤ったデータベースを指している** — `pg_cron.database_name` のデフォルトは `postgres` です。Didian データベース名が異なる場合、スケジュールされたジョブは `rollup_task_usage_hourly()` を一切見つけられません。インプロセススケジューラーはこれに依存しませんが、もしインプロセススケジューラーを除去して `pg_cron` に依存している場合、DB 名は一致しなければなりません。
 3. **ハンドラーがクレームされているが静かにエラーを出している** — マイグレーションが部分的にしか適用されていないために SQL 関数が欠落している、あるいは DB ロール / search_path が誤って構成されている、など。`sys_cron_executions` の FAILED 監査行を確認してください。
 
 **診断方法**:
@@ -242,7 +242,7 @@ MUL-2957 以降、migrate コマンドは migration `103` を適用する直前�
      ./backfill_task_usage_hourly --sleep-between-slices=2s
 
    # Kubernetes
-   kubectl -n multica exec deploy/multica-backend -- \
+   kubectl -n didian exec deploy/didian-backend -- \
      ./backfill_task_usage_hourly --sleep-between-slices=2s
    ```
 
@@ -253,7 +253,7 @@ MUL-2957 以降、migrate コマンドは migration `103` を適用する直前�
 
 ## ポートの競合
 
-**症状**: `multica server` や `multica daemon start` が `address already in use` で失敗します。
+**症状**: `didian server` や `didian daemon start` が `address already in use` で失敗します。
 
 **考えられる原因**:
 
@@ -278,13 +278,13 @@ netstat -ano | findstr :8080    # Windows
 
 | 構成要素 | 場所 | コマンド |
 |---|---|---|
-| **デーモン** | `~/.multica/daemon.log`（バックグラウンドモード）またはフォアグラウンドの stdout | `multica daemon logs -f --lines 100` |
-| **デーモン（クラッシュ）** | `~/.multica/daemon.err.log` | 直接開く——パニックや起動初期のエラーはここに記録されます |
+| **デーモン** | `~/.didian/daemon.log`（バックグラウンドモード）またはフォアグラウンドの stdout | `didian daemon logs -f --lines 100` |
+| **デーモン（クラッシュ）** | `~/.didian/daemon.err.log` | 直接開く——パニックや起動初期のエラーはここに記録されます |
 | **サーバー（Docker）** | コンテナの stdout | `docker logs -f <container>` |
-| **サーバー（systemd）** | journal | `journalctl -u multica-server -f` |
+| **サーバー（systemd）** | journal | `journalctl -u didian-server -f` |
 | **フロントエンド（dev）** | `pnpm dev` を実行中のターミナル | 直接確認 |
 | **フロントエンド（ブラウザ）** | DevTools → Console | `F12` を押す |
 
-バックグラウンドモードでは `daemon.log` はサイズでローテーションされ（デフォルトは 20MB × gzip バックアップ 5 世代。`MULTICA_DAEMON_LOG_MAX_SIZE_MB` / `_MAX_BACKUPS` / `_MAX_AGE_DAYS` で調整可能）、開けないほど大きくなることはありません。Go ランタイムのパニックや logger 初期化前のエラーは、独立した上限付きの `daemon.err.log` に出力されます。
+バックグラウンドモードでは `daemon.log` はサイズでローテーションされ（デフォルトは 20MB × gzip バックアップ 5 世代。`DIDIAN_DAEMON_LOG_MAX_SIZE_MB` / `_MAX_BACKUPS` / `_MAX_AGE_DAYS` で調整可能）、開けないほど大きくなることはありません。Go ランタイムのパニックや logger 初期化前のエラーは、独立した上限付きの `daemon.err.log` に出力されます。
 
-より詳細なデーモンログが必要な場合は、デーモンをバックグラウンドからフォアグラウンドに移してください: `multica daemon stop && multica daemon start --foreground`。フォアグラウンドで実行すると、ログはローテーションファイルではなくターミナルにリアルタイムで出力されます。
+より詳細なデーモンログが必要な場合は、デーモンをバックグラウンドからフォアグラウンドに移してください: `didian daemon stop && didian daemon start --foreground`。フォアグラウンドで実行すると、ログはローテーションファイルではなくターミナルにリアルタイムで出力されます。

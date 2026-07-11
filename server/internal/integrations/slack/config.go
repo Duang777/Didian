@@ -1,7 +1,7 @@
 // Package slack is the Slack integration for the channel-agnostic engine. It
 // uses the bring-your-own-app (BYO) model (MUL-3666): each agent's Slack app is
 // created and installed by the workspace admin, who pastes its bot token (xoxb-)
-// and app-level token (xapp-) into Multica. Each channel_installation therefore
+// and app-level token (xapp-) into Didian. Each channel_installation therefore
 // carries its OWN app-level token and gets its OWN Socket Mode connection,
 // supervised per-installation by the engine like Feishu (slack_channel.go) — so
 // several agents can each have a distinct bot identity in one Slack workspace.

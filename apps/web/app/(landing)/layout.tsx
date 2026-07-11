@@ -19,13 +19,13 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      name: "Multica",
-      url: "https://www.multica.ai",
-      sameAs: ["https://github.com/multica-ai/multica"],
+      name: "Didian",
+      url: "https://www.didian.ai",
+      sameAs: ["https://github.com/didian-ai/didian"],
     },
     {
       "@type": "SoftwareApplication",
-      name: "Multica",
+      name: "Didian",
       applicationCategory: "ProjectManagement",
       operatingSystem: "Web",
       description:

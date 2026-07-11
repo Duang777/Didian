@@ -1,19 +1,19 @@
-# Multica Docs 站重写规划（v2）
+# Didian Docs 站重写规划（v2）
 
-> **本规划是什么**：Multica 对外 doc 站（`apps/docs/`，Fumadocs + Next.js）的从零重写方案。它替换 v1 规划——v1 之前在代码调研之前写的，很多对概念的切分现在看是错的。
+> **本规划是什么**：Didian 对外 doc 站（`apps/docs/`，Fumadocs + Next.js）的从零重写方案。它替换 v1 规划——v1 之前在代码调研之前写的，很多对概念的切分现在看是错的。
 >
 > **v2 的数据基础**：4 份并行 subagent 的代码级调研，覆盖 Workspace/Members/Issues/Projects、Agent/Runtime/Daemon/Tasks、Skill/MCP/Autopilot/Chat、Inbox/Realtime/Auth 四大领域。每一处涉及产品行为的陈述都能在代码里找到对应位置。
 >
 > **本文档语言**：中文（团队内部规划，你要逐篇 review）。
 > **doc 站本身语言**：英文先行，中文作为 Phase 10 的 i18n。
 >
-> **风格目标**：排版/布局对标 Anthropic docs（奶油底、serif heading、宽松行距、窄行宽、深色代码块的灵魂），但**色板继续用 Multica 自己的 tokens**（冷蓝 brand）——visual 上是"Multica 色 + Anthropic 排版语法"。
+> **风格目标**：排版/布局对标 Anthropic docs（奶油底、serif heading、宽松行距、窄行宽、深色代码块的灵魂），但**色板继续用 Didian 自己的 tokens**（冷蓝 brand）——visual 上是"Didian 色 + Anthropic 排版语法"。
 
 ---
 
 ## 一、产品定位（文档的落脚点）
 
-Multica = **人 + AI agent 在同一个看板上协作的任务管理平台**。
+Didian = **人 + AI agent 在同一个看板上协作的任务管理平台**。
 
 这个定位决定了它的文档**和普通 SaaS 文档有三个不一样的地方**，贯穿全规划：
 
@@ -34,7 +34,7 @@ Multica = **人 + AI agent 在同一个看板上协作的任务管理平台**。
 | P2 | **Agent 本身** | "这个命令怎么用？这个概念是什么？" |
 | ✗ | OSS 贡献者 | 暂不做 —— 用 `CONTRIBUTING.md` 顶着 |
 
-> **关键**：P2 的 agent 不会逛导航，只会被人类用 `Fetch https://docs.multica.ai/...` 指向某一页。所以每一页都要**自包含**。
+> **关键**：P2 的 agent 不会逛导航，只会被人类用 `Fetch https://docs.didian.ai/...` 指向某一页。所以每一页都要**自包含**。
 
 ---
 
@@ -60,14 +60,14 @@ Multica = **人 + AI agent 在同一个看板上协作的任务管理平台**。
 | 篇目 | 核心内容 |
 |---|---|
 | **Welcome** | 定位 + 核心价值 + 一张架构图 + 3 种部署形态（Cloud / Self-Host / Desktop）导航 |
-| **How Multica works** | 一张大图把 User / Issue / Agent / Runtime / Daemon / Skill / Task / Trigger 之间的关系串起来——目标是建立**正确心智模型**，而不是记名词 |
+| **How Didian works** | 一张大图把 User / Issue / Agent / Runtime / Daemon / Skill / Task / Trigger 之间的关系串起来——目标是建立**正确心智模型**，而不是记名词 |
 
 ### 板块 2. Getting Started（3 篇）
 
 | 篇目 | 核心内容 |
 |---|---|
-| **Cloud Quickstart** | 5 分钟：signup → install CLI → `multica setup` → 第一个 agent → 第一个 issue |
-| **Self-Host Quickstart** | 10 分钟：`install.sh --with-server` → `multica setup self-host` |
+| **Cloud Quickstart** | 5 分钟：signup → install CLI → `didian setup` → 第一个 agent → 第一个 issue |
+| **Self-Host Quickstart** | 10 分钟：`install.sh --with-server` → `didian setup self-host` |
 | **Your first task** | 从 issue 创建 → assign 给 agent → 看 agent 流式工作 → review 结果（截图 + GIF） |
 
 ### 板块 3. Concepts（17 篇 —— 灵魂）
@@ -118,7 +118,7 @@ Multica = **人 + AI agent 在同一个看板上协作的任务管理平台**。
 | Overview | 决策树（哪种部署模式适合你） |
 | Docker Compose deployment | `make selfhost` vs `make selfhost-build` |
 | Environment variables reference | 完整 env 表 |
-| Authentication setup | **🚨 固定测试验证码必须显式设置 `MULTICA_DEV_VERIFICATION_CODE`，生产保持为空**；Google OAuth 配置；signup 白名单 |
+| Authentication setup | **🚨 固定测试验证码必须显式设置 `DIDIAN_DEV_VERIFICATION_CODE`，生产保持为空**；Google OAuth 配置；signup 白名单 |
 | Storage | S3 / CloudFront / 本地磁盘 |
 | Email | Resend 配置；**没配会落到 stderr** |
 | Upgrading | 版本升级 + migration 策略 |
@@ -145,7 +145,7 @@ Installation / Authentication / Setup / Daemon / Workspace / Issue / Comment / A
 | 5 | Webhook autopilot trigger 字段建了但没接路由——第一版不文档化 | Autopilots |
 | 6 | custom_env merge 是覆盖而非合并——不能用 custom_env"取消设置"系统 env | Agents |
 | 7 | 旧 assignee 取消分配后不会被取消订阅 | Subscriptions |
-| 8 | 固定本地测试验证码默认关闭；`MULTICA_DEV_VERIFICATION_CODE` 仅用于非 production 私有测试 | Self-Hosting → Auth |
+| 8 | 固定本地测试验证码默认关闭；`DIDIAN_DEV_VERIFICATION_CODE` 仅用于非 production 私有测试 | Self-Hosting → Auth |
 | 9 | Signup 白名单优先级：ALLOWED_EMAILS > ALLOWED_EMAIL_DOMAINS > ALLOW_SIGNUP | Self-Hosting → Auth |
 | 10 | One daemon ↔ many runtimes；one runtime ↔ ONE provider；同 daemon_id 重启复用旧 runtime 行 | Runtimes / Daemon |
 | 11 | Inbox 10 种类型，mention dedup 只在单 event 内生效 | Inbox |

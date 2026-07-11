@@ -446,7 +446,7 @@ func TeamInviteAccepted(inviteeID, workspaceID string, daysSinceInvite int64) Ev
 //
 // platform is the X-Client-Platform header value at the time of the
 // first onboarding interaction, fed into the
-// `multica_onboarding_started_total{platform=...}` label via the fixed
+// `didian_onboarding_started_total{platform=...}` label via the fixed
 // allow-list in metrics.NormalizePlatform.
 func OnboardingStarted(userID, platform string) Event {
 	props := map[string]any{}

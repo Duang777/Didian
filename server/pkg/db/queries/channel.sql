@@ -42,14 +42,14 @@ RETURNING *;
 -- Team-keyed install / re-install for channels whose natural identity is the
 -- platform workspace, not the (agent) pairing. Slack: one Slack workspace
 -- (team_id, stored as config->>'app_id') maps to exactly one installation, so
--- re-connecting it — even to represent a DIFFERENT agent in the SAME Multica
+-- re-connecting it — even to represent a DIFFERENT agent in the SAME Didian
 -- workspace — UPDATES the existing row (moving agent_id) instead of colliding
 -- with the (channel_type, app_id) unique index. Contrast UpsertChannelInstallation,
 -- whose conflict key is (workspace_id, agent_id, channel_type): right for Feishu
 -- (one app per agent), wrong for Slack.
 --
 -- The `WHERE channel_installation.workspace_id = EXCLUDED.workspace_id` fences
--- the conflict update to the SAME Multica workspace: a team already owned by a
+-- the conflict update to the SAME Didian workspace: a team already owned by a
 -- DIFFERENT workspace updates no row and RETURNING is empty (pgx.ErrNoRows),
 -- which the caller maps to ErrTeamOwnedByAnotherWorkspace. This is the ATOMIC
 -- cross-workspace guard — a plain SELECT before the upsert cannot stop two
@@ -101,7 +101,7 @@ WHERE channel_type = sqlc.arg('channel_type')
 -- name: GetChannelInstallationOwnerByAppID :one
 -- Identifies the LIVE owner of a (channel_type, config->>'app_id') routing slot
 -- so the install path can refuse a rebind with an ACCURATE message instead of the
--- old catch-all "connected to a different Multica workspace". Meant to be read
+-- old catch-all "connected to a different Didian workspace". Meant to be read
 -- only after ReclaimDeadChannelInstallationByAppID has removed every DEAD owner,
 -- so a returned row is a live active owner. `agent_archived` distinguishes an
 -- archived (reversible) owner — its bot stays owned, recovered by unarchiving the
@@ -336,15 +336,15 @@ WHERE id = $1
 
 -- name: CreateChannelUserBinding :one
 -- Records that a platform user id (per-installation; Feishu open_id) maps
--- to a Multica user. The old composite member-FK is gone, so this no
+-- to a Didian user. The old composite member-FK is gone, so this no
 -- longer fails when the redeemer is not a workspace member — the caller
 -- (BindingTokenService.RedeemAndBind) validates membership explicitly
--- before calling. ON CONFLICT DO UPDATE is still gated on multica_user_id
+-- before calling. ON CONFLICT DO UPDATE is still gated on didian_user_id
 -- matching, so a second redeemer cannot steal an already-bound user id;
 -- a cross-user conflict updates zero rows and the caller maps that to
 -- ErrBindingAlreadyAssigned. config carries secondary identity (union_id).
 INSERT INTO channel_user_binding (
-    workspace_id, multica_user_id, installation_id,
+    workspace_id, didian_user_id, installation_id,
     channel_type, channel_user_id, config
 ) VALUES (
     $1, $2, $3, $4, $5, $6
@@ -356,11 +356,11 @@ ON CONFLICT (installation_id, channel_user_id) DO UPDATE SET
     -- erase a union_id we already captured. Only non-null incoming keys win.
     config   = channel_user_binding.config || jsonb_strip_nulls(EXCLUDED.config),
     bound_at = now()
-WHERE channel_user_binding.multica_user_id = EXCLUDED.multica_user_id
+WHERE channel_user_binding.didian_user_id = EXCLUDED.didian_user_id
 RETURNING *;
 
 -- name: GetChannelUserBindingByUserID :one
--- The inbound identity lookup: does this platform user id map to a Multica
+-- The inbound identity lookup: does this platform user id map to a Didian
 -- user for this installation? With the member-FK removed, a row's
 -- existence no longer proves current workspace membership — the dispatcher
 -- re-checks membership after this lookup.
@@ -370,12 +370,12 @@ WHERE installation_id = $1 AND channel_user_id = $2;
 -- name: FindReusableChannelUserBinding :one
 -- Cross-installation account-link reuse (MUL-3911). When a platform user
 -- messages an installation they have NOT linked, but the SAME user id is already
--- bound to ANOTHER installation in the SAME Multica workspace + SAME Slack team,
+-- bound to ANOTHER installation in the SAME Didian workspace + SAME Slack team,
 -- the inbound identity step reuses that link instead of re-prompting. Slack user
 -- ids are stable within a team, so an identical channel_user_id denotes the same
 -- human across that team's apps. The match is fenced to one workspace AND one
 -- team (installation config->>'team_id'): a Slack team can be connected to two
--- different Multica workspaces, and a user may hold different Multica accounts in
+-- different Didian workspaces, and a user may hold different Didian accounts in
 -- each, so reuse must cross neither boundary. Most-recently-bound wins. The
 -- caller re-checks membership and materializes a fresh per-installation binding.
 --
@@ -396,7 +396,7 @@ LIMIT 1;
 -- CASCADE): prune every binding for a user who has been removed from a
 -- workspace, across all installations in that workspace.
 DELETE FROM channel_user_binding
-WHERE workspace_id = $1 AND multica_user_id = $2;
+WHERE workspace_id = $1 AND didian_user_id = $2;
 
 -- name: DeleteChannelUserBindingsByInstallation :exec
 -- Application-layer integrity (schema has no FK/cascade, MUL-3515 §4): drop

@@ -14,7 +14,7 @@ type EvalContext struct {
 	// the framework never parses it.
 	UserID string
 
-	// WorkspaceID identifies the multica workspace that issued the
+	// WorkspaceID identifies the didian workspace that issued the
 	// request. Useful for workspace-scoped rollouts.
 	WorkspaceID string
 

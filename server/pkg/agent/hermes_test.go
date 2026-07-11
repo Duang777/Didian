@@ -1401,7 +1401,7 @@ func TestHermesBackendAttributesUsageToACPDefaultModel(t *testing.T) {
 }
 
 // fakeHermesACPRateLimitScript impersonates hermes for the GitHub
-// multica#1952 scenario: the upstream LLM returns HTTP 429 (rate
+// didian#1952 scenario: the upstream LLM returns HTTP 429 (rate
 // limited / no credit), hermes retries internally and ultimately
 // emits both a sniffable stderr error block AND a synthetic agent
 // text turn ("API call failed after 3 retries..."), then completes
@@ -1491,7 +1491,7 @@ func TestHermesProviderErrorSnifferTerminalNonRetryable(t *testing.T) {
 }
 
 // TestHermesBackendPromotesProviderErrorWithNonEmptyOutput pins the
-// fix for GitHub multica#1952: a hermes run that hits a 429 (or any
+// fix for GitHub didian#1952: a hermes run that hits a 429 (or any
 // upstream provider error) must surface as Status=failed even though
 // hermes' synthetic "API call failed..." agent turn means the output
 // buffer is non-empty. Before the fix the sniffer-promotion was
@@ -1609,7 +1609,7 @@ func TestIsACPSessionNotFound(t *testing.T) {
 }
 
 // fakeHermesACPStaleResumeScript impersonates the failure shape from
-// GitHub multica#4010: session/resume succeeds and echoes back the
+// GitHub didian#4010: session/resume succeeds and echoes back the
 // requested sessionId (hermes' observed behavior even when it no longer
 // knows the session), and the subsequent session/prompt then fails with
 // JSON-RPC -32603 "Session not found".
@@ -1635,7 +1635,7 @@ done
 }
 
 // TestHermesBackendClearsSessionIDWhenResumedSessionNotFound pins the
-// fix for GitHub multica#4010: when a resumed session turns out to be
+// fix for GitHub didian#4010: when a resumed session turns out to be
 // gone on the agent side (resume echoes the requested id, prompt then
 // fails -32603 "Session not found"), the Result must carry an empty
 // SessionID. The daemon's resume-failure fallback keys on
@@ -1797,7 +1797,7 @@ done
 }
 
 // TestHermesBackendDoesNotPromoteOnTransientRetry pins the
-// regression GPT-Boy flagged on the multica#1952 fix: a per-attempt
+// regression GPT-Boy flagged on the didian#1952 fix: a per-attempt
 // ⚠️ warning on stderr that does NOT include any terminal marker
 // ("after N retries", Non-retryable, ❌, [ERROR], BadRequest /
 // Authentication errors) and is followed by a successful agent

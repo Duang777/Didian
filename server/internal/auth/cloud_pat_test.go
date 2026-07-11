@@ -69,7 +69,7 @@ func newFleetServer(t *testing.T, opts fleetServerOpts) *httptest.Server {
 }
 
 // TestCloudPATVerifier_NilSafe pins the nil-receiver contract: a server
-// without MULTICA_CLOUD_FLEET_URL configured constructs nil here, and
+// without DIDIAN_CLOUD_FLEET_URL configured constructs nil here, and
 // the middleware nil-checks before calling. Verify must still return a
 // classifiable error so the middleware emits a deterministic 401 instead
 // of a nil-deref panic.
@@ -344,7 +344,6 @@ func TestCloudPATVerifier_NegativesNotCached(t *testing.T) {
 		t.Fatalf("negative result must not be cached; expected 2 fleet calls, got %d", got)
 	}
 }
-
 
 // TestCloudPATVerifier_LookupRejectsUnknownOwner pins the new
 // owner-existence guard. Cloud says the token is valid, but the

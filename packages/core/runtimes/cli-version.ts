@@ -1,7 +1,7 @@
 /**
  * Frontend mirror of the server's MinQuickCreateCLIVersion gate. The
  * agent-create flow (Quick Create modal) requires the daemon's bundled
- * multica CLI to be at least this version — older daemons either
+ * didian CLI to be at least this version — older daemons either
  * double-create issues on partial CLI failures, drop quick-create attachment
  * bindings, or mishandle pasted screenshot URLs (see PR #1851 / MUL-1496).
  *
@@ -76,7 +76,7 @@ export function readRuntimeCliVersion(metadata: Record<string, unknown> | undefi
 /**
  * Frontend mirror of the server's `MinHandoffCLIVersion` soft gate
  * (`server/pkg/agent/version.go`). The assignment handoff note is only rendered
- * into the run's opening prompt by daemons at or above this multica CLI version
+ * into the run's opening prompt by daemons at or above this didian CLI version
  * (MUL-3375); older daemons silently drop it. Unlike the quick-create gate this
  * never blocks the assignment — the UI just grays out the note box and warns.
  *

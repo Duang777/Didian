@@ -1,4 +1,4 @@
-/** A Slack bot installation bound to a single Multica agent (MUL-3666).
+/** A Slack bot installation bound to a single Didian agent (MUL-3666).
  *
  * Wire shape mirrors `SlackInstallationResponse` in
  * `server/internal/handler/slack.go`. New fields the backend adds in the
@@ -42,7 +42,7 @@ export interface RegisterSlackBYORequest {
 }
 
 /** Post-redemption echo: the Slack user id the token carried is now bound to
- * the logged-in Multica user in this workspace/installation. */
+ * the logged-in Didian user in this workspace/installation. */
 export interface RedeemSlackBindingTokenResponse {
   workspace_id: string;
   installation_id: string;

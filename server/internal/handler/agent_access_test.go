@@ -62,14 +62,14 @@ func privateAgentTestFixture(t *testing.T) (agentID, ownerID, memberID string) {
 	ctx := context.Background()
 	if err := testPool.QueryRow(ctx, `
 		INSERT INTO "user" (name, email)
-		VALUES ('Private Agent Owner', 'private-agent-owner@multica.test')
+		VALUES ('Private Agent Owner', 'private-agent-owner@didian.test')
 		RETURNING id
 	`).Scan(&ownerID); err != nil {
 		t.Fatalf("create owner user: %v", err)
 	}
 	t.Cleanup(func() {
 		testPool.Exec(context.Background(),
-			`DELETE FROM "user" WHERE email = 'private-agent-owner@multica.test'`)
+			`DELETE FROM "user" WHERE email = 'private-agent-owner@didian.test'`)
 	})
 
 	if _, err := testPool.Exec(ctx, `
@@ -81,14 +81,14 @@ func privateAgentTestFixture(t *testing.T) (agentID, ownerID, memberID string) {
 
 	if err := testPool.QueryRow(ctx, `
 		INSERT INTO "user" (name, email)
-		VALUES ('Plain Member', 'plain-member@multica.test')
+		VALUES ('Plain Member', 'plain-member@didian.test')
 		RETURNING id
 	`).Scan(&memberID); err != nil {
 		t.Fatalf("create plain member user: %v", err)
 	}
 	t.Cleanup(func() {
 		testPool.Exec(context.Background(),
-			`DELETE FROM "user" WHERE email = 'plain-member@multica.test'`)
+			`DELETE FROM "user" WHERE email = 'plain-member@didian.test'`)
 	})
 
 	if _, err := testPool.Exec(ctx, `
@@ -398,14 +398,14 @@ func TestMentionAgent_RejectsCrossWorkspaceAgentUUID(t *testing.T) {
 	var foreignWorkspaceID, foreignUserID, foreignRuntimeID, foreignAgentID string
 	if err := testPool.QueryRow(ctx, `
 		INSERT INTO "user" (name, email)
-		VALUES ('Foreign Owner', 'cross-ws-foreign@multica.test')
+		VALUES ('Foreign Owner', 'cross-ws-foreign@didian.test')
 		RETURNING id
 	`).Scan(&foreignUserID); err != nil {
 		t.Fatalf("create foreign user: %v", err)
 	}
 	t.Cleanup(func() {
 		testPool.Exec(context.Background(),
-			`DELETE FROM "user" WHERE email = 'cross-ws-foreign@multica.test'`)
+			`DELETE FROM "user" WHERE email = 'cross-ws-foreign@didian.test'`)
 	})
 
 	if err := testPool.QueryRow(ctx, `
@@ -457,7 +457,7 @@ func TestMentionAgent_RejectsCrossWorkspaceAgentUUID(t *testing.T) {
 		testPool.Exec(context.Background(), `DELETE FROM issue WHERE id = $1`, issueID)
 	})
 
-	// Multica's mention format is markdown-linked: [@Name](mention://agent/<uuid>).
+	// Didian's mention format is markdown-linked: [@Name](mention://agent/<uuid>).
 	mention := "[@Foreign](mention://agent/" + foreignAgentID + ")"
 	if err := testPool.QueryRow(ctx, `
 		INSERT INTO comment (workspace_id, issue_id, author_type, author_id, content)

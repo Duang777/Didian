@@ -457,7 +457,7 @@ func TestLarkJSONFrameDecoderNonTextMessageHasEmptyBody(t *testing.T) {
 // marshal a Go string to get the correctly-escaped content field.
 func TestLarkJSONFrameDecoderPostMessageFlattened(t *testing.T) {
 	t.Parallel()
-	postContent := `{"title":"周报","content":[[{"tag":"text","text":"本周完成："}],[{"tag":"text","text":"Lark 集成"},{"tag":"a","href":"https://github.com/multica-ai/multica/pull/3277","text":"PR #3277"}]]}`
+	postContent := `{"title":"周报","content":[[{"tag":"text","text":"本周完成："}],[{"tag":"text","text":"Lark 集成"},{"tag":"a","href":"https://github.com/didian-ai/didian/pull/3277","text":"PR #3277"}]]}`
 	escaped, err := json.Marshal(postContent)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -474,7 +474,7 @@ func TestLarkJSONFrameDecoderPostMessageFlattened(t *testing.T) {
 	if err != nil || !ok {
 		t.Fatalf("Decode ok=%v err=%v", ok, err)
 	}
-	want := "周报\n本周完成：\nLark 集成 PR #3277 (https://github.com/multica-ai/multica/pull/3277)"
+	want := "周报\n本周完成：\nLark 集成 PR #3277 (https://github.com/didian-ai/didian/pull/3277)"
 	if msg.Body != want {
 		t.Errorf("post Body\n got = %q\nwant = %q", msg.Body, want)
 	}

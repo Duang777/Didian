@@ -452,7 +452,7 @@ func stageProgressSummary(children []db.Issue, closedStage int32) (summary strin
 func stageAdvanceInstruction(nextStage int32, parentID string) string {
 	if nextStage > 0 {
 		return fmt.Sprintf(
-			" Stage %d is next. Review the full layout with `multica issue children %s`, and if Stage %d's dependencies are satisfied promote its `backlog` sub-issues to `todo` to continue. Read each sub-issue's description first and only promote items whose stated dependencies are already met — do not rely on this parent's higher-level breakdown alone. If a description conflicts with that breakdown, leave it `backlog` and post a comment to confirm first.",
+			" Stage %d is next. Review the full layout with `didian issue children %s`, and if Stage %d's dependencies are satisfied promote its `backlog` sub-issues to `todo` to continue. Read each sub-issue's description first and only promote items whose stated dependencies are already met — do not rely on this parent's higher-level breakdown alone. If a description conflicts with that breakdown, leave it `backlog` and post a comment to confirm first.",
 			nextStage, parentID, nextStage,
 		)
 	}

@@ -26,9 +26,9 @@ import { useT } from "../../i18n";
 type Step = "instructions" | "success";
 
 const INSTALL_CMD =
-  "curl -fsSL https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.sh | bash";
-const CLOUD_SERVER_URL = "https://api.multica.ai";
-const CLOUD_APP_URL = "https://multica.ai";
+  "curl -fsSL https://raw.githubusercontent.com/didian-ai/didian/main/scripts/install.sh | bash";
+const CLOUD_SERVER_URL = "https://api.didian.ai";
+const CLOUD_APP_URL = "https://didian.ai";
 
 function normalizeCommandURL(url: string | undefined) {
   return url?.trim().replace(/\/+$/, "") ?? "";
@@ -39,20 +39,20 @@ function daemonCommands(serverUrl: string | undefined, appUrl: string | undefine
   const normalizedAppUrl = normalizeCommandURL(appUrl);
   if (normalizedServerUrl && normalizedAppUrl) {
     return {
-      setupCmd: `multica setup self-host --server-url ${normalizedServerUrl} --app-url ${normalizedAppUrl}`,
-      tokenCmd: `multica config set server_url ${normalizedServerUrl}
-multica config set app_url ${normalizedAppUrl}
-multica login --token <YOUR_TOKEN>
-multica daemon start`,
+      setupCmd: `didian setup self-host --server-url ${normalizedServerUrl} --app-url ${normalizedAppUrl}`,
+      tokenCmd: `didian config set server_url ${normalizedServerUrl}
+didian config set app_url ${normalizedAppUrl}
+didian login --token <YOUR_TOKEN>
+didian daemon start`,
     };
   }
 
   return {
-    setupCmd: "multica setup",
-    tokenCmd: `multica config set server_url ${CLOUD_SERVER_URL}
-multica config set app_url ${CLOUD_APP_URL}
-multica login --token <YOUR_TOKEN>
-multica daemon start`,
+    setupCmd: "didian setup",
+    tokenCmd: `didian config set server_url ${CLOUD_SERVER_URL}
+didian config set app_url ${CLOUD_APP_URL}
+didian login --token <YOUR_TOKEN>
+didian daemon start`,
   };
 }
 
@@ -64,7 +64,7 @@ export function ConnectRemoteDialog({ onClose }: { onClose: () => void }) {
   const navigation = useNavigation();
   const newRuntimeIdRef = useRef<string | null>(null);
 
-  // `multica setup` is one blocking command that handles config + login
+  // `didian setup` is one blocking command that handles config + login
   // + daemon start; the dialog passively listens for the resulting
   // `daemon:register` WS event and auto-advances to success.
   const handleDaemonRegister = useCallback(
@@ -277,7 +277,7 @@ function TroubleshootingDetails({ tokenCmd }: { tokenCmd: string }) {
                 CODE_LIGATURE_CLASS,
               )}
             >
-              {"multica daemon status"}
+              {"didian daemon status"}
             </code>
           </li>
           <li className="flex items-center gap-1.5">
@@ -290,7 +290,7 @@ function TroubleshootingDetails({ tokenCmd }: { tokenCmd: string }) {
                 CODE_LIGATURE_CLASS,
               )}
             >
-              {"multica daemon logs -f"}
+              {"didian daemon logs -f"}
             </code>
           </li>
         </ul>

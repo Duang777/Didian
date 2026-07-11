@@ -37,7 +37,7 @@ function initCore(
   const api = new ApiClient(apiBaseUrl, {
     logger: createLogger("api"),
     onUnauthorized: () => {
-      storage.removeItem("multica_token");
+      storage.removeItem("didian_token");
     },
     identity,
   });
@@ -46,7 +46,7 @@ function initCore(
 
   // In token mode, hydrate token from storage.
   if (!cookieAuth) {
-    const token = storage.getItem("multica_token");
+    const token = storage.getItem("didian_token");
     if (token) api.setToken(token);
   }
   // Workspace identity is URL-driven: the [workspaceSlug] layout resolves

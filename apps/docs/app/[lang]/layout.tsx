@@ -46,11 +46,11 @@ const sourceSerif = Source_Serif_4({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Multica Docs",
-    default: "Multica Docs",
+    template: "%s | Didian Docs",
+    default: "Didian Docs",
   },
   description:
-    "Documentation for Multica — the open-source managed agents platform.",
+    "Documentation for Didian — the open-source managed agents platform.",
 };
 
 export function generateStaticParams() {

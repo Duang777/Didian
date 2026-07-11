@@ -462,7 +462,7 @@ func TestAntigravityBackendProviderErrorSurfacesAsFailed(t *testing.T) {
 // reject a non-empty model that isn't in the `agy models` catalog instead of
 // letting it run to a fake "completed + empty" success. This covers the same
 // validation regardless of whether opts.Model originated from agent.model, a
-// persisted/API value, or the daemon-wide MULTICA_ANTIGRAVITY_MODEL default —
+// persisted/API value, or the daemon-wide DIDIAN_ANTIGRAVITY_MODEL default —
 // they all collapse to opts.Model before Execute runs this check.
 func TestAntigravityModelError(t *testing.T) {
 	t.Parallel()

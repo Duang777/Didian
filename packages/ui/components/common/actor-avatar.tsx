@@ -8,7 +8,7 @@ import {
   DEFAULT_AVATAR_SIZE,
   type AvatarSize,
 } from "@didian/ui/lib/avatar-size";
-import { MulticaIcon } from "./multica-icon";
+import { DidianIcon } from "./didian-icon";
 
 interface ActorAvatarProps {
   name: string;
@@ -63,7 +63,7 @@ function ActorAvatar({
           onError={() => setImgError(true)}
         />
       ) : isSystem ? (
-        <MulticaIcon noSpin style={{ width: px * 0.55, height: px * 0.55 }} />
+        <DidianIcon noSpin style={{ width: px * 0.55, height: px * 0.55 }} />
       ) : isAgent ? (
         <Bot style={{ width: px * 0.55, height: px * 0.55 }} />
       ) : isSquad ? (

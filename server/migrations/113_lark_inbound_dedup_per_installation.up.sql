@@ -1,7 +1,7 @@
 -- Re-scope lark_inbound_message_dedup to (installation_id, message_id).
 --
 -- The original schema keyed dedup on `message_id` alone. In a Lark group
--- chat where the same workspace has multiple Multica bots installed, each
+-- chat where the same workspace has multiple Didian bots installed, each
 -- bot's WS receives the SAME `message_id` from Lark — and both supervisors
 -- legitimately need to claim, evaluate AddressedToBot from their own
 -- bot's perspective, and either ingest (if @-ed) or drop as

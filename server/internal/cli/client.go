@@ -17,7 +17,7 @@ import (
 )
 
 // ClientVersion is the CLI version sent on every request as X-Client-Version.
-// Set by the multica binary at init() so the package doesn't depend on the
+// Set by the didian binary at init() so the package doesn't depend on the
 // concrete cmd package. Defaults to "dev" when running unset (e.g. tests).
 var ClientVersion = "dev"
 
@@ -43,7 +43,7 @@ func normalizeGOOS(goos string) string {
 	}
 }
 
-// APIClient is a REST client for the Multica server API.
+// APIClient is a REST client for the Didian server API.
 // Used by ctrl subcommands (agent, runtime, status, etc.). Requests
 // automatically include auth and execution context headers when configured.
 type APIClient struct {
@@ -73,7 +73,7 @@ func (e *HTTPError) Error() string {
 }
 
 // newHTTPError builds a *HTTPError from an error response (status >= 400),
-// reading a capped slice of the body. Every Multica API helper funnels its
+// reading a capped slice of the body. Every Didian API helper funnels its
 // >= 400 responses through this so the top-level FormatError / ExitCodeFor can
 // classify the failure via errors.As(err, **HTTPError) regardless of which
 // HTTP verb the command used.
@@ -88,19 +88,19 @@ func newHTTPError(method, path string, resp *http.Response) *HTTPError {
 }
 
 // defaultHTTPTimeout is the per-request timeout for the CLI's HTTP client.
-// It can be overridden with the MULTICA_HTTP_TIMEOUT environment variable
+// It can be overridden with the DIDIAN_HTTP_TIMEOUT environment variable
 // (see httpTimeout). 30s is chosen over the historical 15s because complex
 // networks (notably in mainland China) routinely need more than 15s to
 // complete the TLS handshake plus request round-trip, which surfaced as an
 // opaque "context deadline exceeded" to users.
 const defaultHTTPTimeout = 30 * time.Second
 
-// httpTimeout returns the HTTP client timeout, honoring MULTICA_HTTP_TIMEOUT.
+// httpTimeout returns the HTTP client timeout, honoring DIDIAN_HTTP_TIMEOUT.
 // The value may be a Go duration string ("45s", "2m") or a plain integer
 // number of seconds ("45"). Invalid or non-positive values fall back to the
 // default.
 func httpTimeout() time.Duration {
-	v := strings.TrimSpace(os.Getenv("MULTICA_HTTP_TIMEOUT"))
+	v := strings.TrimSpace(os.Getenv("DIDIAN_HTTP_TIMEOUT"))
 	if v == "" {
 		return defaultHTTPTimeout
 	}
@@ -121,7 +121,7 @@ const apiContextGrace = 5 * time.Second
 
 // APITimeout returns the deadline budget for a single CLI API command. It is
 // always at least the configured HTTP transport timeout (see httpTimeout,
-// which honors MULTICA_HTTP_TIMEOUT) plus a small grace margin, so a
+// which honors DIDIAN_HTTP_TIMEOUT) plus a small grace margin, so a
 // command-level context never truncates an in-flight request below the timeout
 // the user configured. This is the fix for command contexts that previously
 // hardcoded a 15s deadline shorter than the 30s/env transport timeout.
@@ -143,7 +143,7 @@ func AtLeastAPITimeout(min time.Duration) time.Duration {
 // APIContext derives a command-scoped context whose deadline is APITimeout().
 // The returned cancel func must be called (typically via defer) to release
 // resources. Commands should use this instead of context.WithTimeout with a
-// hardcoded duration so the deadline always respects MULTICA_HTTP_TIMEOUT.
+// hardcoded duration so the deadline always respects DIDIAN_HTTP_TIMEOUT.
 func APIContext(parent context.Context) (context.Context, context.CancelFunc) {
 	if parent == nil {
 		parent = context.Background()

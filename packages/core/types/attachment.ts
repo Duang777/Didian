@@ -16,7 +16,7 @@ export interface Attachment {
    * The server (`buildMarkdownURL` in server/internal/handler/file.go)
    * computes this per deployment policy:
    *   - public CDN path when storage URL is itself absolute and unsigned;
-   *   - otherwise `<MULTICA_PUBLIC_URL>/api/attachments/<id>/download`,
+   *   - otherwise `<DIDIAN_PUBLIC_URL>/api/attachments/<id>/download`,
    *     which the server self-resigns / proxies on every request.
    *
    * Distinct from `url` (raw storage URL — may be private / site-relative)

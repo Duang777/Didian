@@ -139,7 +139,7 @@ func newChatSessionWith(q SessionQueries, tx TxStarter, channelType channel.Type
 // Slack's real channel_id when BindingKey is a composite — persisted on the
 // binding's config for the outbound path to read back. nil means "{}".
 //
-// Sender is the already-resolved Multica user (the session creator: the sole
+// Sender is the already-resolved Didian user (the session creator: the sole
 // human for p2p, the installer for group chats — the caller decides which).
 type EnsureSessionInput struct {
 	WorkspaceID    pgtype.UUID

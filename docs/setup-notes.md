@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-- 工作区位于 `multica-resource-workbench/`。
+- 工作区位于 `didian-resource-workbench/`。
 - 已添加根级和模块级 `AGENTS.md` / `CLAUDE.md` 指南文件。
 - 实施计划已写入 `tasks/plan.md`。
 - 任务清单已写入 `tasks/todo.md`。

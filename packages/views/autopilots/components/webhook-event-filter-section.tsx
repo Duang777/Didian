@@ -19,8 +19,8 @@ export function WebhookEventFilterSection({
   const [newEvent, setNewEvent] = useState("");
   const [newActions, setNewActions] = useState("");
   const docsHref = i18n.language?.startsWith("zh")
-    ? `https://multica.ai/docs/zh/autopilots#${encodeURIComponent("事件过滤")}`
-    : "https://multica.ai/docs/autopilots#event-filters";
+    ? `https://didian.ai/docs/zh/autopilots#${encodeURIComponent("事件过滤")}`
+    : "https://didian.ai/docs/autopilots#event-filters";
 
   const addFilter = () => {
     const event = newEvent.trim();

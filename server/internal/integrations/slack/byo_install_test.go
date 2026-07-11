@@ -199,7 +199,7 @@ func TestRegisterBYO_AuthTestFailure(t *testing.T) {
 func TestRegisterBYO_AppConnectedToAnotherWorkspace_Rejected(t *testing.T) {
 	srv := authTestServer(t, true)
 	defer srv.Close()
-	// The pasted app is live-owned by an agent in a DIFFERENT Multica workspace,
+	// The pasted app is live-owned by an agent in a DIFFERENT Didian workspace,
 	// so after the dead-owner reclaim the (channel_type, app_id) routing index
 	// still rejects the upsert. We must refuse, not steal it — and name the real
 	// case (another workspace), not the old catch-all.

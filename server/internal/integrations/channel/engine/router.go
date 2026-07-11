@@ -222,7 +222,7 @@ func (r *Router) processClaimed(ctx context.Context, set ResolverSet, msg channe
 		return r.drop(ctx, set, msg, inst.ID, DropReasonNotAddressedInGroup), finalizeMark, nil
 	}
 
-	// 4. Identity check: map the platform sender to a Multica user and
+	// 4. Identity check: map the platform sender to a Didian user and
 	//    re-verify workspace membership (no binding->member FK; MUL-3515 §4).
 	identity, err := set.Identity.ResolveSender(ctx, inst, msg)
 	if err != nil {

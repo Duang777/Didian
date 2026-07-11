@@ -19,7 +19,7 @@ import { isBenignException } from "./benign-exceptions";
 
 export const EVENT_SCHEMA_VERSION = 2;
 
-const SIGNUP_SOURCE_COOKIE = "multica_signup_source";
+const SIGNUP_SOURCE_COOKIE = "didian_signup_source";
 // Per-value cap keeps a long utm_content from blowing the budget. We drop
 // the entire cookie if the JSON still exceeds the overall limit — partial
 // JSON is worse than no attribution because PostHog can't parse it.

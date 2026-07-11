@@ -14,8 +14,8 @@ func TestRedisClientName(t *testing.T) {
 		suffix   string
 		want     string
 	}{
-		{"empty_suffix_returns_existing", "multica-api:store", "", "multica-api:store"},
-		{"empty_existing_uses_default_prefix", "", "store", "multica-api:store"},
+		{"empty_suffix_returns_existing", "didian-api:store", "", "didian-api:store"},
+		{"empty_existing_uses_default_prefix", "", "store", "didian-api:store"},
 		{"both_set_joins_with_colon", "custom", "store", "custom:store"},
 		{"empty_both_returns_empty", "", "", ""},
 	}
@@ -36,8 +36,8 @@ func TestNewNamedRedisClient_SetsClientName(t *testing.T) {
 	defer client.Close()
 
 	opts := client.Options()
-	if opts.ClientName != "multica-api:store" {
-		t.Errorf("ClientName = %q, want %q", opts.ClientName, "multica-api:store")
+	if opts.ClientName != "didian-api:store" {
+		t.Errorf("ClientName = %q, want %q", opts.ClientName, "didian-api:store")
 	}
 }
 
@@ -74,8 +74,8 @@ func TestNewNamedRedisClient_DisableClientName_InvalidValue(t *testing.T) {
 
 	opts := client.Options()
 	// Invalid value falls back to default (false), so ClientName IS set
-	if opts.ClientName != "multica-api:store" {
-		t.Errorf("ClientName = %q, want %q (invalid env should fall back to naming enabled)", opts.ClientName, "multica-api:store")
+	if opts.ClientName != "didian-api:store" {
+		t.Errorf("ClientName = %q, want %q (invalid env should fall back to naming enabled)", opts.ClientName, "didian-api:store")
 	}
 }
 

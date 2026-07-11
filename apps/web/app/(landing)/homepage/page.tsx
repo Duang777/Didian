@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { MulticaLanding } from "@/features/landing/components/multica-landing";
+import { DidianLanding } from "@/features/landing/components/didian-landing";
 
 export const metadata: Metadata = {
   title: "Homepage",
   description:
-    "Multica — open-source platform that turns coding agents into real teammates. Assign tasks, track progress, compound skills.",
+    "Didian — open-source platform that turns coding agents into real teammates. Assign tasks, track progress, compound skills.",
   openGraph: {
-    title: "Multica — Project Management for Human + Agent Teams",
+    title: "Didian — Project Management for Human + Agent Teams",
     description:
       "Manage your human + agent workforce in one place.",
     url: "/homepage",
@@ -17,5 +17,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomepagePage() {
-  return <MulticaLanding />;
+  return <DidianLanding />;
 }

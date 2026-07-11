@@ -18,13 +18,13 @@ func TestCLIConfig_BackwardCompat_OldFileLoadsWithNilBackends(t *testing.T) {
 	t.Setenv("HOME", tmp)
 
 	// Write a 4-field config exactly as the historical daemon would have.
-	cfgDir := filepath.Join(tmp, ".multica")
+	cfgDir := filepath.Join(tmp, ".didian")
 	if err := os.MkdirAll(cfgDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	historical := `{
-  "server_url": "https://api.multica.ai",
-  "app_url": "https://app.multica.ai",
+  "server_url": "https://api.didian.ai",
+  "app_url": "https://app.didian.ai",
   "workspace_id": "ws-123",
   "token": "mul_abcdef"
 }`
@@ -37,7 +37,7 @@ func TestCLIConfig_BackwardCompat_OldFileLoadsWithNilBackends(t *testing.T) {
 		t.Fatalf("LoadCLIConfig on historical file: %v", err)
 	}
 
-	if cfg.ServerURL != "https://api.multica.ai" {
+	if cfg.ServerURL != "https://api.didian.ai" {
 		t.Errorf("ServerURL: got %q, want historical value", cfg.ServerURL)
 	}
 	if cfg.Token != "mul_abcdef" {
@@ -58,14 +58,14 @@ func TestCLIConfig_BackwardCompat_NilBackendsOmittedFromJSON(t *testing.T) {
 	t.Setenv("HOME", tmp)
 
 	cfg := CLIConfig{
-		ServerURL: "https://api.multica.ai",
+		ServerURL: "https://api.didian.ai",
 		Token:     "mul_xyz",
 	}
 	if err := SaveCLIConfig(cfg); err != nil {
 		t.Fatal(err)
 	}
 
-	data, err := os.ReadFile(filepath.Join(tmp, ".multica", "config.json"))
+	data, err := os.ReadFile(filepath.Join(tmp, ".didian", "config.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func TestCLIConfig_OpenClawOverride_RoundTrip(t *testing.T) {
 	t.Setenv("HOME", tmp)
 
 	original := CLIConfig{
-		ServerURL: "https://api.multica.ai",
+		ServerURL: "https://api.didian.ai",
 		Token:     "mul_xyz",
 		Backends: &BackendOverrides{
 			OpenClaw: &OpenClawOverride{
@@ -131,7 +131,7 @@ func TestCLIConfig_OpenClawOverride_PartialFieldsOmitted(t *testing.T) {
 	t.Setenv("HOME", tmp)
 
 	cfg := CLIConfig{
-		ServerURL: "https://api.multica.ai",
+		ServerURL: "https://api.didian.ai",
 		Token:     "mul_xyz",
 		Backends: &BackendOverrides{
 			OpenClaw: &OpenClawOverride{
@@ -144,7 +144,7 @@ func TestCLIConfig_OpenClawOverride_PartialFieldsOmitted(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	data, err := os.ReadFile(filepath.Join(tmp, ".multica", "config.json"))
+	data, err := os.ReadFile(filepath.Join(tmp, ".didian", "config.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,8 +176,8 @@ func TestCLIConfig_ProfileCommandOverrides_RoundTrip(t *testing.T) {
 	t.Setenv("HOME", tmp)
 
 	original := CLIConfig{
-		ServerURL:   "https://api.multica.ai",
-		AppURL:      "https://app.multica.ai",
+		ServerURL:   "https://api.didian.ai",
+		AppURL:      "https://app.didian.ai",
 		WorkspaceID: "ws-123",
 		Token:       "mul_xyz",
 		Backends: &BackendOverrides{
@@ -234,12 +234,12 @@ func TestCLIConfig_ProfileCommandOverrides_OmittedWhenEmpty(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("HOME", tmp)
 
-	cfg := CLIConfig{ServerURL: "https://api.multica.ai", Token: "mul_xyz"}
+	cfg := CLIConfig{ServerURL: "https://api.didian.ai", Token: "mul_xyz"}
 	if err := SaveCLIConfig(cfg); err != nil {
 		t.Fatal(err)
 	}
 
-	data, err := os.ReadFile(filepath.Join(tmp, ".multica", "config.json"))
+	data, err := os.ReadFile(filepath.Join(tmp, ".didian", "config.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -267,12 +267,12 @@ func TestCLIConfig_UnknownFieldsArePreserved(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("HOME", tmp)
 
-	cfgDir := filepath.Join(tmp, ".multica")
+	cfgDir := filepath.Join(tmp, ".didian")
 	if err := os.MkdirAll(cfgDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	withFutureField := `{
-  "server_url": "https://api.multica.ai",
+  "server_url": "https://api.didian.ai",
   "token": "mul_xyz",
   "backends": {
     "openclaw": {"state_dir": "/x"},

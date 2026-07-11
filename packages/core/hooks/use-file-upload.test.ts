@@ -26,7 +26,7 @@ function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
     filename: "shot.png",
     url: "/uploads/ws-1/shot.png",
     download_url: "/api/attachments/att-1/download",
-    markdown_url: "https://api.multica.test/api/attachments/att-1/download",
+    markdown_url: "https://api.didian.test/api/attachments/att-1/download",
     content_type: "image/png",
     size_bytes: 1,
     created_at: "2026-06-10T00:00:00Z",
@@ -54,10 +54,10 @@ async function runUpload(api: ApiClient): Promise<UploadResult | null> {
 describe("useFileUpload — markdownLink picks the durable URL with three-layer fallback", () => {
   it("prefers att.markdown_url when the server populates it (modern deployment)", async () => {
     const att = makeAttachment({
-      markdown_url: "https://cdn.multica.test/uploads/abc.png",
+      markdown_url: "https://cdn.didian.test/uploads/abc.png",
     });
     const upload = await runUpload(makeApi(att));
-    expect(upload?.markdownLink).toBe("https://cdn.multica.test/uploads/abc.png");
+    expect(upload?.markdownLink).toBe("https://cdn.didian.test/uploads/abc.png");
     // `link` keeps its legacy semantics — same as att.url, used by avatar /
     // logo callers that persist into long-lived fields.
     expect(upload?.link).toBe(att.url);
@@ -76,11 +76,11 @@ describe("useFileUpload — markdownLink picks the durable URL with three-layer 
     const att = makeAttachment({
       id: "",
       markdown_url: "",
-      url: "https://cdn.multica.test/avatars/u-1.png",
+      url: "https://cdn.didian.test/avatars/u-1.png",
     });
     const upload = await runUpload(makeApi(att));
-    expect(upload?.markdownLink).toBe("https://cdn.multica.test/avatars/u-1.png");
-    expect(upload?.link).toBe("https://cdn.multica.test/avatars/u-1.png");
+    expect(upload?.markdownLink).toBe("https://cdn.didian.test/avatars/u-1.png");
+    expect(upload?.link).toBe("https://cdn.didian.test/avatars/u-1.png");
   });
 
   it("rejects oversize files before hitting the network", async () => {

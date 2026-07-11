@@ -69,7 +69,7 @@ func TestBuildMetaSkillContentBriefContent(t *testing.T) {
 		AgentID:          "eve-1",
 	})
 
-	if !strings.Contains(out, "- `multica issue get <id> --output json` — full issue.\n") {
+	if !strings.Contains(out, "- `didian issue get <id> --output json` — full issue.\n") {
 		t.Errorf("brief is missing the `issue get` one-liner\n---\n%s", out)
 	}
 	if strings.Contains(out, "Get full issue details.") {
@@ -99,12 +99,12 @@ func TestBuildMetaSkillContentSlimKindMatrix(t *testing.T) {
 		kindCommentTriggered: true, kindAssignmentTriggered: true,
 	}
 	checks := []sectionCheck{
-		{"# Multica Agent Runtime", allKinds},
+		{"# Didian Agent Runtime", allKinds},
 		{"## Background Task Safety", allKinds},
 		{"## Agent Identity", allKinds},
 		{"## Available Commands", allKinds},
 		{"### Workflow", allKinds},
-		{"## Important: Always Use the `multica` CLI", allKinds},
+		{"## Important: Always Use the `didian` CLI", allKinds},
 		{"## Output", allKinds},
 		{"## Comment Formatting", issueKinds},
 		{"## Repositories", map[taskKind]bool{
@@ -164,8 +164,8 @@ func TestSlimQuickCreateAvailableCommands(t *testing.T) {
 
 	for _, want := range []string{
 		"## Available Commands",
-		"multica issue create --title",
-		"`multica --help`",
+		"didian issue create --title",
+		"`didian --help`",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("quick_create slim Available Commands missing %q", want)
@@ -173,18 +173,18 @@ func TestSlimQuickCreateAvailableCommands(t *testing.T) {
 	}
 
 	for _, banned := range []string{
-		"multica issue get <id>",
-		"multica issue comment list <issue-id>",
-		"multica issue update <id>",
-		"multica issue status <id> <status>",
-		"multica issue comment add <issue-id>",
-		"multica issue metadata list <issue-id>",
-		"multica issue metadata set <issue-id>",
-		"multica issue metadata delete <issue-id>",
-		"multica issue children <id>",
-		"multica repo checkout <url>",
+		"didian issue get <id>",
+		"didian issue comment list <issue-id>",
+		"didian issue update <id>",
+		"didian issue status <id> <status>",
+		"didian issue comment add <issue-id>",
+		"didian issue metadata list <issue-id>",
+		"didian issue metadata set <issue-id>",
+		"didian issue metadata delete <issue-id>",
+		"didian issue children <id>",
+		"didian repo checkout <url>",
 		"### Squad maintenance",
-		"multica squad member set-role",
+		"didian squad member set-role",
 	} {
 		if strings.Contains(out, banned) {
 			t.Errorf("quick_create slim Available Commands should NOT advertise %q (hard guardrails forbid the call)", banned)

@@ -9,7 +9,7 @@ import { setCurrentWorkspace } from "@didian/core/platform";
 import { useAuthStore } from "@didian/core/auth";
 import { NoAccessPage } from "@didian/views/workspace/no-access-page";
 import { WelcomeAfterOnboarding } from "@didian/views/workspace/welcome-after-onboarding";
-import { MulticaIcon } from "@didian/ui/components/common/multica-icon";
+import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 import { useWorkspaceSeen } from "@didian/views/workspace/use-workspace-seen";
 
 export default function WorkspaceLayout({
@@ -76,7 +76,7 @@ export default function WorkspaceLayout({
 
   const loadingIndicator = (
     <div className="flex h-svh items-center justify-center">
-      <MulticaIcon className="size-6 animate-pulse" />
+      <DidianIcon className="size-6 animate-pulse" />
     </div>
   );
 

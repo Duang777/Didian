@@ -47,7 +47,7 @@ func classifyTask(ctx TaskContextForEnv) taskKind {
 	}
 }
 
-// hasIssueContext returns true for the kinds that operate on a real Multica
+// hasIssueContext returns true for the kinds that operate on a real Didian
 // issue and therefore can read / pin issue-scoped state. The slim
 // dispatcher gates these three sections on this predicate:
 //

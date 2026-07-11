@@ -14,14 +14,14 @@ import {
 
 // Legacy token in localStorage → keep this session in token mode so users who
 // logged in before the cookie-auth migration stay authed. They migrate to
-// cookie mode on their next logout/login cycle (logout clears multica_token).
-// Sunset: once telemetry shows <1% of sessions still carry multica_token,
+// cookie mode on their next logout/login cycle (logout clears didian_token).
+// Sunset: once telemetry shows <1% of sessions still carry didian_token,
 // delete this branch and hard-code `cookieAuth` — the localStorage token is
 // XSS-exposed and is the exact thing the cookie migration exists to remove.
 function hasLegacyToken(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return Boolean(window.localStorage.getItem("multica_token"));
+    return Boolean(window.localStorage.getItem("didian_token"));
   } catch {
     return false;
   }

@@ -58,7 +58,7 @@ export const HELPER_STARTER_PROMPTS: Record<StarterCardId, StarterPrompt> = {
       ja: "Didian が私に何をしてくれるのかをスライドで見せてください",
     },
     prompt: {
-      en: `Build me a single-file HTML slide deck that shows what Didian can do for me. Tailor it to my role and use case (see "About me" below). Paste the FULL HTML in a fenced \`\`\`html block in a comment on this issue so I can copy it straight out, save as \`multica-intro.html\`, and double-click to open it in a browser.
+      en: `Build me a single-file HTML slide deck that shows what Didian can do for me. Tailor it to my role and use case (see "About me" below). Paste the FULL HTML in a fenced \`\`\`html block in a comment on this issue so I can copy it straight out, save as \`didian-intro.html\`, and double-click to open it in a browser.
 
 **Format**
 - One self-contained .html, all CSS / JS inline. Zero dependencies, no build tools, no external images (use CSS-generated visuals — gradients, geometric shapes, SVG inline).
@@ -84,7 +84,7 @@ export const HELPER_STARTER_PROMPTS: Record<StarterCardId, StarterPrompt> = {
 - ArrowLeft / ArrowRight and Space to advance. Small page indicator in a corner.
 
 When done, also reply with a one-sentence summary of which scenarios you picked for me and why.`,
-      zh: `给我做一份单文件 HTML 演示稿,介绍 Didian 能为我做什么。根据我的角色和使用场景定制(见下面"关于我")。把完整 HTML 贴到这条 issue 的评论里的 \`\`\`html 代码块中,我直接复制下来存成 \`multica-intro.html\` 双击就能在浏览器里打开。
+      zh: `给我做一份单文件 HTML 演示稿,介绍 Didian 能为我做什么。根据我的角色和使用场景定制(见下面"关于我")。把完整 HTML 贴到这条 issue 的评论里的 \`\`\`html 代码块中,我直接复制下来存成 \`didian-intro.html\` 双击就能在浏览器里打开。
 
 **产出格式**
 - 一个自包含 .html,CSS / JS 全部 inline。零依赖、不用打包、不引外部图片(视觉用纯 CSS 生成 —— 渐变、几何形状、内联 SVG)。
@@ -110,7 +110,7 @@ When done, also reply with a one-sentence summary of which scenarios you picked 
 - 左右方向键和空格切换,角落放一个小的页码指示。
 
 做完后再用一句话告诉我你为我挑了哪几个场景以及为什么。`,
-      ko: `Didian가 저에게 무엇을 해줄 수 있는지 보여주는 단일 파일 HTML 슬라이드 덱을 만들어 주세요. 제 역할과 사용 사례에 맞춰 주세요(아래 "내 정보" 참고). 전체 HTML을 이 issue의 댓글에 fenced \`\`\`html 코드 블록으로 붙여 주세요. 그대로 복사해 \`multica-intro.html\`로 저장하고 브라우저에서 더블클릭해 열 수 있어야 합니다.
+      ko: `Didian가 저에게 무엇을 해줄 수 있는지 보여주는 단일 파일 HTML 슬라이드 덱을 만들어 주세요. 제 역할과 사용 사례에 맞춰 주세요(아래 "내 정보" 참고). 전체 HTML을 이 issue의 댓글에 fenced \`\`\`html 코드 블록으로 붙여 주세요. 그대로 복사해 \`didian-intro.html\`로 저장하고 브라우저에서 더블클릭해 열 수 있어야 합니다.
 
 **출력 형식**
 - 하나의 self-contained .html 파일. CSS / JS는 모두 inline. 의존성, 빌드 도구, 외부 이미지는 쓰지 마세요(시각 요소는 CSS로 생성한 gradient, geometric shape, inline SVG를 사용).
@@ -136,7 +136,7 @@ When done, also reply with a one-sentence summary of which scenarios you picked 
 - ArrowLeft / ArrowRight와 Space로 이동. 모서리에 작은 page indicator를 두세요.
 
 완료 후, 어떤 시나리오를 골랐고 왜 골랐는지 한 문장으로 요약해 주세요.`,
-      ja: `Didian が私に何をしてくれるのかを示す、単一ファイルの HTML スライドデッキを作ってください。私の役割とユースケースに合わせてください(下の「私について」を参照)。完全な HTML を、この issue のコメントに fenced \`\`\`html コードブロックで貼り付けてください。そのままコピーして \`multica-intro.html\` として保存し、ブラウザでダブルクリックして開けるようにしてください。
+      ja: `Didian が私に何をしてくれるのかを示す、単一ファイルの HTML スライドデッキを作ってください。私の役割とユースケースに合わせてください(下の「私について」を参照)。完全な HTML を、この issue のコメントに fenced \`\`\`html コードブロックで貼り付けてください。そのままコピーして \`didian-intro.html\` として保存し、ブラウザでダブルクリックして開けるようにしてください。
 
 **出力フォーマット**
 - 1つの self-contained な .html。CSS / JS はすべて inline。依存関係なし、ビルドツールなし、外部画像なし(視覚要素は CSS で生成 — グラデーション、幾何学的な図形、inline SVG を使用)。

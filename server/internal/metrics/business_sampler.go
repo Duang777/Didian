@@ -146,49 +146,49 @@ func NewBusinessSamplerCollector(opts *BusinessSamplerOptions) *BusinessSamplerC
 		logger:       slog.Default(),
 
 		queryDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-			Namespace: "multica",
+			Namespace: "didian",
 			Subsystem: "business_sampler",
 			Name:      "query_seconds",
 			Help:      "Per-query duration of the BusinessSamplerCollector. The `name` label is one of the fixed query identifiers and never user-controlled.",
 			Buckets:   []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5},
 		}, []string{"name"}),
 		queryErrors: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: "multica",
+			Namespace: "didian",
 			Subsystem: "business_sampler",
 			Name:      "query_errors_total",
 			Help:      "Per-query error count. Includes statement_timeout cancellations, which are the expected outcome of a hung database and the smoking gun for SET LOCAL working as intended.",
 		}, []string{"name"}),
 
 		descActiveUsers: prometheus.NewDesc(
-			"multica_active_users",
+			"didian_active_users",
 			"Distinct users with chat / task activity in the rolling window. Sampled from the database; stale up to the sampler cache TTL.",
 			[]string{"window"}, nil),
 		descActiveWorkspaces: prometheus.NewDesc(
-			"multica_active_workspaces",
+			"didian_active_workspaces",
 			"Distinct workspaces with chat / task activity in the rolling window. Sampled from the database.",
 			[]string{"window"}, nil),
 		descTaskQueued: prometheus.NewDesc(
-			"multica_agent_task_queued",
+			"didian_agent_task_queued",
 			"Current agent_task_queue rows in `queued` status by inferred source. Sampled from the database.",
 			[]string{"source"}, nil),
 		descTaskRunning: prometheus.NewDesc(
-			"multica_agent_task_running",
+			"didian_agent_task_running",
 			"Current agent_task_queue rows in `dispatched` or `running` status by inferred source and runtime mode. Sampled from the database.",
 			[]string{"source", "runtime_mode"}, nil),
 		descTaskStuck: prometheus.NewDesc(
-			"multica_agent_task_stuck_total",
+			"didian_agent_task_stuck_total",
 			"Current `running` agent_task_queue rows whose started_at is older than the stuck threshold. Sampled from the database.",
 			[]string{"source"}, nil),
 		descRuntimeOnline: prometheus.NewDesc(
-			"multica_runtime_online",
+			"didian_runtime_online",
 			"Count of agent_runtime rows with last_seen_at within the online heartbeat window. Sampled from the database.",
 			[]string{"runtime_mode", "provider"}, nil),
 		descHeartbeatAgeHist: prometheus.NewDesc(
-			"multica_runtime_heartbeat_age_seconds",
+			"didian_runtime_heartbeat_age_seconds",
 			"Distribution of (now() - agent_runtime.last_seen_at) for runtimes considered online by the sampler.",
 			[]string{"runtime_mode"}, nil),
 		descWorkspaceTotal: prometheus.NewDesc(
-			"multica_workspace_total",
+			"didian_workspace_total",
 			"Lifetime workspace row count. Useful for sizing alerts and dashboards.",
 			nil, nil),
 	}

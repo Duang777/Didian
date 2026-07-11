@@ -4,7 +4,7 @@ import {
   type SupportedLocale,
 } from "@didian/core/i18n";
 
-export const MULTICA_LOCALE_HEADER = "x-multica-locale";
+export const DIDIAN_LOCALE_HEADER = "x-didian-locale";
 
 export function isSupportedLocale(
   value: string | null,

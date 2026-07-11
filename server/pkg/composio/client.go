@@ -16,7 +16,7 @@ import (
 const DefaultBaseURL = "https://backend.composio.dev/api/v3.1"
 
 // DefaultUserAgent is sent on every request unless overridden via [Options.UserAgent].
-const DefaultUserAgent = "multica-composio-go/0.1"
+const DefaultUserAgent = "didian-composio-go/0.1"
 
 // DefaultTimeout is the per-request timeout applied to the underlying
 // resty client when [Options.Timeout] is zero.

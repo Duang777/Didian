@@ -20,7 +20,7 @@ import { toast } from "sonner";
  */
 export async function reauthenticateDaemon(): Promise<void> {
   const user = useAuthStore.getState().user;
-  const token = localStorage.getItem("multica_token");
+  const token = localStorage.getItem("didian_token");
   if (!user || !token) {
     // No usable session at all — the standard recovery is the login page.
     useAuthStore.getState().logout();

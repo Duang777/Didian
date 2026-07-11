@@ -1,6 +1,6 @@
 # Feature Flags
 
-Multica ships a framework-level feature flag implementation:
+Didian ships a framework-level feature flag implementation:
 
 - **Backend**: `server/pkg/featureflag` — Go package.
 - **Frontend**: `@didian/core/feature-flags` — TypeScript module with React hooks.
@@ -50,11 +50,11 @@ if err != nil {
 }
 ```
 
-`NewServiceFromEnv` reads two env vars — both follow the same `MULTICA_*_FILE` / `FF_*` conventions documented in `.env.example`:
+`NewServiceFromEnv` reads two env vars — both follow the same `DIDIAN_*_FILE` / `FF_*` conventions documented in `.env.example`:
 
 | Env var | Role |
 |---|---|
-| `MULTICA_FEATURE_FLAGS_FILE` | Path to the YAML rule set (optional; absent = no static rules). |
+| `DIDIAN_FEATURE_FLAGS_FILE` | Path to the YAML rule set (optional; absent = no static rules). |
 | `FF_<FLAG_KEY>` | Per-flag runtime override. `FF_BILLING_NEW_INVOICE_EMAIL=false` / `25%` / `experiment-v2`. Beats the YAML, no redeploy. |
 
 The provider chain is `EnvProvider → YAML StaticProvider`. The server can boot with zero flag config — every `IsEnabled` call falls back to the caller's default until someone authors a rule.
@@ -62,7 +62,7 @@ The provider chain is `EnvProvider → YAML StaticProvider`. The server can boot
 ### YAML schema
 
 ```yaml
-# /etc/multica/feature-flags.yaml
+# /etc/didian/feature-flags.yaml
 billing_new_invoice_email:
   default: true
 

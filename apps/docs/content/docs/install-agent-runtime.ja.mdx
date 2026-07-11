@@ -1,11 +1,11 @@
 ---
 title: エージェントランタイムをインストールする
-description: Multica はあなたのマシンにインストールされている AI コーディングツールを駆動します。このページでは、デーモンがそれらを検出できるように、サポートされている 14 種のツールをそれぞれインストールする方法を説明します。
+description: Didian はあなたのマシンにインストールされている AI コーディングツールを駆動します。このページでは、デーモンがそれらを検出できるように、サポートされている 14 種のツールをそれぞれインストールする方法を説明します。
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Multica における**ランタイム**とは、あなたのマシンのデーモンと、デーモンが `PATH` で見つけた AI コーディングツール 1 つが組になったものです。オンボーディングの「ランタイムを接続」ステップで **No supported tools detected** と表示される場合、それはデーモンが `PATH` をスキャンしたものの、駆動方法を知っている 14 種のツールのいずれも見つけられなかったことを意味します。以下のツールのいずれか（または複数）をインストールしてから、そのステップに戻って再スキャンしてください — 数秒以内にランタイムが表示されます。
+Didian における**ランタイム**とは、あなたのマシンのデーモンと、デーモンが `PATH` で見つけた AI コーディングツール 1 つが組になったものです。オンボーディングの「ランタイムを接続」ステップで **No supported tools detected** と表示される場合、それはデーモンが `PATH` をスキャンしたものの、駆動方法を知っている 14 種のツールのいずれも見つけられなかったことを意味します。以下のツールのいずれか（または複数）をインストールしてから、そのステップに戻って再スキャンしてください — 数秒以内にランタイムが表示されます。
 
 このページは次のドキュメントのインストール側の補完ドキュメントです。
 
@@ -13,20 +13,20 @@ Multica における**ランタイム**とは、あなたのマシンのデー�
 - [AI コーディングツールマトリクス](/providers) — 各ツールができることとできないこと（セッション再開、MCP、モデル選択）
 
 <Callout type="info">
-Multica サーバーがあなたの API キーやツール自体を見ることは決してありません。以下のすべて — インストール、認証、モデルアクセス — はあなたのローカルマシン上に存在します。何かが失敗する場合、それはほぼ常にローカルの問題です。
+Didian サーバーがあなたの API キーやツール自体を見ることは決してありません。以下のすべて — インストール、認証、モデルアクセス — はあなたのローカルマシン上に存在します。何かが失敗する場合、それはほぼ常にローカルの問題です。
 </Callout>
 
 ## 始める前に
 
 以下の**すべての**ツールに 2 つの前提条件が適用されます。
 
-1. **Multica デーモンが実行中である必要があります。** [Multica CLI](/cli) をインストールした後に `multica daemon start` を実行するか、デーモンを自動的に起動する [Multica デスクトップアプリ](/desktop-app)を使用してください。デーモンが実行されていなければ、ツールを検出する主体がありません。
+1. **Didian デーモンが実行中である必要があります。** [Didian CLI](/cli) をインストールした後に `didian daemon start` を実行するか、デーモンを自動的に起動する [Didian デスクトップアプリ](/desktop-app)を使用してください。デーモンが実行されていなければ、ツールを検出する主体がありません。
 2. **ツールのバイナリが `PATH` で到達可能である必要があります。** デーモンは各ツールを名前で呼び出して実行します（各セクションの**デーモンが探す名前**の列を参照）。ターミナルで `which <name>` で見つからなければ、デーモンも見つけられません。インストール後は、新しいターミナルを開く（またはデーモンを再起動する）ことで、新しい `PATH` エントリが反映されるようにしてください。
 
 ツールをインストールした後は、デーモンを再起動してください。
 
 ```bash
-multica daemon restart
+didian daemon restart
 ```
 
 または、デスクトップアプリではアプリを再起動するだけで構いません。デーモンは起動するたびに `PATH` を再スキャンします。
@@ -48,7 +48,7 @@ multica daemon restart
 
 ### Codex (OpenAI)
 
-よりきめ細かい承認ゲートを備えた JSON-RPC 2.0 のトランスポートです。**セッション再開は動作します** — Multica は Codex app-server の `thread/resume` で再開し、古いまたは存在しない thread では新しい thread にフォールバックします。
+よりきめ細かい承認ゲートを備えた JSON-RPC 2.0 のトランスポートです。**セッション再開は動作します** — Didian は Codex app-server の `thread/resume` で再開し、古いまたは存在しない thread では新しい thread にフォールバックします。
 
 | | |
 |---|---|
@@ -58,7 +58,7 @@ multica daemon restart
 
 ### Cursor (Anysphere)
 
-Cursor エディタに対応する CLI です。**セッション再開は動作します** — 現在の Cursor Agent は stream-json イベントで `session_id` を返し、Multica は次回実行時に `--resume <id>` でそれを渡します。
+Cursor エディタに対応する CLI です。**セッション再開は動作します** — 現在の Cursor Agent は stream-json イベントで `session_id` を返し、Didian は次回実行時に `--resume <id>` でそれを渡します。
 
 | | |
 |---|---|
@@ -119,7 +119,7 @@ ACP プロトコルのエージェントです（Kimi とトランスポート�
 
 ### OpenClaw
 
-オープンソースの CLI エージェントオーケストレーターです。**モデルはエージェント層にバインドされます**（`openclaw agents add --model`） — タスクごとに上書きすることはできず、Multica から `--model` や `--system-prompt` を渡すこともできません。
+オープンソースの CLI エージェントオーケストレーターです。**モデルはエージェント層にバインドされます**（`openclaw agents add --model`） — タスクごとに上書きすることはできず、Didian から `--model` や `--system-prompt` を渡すこともできません。
 
 | | |
 |---|---|
@@ -139,7 +139,7 @@ ACP プロトコルのエージェントです（Kimi とトランスポート�
 
 ### CodeBuddy (Tencent)
 
-Claude Code 互換の CLI エージェントです。Multica は Claude Code と同じ stream-json プロトコルで駆動します: セッション再開は `--resume` で動作し、MCP 構成は `--mcp-config` で渡され、スキルは `.claude/skills/` に配置されます。モデルは動的に探索されます。
+Claude Code 互換の CLI エージェントです。Didian は Claude Code と同じ stream-json プロトコルで駆動します: セッション再開は `--resume` で動作し、MCP 構成は `--mcp-config` で渡され、スキルは `.claude/skills/` に配置されます。モデルは動的に探索されます。
 
 | | |
 |---|---|
@@ -159,7 +159,7 @@ stdio 上で ACP プロトコルを使用するエージェント型のコーデ
 
 ### Trae CLI (ByteDance)
 
-ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う製品で、**オープンソースの `bytedance/trae-agent` ではありません**）です。ACP ネイティブのため、Multica は stdio 上で `traecli acp serve --yolo` を通じて駆動し、Hermes、Kimi、Kiro CLI、Qoder とトランスポートを共有します。セッション再開は ACP `session/load`、MCP 構成は ACP `mcpServers`、モデル選択は動的探索で動作し、スキルは `.traecli/skills/` にコピーされます。
+ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う製品で、**オープンソースの `bytedance/trae-agent` ではありません**）です。ACP ネイティブのため、Didian は stdio 上で `traecli acp serve --yolo` を通じて駆動し、Hermes、Kimi、Kiro CLI、Qoder とトランスポートを共有します。セッション再開は ACP `session/load`、MCP 構成は ACP `mcpServers`、モデル選択は動的探索で動作し、スキルは `.traecli/skills/` にコピーされます。
 
 | | |
 |---|---|
@@ -169,27 +169,27 @@ ByteDance 公式の TRAE CLI（`traecli`、Trae IDE と組み合わせて使う�
 
 ### Antigravity (Google)
 
-Google の Antigravity CLI（`agy`）です。Google の Antigravity サービスと組になり、Gemini ベースのモデルを実行します。セッション再開は `--conversation <id>` を通じて動作し、デーモンが CLI のログファイルからこれをキャプチャします。モデル選択は Antigravity CLI 自体の内部で管理されます — Multica はこのプロバイダーに対してエージェントごとのモデルピッカーを無効にします。スキルは `.agents/skills/` に書き込まれます（CLI が Gemini CLI のワークスペーススキルレイアウトを継承します — [Antigravity ドキュメント](https://antigravity.google/docs/gcli-migration)を参照）。
+Google の Antigravity CLI（`agy`）です。Google の Antigravity サービスと組になり、Gemini ベースのモデルを実行します。セッション再開は `--conversation <id>` を通じて動作し、デーモンが CLI のログファイルからこれをキャプチャします。モデル選択は Antigravity CLI 自体の内部で管理されます — Didian はこのプロバイダーに対してエージェントごとのモデルピッカーを無効にします。スキルは `.agents/skills/` に書き込まれます（CLI が Gemini CLI のワークスペーススキルレイアウトを継承します — [Antigravity ドキュメント](https://antigravity.google/docs/gcli-migration)を参照）。
 
 | | |
 |---|---|
 | デーモンが探す名前 | `agy` |
 | インストール | [antigravity.google/docs/cli-overview](https://antigravity.google/docs/cli-overview) の公式ガイドに従ってください。CLI はあらかじめビルドされて提供されます — `agy install` を一度実行して PATH とシェルエイリアスを設定してください。 |
 | 認証 | `agy` を対話的に一度実行して Google アカウントのログインを完了するか、Antigravity デスクトップアプリを通じてログインしてください — CLI は GUI が書き込んだ keyring エントリを再利用します。 |
-| 備考 | CLI は構造化されたイベントストリームではなく、stdout に通常のアシスタントテキストを出力します。途中の「I will run X」の行と最終的な応答の両方がテキストとして Multica に中継されます。 |
+| 備考 | CLI は構造化されたイベントストリームではなく、stdout に通常のアシスタントテキストを出力します。途中の「I will run X」の行と最終的な応答の両方がテキストとして Didian に中継されます。 |
 
 ## インストールした後
 
 1. **バイナリが `PATH` にあるか確認してください。** 新しいターミナルを開いて `which <name>`（例: `which claude`、`which cursor-agent`、`which kiro-cli`、`which agy`）を実行してください。パスが出力されれば、デーモンが見つけられます。何も出力されない場合は、まずシェルの `PATH` を修正してください（典型的な原因は、リロードされていないシェルごとの rc ファイルです）。
-2. **デーモンを再起動してください。** `multica daemon restart` を実行するか、デスクトップアプリを再起動してください。デーモンは起動時にのみ `PATH` をスキャンします。
-3. **ランタイムページを確認してください。** Multica UI の**ランタイム**ページに、`(ワークスペース × ツール)` の組み合わせごとに 1 行ずつ表示されるはずです。行に「offline」と表示される場合は、[デーモンとランタイム → ランタイムがオフラインと表示されるとき](/daemon-runtimes#when-a-runtime-is-marked-offline)を参照してください。
+2. **デーモンを再起動してください。** `didian daemon restart` を実行するか、デスクトップアプリを再起動してください。デーモンは起動時にのみ `PATH` をスキャンします。
+3. **ランタイムページを確認してください。** Didian UI の**ランタイム**ページに、`(ワークスペース × ツール)` の組み合わせごとに 1 行ずつ表示されるはずです。行に「offline」と表示される場合は、[デーモンとランタイム → ランタイムがオフラインと表示されるとき](/daemon-runtimes#when-a-runtime-is-marked-offline)を参照してください。
 4. **オンボーディングに戻ってください。** 「ランタイムを接続」ステップはポーリングを行い、数秒以内に新しいランタイムを認識します — リロードは不要です。
 
 ## トラブルシューティング
 
 - **`which` はバイナリを見つけるのにデーモンは見つけません。** デーモンが古い `PATH` で起動されています。再起動してください。
 - **バイナリは存在するのに起動に失敗します。** ターミナルからツール自体の `--version` や `--help` を一度実行してください — ここで発生する失敗のほとんどは、認証の欠落、期限切れのトークン、または Node.js / ランタイムの不一致です。
-- **ランタイムページに行は表示されるのに、タスクがすぐに失敗します。** タスクをトリガーしながら `multica daemon logs -f` を確認してください。デーモンはツール自体のエラー出力をそのまま表示します。
+- **ランタイムページに行は表示されるのに、タスクがすぐに失敗します。** タスクをトリガーしながら `didian daemon logs -f` を確認してください。デーモンはツール自体のエラー出力をそのまま表示します。
 
 より広範な症状については、[トラブルシューティングガイド](/troubleshooting)を参照してください。
 

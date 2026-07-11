@@ -11,8 +11,8 @@ import { useModalStore } from "@didian/core/modals";
 import { DISCORD_URL, DiscordIcon } from "./discord";
 import { useT } from "../i18n";
 
-const DOCS_URL = "https://multica.ai/docs";
-const CHANGELOG_URL = "https://multica.ai/changelog";
+const DOCS_URL = "https://didian.ai/docs";
+const CHANGELOG_URL = "https://didian.ai/changelog";
 
 export function HelpLauncher() {
   const { t } = useT("layout");

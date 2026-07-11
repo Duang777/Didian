@@ -48,7 +48,7 @@ func redisClientName(existing, suffix string) string {
 	if existing != "" {
 		return existing + ":" + suffix
 	}
-	return "multica-api:" + suffix
+	return "didian-api:" + suffix
 }
 
 func closeRedisClient(label string, client *redis.Client) {
@@ -147,11 +147,11 @@ func main() {
 	if os.Getenv("RESEND_API_KEY") == "" && strings.TrimSpace(os.Getenv("SMTP_HOST")) == "" {
 		slog.Warn("no email backend configured (RESEND_API_KEY and SMTP_HOST both empty) — verification codes will be printed to the log instead of emailed.")
 	}
-	if os.Getenv("MULTICA_DEV_VERIFICATION_CODE") != "" {
+	if os.Getenv("DIDIAN_DEV_VERIFICATION_CODE") != "" {
 		if strings.EqualFold(strings.TrimSpace(os.Getenv("APP_ENV")), "production") {
-			slog.Warn("MULTICA_DEV_VERIFICATION_CODE is set but ignored because APP_ENV=production.")
+			slog.Warn("DIDIAN_DEV_VERIFICATION_CODE is set but ignored because APP_ENV=production.")
 		} else {
-			slog.Warn("MULTICA_DEV_VERIFICATION_CODE is enabled. Use it only for local development or private test instances.")
+			slog.Warn("DIDIAN_DEV_VERIFICATION_CODE is enabled. Use it only for local development or private test instances.")
 		}
 	}
 
@@ -160,7 +160,7 @@ func main() {
 		port = "8080"
 	}
 
-	// Feature flags: loaded once at startup from MULTICA_FEATURE_FLAGS_FILE
+	// Feature flags: loaded once at startup from DIDIAN_FEATURE_FLAGS_FILE
 	// (a YAML rule set) with FF_<KEY> env overrides layered on top.
 	// See docs/feature-flags.md for the schema and lifecycle rules.
 	//
@@ -169,7 +169,7 @@ func main() {
 	// default, so existing code paths are unchanged until someone adds a
 	// rule. A misconfigured (malformed / missing) file surfaces as a hard
 	// error so operators see misconfig the same way they do for any other
-	// MULTICA_*_FILE knob.
+	// DIDIAN_*_FILE knob.
 	flags, err := featureflag.NewServiceFromEnv(featureflag.WithLogger(slog.Default()))
 	if err != nil {
 		slog.Error("feature flag configuration failed to load", "error", err)
@@ -179,7 +179,7 @@ func main() {
 
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		dbURL = "postgres://multica:multica@localhost:5432/multica?sslmode=disable"
+		dbURL = "postgres://didian:didian@localhost:5432/didian?sslmode=disable"
 	}
 
 	// Connect to database

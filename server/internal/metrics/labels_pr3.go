@@ -220,7 +220,7 @@ func NormalizePlatform(value string) string {
 	return normalizeFromAllowList(value, knownPlatforms, "unknown")
 }
 
-// NormalizeSignupSource buckets the raw multica_signup_source cookie payload
+// NormalizeSignupSource buckets the raw didian_signup_source cookie payload
 // into the fixed signup channel allow-list. The cookie carries free-form
 // JSON (utm_source / utm_medium / referrer) on the PostHog side; here we
 // only need a bounded label, so we look at utm_source / source / referrer

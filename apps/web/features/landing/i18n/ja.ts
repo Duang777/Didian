@@ -22,12 +22,12 @@ export function createJaDict(allowSignup: boolean): LandingDict {
       headlineLine1: "次に採用する10人は、",
       headlineLine2: "人間ではないかもしれません。",
       subheading:
-        "Multica は、コーディングエージェントを本物のチームメンバーに変えるオープンソースプラットフォームです。タスクを割り当て、進捗を追い、ノウハウをスキルとして積み上げる。人間と AI エージェントから成るチームを、ひとつの場所で管理できます。",
+        "Didian は、コーディングエージェントを本物のチームメンバーに変えるオープンソースプラットフォームです。タスクを割り当て、進捗を追い、ノウハウをスキルとして積み上げる。人間と AI エージェントから成るチームを、ひとつの場所で管理できます。",
       cta: "無料トライアルを始める",
       downloadDesktop: "デスクトップ版をダウンロード",
       talkToSales: "営業に相談する",
       worksWith: "対応ツール",
-      imageAlt: "人間と AI エージェントがイシューを管理する Multica のボード画面",
+      imageAlt: "人間と AI エージェントがイシューを管理する Didian のボード画面",
     },
     features: {
       teammates: {
@@ -57,7 +57,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
         label: "自律実行",
         title: "任せておくだけ — あなたが眠っている間もエージェントが働きます",
         description:
-          "一往復で終わる指示ではありません。タスクをキューに入れ、受け取り、開始し、完了または失敗まで報告する。このライフサイクル全体を Multica が管理します。詰まったところはエージェントが先に知らせ、進捗は WebSocket でリアルタイムに届きます。",
+          "一往復で終わる指示ではありません。タスクをキューに入れ、受け取り、開始し、完了または失敗まで報告する。このライフサイクル全体を Didian が管理します。詰まったところはエージェントが先に知らせ、進捗は WebSocket でリアルタイムに届きます。",
         cards: [
           {
             title: "最初から最後まで追跡",
@@ -118,7 +118,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           {
             title: "初回起動時に自動検出",
             description:
-              "Multica は Antigravity、Claude Code、CodeBuddy、Codex、Cursor、Copilot、Hermes、Kimi、Kiro CLI、OpenCode、OpenClaw、Pi、Qoder、Trae CLI という14種類の対応ツールをスキャンし、見つかったものをそれぞれランタイムとして登録します。",
+              "Didian は Antigravity、Claude Code、CodeBuddy、Codex、Cursor、Copilot、Hermes、Kimi、Kiro CLI、OpenCode、OpenClaw、Pi、Qoder、Trae CLI という14種類の対応ツールをスキャンし、見つかったものをそれぞれランタイムとして登録します。",
           },
         ],
       },
@@ -139,7 +139,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
         {
           title: "CLI をインストールしてマシンを接続",
           description:
-            "multica setup を実行すると、OAuth の手順を案内し、デーモンを起動し、14種類の対応コーディングツール(Antigravity、Claude Code、CodeBuddy、Codex、Cursor、Copilot、Hermes、Kimi、Kiro CLI、OpenCode、OpenClaw、Pi、Qoder、Trae CLI)をスキャンします。すでにインストール済みのものは、自動的にランタイムとして登録されます。",
+            "didian setup を実行すると、OAuth の手順を案内し、デーモンを起動し、14種類の対応コーディングツール(Antigravity、Claude Code、CodeBuddy、Codex、Cursor、Copilot、Hermes、Kimi、Kiro CLI、OpenCode、OpenClaw、Pi、Qoder、Trae CLI)をスキャンします。すでにインストール済みのものは、自動的にランタイムとして登録されます。",
         },
         {
           title: "最初のエージェントを作成",
@@ -161,13 +161,13 @@ export function createJaDict(allowSignup: boolean): LandingDict {
       headlineLine1: "すべての人に、",
       headlineLine2: "オープンソースを。",
       description:
-        "Multica は完全なオープンソースです。すべてのコードを確認し、自分の条件でセルフホストし、人間と AI エージェントが協働する未来を、ともに形づくっていけます。",
+        "Didian は完全なオープンソースです。すべてのコードを確認し、自分の条件でセルフホストし、人間と AI エージェントが協働する未来を、ともに形づくっていけます。",
       cta: "GitHub でスターを付ける",
       highlights: [
         {
           title: "どこでもセルフホスト",
           description:
-            "自社のインフラで Multica を運用できます。Docker Compose、単一バイナリ、Kubernetes に対応。データがネットワークの外に出ることはありません。",
+            "自社のインフラで Didian を運用できます。Docker Compose、単一バイナリ、Kubernetes に対応。データがネットワークの外に出ることはありません。",
         },
         {
           title: "ベンダーロックインなし",
@@ -191,9 +191,9 @@ export function createJaDict(allowSignup: boolean): LandingDict {
       headline: "よくある質問。",
       items: [
         {
-          question: "Multica はどのコーディングエージェントに対応していますか?",
+          question: "Didian はどのコーディングエージェントに対応していますか?",
           answer:
-            "Multica は、Antigravity、Claude Code、CodeBuddy、Codex、Cursor、Copilot、Hermes、Kimi、Kiro CLI、OpenCode、OpenClaw、Pi、Qoder、Trae CLI の14種類のコーディングツールに標準対応しています。デーモンが、すでにインストール済みの CLI を自動検出し、それぞれをランタイムとして登録します。オープンソースなので、独自のバックエンドを追加することもできます。",
+            "Didian は、Antigravity、Claude Code、CodeBuddy、Codex、Cursor、Copilot、Hermes、Kimi、Kiro CLI、OpenCode、OpenClaw、Pi、Qoder、Trae CLI の14種類のコーディングツールに標準対応しています。デーモンが、すでにインストール済みの CLI を自動検出し、それぞれをランタイムとして登録します。オープンソースなので、独自のバックエンドを追加することもできます。",
         },
         {
           question: "セルフホストが必須ですか、それともクラウド版もありますか?",
@@ -204,17 +204,17 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           question:
             "コーディングエージェントを直接使うのと、何が違うのですか?",
           answer:
-            "コーディングエージェントは実行が得意です。Multica はその上に、タスクキュー、チームの連携、スキルの再利用、ランタイムの監視、そして各エージェントの動きを一望できる統合ビューという管理レイヤーを加えます。エージェントのためのプロジェクトマネージャーだと考えてください。",
+            "コーディングエージェントは実行が得意です。Didian はその上に、タスクキュー、チームの連携、スキルの再利用、ランタイムの監視、そして各エージェントの動きを一望できる統合ビューという管理レイヤーを加えます。エージェントのためのプロジェクトマネージャーだと考えてください。",
         },
         {
           question: "エージェントは長時間のタスクを自律的にこなせますか?",
           answer:
-            "はい。Multica は、キュー追加・受け取り・実行・完了または失敗まで、タスクのライフサイクル全体を管理します。エージェントは詰まったところを先に知らせ、進捗をリアルタイムにストリーミングします。好きなときに覗いてもよいですし、一晩じゅう走らせておくこともできます。",
+            "はい。Didian は、キュー追加・受け取り・実行・完了または失敗まで、タスクのライフサイクル全体を管理します。エージェントは詰まったところを先に知らせ、進捗をリアルタイムにストリーミングします。好きなときに覗いてもよいですし、一晩じゅう走らせておくこともできます。",
         },
         {
           question: "コードは安全ですか? エージェントの実行はどこで行われますか?",
           answer:
-            "エージェントの実行は、あなたのマシン(ローカルデーモン)、または自社のクラウドインフラ上で行われます。コードが Multica のサーバーを経由することはありません。プラットフォームはタスクの状態を調整し、イベントを配信する役割だけを担います。",
+            "エージェントの実行は、あなたのマシン(ローカルデーモン)、または自社のクラウドインフラ上で行われます。コードが Didian のサーバーを経由することはありません。プラットフォームはタスクの状態を調整し、イベントを配信する役割だけを担います。",
         },
         {
           question: "エージェントは何個まで動かせますか?",
@@ -243,7 +243,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           links: [
             { label: "ドキュメント", href: "/docs/ja" },
             { label: "API", href: githubUrl },
-            { label: "X (Twitter)", href: "https://x.com/MulticaAI" },
+            { label: "X (Twitter)", href: "https://x.com/DidianAI" },
             { label: "Discord", href: discordUrl },
           ],
         },
@@ -257,11 +257,11 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           ],
         },
       },
-      copyright: "© {year} Multica. All rights reserved.",
+      copyright: "© {year} Didian. All rights reserved.",
     },
     changelog: {
       title: "変更履歴",
-      subtitle: "Multica の新しいアップデートと改善点をお届けします。",
+      subtitle: "Didian の新しいアップデートと改善点をお届けします。",
       toc: "すべてのリリース",
       categories: {
         features: "新機能",
@@ -399,7 +399,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           changes: [],
           features: [
             "タスクの Transcript（ログ）が絞り込みと展開状態を記憶し、同じ実行を次に開いたときに復元します。",
-            "セルフホスト（Helm）：新しい `postgres.external.enabled` トグルで Multica を外部管理の PostgreSQL（RDS、CNPG、Cloud SQL、Neon など）に向けられ、内蔵データベースをスキップできます。",
+            "セルフホスト（Helm）：新しい `postgres.external.enabled` トグルで Didian を外部管理の PostgreSQL（RDS、CNPG、Cloud SQL、Neon など）に向けられ、内蔵データベースをスキップできます。",
           ],
           fixes: [
             "コメント下書きに空の `1. ` 行があると、再読込後にキャレットが下のブロックへ流れてしまう不具合を修正しました。",
@@ -453,8 +453,8 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "Slack /issue スラッシュ コマンド、ByteDance TRAE CLI ランタイム、Claude Sonnet 5 対応",
           changes: [],
           features: [
-            "Slack のネイティブ /issue スラッシュ コマンドで Multica Issue を作成し、実行者だけに Issue リンクを私信で返します。",
-            "同じ Slack ワークスペースで既に一方の Multica ボットに連携済みのユーザーは、別のボットが加わっても再連携を求められなくなりました。",
+            "Slack のネイティブ /issue スラッシュ コマンドで Didian Issue を作成し、実行者だけに Issue リンクを私信で返します。",
+            "同じ Slack ワークスペースで既に一方の Didian ボットに連携済みのユーザーは、別のボットが加わっても再連携を求められなくなりました。",
             "Slack チャンネルの文脈読み込みが 2 つのコマンドに整理されました：チャンネル概要と、特定スレッドの読み取りです。",
             "ByteDance TRAE CLI（traecli）が標準 ACP プロトコル経由で組み込みエージェント ランタイムに加わりました。",
             "Anthropic のモデル一覧に Claude Sonnet 5 を追加し、導入期価格を反映しました。",
@@ -468,9 +468,9 @@ export function createJaDict(allowSignup: boolean): LandingDict {
             "Slack のチャット エージェントが履歴取得の作業を毎回説明しなくなり、内部で静かに読み込み、回答だけを送るようになりました。",
             "セルフホストのローカル ディスク構成で、添付ファイル（PDF / HTML）のプレビューが再び開くようになりました。（コミュニティ報告）",
             "Cursor と Kiro ランタイムの完了時トランスクリプトを取り戻し、最終的な結果が失われなくなりました。",
-            "セルフホスト：docker-compose.selfhost.yml で MULTICA_SLACK_SECRET_KEY をバックエンド コンテナへ引き渡すようになりました。（コミュニティ報告）",
+            "セルフホスト：docker-compose.selfhost.yml で DIDIAN_SLACK_SECRET_KEY をバックエンド コンテナへ引き渡すようになりました。（コミュニティ報告）",
             "Issue 一覧上部の「N 件処理中」チップが、エージェントではなく Issue の数を数えるようになりました。",
-            "セルフホストの匿名ソース チャネル送信先を正式な Multica API エンドポイントに戻しました。",
+            "セルフホストの匿名ソース チャネル送信先を正式な Didian API エンドポイントに戻しました。",
             "コメント ディープリンクのハイライトは背景色のみになり、ルート コメントと返信で挙動が統一されました。",
           ],
         },
@@ -481,10 +481,10 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           changes: [],
           features: [
             "Autopilot に明確な書き込み権限レイヤーが入り、詳細ページの「アクセス管理」から特定メンバーに 1 つの Autopilot の書き込み権限だけを委譲できます。",
-            "Slack チャンネルの過去のやり取りを Multica にバックフィルでき、エージェントが加わった時点で会話の流れをそのまま把握できます。",
+            "Slack チャンネルの過去のやり取りを Didian にバックフィルでき、エージェントが加わった時点で会話の流れをそのまま把握できます。",
             "Slack でエージェントが返信を準備している間、ユーザーのメッセージに 👀 のリアクションが付き、終了時に確実に外れます。",
             "スキル パッケージをローカルの .skill / .zip アーカイブから取り込めるようになりました。",
-            "multica issue 系のコマンドは短い UUID プレフィックスを受け付けなくなりました。Issue Key（MUL-123）または完全な UUID を指定してください。",
+            "didian issue 系のコマンドは短い UUID プレフィックスを受け付けなくなりました。Issue Key（MUL-123）または完全な UUID を指定してください。",
             "Agents ページがモバイルに最適化されました。",
           ],
           improvements: [
@@ -724,7 +724,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           features: [
             "エージェント、オートパイロット、プロジェクト、ランタイム、スキル、スクワッドのリストがより速く一貫した体験になり、行表示、絞り込み、選択、操作が分かりやすくなりました。",
             "コマンドラインからワークスペースのリポジトリを管理できるようになり、ローカルエージェントがプロジェクトのリポジトリ情報を受け取りやすくなりました。",
-            "Cursor と OpenClaw の設定が簡単になりました。Cursor の接続設定は Multica に任せられ、OpenClaw は既存のゲートウェイにも接続できます。",
+            "Cursor と OpenClaw の設定が簡単になりました。Cursor の接続設定は Didian に任せられ、OpenClaw は既存のゲートウェイにも接続できます。",
             "コメントを編集するとき、保存前にどのエージェントやスクワッドが動き始めるかをプレビューして制御できます。",
           ],
           improvements: [
@@ -746,7 +746,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "CodeBuddy Runtime",
           changes: [],
           features: [
-            "CodeBuddy でローカルの Multica エージェントを動かせるようになり、利用できるモデルと実行の強さが自動で表示されます。",
+            "CodeBuddy でローカルの Didian エージェントを動かせるようになり、利用できるモデルと実行の強さが自動で表示されます。",
             "クイック作成した Issue では、下書きでアップロードしたファイルが最終的な Issue まで保持されます。",
           ],
           improvements: [
@@ -788,15 +788,15 @@ export function createJaDict(allowSignup: boolean): LandingDict {
             "コメント入力欄では、送信前にどのエージェントやスクワッドが動き始めるかを確認でき、誤って実行することを避けられます。",
             "実行記録に時刻が表示されるようになり、エージェントの進捗や引き継ぎを振り返りやすくなりました。",
             "オートパイロット詳細ページで、誰が作成したかを確認できるようになりました。",
-            "Claude Fable 5 が Multica の対応モデルと料金一覧に加わりました。",
+            "Claude Fable 5 が Didian の対応モデルと料金一覧に加わりました。",
             "イシューの会話で特定の返信を解決として残せるようになり、長いスレッドを閉じても結論を確認しやすくなりました。",
-            "Lark と Feishu の会話では、Multica が返信を準備している間に入力中のリアクションを表示し、返信前に自動で消します。",
+            "Lark と Feishu の会話では、Didian が返信を準備している間に入力中のリアクションを表示し、返信前に自動で消します。",
             "エージェント実行は、誰がそのタスクを始めたかを把握できるようになり、引き継ぎ、監査、プライバシーに配慮した動作がより正確になります。",
             "OpenClaw ユーザーは、ローカル設定から独自のアプリ場所とデータフォルダーを指定できます。",
           ],
           improvements: [
             "コメントトリガーの表示はより控えめで読みやすく、長いエージェント名でも混み合いにくくなりました。",
-            "WSL2 など Multica の外でデーモンが管理されている場合、デスクトップは開始と停止の操作を無効にします。",
+            "WSL2 など Didian の外でデーモンが管理されている場合、デスクトップは開始と停止の操作を無効にします。",
             "イシュー上部のアクティブなエージェント表示は、実行中だけ動き、待機中は待機状態を明確に示すため、読み取りやすくなりました。",
             "CLI は、よくあるエラー、サインインの問題、プロジェクト設定の値について、よりわかりやすく案内します。",
           ],
@@ -820,7 +820,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "Web 版通知と /note コマンド",
           changes: [],
           features: [
-            "Web アプリでブラウザー標準の通知バナーを表示できるようになり、Multica がバックグラウンドでもワークスペースの動きに気づきやすくなりました。",
+            "Web アプリでブラウザー標準の通知バナーを表示できるようになり、Didian がバックグラウンドでもワークスペースの動きに気づきやすくなりました。",
             "/note で始まるコメントは、割り当てられたエージェントを起こさずに文脈を残せるため、実行を始めずにチームの連携メモを書けます。",
             "Antigravity を、デーモンで動くエージェントごとに選べるモデルとして利用できます。",
             "CLI はよくあるリクエスト失敗を平易な言葉で説明し、次に取るべき行動を示します。",
@@ -878,10 +878,10 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "Lark Bot 連携",
           changes: [],
           features: [
-            "Multica は Lark のサードパーティ連携に対応し、QR コードを読み取るだけで Multica エージェントを Lark Bot として作成できます。",
+            "Didian は Lark のサードパーティ連携に対応し、QR コードを読み取るだけで Didian エージェントを Lark Bot として作成できます。",
             "チャットに検索できるエージェント選択と明示的なコンテキスト選択が加わり、誰に任せるか、何を見せるかを選びやすくなりました。",
             "説明とコメントでチェックボックス付きタスクリストを使えるようになり、イシュー内の軽い計画を整理しやすくなりました。",
-            "エージェントに Multica の組み込みスキルが加わり、ワークスペースの進め方により沿いやすくなりました。",
+            "エージェントに Didian の組み込みスキルが加わり、ワークスペースの進め方により沿いやすくなりました。",
           ],
           improvements: [
             "チャットコンテキストが明確なメンションとして表示され、引き継ぎや後からの確認がわかりやすくなりました。",
@@ -925,7 +925,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "日本語対応と /skill command",
           changes: [],
           features: [
-            "Multica がアプリ、サイト、ドキュメントで日本語に対応しました。",
+            "Didian がアプリ、サイト、ドキュメントで日本語に対応しました。",
             "チャットで /skill command からエージェントのスキルを選べます。",
             "ワークスペースに独自のロゴを表示できます。",
             "既存のスキルを残したまま、エージェントにスキルを追加できます。",
@@ -955,7 +955,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           changes: [],
           features: [
             "エージェントがイシューのコメントから作業を続けるとき、新しいセッションを作らずに前のセッションを再開し、タスクのコンテキストをそのまま引き継ぎます。",
-            "Multica がアプリ、ウェブサイト、ドキュメントで韓国語に対応し、韓国語のドキュメントページや日付表示のローカライズも提供します。",
+            "Didian がアプリ、ウェブサイト、ドキュメントで韓国語に対応し、韓国語のドキュメントページや日付表示のローカライズも提供します。",
             "イシュー画面で作業中のエージェントをタイトルの近くに表示し、複数のエージェントが同時に作業しているときも見やすくなりました。",
             "エージェントはイシューの議論を読むとき、スレッドのプレビュー、返信数、最近のアクティビティを先に確認し、必要なコンテキストをより速く見つけられます。",
             "OpenClaw ランタイムがエージェントに保存された MCP 設定を使えるようになり、モデル選択や使用量の見積もりでも Claude Opus 4.8 を利用できます。",
@@ -1011,7 +1011,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "iOS、Helm によるセルフホスト、よりなめらかな協働",
           changes: [],
           features: [
-            "初めて実用的なモバイルクライアントとなる Multica for iOS をリリースし、ログイン・ワークスペース・インボックス・イシュー・プロジェクト・チャット・コメント・リアルタイム更新をすべて利用できます。",
+            "初めて実用的なモバイルクライアントとなる Didian for iOS をリリースし、ログイン・ワークスペース・インボックス・イシュー・プロジェクト・チャット・コメント・リアルタイム更新をすべて利用できます。",
             "セルフホストのチームが Helm チャートで Kubernetes にデプロイできるようになり、Docker でのインストール時もポートと URL の設定がより明確になりました。",
             "プロジェクトのリソース選択にリポジトリ検索が加わり、ランタイムの使用量が主要なモデルのコストをより正確に集計します。",
           ],
@@ -1028,7 +1028,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "より賢いウェルカム体験とリアルタイムの作業シグナル",
           changes: [],
           features: [
-            "新規ユーザーは、Multica Helper がワークスペースの紹介、ツアー、ウェルカムページ作成まで案内する新しいオンボーディング体験を利用できます。",
+            "新規ユーザーは、Didian Helper がワークスペースの紹介、ツアー、ウェルカムページ作成まで案内する新しいオンボーディング体験を利用できます。",
             "イシュー一覧でどのエージェントが作業中かが表示され、詳細表示や「作業中」フィルターも利用できます。",
             "子イシューが完了すると親イシューにもプラットフォームによる更新が残り、適切な担当者にも通知が届きます。",
           ],
@@ -1163,7 +1163,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "GitHub 連携と、より安全なイシューナビゲーション",
           changes: [],
           features: [
-            "GitHub を接続して、連携した Pull request を Multica のイシューに表示し、状態を同期し、PR がクローズされたときにイシューを自動的に閉じられます。",
+            "GitHub を接続して、連携した Pull request を Didian のイシューに表示し、状態を同期し、PR がクローズされたときにイシューを自動的に閉じられます。",
             "チャットメッセージの添付ファイルと画像プレビューに対応し、エージェントとランタイムの公開範囲を設定できます。",
             "単一のエージェントタスクを停止する前に確認を求め、GitHub 連携のドキュメントを提供します。",
           ],
@@ -1214,7 +1214,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "デーモンのディスク使用量 CLI とタイムラインの改善",
           changes: [],
           features: [
-            "`multica daemon disk-usage` が、タスクごと・ワークスペースごとのディスク使用量を表示します。",
+            "`didian daemon disk-usage` が、タスクごと・ワークスペースごとのディスク使用量を表示します。",
             "エージェント設定のスキル picker に検索ボックスが加わり、デーモンの GC 範囲がチャット、オートパイロット、quick-create のタスクまで広がりました。",
             "イシュー詳細のパンくずに、すばやく参照できる識別子が表示されます。",
           ],
@@ -1263,15 +1263,15 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "Repo checkout --ref と Hermes の再生修正",
           changes: [],
           features: [
-            "`multica repo checkout --ref` が、ブランチ、タグ、特定のコミットを対象にリポジトリを取得できます。",
-            "`multica agent avatar` が、CLI からエージェントのアバターを直接アップロードします。",
+            "`didian repo checkout --ref` が、ブランチ、タグ、特定のコミットを対象にリポジトリを取得できます。",
+            "`didian agent avatar` が、CLI からエージェントのアバターを直接アップロードします。",
             "インボックスの Done タスクにアーカイブボタンが加わり、重複していた mark-as-done の hover ボタンは削除されました。",
           ],
           improvements: [
             "長いタイムラインのイシューを開く処理、multi-replica のモデル picker、デーモンの empty-claim cache TTL が改善されました。",
           ],
           fixes: [
-            "新しいエージェントの即時表示、Hermes の以前の回答の再生、Codex の GPT-5.5 モデル表示、`multica login --token`、CLI 更新の状態、session resume、Kanban 設定、オートパイロットのレスポンシブ対応などを修正しました。",
+            "新しいエージェントの即時表示、Hermes の以前の回答の再生、Codex の GPT-5.5 モデル表示、`didian login --token`、CLI 更新の状態、session resume、Kanban 設定、オートパイロットのレスポンシブ対応などを修正しました。",
           ],
         },
         {
@@ -1285,7 +1285,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
             "プロジェクトごとのリポジトリ紐付けと、権限を認識する UI が加わりました。",
           ],
           improvements: [
-            "デーモンの claim polling の Redis fast-path、Multica Agent のコミットの Co-authored-by trailer、デスクトップの reload 抑止が改善されました。",
+            "デーモンの claim polling の Redis fast-path、Didian Agent のコミットの Co-authored-by trailer、デスクトップの reload 抑止が改善されました。",
           ],
           fixes: [
             "Quick Create の要件生成、インボックスのコメント移動と自動アーカイブ、タスク再実行の session、招待後のワークスペース移動を修正しました。",
@@ -1347,7 +1347,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           title: "カスタムエージェント環境変数と、より分かりやすい失敗メッセージ",
           changes: [],
           features: [
-            "`multica agent create/update --custom-env KEY=VALUE` が、エージェントの実行にカスタム環境変数を注入します。",
+            "`didian agent create/update --custom-env KEY=VALUE` が、エージェントの実行にカスタム環境変数を注入します。",
             "エージェントの失敗メッセージにランタイム CLI の stderr の末尾が含まれ、デバッグが容易になりました。",
             "CLI 更新ダウンロードの timeout を設定できます。",
           ],
@@ -1624,7 +1624,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           date: "2026-03-06",
           title: "コアプラットフォーム",
           changes: [
-            "Multica のコアプラットフォーム機能を追加しました。",
+            "Didian のコアプラットフォーム機能を追加しました。",
           ],
         },
         {
@@ -1632,15 +1632,15 @@ export function createJaDict(allowSignup: boolean): LandingDict {
           date: "2026-03-05",
           title: "基盤の構築",
           changes: [
-            "Multica の初期の基盤を公開しました。",
+            "Didian の初期の基盤を公開しました。",
           ],
         },
       ],
     },
     about: {
-      title: "Multica について",
+      title: "Didian について",
       nameLine: {
-        prefix: "Multica — ",
+        prefix: "Didian — ",
         mul: "Mul",
         tiplexed: "tiplexed ",
         i: "I",
@@ -1652,8 +1652,8 @@ export function createJaDict(allowSignup: boolean): LandingDict {
       },
       paragraphs: [
         "この名前は、1960年代の先駆的なオペレーティングシステム Multics へのオマージュです。Multics は、複数のユーザーが1台のマシンを、まるで各自が独り占めしているかのように共有できる「タイムシェアリング」という概念を世に広めました。Unix は、その Multics をあえてシンプルにする形で生まれました。一人のユーザー、ひとつのタスク、ひとつの洗練された哲学です。",
-        "いま、同じような転換点がふたたび訪れていると私たちは考えています。この数十年、ソフトウェアチームは事実上シングルスレッドで働いてきました。一人のエンジニアが、ひとつのタスクを担い、一度にひとつの文脈だけを切り替えながら進める。AI エージェントは、その方程式を変えます。Multica はタイムシェアリングをふたたび呼び戻します。ただし今回は、システムを多重利用する「ユーザー」が、人間と自律的なエージェントの両方である時代に合わせて。",
-        "Multica では、エージェントは一級のチームメンバーです。人間の同僚とまったく同じように、イシューを割り当てられ、進捗を報告し、行き詰まりを知らせ、コードをリリースします。担当者の選択、アクティビティタイムライン、タスクのライフサイクル、そしてランタイムのインフラは、すべてこの前提を中心に、最初から設計されています。",
+        "いま、同じような転換点がふたたび訪れていると私たちは考えています。この数十年、ソフトウェアチームは事実上シングルスレッドで働いてきました。一人のエンジニアが、ひとつのタスクを担い、一度にひとつの文脈だけを切り替えながら進める。AI エージェントは、その方程式を変えます。Didian はタイムシェアリングをふたたび呼び戻します。ただし今回は、システムを多重利用する「ユーザー」が、人間と自律的なエージェントの両方である時代に合わせて。",
+        "Didian では、エージェントは一級のチームメンバーです。人間の同僚とまったく同じように、イシューを割り当てられ、進捗を報告し、行き詰まりを知らせ、コードをリリースします。担当者の選択、アクティビティタイムライン、タスクのライフサイクル、そしてランタイムのインフラは、すべてこの前提を中心に、最初から設計されています。",
         "かつての Multics と同じく、賭けの中心にあるのは多重化(multiplexing)です。小さなチームが、小さく動く必要はありません。適切なシステムがあれば、二人のエンジニアと一群のエージェントは、二十人のように動けます。",
         "プラットフォームは完全なオープンソースで、セルフホスト可能です。データはあなたのインフラに残ります。すべてのコードを確認し、API を拡張し、好きな LLM プロバイダーを持ち込み、コミュニティに貢献できます。",
       ],
@@ -1662,30 +1662,30 @@ export function createJaDict(allowSignup: boolean): LandingDict {
     download: {
       hero: {
         macArm64: {
-          title: "macOS 版 Multica",
+          title: "macOS 版 Didian",
           sub: "Apple Silicon · デーモン同梱、設定不要",
           primary: "ダウンロード(.dmg)",
           altZip: "または .zip をダウンロード",
         },
         macIntel: {
-          title: "macOS 版 Multica",
+          title: "macOS 版 Didian",
           sub: "Apple Silicon が必要です。Intel Mac はまだ対応していません。",
           disabledCta: "Apple Silicon が必要",
           intelHint:
             "Intel Mac をお使いですか? 下の CLI をご利用ください。同じデーモンが動きます。",
         },
         winX64: {
-          title: "Windows 版 Multica",
+          title: "Windows 版 Didian",
           sub: "デーモン同梱、設定不要",
           primary: "ダウンロード(.exe)",
         },
         winArm64: {
-          title: "Windows 版 Multica",
+          title: "Windows 版 Didian",
           sub: "ARM · デーモン同梱、設定不要",
           primary: "ダウンロード(.exe)",
         },
         linux: {
-          title: "Linux 版 Multica",
+          title: "Linux 版 Didian",
           sub: "デーモン同梱、設定不要",
           primary: "AppImage をダウンロード",
           altFormats: "または .deb / .rpm",
@@ -1737,7 +1737,7 @@ export function createJaDict(allowSignup: boolean): LandingDict {
     contactSales: {
       pageTitle: "営業に相談",
       pageDescription:
-        "人間と AI エージェントが協働するワークフローを社内に導入する方法について、Multica チームにご相談ください。",
+        "人間と AI エージェントが協働するワークフローを社内に導入する方法について、Didian チームにご相談ください。",
       eyebrow: "営業に相談",
       title: "まずは、ご要望をお聞かせください",
       subtitle: "最適なご提案を準備できるよう、いくつかお教えください。",
@@ -1754,10 +1754,10 @@ export function createJaDict(allowSignup: boolean): LandingDict {
         companyName: "会社名",
         companySize: "会社規模",
         countryRegion: "国 / 地域",
-        useCase: "Multica をどのように利用、または活用するご予定ですか?",
+        useCase: "Didian をどのように利用、または活用するご予定ですか?",
         goals: "目標または現在抱えている課題",
         goalsHint:
-          "Multica で実現したいことや、いま直面している課題をお聞かせください。詳しくご記入いただくほど、より的確にお手伝いできます。",
+          "Didian で実現したいことや、いま直面している課題をお聞かせください。詳しくご記入いただくほど、より的確にお手伝いできます。",
         selectPlaceholder: "選択してください",
         submit: "送信",
         submitting: "送信中...",
@@ -1772,9 +1772,9 @@ export function createJaDict(allowSignup: boolean): LandingDict {
       ],
       useCases: [
         { value: "evaluate", label: "チームでの導入を検討中" },
-        { value: "adopt_team", label: "チームまたは会社に Multica を導入" },
+        { value: "adopt_team", label: "チームまたは会社に Didian を導入" },
         { value: "self_host", label: "自社インフラにセルフホスト" },
-        { value: "integrate", label: "既存ツールと Multica を連携" },
+        { value: "integrate", label: "既存ツールと Didian を連携" },
         { value: "partner", label: "パートナーシップまたはリセラーのお問い合わせ" },
         { value: "other", label: "その他" },
       ],
@@ -1822,22 +1822,22 @@ export function createJaDict(allowSignup: boolean): LandingDict {
       ],
       consent: {
         intro:
-          "Multica, Inc. はあなたのプライバシーを尊重します。お預かりした個人情報は、アカウントの管理と、ご依頼いただいた製品・サービスの提供のためにのみ使用します。ときどき、製品アップデートやベストプラクティス、ご参考になりそうなインサイトもお届けできればと思います。ご希望の場合は、下でお知らせください。",
+          "Didian, Inc. はあなたのプライバシーを尊重します。お預かりした個人情報は、アカウントの管理と、ご依頼いただいた製品・サービスの提供のためにのみ使用します。ときどき、製品アップデートやベストプラクティス、ご参考になりそうなインサイトもお届けできればと思います。ご希望の場合は、下でお知らせください。",
         outreach:
-          "サービスのアップデート、サポートへのお問い合わせ、ビジネス関連のフォローアップなど、Multica, Inc. からの個別のご連絡を受け取ります。",
+          "サービスのアップデート、サポートへのお問い合わせ、ビジネス関連のフォローアップなど、Didian, Inc. からの個別のご連絡を受け取ります。",
         updates:
-          "Multica からの製品アップデート、インサイト、イベントへのご招待を受け取ります。",
+          "Didian からの製品アップデート、インサイト、イベントへのご招待を受け取ります。",
         unsubscribe:
           "配信はいつでも停止できます。データの取り扱いとプライバシーの権利について詳しくは、こちらをご確認ください:",
         submitConsent:
-          "「送信」をクリックすると、ご依頼いただいたコンテンツをお届けするために、Multica, Inc. が情報を保存・処理することに同意したことになります。",
+          "「送信」をクリックすると、ご依頼いただいたコンテンツをお届けするために、Didian, Inc. が情報を保存・処理することに同意したことになります。",
         privacyLinkLabel: "プライバシーポリシー。",
         privacyLinkHref: "/about",
       },
       success: {
         title: "ありがとうございます。確かに受け取りました。",
         message:
-          "Multica チームのメンバーが、3営業日以内にご返信いたします。それまでの間、ドキュメントを覗いてみたり、GitHub でスターを付けたりしてお待ちください。",
+          "Didian チームのメンバーが、3営業日以内にご返信いたします。それまでの間、ドキュメントを覗いてみたり、GitHub でスターを付けたりしてお待ちください。",
         cta: "ホームに戻る",
       },
       errors: {

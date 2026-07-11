@@ -1,11 +1,11 @@
 ---
 title: Self-Hosting Guide
-description: Deploy Multica on your own infrastructure.
+description: Deploy Didian on your own infrastructure.
 ---
 
 ## Architecture Overview
 
-Multica has three components:
+Didian has three components:
 
 | Component | Description | Technology |
 |-----------|-------------|------------|
@@ -13,7 +13,7 @@ Multica has three components:
 | **Frontend** | Web application | Next.js 16 |
 | **Database** | Primary data store | PostgreSQL 17 with pgvector |
 
-Each user who wants to run AI agents locally also installs the **`multica` CLI** and runs the **agent daemon** on their own machine.
+Each user who wants to run AI agents locally also installs the **`didian` CLI** and runs the **agent daemon** on their own machine.
 
 ## Prerequisites
 
@@ -25,16 +25,16 @@ Two commands to set up everything:
 
 ```bash
 # Install CLI + provision self-host server
-curl -fsSL https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.sh | bash -s -- --with-server
+curl -fsSL https://raw.githubusercontent.com/didian-ai/didian/main/scripts/install.sh | bash -s -- --with-server
 
 # Configure CLI, authenticate, and start the daemon
-multica setup self-host
+didian setup self-host
 ```
 
-This installs the CLI, checks out the latest self-host assets, pulls the official Multica images from GHCR, and configures everything for localhost. Then open http://localhost:3000 and pick a login method: configure `RESEND_API_KEY` in `.env` for email-based codes (recommended), or leave Resend unset and copy the generated code from backend logs. See [Step 2 — Log In](#step-2--log-in) for details.
+This installs the CLI, checks out the latest self-host assets, pulls the official Didian images from GHCR, and configures everything for localhost. Then open http://localhost:3000 and pick a login method: configure `RESEND_API_KEY` in `.env` for email-based codes (recommended), or leave Resend unset and copy the generated code from backend logs. See [Step 2 — Log In](#step-2--log-in) for details.
 
 <Callout>
-If the self-host server is already running and you only need the CLI on a macOS/Linux machine, install it with Homebrew: `brew install multica-ai/tap/multica`.
+If the self-host server is already running and you only need the CLI on a macOS/Linux machine, install it with Homebrew: `brew install didian-ai/tap/didian`.
 </Callout>
 
 <Callout>
@@ -46,8 +46,8 @@ For a step-by-step setup, see below.
 ### Step 1 — Start the Server
 
 ```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
+git clone https://github.com/didian-ai/didian.git
+cd didian
 make selfhost
 ```
 
@@ -55,7 +55,7 @@ make selfhost
 
 By default it pulls the latest stable release images from GHCR. To build the backend/web from your current checkout instead, run `make selfhost-build`.
 If the selected GHCR tag has not been published yet, `make selfhost` now tells you to fall back to `make selfhost-build`.
-`make selfhost-build` uses local `multica-backend:dev` / `multica-web:dev` tags, so it does not overwrite the pulled `:latest` images.
+`make selfhost-build` uses local `didian-backend:dev` / `didian-web:dev` tags, so it does not overwrite the pulled `:latest` images.
 
 Once ready:
 
@@ -72,12 +72,12 @@ Open http://localhost:3000. The Docker self-host stack defaults to `APP_ENV=prod
 
 - **Recommended (production):** configure `RESEND_API_KEY` in `.env`, then restart the backend. Real verification codes will be sent to the email address you enter. See [Configuration](#configuration) below.
 - **Without email configured:** the verification code is generated server-side and printed to the backend container logs (look for `[DEV] Verification code for ...:`). Useful for one-off testing on a single machine.
-- **Deterministic local/private testing:** set `APP_ENV=development` and `MULTICA_DEV_VERIFICATION_CODE=888888` in `.env`, then restart the backend. This fixed code is ignored when `APP_ENV=production`.
+- **Deterministic local/private testing:** set `APP_ENV=development` and `DIDIAN_DEV_VERIFICATION_CODE=888888` in `.env`, then restart the backend. This fixed code is ignored when `APP_ENV=production`.
 
 Changes to `ALLOW_SIGNUP` and `GOOGLE_CLIENT_ID` also take effect after restarting the backend / compose stack. The web UI reads both from `/api/config` at runtime, so no web rebuild is needed.
 
 <Callout>
-**Warning:** do **not** set `MULTICA_DEV_VERIFICATION_CODE` on a publicly reachable instance — anyone who knows an email address can then log in with that fixed code.
+**Warning:** do **not** set `DIDIAN_DEV_VERIFICATION_CODE` on a publicly reachable instance — anyone who knows an email address can then log in with that fixed code.
 </Callout>
 
 ### Step 3 — Install CLI & Start Daemon
@@ -87,7 +87,7 @@ The daemon runs on your local machine (not inside Docker). It detects installed 
 ### a) Install the CLI and an AI agent
 
 ```bash
-brew install multica-ai/tap/multica
+brew install didian-ai/tap/didian
 ```
 
 You also need at least one AI agent CLI:
@@ -109,7 +109,7 @@ You also need at least one AI agent CLI:
 ### b) One-command setup
 
 ```bash
-multica setup self-host
+didian setup self-host
 ```
 
 This automatically:
@@ -121,17 +121,17 @@ This automatically:
 For on-premise deployments with custom domains:
 
 ```bash
-multica setup self-host --server-url https://api.example.com --app-url https://app.example.com
+didian setup self-host --server-url https://api.example.com --app-url https://app.example.com
 ```
 
 Verify the daemon is running:
 
 ```bash
-multica daemon status
+didian daemon status
 ```
 
 <Callout>
-Alternatively, configure step by step: `multica config set server_url http://localhost:8080 && multica config set app_url http://localhost:3000 && multica login && multica daemon start`
+Alternatively, configure step by step: `didian config set server_url http://localhost:8080 && didian config set app_url http://localhost:3000 && didian login && didian daemon start`
 </Callout>
 
 ### Step 4 — Verify & Start Using
@@ -157,7 +157,7 @@ SELECT plan_time, status, attempt, runner_id,
 ```
 
 <Callout>
-**Upgrading from `v0.3.4` to `v0.3.5+`?** As of MUL-2957 the `migrate up` command runs an idempotent monthly-slice backfill automatically right before applying migration `103`, so the upgrade completes in a single invocation — no operator step required. If you are on a pre-MUL-2957 binary or the auto-hook fails for an environmental reason, run `backfill_task_usage_hourly` against the same database and re-run the upgrade. Full recovery flow lives in [`SELF_HOSTING_ADVANCED.md → Usage Dashboard Rollup`](https://github.com/multica-ai/multica/blob/main/SELF_HOSTING_ADVANCED.md#usage-dashboard-rollup).
+**Upgrading from `v0.3.4` to `v0.3.5+`?** As of MUL-2957 the `migrate up` command runs an idempotent monthly-slice backfill automatically right before applying migration `103`, so the upgrade completes in a single invocation — no operator step required. If you are on a pre-MUL-2957 binary or the auto-hook fails for an environmental reason, run `backfill_task_usage_hourly` against the same database and re-run the upgrade. Full recovery flow lives in [`SELF_HOSTING_ADVANCED.md → Usage Dashboard Rollup`](https://github.com/didian-ai/didian/blob/main/SELF_HOSTING_ADVANCED.md#usage-dashboard-rollup).
 </Callout>
 
 ### Compatibility paths (existing deployments only)
@@ -184,11 +184,11 @@ If you already have a `pg_cron` job in production and want to retire it, the saf
      FROM cron.job WHERE jobname = 'rollup_task_usage_hourly';
    ```
 
-3. Leave the `pg_cron` extension itself installed unless you are sure no other workload depends on it. The bundled `pgvector/pgvector:pg17` image does **not** ship `pg_cron`, so nothing in Multica's default install needs it; uninstalling `pg_cron` from a custom image that other workloads still use is a separate decision.
+3. Leave the `pg_cron` extension itself installed unless you are sure no other workload depends on it. The bundled `pgvector/pgvector:pg17` image does **not** ship `pg_cron`, so nothing in Didian's default install needs it; uninstalling `pg_cron` from a custom image that other workloads still use is a separate decision.
 
 External cron / systemd timer / Kubernetes `CronJob` setups that call `SELECT rollup_task_usage_hourly()` directly can be retired the same way — once `sys_cron_executions` shows steady SUCCESS rows from the in-process scheduler, the external job is redundant and can be removed.
 
-Full reference (audit table semantics, advisory lock 4246, the standalone backfill command, flag descriptions, the migration auto-hook) lives in [`SELF_HOSTING_ADVANCED.md → Usage Dashboard Rollup`](https://github.com/multica-ai/multica/blob/main/SELF_HOSTING_ADVANCED.md#usage-dashboard-rollup).
+Full reference (audit table semantics, advisory lock 4246, the standalone backfill command, flag descriptions, the migration auto-hook) lives in [`SELF_HOSTING_ADVANCED.md → Usage Dashboard Rollup`](https://github.com/didian-ai/didian/blob/main/SELF_HOSTING_ADVANCED.md#usage-dashboard-rollup).
 
 ## Stopping Services
 
@@ -197,18 +197,18 @@ Full reference (audit table semantics, advisory lock 4246, the standalone backfi
 make selfhost-stop
 
 # Stop the local daemon
-multica daemon stop
+didian daemon stop
 ```
 
-## Switching to Multica Cloud
+## Switching to Didian Cloud
 
-If you've been self-hosting and want to switch your CLI to [Multica Cloud](https://multica.ai):
+If you've been self-hosting and want to switch your CLI to [Didian Cloud](https://didian.ai):
 
 ```bash
-multica setup
+didian setup
 ```
 
-This reconfigures the CLI for multica.ai, re-authenticates, and restarts the daemon. You will be prompted before overwriting the existing configuration.
+This reconfigures the CLI for didian.ai, re-authenticates, and restarts the daemon. You will be prompted before overwriting the existing configuration.
 
 <Callout>
 Your local Docker services are unaffected. Stop them separately if you no longer need them.
@@ -221,7 +221,7 @@ docker compose -f docker-compose.selfhost.yml pull
 docker compose -f docker-compose.selfhost.yml up -d
 ```
 
-Pin `MULTICA_IMAGE_TAG` in `.env` to an exact version like `v0.2.4` if you want to stay on a specific release. Migrations run automatically on backend startup.
+Pin `DIDIAN_IMAGE_TAG` in `.env` to an exact version like `v0.2.4` if you want to stay on a specific release. Migrations run automatically on backend startup.
 If the selected GHCR tag has not been published yet, fall back to `make selfhost-build` or `docker compose -f docker-compose.selfhost.yml -f docker-compose.selfhost.build.yml up -d --build`.
 
 ---
@@ -234,19 +234,19 @@ All configuration is done via environment variables. Copy `.env.example` as a st
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string. Keep the password segment in sync with `POSTGRES_PASSWORD`. | `postgres://multica:<postgres-password>@localhost:5432/multica?sslmode=disable` |
+| `DATABASE_URL` | PostgreSQL connection string. Keep the password segment in sync with `POSTGRES_PASSWORD`. | `postgres://didian:<postgres-password>@localhost:5432/didian?sslmode=disable` |
 | `POSTGRES_PASSWORD` | **Must change from default.** Password used by the bundled Postgres container. Keep it in sync with `DATABASE_URL`. | `openssl rand -hex 24` |
 | `JWT_SECRET` | **Must change from default.** Secret key for signing JWT tokens. Use a long random string. | `openssl rand -hex 32` |
 | `FRONTEND_ORIGIN` | URL where the frontend is served (used for CORS) | `https://app.example.com` |
 
 ### Email (Required for Authentication)
 
-Multica uses email-based magic link authentication via [Resend](https://resend.com).
+Didian uses email-based magic link authentication via [Resend](https://resend.com).
 
 | Variable | Description |
 |----------|-------------|
 | `RESEND_API_KEY` | Your Resend API key |
-| `RESEND_FROM_EMAIL` | Sender email address (default: `noreply@multica.ai`) |
+| `RESEND_FROM_EMAIL` | Sender email address (default: `noreply@didian.ai`) |
 
 ### Google OAuth (Optional)
 
@@ -305,37 +305,37 @@ These are configured on each user's machine, not on the server:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MULTICA_SERVER_URL` | `ws://localhost:8080/ws` | WebSocket URL for daemon → server connection |
-| `MULTICA_APP_URL` | `http://localhost:3000` | Frontend URL for CLI login flow |
-| `MULTICA_DAEMON_POLL_INTERVAL` | `3s` | How often the daemon polls for tasks |
-| `MULTICA_DAEMON_HEARTBEAT_INTERVAL` | `15s` | Heartbeat frequency |
+| `DIDIAN_SERVER_URL` | `ws://localhost:8080/ws` | WebSocket URL for daemon → server connection |
+| `DIDIAN_APP_URL` | `http://localhost:3000` | Frontend URL for CLI login flow |
+| `DIDIAN_DAEMON_POLL_INTERVAL` | `3s` | How often the daemon polls for tasks |
+| `DIDIAN_DAEMON_HEARTBEAT_INTERVAL` | `15s` | Heartbeat frequency |
 
 Agent-specific overrides:
 
 | Variable | Description |
 |----------|-------------|
-| `MULTICA_CLAUDE_PATH` | Custom path to the `claude` binary |
-| `MULTICA_CLAUDE_MODEL` | Override the Claude model used |
-| `MULTICA_CODEX_PATH` | Custom path to the `codex` binary |
-| `MULTICA_CODEX_MODEL` | Override the Codex model used |
-| `MULTICA_CODEBUDDY_PATH` | Custom path to the `codebuddy` binary |
-| `MULTICA_CODEBUDDY_MODEL` | Override the CodeBuddy model used |
-| `MULTICA_ANTIGRAVITY_PATH` | Custom path to the `agy` binary |
-| `MULTICA_ANTIGRAVITY_MODEL` | Override the Antigravity model used |
-| `MULTICA_OPENCODE_PATH` | Custom path to the `opencode` binary |
-| `MULTICA_OPENCODE_MODEL` | Override the OpenCode model used |
-| `MULTICA_OPENCLAW_PATH` | Custom path to the `openclaw` binary |
-| `MULTICA_OPENCLAW_MODEL` | Override the OpenClaw model used |
-| `MULTICA_HERMES_PATH` | Custom path to the `hermes` binary |
-| `MULTICA_HERMES_MODEL` | Override the Hermes model used |
-| `MULTICA_QODER_PATH` | Custom path to the `qodercli` binary |
-| `MULTICA_QODER_MODEL` | Override the Qoder model used |
-| `MULTICA_TRAECLI_PATH` | Custom path to the `traecli` binary |
-| `MULTICA_TRAECLI_MODEL` | Override the Trae CLI model used |
+| `DIDIAN_CLAUDE_PATH` | Custom path to the `claude` binary |
+| `DIDIAN_CLAUDE_MODEL` | Override the Claude model used |
+| `DIDIAN_CODEX_PATH` | Custom path to the `codex` binary |
+| `DIDIAN_CODEX_MODEL` | Override the Codex model used |
+| `DIDIAN_CODEBUDDY_PATH` | Custom path to the `codebuddy` binary |
+| `DIDIAN_CODEBUDDY_MODEL` | Override the CodeBuddy model used |
+| `DIDIAN_ANTIGRAVITY_PATH` | Custom path to the `agy` binary |
+| `DIDIAN_ANTIGRAVITY_MODEL` | Override the Antigravity model used |
+| `DIDIAN_OPENCODE_PATH` | Custom path to the `opencode` binary |
+| `DIDIAN_OPENCODE_MODEL` | Override the OpenCode model used |
+| `DIDIAN_OPENCLAW_PATH` | Custom path to the `openclaw` binary |
+| `DIDIAN_OPENCLAW_MODEL` | Override the OpenClaw model used |
+| `DIDIAN_HERMES_PATH` | Custom path to the `hermes` binary |
+| `DIDIAN_HERMES_MODEL` | Override the Hermes model used |
+| `DIDIAN_QODER_PATH` | Custom path to the `qodercli` binary |
+| `DIDIAN_QODER_MODEL` | Override the Qoder model used |
+| `DIDIAN_TRAECLI_PATH` | Custom path to the `traecli` binary |
+| `DIDIAN_TRAECLI_MODEL` | Override the Trae CLI model used |
 
 ## Database Setup
 
-Multica requires PostgreSQL 17 with the pgvector extension.
+Didian requires PostgreSQL 17 with the pgvector extension.
 
 ### Using the Included Docker Compose
 
@@ -343,7 +343,7 @@ Multica requires PostgreSQL 17 with the pgvector extension.
 docker compose up -d postgres
 ```
 
-This starts a `pgvector/pgvector:pg17` container on port 5432 with default credentials (`multica`/`multica`).
+This starts a `pgvector/pgvector:pg17` container on port 5432 with default credentials (`didian`/`didian`).
 
 ### Using Your Own PostgreSQL
 
@@ -404,10 +404,10 @@ In production, put a reverse proxy in front of both the backend and frontend to 
 **Single-domain layout** — frontend and backend served on the same hostname (this is what `docker-compose.selfhost.yml` defaults to):
 
 ```
-multica.example.com {
+didian.example.com {
     # WebSocket route — must come before the catch-all
-    @multica_ws path /ws /ws/*
-    handle @multica_ws {
+    @didian_ws path /ws /ws/*
+    handle @didian_ws {
         reverse_proxy localhost:8080 {
             flush_interval -1
         }
@@ -426,8 +426,8 @@ app.example.com {
 }
 
 api.example.com {
-    @multica_ws path /ws /ws/*
-    handle @multica_ws {
+    @didian_ws path /ws /ws/*
+    handle @didian_ws {
         reverse_proxy localhost:8080 {
             flush_interval -1
         }

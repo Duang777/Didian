@@ -119,7 +119,7 @@ describe("TranscriptButton", () => {
 
     act(() => {
       window.dispatchEvent(
-        new CustomEvent("multica:navigate", {
+        new CustomEvent("didian:navigate", {
           detail: { path: "/acme/inbox?issue=MUL-123" },
         }),
       );

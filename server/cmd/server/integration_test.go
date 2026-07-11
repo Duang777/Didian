@@ -35,7 +35,7 @@ var (
 // the JWT_SECRET env var (set in .env) and stays in sync with the server.
 
 const (
-	integrationTestEmail         = "integration-test@multica.ai"
+	integrationTestEmail         = "integration-test@didian.ai"
 	integrationTestName          = "Integration Tester"
 	integrationTestWorkspaceSlug = "integration-tests"
 )
@@ -44,7 +44,7 @@ func TestMain(m *testing.M) {
 	ctx := context.Background()
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		dbURL = "postgres://multica:multica@localhost:5432/multica?sslmode=disable"
+		dbURL = "postgres://didian:didian@localhost:5432/didian?sslmode=disable"
 	}
 
 	pool, err := pgxpool.New(ctx, dbURL)
@@ -275,7 +275,7 @@ func TestConfigRouteIsPublic(t *testing.T) {
 // ---- Auth ----
 
 func TestSendCodeAndVerify(t *testing.T) {
-	const email = "integration-sendcode@multica.ai"
+	const email = "integration-sendcode@didian.ai"
 	ctx := context.Background()
 
 	t.Cleanup(func() {
@@ -358,7 +358,7 @@ func TestSendCodeAndVerify(t *testing.T) {
 }
 
 func TestVerifyCodeNewUserHasNoWorkspace(t *testing.T) {
-	const email = "new-integration-verify@multica.ai"
+	const email = "new-integration-verify@didian.ai"
 	ctx := context.Background()
 
 	t.Cleanup(func() {

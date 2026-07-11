@@ -1,4 +1,4 @@
-// Package lark contains the Multica ↔ 飞书 (Lark) Bot integration.
+// Package lark contains the Didian ↔ 飞书 (Lark) Bot integration.
 //
 // MVP scope is tracked in MUL-2671. After the migration / service
 // boundary PRs landed, this package now covers:

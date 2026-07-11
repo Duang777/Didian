@@ -141,7 +141,7 @@ func createProjectPermissionTestMember(t *testing.T, role string) string {
 	t.Helper()
 
 	ctx := context.Background()
-	email := "project-delete-" + role + "@multica.test"
+	email := "project-delete-" + role + "@didian.test"
 	// The schema uses no foreign keys or cascades, so a leftover member from a
 	// prior run won't disappear when its user is deleted. Drop the member first.
 	_, _ = testPool.Exec(ctx, `DELETE FROM member WHERE user_id IN (SELECT id FROM "user" WHERE email = $1)`, email)

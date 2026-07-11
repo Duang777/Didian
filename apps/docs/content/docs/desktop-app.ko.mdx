@@ -1,11 +1,11 @@
 ---
 title: 데스크톱 앱
-description: Multica Desktop이 무엇인지, 웹 앱과 어떻게 다른지, 언제 쓸 만한지 알아봅니다.
+description: Didian Desktop이 무엇인지, 웹 앱과 어떻게 다른지, 언제 쓸 만한지 알아봅니다.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Multica Desktop은 macOS, Windows, Linux용 네이티브 데스크톱 앱입니다. 구성된 환경에 대해 웹 앱과 동일한 백엔드에 연결되며 동일한 데이터를 보여줍니다. 기본적으로 Desktop은 Multica Cloud를 사용하며, 자체 호스팅 인스턴스는 로컬 런타임 설정 파일로 구성할 수 있습니다. Desktop은 브라우저가 할 수 없는 몇 가지 기능도 추가로 제공합니다: **[워크스페이스](/workspaces)별 독립적인 탭 그룹**, **[데몬](/daemon-runtimes) 자동 시작**, **원클릭 업그레이드**입니다.
+Didian Desktop은 macOS, Windows, Linux용 네이티브 데스크톱 앱입니다. 구성된 환경에 대해 웹 앱과 동일한 백엔드에 연결되며 동일한 데이터를 보여줍니다. 기본적으로 Desktop은 Didian Cloud를 사용하며, 자체 호스팅 인스턴스는 로컬 런타임 설정 파일로 구성할 수 있습니다. Desktop은 브라우저가 할 수 없는 몇 가지 기능도 추가로 제공합니다: **[워크스페이스](/workspaces)별 독립적인 탭 그룹**, **[데몬](/daemon-runtimes) 자동 시작**, **원클릭 업그레이드**입니다.
 
 ## Desktop 또는 웹 — 무엇을 선택할까
 
@@ -13,7 +13,7 @@ Multica Desktop은 macOS, Windows, Linux용 네이티브 데스크톱 앱입니�
 |---|---|---|
 | 접근 방식 | 브라우저에서 URL 열기 | 네이티브 앱 설치 |
 | 다중 탭 | 브라우저 자체 탭 (워크스페이스 구분 없음) | **워크스페이스별 독립 탭 그룹 한 개** |
-| 데몬 | `multica daemon start`를 직접 실행 | 실행 시 **자동으로 시작** |
+| 데몬 | `didian daemon start`를 직접 실행 | 실행 시 **자동으로 시작** |
 | 업그레이드 | 새로고침하면 최신 버전 | 앱이 백그라운드에서 확인하고 다음 실행 시 설치 |
 | 로그인 후 데이터 | 동일 | 동일 |
 
@@ -47,15 +47,15 @@ macOS 빌드는 서명 및 공증되어 있으므로, 첫 실행 시 "확인되�
 
 ## 별도의 CLI와 데몬이 여전히 필요한가요?
 
-**아닙니다.** Desktop에는 동일한 `multica` CLI 바이너리가 내장되어 있으며, 시작 시 자체 데몬 프로필을 실행합니다 (터미널에서 수동으로 실행 중인 데몬과는 격리됩니다).
+**아닙니다.** Desktop에는 동일한 `didian` CLI 바이너리가 내장되어 있으며, 시작 시 자체 데몬 프로필을 실행합니다 (터미널에서 수동으로 실행 중인 데몬과는 격리됩니다).
 
-이미 CLI를 설치하고 `multica daemon start`를 직접 실행했더라도, Desktop은 그 데몬을 가로채지 않습니다 — 별도의 프로필로 자체 데몬을 시작합니다. 둘은 **서로 다른 런타임**으로 등록되며, UI에서 두 개의 독립된 런타임을 볼 수 있습니다.
+이미 CLI를 설치하고 `didian daemon start`를 직접 실행했더라도, Desktop은 그 데몬을 가로채지 않습니다 — 별도의 프로필로 자체 데몬을 시작합니다. 둘은 **서로 다른 런타임**으로 등록되며, UI에서 두 개의 독립된 런타임을 볼 수 있습니다.
 
-터미널에서 CLI 명령을 실행하고 싶다면, Desktop이 특별한 경로를 제공하지는 않습니다 — 별도로 설치한 CLI를 사용하거나, 앱의 리소스 디렉터리 안 `resources/bin/multica`에 있는 번들 사본을 실행하세요.
+터미널에서 CLI 명령을 실행하고 싶다면, Desktop이 특별한 경로를 제공하지는 않습니다 — 별도로 설치한 CLI를 사용하거나, 앱의 리소스 디렉터리 안 `resources/bin/didian`에 있는 번들 사본을 실행하세요.
 
 ## 다운로드 및 설치
 
-[Multica 다운로드 페이지](https://multica.ai/download)에서 사용하는 플랫폼의 설치 프로그램을 받으세요:
+[Didian 다운로드 페이지](https://didian.ai/download)에서 사용하는 플랫폼의 설치 프로그램을 받으세요:
 
 | 플랫폼 | 파일 |
 |---|---|
@@ -67,7 +67,7 @@ macOS 빌드는 서명 및 공증되어 있으므로, 첫 실행 시 "확인되�
 첫 실행 시 로그인이 필요합니다 — 웹 앱과 동일한 이메일 + 인증 코드 흐름입니다. 로그인하면 Desktop이 워크스페이스 목록을 자동으로 동기화합니다.
 
 <Callout type="info">
-**Desktop은 기본적으로 Multica Cloud를 사용하지만, 로컬 설정 파일로 자체 호스팅 인스턴스를 가리키도록 할 수 있습니다.** 앱 안에는 여전히 "자체 호스팅에 연결" 선택기가 없습니다. Desktop은 렌더러가 시작되기 전에 `~/.multica/desktop.json`을 읽습니다. 파일이 없으면 Cloud 기본값을 사용합니다.
+**Desktop은 기본적으로 Didian Cloud를 사용하지만, 로컬 설정 파일로 자체 호스팅 인스턴스를 가리키도록 할 수 있습니다.** 앱 안에는 여전히 "자체 호스팅에 연결" 선택기가 없습니다. Desktop은 렌더러가 시작되기 전에 `~/.didian/desktop.json`을 읽습니다. 파일이 없으면 Cloud 기본값을 사용합니다.
 
 최소 자체 호스팅 설정:
 
@@ -89,7 +89,7 @@ macOS 빌드는 서명 및 공증되어 있으므로, 첫 실행 시 "확인되�
 }
 ```
 
-`desktop.json`이 존재하지만 유효하지 않으면, Desktop은 안전하게 동작을 차단하여 Cloud로 조용히 되돌아가는 대신 차단형 설정 오류를 표시합니다. 개발 빌드의 경우, `electron-vite dev` 중에는 여전히 `VITE_API_URL` / `VITE_WS_URL` / `VITE_APP_URL`이 우선합니다. 런타임 Desktop 자체 호스팅 구성은 [issue #1371](https://github.com/multica-ai/multica/issues/1371)에서 구현되었습니다.
+`desktop.json`이 존재하지만 유효하지 않으면, Desktop은 안전하게 동작을 차단하여 Cloud로 조용히 되돌아가는 대신 차단형 설정 오류를 표시합니다. 개발 빌드의 경우, `electron-vite dev` 중에는 여전히 `VITE_API_URL` / `VITE_WS_URL` / `VITE_APP_URL`이 우선합니다. 런타임 Desktop 자체 호스팅 구성은 [issue #1371](https://github.com/didian-ai/didian/issues/1371)에서 구현되었습니다.
 </Callout>
 
 ## 다음 단계

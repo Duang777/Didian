@@ -797,7 +797,7 @@ func fireBareWebhook(t *testing.T, secret string, installationID int64, prNumber
 }
 
 // TestWebhook_MergedPR_OnlyClosesIdentifiersWithClosingKeyword is the repro
-// from GitHub issue multica-ai/multica#3264: a PR that mentions three issues
+// from GitHub issue didian-ai/didian#3264: a PR that mentions three issues
 // must only auto-complete the one declared with a closing keyword. Follow-up
 // / unblocks references are linked but stay in their previous status.
 func TestWebhook_MergedPR_OnlyClosesIdentifiersWithClosingKeyword(t *testing.T) {
@@ -2087,7 +2087,7 @@ RETURNING id
 	mkUser := func(t *testing.T, label string) string {
 		t.Helper()
 		var id string
-		email := fmt.Sprintf("github-routes-%s-%s@multica.ai", slug, label)
+		email := fmt.Sprintf("github-routes-%s-%s@didian.ai", slug, label)
 		if err := testPool.QueryRow(ctx, `
 INSERT INTO "user" (name, email) VALUES ($1, $2) RETURNING id
 `, "GHR "+label, email).Scan(&id); err != nil {

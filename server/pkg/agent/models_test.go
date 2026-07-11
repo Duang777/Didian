@@ -260,7 +260,7 @@ func TestInferCopilotProvider(t *testing.T) {
 func TestCopilotStaticModelsExposesFullCatalog(t *testing.T) {
 	// GitHub Copilot CLI has no `models list` subcommand, so the
 	// catalog is hand-maintained from the official supported-models
-	// docs. Regression guard for multica-ai/multica#1948 — the
+	// docs. Regression guard for didian-ai/didian#1948 — the
 	// dropdown previously shipped only 2 models and used dashed IDs
 	// (`claude-sonnet-4-6`) which the CLI rejects. IDs must use the
 	// dotted form (`claude-sonnet-4.6`) that `copilot --model <id>`

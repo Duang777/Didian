@@ -42,7 +42,7 @@ import { useT } from "../../i18n";
 // enforces it; the UI hides the button for non-admins to match).
 //
 // Adding a new installation flows through the Agent detail page: the install
-// path is per-agent (each Multica agent gets exactly one bot — the
+// path is per-agent (each Didian agent gets exactly one bot — the
 // (workspace_id, agent_id, channel_type) UNIQUE in channel_installation), so
 // asking the user to pick an agent here would re-create that page's picker.
 export function SlackTab() {
@@ -103,7 +103,7 @@ export function SlackTab() {
             <p className="text-xs text-muted-foreground">
               {t(($) => $.slack.not_enabled_description_prefix)}{" "}
               <code className="rounded bg-muted px-1 py-0.5 text-[10px]">
-                MULTICA_SLACK_SECRET_KEY
+                DIDIAN_SLACK_SECRET_KEY
               </code>{" "}
               {t(($) => $.slack.not_enabled_description_suffix)}{" "}
               {t(($) => $.slack.not_enabled_self_host_hint)}
@@ -253,7 +253,7 @@ function slackDocsUrl(lang: string | undefined): string {
       : lang?.startsWith("ko")
         ? "/ko"
         : "";
-  return `https://multica.ai/docs${prefix}/slack-bot-integration`;
+  return `https://didian.ai/docs${prefix}/slack-bot-integration`;
 }
 
 // SlackAgentBindButton is the per-agent CTA exposed from the agent detail page.

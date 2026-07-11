@@ -2,8 +2,8 @@ package channel
 
 // This file defines the channel-agnostic vocabulary for ON-DEMAND history
 // reads. History is PULLED by the agent through two unified CLI commands —
-// `multica chat history` (the channel OVERVIEW: top-level messages + thread
-// metadata, not thread contents) and `multica chat thread [id]` (one thread's
+// `didian chat history` (the channel OVERVIEW: top-level messages + thread
+// metadata, not thread contents) and `didian chat thread [id]` (one thread's
 // messages). The agent never sees a per-platform API: the server resolves the
 // session's binding to a channel type and dispatches to that platform's reader,
 // which returns these normalized shapes. Adding a platform is "implement a
@@ -23,7 +23,7 @@ const (
 )
 
 // HistoryMessage is one normalized message. It is the same shape regardless of
-// platform so the agent reads a uniform list, like `multica issue comment list
+// platform so the agent reads a uniform list, like `didian issue comment list
 // --output json`.
 type HistoryMessage struct {
 	// ID is the platform message identifier (Slack ts, Feishu message_id).
@@ -43,10 +43,10 @@ type HistoryMessage struct {
 	TS string `json:"ts"`
 
 	// The following are set only on a CHANNEL-OVERVIEW row that heads a thread,
-	// so the agent can `multica chat thread <thread_id>` to read its contents.
+	// so the agent can `didian chat thread <thread_id>` to read its contents.
 	// They are absent on a plain message and on thread-read rows.
 
-	// ThreadID is the identifier to pass to `multica chat thread <id>` to read
+	// ThreadID is the identifier to pass to `didian chat thread <id>` to read
 	// this thread's messages. Set only when this overview row has a thread.
 	ThreadID string `json:"thread_id,omitempty"`
 	// ReplyCount is how many replies the thread has (0/omitted when none).

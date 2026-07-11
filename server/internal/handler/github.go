@@ -263,7 +263,7 @@ func verifyState(token string) (string, bool) {
 }
 
 // GitHubConnect (GET /api/workspaces/{id}/github/connect) returns the URL the
-// browser should open to install the Multica GitHub App against the caller's
+// browser should open to install the Didian GitHub App against the caller's
 // repos. The state token binds the resulting setup callback to this workspace.
 func (h *Handler) GitHubConnect(w http.ResponseWriter, r *http.Request) {
 	workspaceID := chi.URLParam(r, "id")
@@ -332,7 +332,7 @@ func (h *Handler) GitHubSetupCallback(w http.ResponseWriter, r *http.Request) {
 
 	// Best-effort capture of the connecting user (may be nil if the public
 	// callback was hit without a session — e.g. user wasn't logged in to
-	// Multica when they finished the GitHub install). Either way we save
+	// Didian when they finished the GitHub install). Either way we save
 	// the row so the workspace owner sees the connection on next reload.
 	connectedBy := pgtype.UUID{}
 	if userID := requestUserID(r); userID != "" {

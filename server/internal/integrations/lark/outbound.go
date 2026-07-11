@@ -78,7 +78,7 @@ type defaultRenderer struct{}
 func NewDefaultRenderer() Renderer { return &defaultRenderer{} }
 
 func (defaultRenderer) Render(in RenderInput) (CardRender, error) {
-	header := "Multica"
+	header := "Didian"
 	if in.AgentName != "" {
 		header = in.AgentName
 	}

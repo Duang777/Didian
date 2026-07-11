@@ -125,7 +125,7 @@ func TestHTTPClient_ResolvesHostFromRegion(t *testing.T) {
 
 // TestHTTPClient_BaseURLOverridesRegion pins the test / staging seam: an
 // explicit cfg.BaseURL forces every region to that host, which is how the
-// existing test suite (and MULTICA_LARK_HTTP_BASE_URL) keeps working.
+// existing test suite (and DIDIAN_LARK_HTTP_BASE_URL) keeps working.
 func TestHTTPClient_BaseURLOverridesRegion(t *testing.T) {
 	rt := &capturingRoundTripper{}
 	c := NewHTTPAPIClient(HTTPClientConfig{

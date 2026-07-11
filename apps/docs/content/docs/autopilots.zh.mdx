@@ -5,7 +5,7 @@ description: 让智能体按 cron 定时自己开工，或在 webhook 到来时�
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Autopilots 让 [智能体](/agents) **按调度自动开工**——配好 cron 和时区，到点 Multica 自己派发 [`task`](/tasks)，不需要你每次触发。适合定期巡检、周期性报告、凌晨跑的清理任务这类"standing order"场景。和前三种触发方式（[分配](/assigning-issues) / [@ 提及](/mentioning-agents) / [对话](/chat) 都是你主动喊一声）相比，Autopilots 的核心差别是**时间驱动**。
+Autopilots 让 [智能体](/agents) **按调度自动开工**——配好 cron 和时区，到点 Didian 自己派发 [`task`](/tasks)，不需要你每次触发。适合定期巡检、周期性报告、凌晨跑的清理任务这类"standing order"场景。和前三种触发方式（[分配](/assigning-issues) / [@ 提及](/mentioning-agents) / [对话](/chat) 都是你主动喊一声）相比，Autopilots 的核心差别是**时间驱动**。
 
 ## 配置一个 Autopilot
 
@@ -35,7 +35,7 @@ Autopilot 有两种执行模式，**建议从"先建 issue 模式"开始**：
 - `*/30 * * * *`，`UTC` —— 每 30 分钟一次
 - `0 3 * * *`，`UTC` —— 每天 UTC 凌晨 3 点
 
-Multica 服务器每 **30 秒**扫一次到期的触发器——**触发时刻最多延迟 30 秒**，不是秒级精准。服务器重启时如果恰好错过触发点，启动时会补扫漏掉的触发（不会丢触发，但会立刻补跑）。
+Didian 服务器每 **30 秒**扫一次到期的触发器——**触发时刻最多延迟 30 秒**，不是秒级精准。服务器重启时如果恰好错过触发点，启动时会补扫漏掉的触发（不会丢触发，但会立刻补跑）。
 
 ## 手动触发一次
 
@@ -45,7 +45,7 @@ Multica 服务器每 **30 秒**扫一次到期的触发器——**触发时刻�
 - CLI：
 
 ```bash
-multica autopilot trigger <autopilot-id>
+didian autopilot trigger <autopilot-id>
 ```
 
 手动触发走和 `schedule` 触发完全相同的执行流程，只是运行记录里 `source` 字段标为 `manual`。
@@ -53,18 +53,18 @@ multica autopilot trigger <autopilot-id>
 ## 通过 Webhook 触发
 
 Autopilot 也可以由入站 HTTP webhook 触发。在详情页添加一个 **Webhook**
-触发器，Multica 会生成一个唯一的 URL：
+触发器，Didian 会生成一个唯一的 URL：
 
 ```
-https://<你的 Multica host>/api/webhooks/autopilots/awt_…
+https://<你的 Didian host>/api/webhooks/autopilots/awt_…
 ```
 
-向这个 URL POST 任意 JSON——Multica 会记录一条 `source = webhook` 的
+向这个 URL POST 任意 JSON——Didian 会记录一条 `source = webhook` 的
 run，把请求体保存为 run 的 `trigger_payload`，然后按和 schedule 触发器
 完全一致的方式派发给智能体。
 
 ```bash
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H "Content-Type: application/json" \
   -d '{"event":"demo.received","eventPayload":{"message":"hello"}}'
 ```
@@ -80,7 +80,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 { "event": "github.pull_request.opened", "eventPayload": { } }
 ```
 
-也可以直接发任意 JSON 对象 / 数组。Multica 会规范化为内部封装：
+也可以直接发任意 JSON 对象 / 数组。Didian 会规范化为内部封装：
 
 ```json
 {
@@ -90,7 +90,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 }
 ```
 
-不带 `event` 字段时，Multica 会按以下顺序从常见 header 和 body 字段
+不带 `event` 字段时，Didian 会按以下顺序从常见 header 和 body 字段
 推断：`X-GitHub-Event` + body `action`，`X-Gitlab-Event`、
 `X-Event-Type`、body 里的 `event` / `type` / `action`。都不命中时事件
 名退化为 `webhook.received`。
@@ -120,7 +120,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 
 #### 事件名和 action 从哪来
 
-Multica 按下面的顺序从入站请求里推断 `event` 和 `action`，**先命中先用**。
+Didian 按下面的顺序从入站请求里推断 `event` 和 `action`，**先命中先用**。
 
 **1. Body envelope。** 如果 body 是一个 JSON 对象、且带字符串字段
 `event`，就直接用它作为事件名。可选的 `eventPayload` 对象再
@@ -128,7 +128,7 @@ Multica 按下面的顺序从入站请求里推断 `event` 和 `action`，**先�
 action 候选。
 
 ```bash
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'Content-Type: application/json' \
   -d '{"event":"trigger","eventPayload":{"action":"true"}}'
 # 推断结果：event = trigger，action 候选 = true
@@ -143,7 +143,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 
 ```bash
 # GitHub 风格：事件名来自 header，action 来自 body。
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'X-GitHub-Event: workflow_run' \
   -H 'Content-Type: application/json' \
   -d '{"action":"completed"}'
@@ -151,7 +151,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 #        → 命中 workflow_run / completed 的过滤规则
 
 # 通用 event-type 头部 —— 不需要任何 body 字段。
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'X-Event-Type: trigger.true' \
   -H 'Content-Type: application/json' \
   -d '{}'
@@ -162,7 +162,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 从 body 顶层字符串字段里依次找：`event` → `type` → `action`。
 
 ```bash
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'Content-Type: application/json' \
   -d '{"type":"trigger","action":"true"}'
 # 推断结果：event = trigger（取自 `type`），action 候选 = true
@@ -194,14 +194,14 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 
 ```bash
 # 命中 —— 请求头给出 event=workflow_run，body 给出 action=completed
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'X-GitHub-Event: workflow_run' \
   -H 'Content-Type: application/json' \
   -d '{"action":"completed"}'
 # → 200 {"status":"accepted", ...}
 
 # 被过滤 —— 同样的事件，但 action 不在白名单
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'X-GitHub-Event: workflow_run' \
   -H 'Content-Type: application/json' \
   -d '{"action":"in_progress"}'
@@ -214,7 +214,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 
 - **不要贴到公开 issue 评论、截图、聊天记录里。**
 - **泄漏后立即重新生成**——在触发器上点"重新生成 URL"，或运行
-  `multica autopilot trigger-rotate-url <autopilot-id> <trigger-id>`。
+  `didian autopilot trigger-rotate-url <autopilot-id> <trigger-id>`。
   旧 URL 立即失效。
 - 对需要强来源认证的源，等 per-trigger HMAC 签名校验上线；v1 URL 仅
   bearer。
@@ -244,10 +244,10 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 
 ### 自托管：配置公开 URL
 
-服务端设置 `MULTICA_PUBLIC_URL`（例如 `https://multica.example.com`）后，
+服务端设置 `DIDIAN_PUBLIC_URL`（例如 `https://didian.example.com`）后，
 触发器响应里会带绝对的 `webhook_url`，UI 直接显示可复制的 URL。没设
 时 UI 会用客户端的 API origin 拼出 URL——desktop 和同源 web 没问题，
-但自定义反向代理就不行了。Multica **故意不**从 `Host` /
+但自定义反向代理就不行了。Didian **故意不**从 `Host` /
 `X-Forwarded-Host` header 推断公开主机，避免反代配置失误时被诱导生成
 指向攻击者域名的 webhook URL。
 

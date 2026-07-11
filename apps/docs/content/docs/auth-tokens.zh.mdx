@@ -1,21 +1,21 @@
 ---
 title: 认证与令牌
-description: Multica 有三种令牌——浏览器、CLI、守护进程各用一种。什么场景用哪种。
+description: Didian 有三种令牌——浏览器、CLI、守护进程各用一种。什么场景用哪种。
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Multica 有三种令牌，对应三种使用场景：浏览器 Web UI、命令行 / 脚本、守护进程（daemon）。三种都代表同一个你，但作用域和有效期不同。
+Didian 有三种令牌，对应三种使用场景：浏览器 Web UI、命令行 / 脚本、守护进程（daemon）。三种都代表同一个你，但作用域和有效期不同。
 
 ## 三种令牌
 
 | 令牌 | 格式 | 用在哪 | 有效期 |
 |---|---|---|---|
-| **JWT Cookie** | `multica_auth` cookie（HttpOnly） | Web 浏览器 | 30 天 |
+| **JWT Cookie** | `didian_auth` cookie（HttpOnly） | Web 浏览器 | 30 天 |
 | **个人访问令牌（PAT）** | 以 `mul_` 开头 | CLI / 脚本 / 直接调 API | 默认不过期；用 API 创建时可选传 `expires_in_days` |
 | **守护进程令牌（Daemon Token）** | 以 `mdt_` 开头 | Daemon 内部和 server 通信 | 由 daemon 自己管理 |
 
-日常使用你只会直接接触前两种。**[守护进程](/daemon-runtimes)令牌**是 `multica daemon login` 自动生成和刷新的，你不用关心。
+日常使用你只会直接接触前两种。**[守护进程](/daemon-runtimes)令牌**是 `didian daemon login` 自动生成和刷新的，你不用关心。
 
 ## 三种令牌能访问哪些 API
 
@@ -38,7 +38,7 @@ Multica 有三种令牌，对应三种使用场景：浏览器 Web UI、命令�
 2. 输入验证码，server 签发 JWT cookie（浏览器）或交换出 PAT（CLI）
 
 <Callout type="warning">
-**自部署运维注意**：公网部署时保持 `MULTICA_DEV_VERIFICATION_CODE` 为空。如果启用固定本地测试验证码，在 `APP_ENV` 非 production 时，任何能请求验证码的人都能用该固定值登录。详见 [自部署的认证配置](/auth-setup)。
+**自部署运维注意**：公网部署时保持 `DIDIAN_DEV_VERIFICATION_CODE` 为空。如果启用固定本地测试验证码，在 `APP_ENV` 非 production 时，任何能请求验证码的人都能用该固定值登录。详见 [自部署的认证配置](/auth-setup)。
 </Callout>
 
 ### Google OAuth
@@ -50,12 +50,12 @@ Multica 有三种令牌，对应三种使用场景：浏览器 Web UI、命令�
 **创建**有两种方式：
 
 - **Web UI**：Settings → Personal Access Tokens → New token
-- **CLI**：`multica login` 在本地没有 PAT 时会自动创建一个
+- **CLI**：`didian login` 在本地没有 PAT 时会自动创建一个
 
 <Callout type="warning">
 **PAT 创建时完整内容只显示一次。** 刷新页面或关闭对话框之后就看不到了。
 
-Multica 在数据库里只保存 PAT 的哈希值——服务端也查不回来。创建时**立即复制保存**。丢了只能撤销后重新创建。
+Didian 在数据库里只保存 PAT 的哈希值——服务端也查不回来。创建时**立即复制保存**。丢了只能撤销后重新创建。
 </Callout>
 
 **查看**已签发的 PAT 列表（名字、创建时间、最后使用时间，**不含**完整令牌）：Settings → Personal Access Tokens。
@@ -64,9 +64,9 @@ Multica 在数据库里只保存 PAT 的哈希值——服务端也查不回来�
 
 ## 退出登录只是删本地令牌
 
-执行 `multica auth logout` 或在 Web UI 点退出时：
+执行 `didian auth logout` 或在 Web UI 点退出时：
 
-- **本地令牌被清除** —— CLI 从 `~/.multica/config.json` 里删掉 PAT；Web 删 cookie
+- **本地令牌被清除** —— CLI 从 `~/.didian/config.json` 里删掉 PAT；Web 删 cookie
 - **服务端的 PAT 仍然有效** —— 如果登出前有人已经拿到过你的 PAT（比如复制到了另一台机器），他们**还能继续用**
 
 <Callout type="warning">

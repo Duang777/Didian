@@ -4,7 +4,7 @@ import { loginAsDefault, createTestApi, preferManualCreateMode, reloadAppPage } 
 import type { TestApiClient } from "./fixtures";
 
 const DATABASE_URL =
-  process.env.DATABASE_URL ?? "postgres://multica:multica@localhost:5432/multica?sslmode=disable";
+  process.env.DATABASE_URL ?? "postgres://didian:didian@localhost:5432/didian?sslmode=disable";
 
 async function setIssueTimestamps(
   issueId: string,

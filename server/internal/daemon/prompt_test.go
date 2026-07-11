@@ -24,7 +24,7 @@ func TestBuildQuickCreatePromptRules(t *testing.T) {
 		"verbal routing wrappers about creating the issue",
 		"pure conversational fillers",
 		// cc routing must survive: mention link stays in description so the
-		// auto-subscribe path fires (multica issue create has no --subscriber flag)
+		// auto-subscribe path fires (didian issue create has no --subscriber flag)
 		"CC exception",
 		"auto-subscribes members",
 		// context section is conditional and must not be an apology log
@@ -34,7 +34,7 @@ func TestBuildQuickCreatePromptRules(t *testing.T) {
 		// use custom issue prefixes, so a successful issue creation should
 		// not look failed merely because the identifier does not match one
 		// fixed prefix.
-		"multica issue create --output json",
+		"didian issue create --output json",
 		"JSON response",
 		"identifier",
 		"Do not scrape human output",
@@ -59,7 +59,7 @@ func TestBuildQuickCreatePromptRules(t *testing.T) {
 func TestBuildQuickCreatePromptAssigneeIncludesSquads(t *testing.T) {
 	out := buildQuickCreatePrompt(Task{QuickCreatePrompt: "fix the login button color"})
 	mustContain := []string{
-		"multica squad list",
+		"didian squad list",
 		"Squads are first-class assignees",
 		"Treat bare @-routing as an assignee directive",
 		"让 @独立团 review 这个 PR",
@@ -261,7 +261,7 @@ func TestBuildChatPromptAttachmentIDsCanBeBoundToCreatedIssues(t *testing.T) {
 	for _, want := range []string{
 		"Attachments on this message:",
 		"id=019ec09d-6222-722b-bdfa-427b105d80be",
-		"multica attachment download <id>",
+		"didian attachment download <id>",
 		"--attachment-id <id>",
 	} {
 		if !strings.Contains(out, want) {
@@ -277,7 +277,7 @@ func TestBuildChatPromptChannelAwareness(t *testing.T) {
 			ChatChannelType: "slack",
 			ChatMessage:     "你刚刚和 xxx 聊了什么",
 		})
-		for _, want := range []string{"Slack", "NOT in Multica", "multica chat history", "multica chat thread", "Do NOT narrate"} {
+		for _, want := range []string{"Slack", "NOT in Didian", "didian chat history", "didian chat thread", "Do NOT narrate"} {
 			if !strings.Contains(out, want) {
 				t.Fatalf("slack-backed prompt missing %q\n--- output ---\n%s", want, out)
 			}
@@ -286,14 +286,14 @@ func TestBuildChatPromptChannelAwareness(t *testing.T) {
 
 	t.Run("top-level mention starts with history", func(t *testing.T) {
 		out := buildChatPrompt(Task{ChatSessionID: "s", ChatChannelType: "slack", ChatInThread: false, ChatMessage: "hi"})
-		if !strings.Contains(out, "top level: start with `multica chat history`") {
+		if !strings.Contains(out, "top level: start with `didian chat history`") {
 			t.Fatalf("expected top-level guidance, got:\n%s", out)
 		}
 	})
 
 	t.Run("in-thread mention starts with thread", func(t *testing.T) {
 		out := buildChatPrompt(Task{ChatSessionID: "s", ChatChannelType: "slack", ChatInThread: true, ChatMessage: "hi"})
-		if !strings.Contains(out, "inside a thread: start with `multica chat thread`") {
+		if !strings.Contains(out, "inside a thread: start with `didian chat thread`") {
 			t.Fatalf("expected in-thread guidance, got:\n%s", out)
 		}
 	})
@@ -303,7 +303,7 @@ func TestBuildChatPromptChannelAwareness(t *testing.T) {
 			ChatSessionID: "sess-1",
 			ChatMessage:   "hi",
 		})
-		if strings.Contains(out, "multica chat history") {
+		if strings.Contains(out, "didian chat history") {
 			t.Fatalf("web-only chat prompt should not mention channel history, got:\n%s", out)
 		}
 	})
@@ -443,7 +443,7 @@ func TestBuildChatPromptSlashSkills(t *testing.T) {
 func TestBuildPromptDefaultMentionsRecent(t *testing.T) {
 	out := BuildPrompt(Task{IssueID: "issue-default-1"}, "claude")
 	for _, s := range []string{
-		"multica issue comment list issue-default-1 --recent 10 --output json",
+		"didian issue comment list issue-default-1 --recent 10 --output json",
 		"Next thread cursor:",
 		"--since",
 	} {
@@ -462,7 +462,7 @@ func TestBuildPromptDefaultMentionsRecent(t *testing.T) {
 	if strings.Contains(out, "If you need comment history") {
 		t.Errorf("default BuildPrompt still carries the legacy 'If you need' soft phrasing that conflicts with the mandatory workflow\n--- output ---\n%s", out)
 	}
-	if strings.Contains(out, "multica issue comment list issue-default-1 --output json") {
+	if strings.Contains(out, "didian issue comment list issue-default-1 --output json") {
 		t.Errorf("default BuildPrompt still presents the unbounded flat read as the assignment catch-up command\n--- output ---\n%s", out)
 	}
 }
@@ -516,14 +516,14 @@ func TestBuildPromptNewCommentsHint(t *testing.T) {
 		t.Errorf("hint must discourage blindly reading every new comment, got:\n%s", out)
 	}
 	// Parent thread first: the --thread <trigger> read is the prioritized action.
-	if !strings.Contains(out, "multica issue comment list "+issueID+" --thread thread-root-1 --since "+since+" --output json") {
+	if !strings.Contains(out, "didian issue comment list "+issueID+" --thread thread-root-1 --since "+since+" --output json") {
 		t.Errorf("hint must point at the triggering (parent) thread --since read first, got:\n%s", out)
 	}
 	if !strings.Contains(out, "--tail 30") {
 		t.Errorf("hint must offer the full-thread (--tail 30) option, got:\n%s", out)
 	}
 	// Issue-wide catch-up is demoted to an only-if-needed fallback.
-	if !strings.Contains(out, "multica issue comment list "+issueID+" --since "+since+" --output json") {
+	if !strings.Contains(out, "didian issue comment list "+issueID+" --since "+since+" --output json") {
 		t.Errorf("hint must keep the issue-wide --since catch-up as a fallback, got:\n%s", out)
 	}
 	// The old cursor-heavy paragraph must be gone.
@@ -551,10 +551,10 @@ func TestBuildPromptColdStartThreadRead(t *testing.T) {
 	if strings.Contains(out, "new comment(s) since your last run") {
 		t.Errorf("no since-delta hint should render on cold start, got:\n%s", out)
 	}
-	if !strings.Contains(out, "multica issue comment list "+issueID+" --thread thread-root-1 --tail 30 --output json") {
+	if !strings.Contains(out, "didian issue comment list "+issueID+" --thread thread-root-1 --tail 30 --output json") {
 		t.Errorf("cold start must point at the triggering thread read, got:\n%s", out)
 	}
-	if !strings.Contains(out, "multica issue comment list "+issueID+" --recent 10 --output json") {
+	if !strings.Contains(out, "didian issue comment list "+issueID+" --recent 10 --output json") {
 		t.Errorf("cold start cross-thread fallback should use recent 10, got:\n%s", out)
 	}
 	if strings.Contains(out, "--recent 20") {
@@ -586,7 +586,7 @@ func TestBuildPromptResumedNoDeltaDoesNotForceThreadRead(t *testing.T) {
 		"active thread anchor `thread-root-1` and triggering comment ID `trigger-1`",
 		"If your reply depends on thread context",
 		"do not rely only on resumed session memory",
-		"multica issue comment list " + issueID + " --thread thread-root-1 --tail 30 --output json",
+		"didian issue comment list " + issueID + " --thread thread-root-1 --tail 30 --output json",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("resumed/no-delta prompt missing %q\n--- output ---\n%s", want, out)

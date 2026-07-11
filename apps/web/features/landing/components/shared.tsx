@@ -1,7 +1,7 @@
 import { cn } from "@didian/ui/lib/utils";
 
-export const githubUrl = "https://github.com/multica-ai/multica";
-export const twitterUrl = "https://x.com/MulticaAI";
+export const githubUrl = "https://github.com/didian-ai/didian";
+export const twitterUrl = "https://x.com/DidianAI";
 export const discordUrl = "https://discord.gg/W8gYBn226t";
 
 export function GitHubMark({ className }: { className?: string }) {

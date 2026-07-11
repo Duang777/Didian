@@ -72,7 +72,7 @@ export function formatUptime(uptime?: string): string {
  * Whether a raw daemon `/health` `status` value means a live daemon is on the
  * port — either fully "running" (ready) or still "starting" (port bound,
  * preflight in progress). Mirrors the Go `daemonAlive()` in
- * server/cmd/multica/cmd_daemon.go so the Desktop lifecycle agrees with the
+ * server/cmd/didian/cmd_daemon.go so the Desktop lifecycle agrees with the
  * CLI: a "starting" daemon is already there and must not be spawned over (the
  * CLI rejects that as "already running"). This is liveness, not readiness —
  * version-restart decisions still gate on the stricter "running".

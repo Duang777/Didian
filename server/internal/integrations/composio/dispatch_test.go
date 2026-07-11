@@ -227,7 +227,7 @@ func TestBuildTaskOverlay_NoMatchingConnectionIsNoOp(t *testing.T) {
 
 // TestBuildTaskOverlay_HappyPath_FiltersBothWays — the canonical
 // successful dispatch. Asserts:
-//   - CreateSession was called with the Multica user id verbatim
+//   - CreateSession was called with the Didian user id verbatim
 //   - both filters were passed (toolkits.enable AND connected_accounts)
 //   - the slug set is exactly the intersection (allowlist ∩ active)
 //   - connected_accounts pins the correct connected_account_id per slug
@@ -261,7 +261,7 @@ func TestBuildTaskOverlay_HappyPath_FiltersBothWays(t *testing.T) {
 		t.Fatalf("expected non-empty overlay, got nil")
 	}
 
-	// composio_user_id == Multica user id invariant
+	// composio_user_id == Didian user id invariant
 	if sdkFake.lastSessReq.UserID != uuidToString(owner) {
 		t.Errorf("CreateSession user id: got %q, want %q", sdkFake.lastSessReq.UserID, uuidToString(owner))
 	}

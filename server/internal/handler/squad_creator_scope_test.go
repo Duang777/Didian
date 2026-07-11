@@ -61,7 +61,7 @@ func TestCreateSquad_PlainMemberBecomesCreator(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("database not available")
 	}
-	memberID := createPlainMember(t, "squad-creator@multica.test")
+	memberID := createPlainMember(t, "squad-creator@didian.test")
 	leaderID := createHandlerTestAgent(t, "squad-creator-leader", nil)
 
 	squad := createSquadAs(t, memberID, "Member Owned Squad", leaderID)
@@ -76,7 +76,7 @@ func TestManageSquad_CreatorCanManageOwn(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("database not available")
 	}
-	memberID := createPlainMember(t, "squad-owner-manage@multica.test")
+	memberID := createPlainMember(t, "squad-owner-manage@didian.test")
 	leaderID := createHandlerTestAgent(t, "squad-owner-manage-leader", nil)
 	worker := createHandlerTestAgent(t, "squad-owner-manage-worker", nil)
 
@@ -116,8 +116,8 @@ func TestManageSquad_StrangerMemberForbidden(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("database not available")
 	}
-	creatorID := createPlainMember(t, "squad-stranger-creator@multica.test")
-	strangerID := createPlainMember(t, "squad-stranger-other@multica.test")
+	creatorID := createPlainMember(t, "squad-stranger-creator@didian.test")
+	strangerID := createPlainMember(t, "squad-stranger-other@didian.test")
 	leaderID := createHandlerTestAgent(t, "squad-stranger-leader", nil)
 
 	squad := createSquadAs(t, creatorID, "Stranger Test Squad", leaderID)

@@ -1,11 +1,11 @@
 ---
 title: 桌面应用
-description: Multica Desktop 是什么、和 Web 有什么区别、什么时候值得用。
+description: Didian Desktop 是什么、和 Web 有什么区别、什么时候值得用。
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Multica Desktop 是原生桌面应用——macOS / Windows / Linux 三个平台。对它当前配置的环境来说，它和 Web 版连同一个后端、看到的数据完全一样。Desktop 默认使用 Multica Cloud；自部署实例可以通过本地运行时配置文件接入。它还给了几个 Web 做不到的能力：**[工作区](/workspaces) 独立的多标签页**、**自动启动 [守护进程](/daemon-runtimes)**、**一键升级**。
+Didian Desktop 是原生桌面应用——macOS / Windows / Linux 三个平台。对它当前配置的环境来说，它和 Web 版连同一个后端、看到的数据完全一样。Desktop 默认使用 Didian Cloud；自部署实例可以通过本地运行时配置文件接入。它还给了几个 Web 做不到的能力：**[工作区](/workspaces) 独立的多标签页**、**自动启动 [守护进程](/daemon-runtimes)**、**一键升级**。
 
 ## Desktop 和 Web 该用哪个
 
@@ -13,12 +13,12 @@ Multica Desktop 是原生桌面应用——macOS / Windows / Linux 三个平台�
 |---|---|---|
 | 访问方式 | 浏览器打开 URL | 装一个本地应用 |
 | 多标签页 | 浏览器自己的标签页（不区分工作区）| **每个工作区一组独立标签页** |
-| 守护进程 | 要你自己跑 `multica daemon start` | 启动时**自动拉起** |
+| 守护进程 | 要你自己跑 `didian daemon start` | 启动时**自动拉起** |
 | 升级 | 刷新页面就是最新 | 应用自动检查 + 下次启动安装 |
 | 登录后的数据 | 完全一样 | 完全一样 |
 
 **选 Web**：临时用、在别人电脑上、不想装应用的场景。  
-**选 Desktop**：每天用 Multica、会同时操作多个工作区、不想自己管守护进程的场景。
+**选 Desktop**：每天用 Didian、会同时操作多个工作区、不想自己管守护进程的场景。
 
 ## 多 tab：工作区之间切换怎么表现
 
@@ -47,15 +47,15 @@ macOS 版本已经签名 + 公证，第一次打开不会有"未知开发者"的
 
 ## 还要单独装 CLI 和守护进程吗
 
-**不用**。Desktop 包里**内置了同一个 `multica` CLI 二进制**——Desktop 启动时会自动启动守护进程的独立 profile（和你命令行手动跑的守护进程互不干扰）。
+**不用**。Desktop 包里**内置了同一个 `didian` CLI 二进制**——Desktop 启动时会自动启动守护进程的独立 profile（和你命令行手动跑的守护进程互不干扰）。
 
-如果你已经装过 CLI 并手动跑过 `multica daemon start`，Desktop 不会抢占你那个守护进程——它起自己的，用不同的 profile 隔离。两边注册的是**不同的运行时**，在 UI 里能看到两个独立运行时。
+如果你已经装过 CLI 并手动跑过 `didian daemon start`，Desktop 不会抢占你那个守护进程——它起自己的，用不同的 profile 隔离。两边注册的是**不同的运行时**，在 UI 里能看到两个独立运行时。
 
-想在终端里跑 CLI 命令，Desktop 不提供特殊方式——照常用系统的 CLI（如果你单独装了），或者用 Desktop 自带的版本（在应用的资源目录里，`resources/bin/multica`）。
+想在终端里跑 CLI 命令，Desktop 不提供特殊方式——照常用系统的 CLI（如果你单独装了），或者用 Desktop 自带的版本（在应用的资源目录里，`resources/bin/didian`）。
 
 ## 怎么下载安装
 
-去 [多卡下载页](https://multica.ai/download) 拿对应平台的安装包：
+去 [多卡下载页](https://didian.ai/download) 拿对应平台的安装包：
 
 | 平台 | 文件 |
 |---|---|
@@ -67,7 +67,7 @@ macOS 版本已经签名 + 公证，第一次打开不会有"未知开发者"的
 安装后第一次打开需要登录——和 Web 版一样的 email + 验证码流程。登录成功后 Desktop 自动把工作区列表同步下来。
 
 <Callout type="info">
-**Desktop 默认连接 Multica Cloud，但可以通过本地配置文件指向自部署实例。** 应用内仍然没有“连接自部署”的切换入口。Desktop 会在 renderer 启动前读取 `~/.multica/desktop.json`；如果这个文件不存在，就使用 Cloud 默认值。
+**Desktop 默认连接 Didian Cloud，但可以通过本地配置文件指向自部署实例。** 应用内仍然没有“连接自部署”的切换入口。Desktop 会在 renderer 启动前读取 `~/.didian/desktop.json`；如果这个文件不存在，就使用 Cloud 默认值。
 
 最小自部署配置：
 
@@ -89,7 +89,7 @@ macOS 版本已经签名 + 公证，第一次打开不会有"未知开发者"的
 }
 ```
 
-如果 `desktop.json` 存在但内容无效，Desktop 会 fail closed，显示阻塞式配置错误，而不是悄悄回退到 Cloud。开发构建里，`electron-vite dev` 仍然优先使用 `VITE_API_URL` / `VITE_WS_URL` / `VITE_APP_URL`。Desktop 运行时自部署配置能力对应 [issue #1371](https://github.com/multica-ai/multica/issues/1371)。
+如果 `desktop.json` 存在但内容无效，Desktop 会 fail closed，显示阻塞式配置错误，而不是悄悄回退到 Cloud。开发构建里，`electron-vite dev` 仍然优先使用 `VITE_API_URL` / `VITE_WS_URL` / `VITE_APP_URL`。Desktop 运行时自部署配置能力对应 [issue #1371](https://github.com/didian-ai/didian/issues/1371)。
 </Callout>
 
 ## 下一步

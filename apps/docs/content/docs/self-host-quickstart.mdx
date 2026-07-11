@@ -1,11 +1,11 @@
 ---
 title: Self-host quickstart
-description: Run Multica on your own server or machine with Docker (or Helm on Kubernetes). Takes about 10 minutes.
+description: Run Didian on your own server or machine with Docker (or Helm on Kubernetes). Takes about 10 minutes.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-This page walks you through running the Multica **server** (backend + frontend + PostgreSQL) on your own machine or server with Docker. When you're done, your data is fully under your control — including [workspaces](/workspaces), [issues](/issues), [comments](/comments), and [agent](/agents) configuration.
+This page walks you through running the Didian **server** (backend + frontend + PostgreSQL) on your own machine or server with Docker. When you're done, your data is fully under your control — including [workspaces](/workspaces), [issues](/issues), [comments](/comments), and [agent](/agents) configuration.
 
 Agent **execution** still relies on the [daemon](/daemon-runtimes) you run locally plus the [AI coding tools](/providers) installed on that machine — exactly like Cloud. Self-host swaps out the server layer, not the execution layer.
 
@@ -23,15 +23,15 @@ Agent **execution** still relies on the [daemon](/daemon-runtimes) you run local
 </Callout>
 
 ```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
+git clone https://github.com/didian-ai/didian.git
+cd didian
 make selfhost
 ```
 
 `make selfhost` will:
 
 1. Generate a `.env` from `.env.example` if missing, with a **random JWT_SECRET and Postgres password**
-2. Pull the official Docker images (PostgreSQL, Multica backend, Multica frontend)
+2. Pull the official Docker images (PostgreSQL, Didian backend, Didian frontend)
 3. Bring up every service using `docker-compose.selfhost.yml`
 4. Wait until the backend's `/health` endpoint is ready
 
@@ -56,11 +56,11 @@ Once it's up:
 ## 2. Important: keep production safety on
 
 <Callout type="warning">
-**`docker-compose.selfhost.yml` sets `APP_ENV` to `production` by default** and leaves `MULTICA_DEV_VERIFICATION_CODE` empty, so there is no fixed code on public instances.
+**`docker-compose.selfhost.yml` sets `APP_ENV` to `production` by default** and leaves `DIDIAN_DEV_VERIFICATION_CODE` empty, so there is no fixed code on public instances.
 
-Only set `MULTICA_DEV_VERIFICATION_CODE` for local or private test automation. If a fixed code is enabled while `APP_ENV` is non-production, anyone who can request a code can sign in with that fixed value. See [Auth setup → Fixed local testing codes](/auth-setup#fixed-local-testing-codes).
+Only set `DIDIAN_DEV_VERIFICATION_CODE` for local or private test automation. If a fixed code is enabled while `APP_ENV` is non-production, anyone who can request a code can sign in with that fixed value. See [Auth setup → Fixed local testing codes](/auth-setup#fixed-local-testing-codes).
 
-Before any public deployment, make sure `.env` has `APP_ENV=production` and `MULTICA_DEV_VERIFICATION_CODE` is empty.
+Before any public deployment, make sure `.env` has `APP_ENV=production` and `DIDIAN_DEV_VERIFICATION_CODE` is empty.
 </Callout>
 
 ## 3. Configure the email service (optional but recommended)
@@ -100,7 +100,7 @@ For **authenticated submission (port 587, STARTTLS)** — the relay requires a s
 ```bash
 SMTP_HOST=smtp.internal.example.com
 SMTP_PORT=587
-SMTP_USERNAME=multica
+SMTP_USERNAME=didian
 SMTP_PASSWORD=...
 SMTP_TLS_INSECURE=false        # set true only for private CA / self-signed
 RESEND_FROM_EMAIL=noreply@yourdomain.com
@@ -111,7 +111,7 @@ For **implicit TLS / SMTPS (port 465)** — providers like Aliyun / Tencent ente
 ```bash
 SMTP_HOST=smtp.qiye.aliyun.com
 SMTP_PORT=465
-SMTP_USERNAME=multica@yourdomain.com
+SMTP_USERNAME=didian@yourdomain.com
 SMTP_PASSWORD=...
 SMTP_TLS=implicit              # optional on 465; required on a non-standard SMTPS port
 RESEND_FROM_EMAIL=noreply@yourdomain.com
@@ -136,19 +136,19 @@ Open [http://localhost:3000](http://localhost:3000):
 
 - Enter your email
 - Grab the verification code from your configured email backend (Resend or SMTP relay); if neither is configured, copy it from the server container stdout — look for the `[DEV] Verification code` line
-- Do not use `888888` unless you explicitly set `MULTICA_DEV_VERIFICATION_CODE=888888` on a non-production private instance
+- Do not use `888888` unless you explicitly set `DIDIAN_DEV_VERIFICATION_CODE=888888` on a non-production private instance
 - Log in and create your first workspace
 
 ## 5. Point the CLI at your own server
 
-The CLI install is the same as in [Cloud quickstart → 2. Install the CLI](/cloud-quickstart#2-install-the-multica-cli) — Homebrew / script / PowerShell, pick one.
+The CLI install is the same as in [Cloud quickstart → 2. Install the CLI](/cloud-quickstart#2-install-the-didian-cli) — Homebrew / script / PowerShell, pick one.
 
 ### 5a. Same machine
 
 If the CLI and the server run on the same host, the defaults already work:
 
 ```bash
-multica setup self-host
+didian setup self-host
 ```
 
 That points the CLI at `http://localhost:8080` (backend) and `http://localhost:3000` (frontend), takes you through browser login, stores the PAT locally, and **starts the daemon automatically**.
@@ -158,19 +158,19 @@ That points the CLI at `http://localhost:8080` (backend) and `http://localhost:3
 Because the compose stack only listens on `127.0.0.1`, a daemon on a different machine cannot reach `http://<server-ip>:8080` directly — and you do not want it to, since server secrets would otherwise be reachable from the open internet. Put a reverse proxy on the server that terminates TLS and forwards to `127.0.0.1:8080` (backend) and `127.0.0.1:3000` (frontend), then point the CLI at the public HTTPS URL:
 
 ```bash
-multica setup self-host \
+didian setup self-host \
   --server-url https://<your-domain> \
   --app-url https://<your-domain>
 ```
 
 <Callout type="info">
-Prefer environment variables over flags? `setup self-host` reads `MULTICA_SERVER_URL` and `MULTICA_APP_URL` when the matching flag is omitted — a flag still takes precedence over the env var. `MULTICA_SERVER_URL` also accepts the `ws://…/ws` daemon form from [Environment variables](/environment-variables) and normalizes it to the HTTP base.
+Prefer environment variables over flags? `setup self-host` reads `DIDIAN_SERVER_URL` and `DIDIAN_APP_URL` when the matching flag is omitted — a flag still takes precedence over the env var. `DIDIAN_SERVER_URL` also accepts the `ws://…/ws` daemon form from [Environment variables](/environment-variables) and normalizes it to the HTTP base.
 </Callout>
 
 A minimal Caddyfile that fronts both the frontend and the backend (with WebSocket support, which the daemon and the web app both need) on a single hostname:
 
 ```nginx
-multica.example.com {
+didian.example.com {
     # WebSocket route — must come before the catch-all
     @ws path /ws /ws/*
     handle @ws {
@@ -189,7 +189,7 @@ multica.example.com {
 }
 ```
 
-After bringing the proxy up, set `FRONTEND_ORIGIN=https://multica.example.com` in the server's `.env` and restart the backend — otherwise the WebSocket origin check will reject the browser ([Troubleshooting → WebSocket can't connect](/troubleshooting#websocket-cant-connect)).
+After bringing the proxy up, set `FRONTEND_ORIGIN=https://didian.example.com` in the server's `.env` and restart the backend — otherwise the WebSocket origin check will reject the browser ([Troubleshooting → WebSocket can't connect](/troubleshooting#websocket-cant-connect)).
 
 [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) is another solid option — it gives you TLS and a public hostname without exposing any port on the host at all. An Nginx equivalent (separate `app.` / `api.` hostnames, `proxy_set_header Upgrade` for WebSockets) works just as well; the key requirements are TLS termination and forwarding the `Upgrade` header on `/ws`.
 
@@ -214,54 +214,54 @@ SELECT cron.unschedule('rollup_task_usage_hourly')
 
 **Upgrade from `v0.3.4 → v0.3.5+`.** The previous release asked operators to run `cmd/backfill_task_usage_hourly` manually before applying migration 103, otherwise the migration's fail-closed guard would abort `migrate up`. As of MUL-2957 this is automatic: the migrate command runs an idempotent monthly-slice backfill (under advisory lock 4246) immediately before applying migration 103, then continues. You may still run the standalone backfill on a busy DB to throttle read pressure with `--sleep-between-slices=2s`, but it is no longer required.
 
-Full reference — including operations notes and the Kubernetes deployment shape — lives in the repo's [`SELF_HOSTING_ADVANCED.md → Usage Dashboard Rollup`](https://github.com/multica-ai/multica/blob/main/SELF_HOSTING_ADVANCED.md#usage-dashboard-rollup).
+Full reference — including operations notes and the Kubernetes deployment shape — lives in the repo's [`SELF_HOSTING_ADVANCED.md → Usage Dashboard Rollup`](https://github.com/didian-ai/didian/blob/main/SELF_HOSTING_ADVANCED.md#usage-dashboard-rollup).
 
 ## Kubernetes deployment (alternative)
 
-If you already run a Kubernetes cluster, the repo also ships a Helm chart at `deploy/helm/multica/`. It's the equivalent of `make selfhost` for k8s — same backend image, frontend image, and `pgvector/pgvector:pg17` Postgres, packaged as Deployments / Services / Ingresses with one `ConfigMap` rendered from `values.yaml`. Authored against k3s + Traefik + `local-path` and should work on any cluster with an Ingress controller and a default `ReadWriteOnce` StorageClass.
+If you already run a Kubernetes cluster, the repo also ships a Helm chart at `deploy/helm/didian/`. It's the equivalent of `make selfhost` for k8s — same backend image, frontend image, and `pgvector/pgvector:pg17` Postgres, packaged as Deployments / Services / Ingresses with one `ConfigMap` rendered from `values.yaml`. Authored against k3s + Traefik + `local-path` and should work on any cluster with an Ingress controller and a default `ReadWriteOnce` StorageClass.
 
-The chart **does not template secret values**. It references a Secret named `multica-secrets` by name, so real JWT / DB / Resend / Google keys never need to live in git or in `values.yaml`. Create the namespace + Secret once with kubectl:
+The chart **does not template secret values**. It references a Secret named `didian-secrets` by name, so real JWT / DB / Resend / Google keys never need to live in git or in `values.yaml`. Create the namespace + Secret once with kubectl:
 
 ```bash
-kubectl create namespace multica
+kubectl create namespace didian
 
-kubectl -n multica create secret generic multica-secrets \
+kubectl -n didian create secret generic didian-secrets \
   --from-literal=JWT_SECRET="$(openssl rand -hex 32)" \
   --from-literal=POSTGRES_PASSWORD="$(openssl rand -hex 16)" \
   --from-literal=RESEND_API_KEY="" \
   --from-literal=GOOGLE_CLIENT_SECRET="" \
   --from-literal=CLOUDFRONT_PRIVATE_KEY="" \
-  --from-literal=MULTICA_DEV_VERIFICATION_CODE=""
+  --from-literal=DIDIAN_DEV_VERIFICATION_CODE=""
 ```
 
 Then install the chart:
 
 ```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
-helm install multica deploy/helm/multica -n multica
+git clone https://github.com/didian-ai/didian.git
+cd didian
+helm install didian deploy/helm/didian -n didian
 ```
 
-Defaults assume the hostnames `multica.dev.lan` (web) and `api.multica.dev.lan` (backend). Add them to `/etc/hosts` (or local DNS) pointing at any node IP where your Ingress is reachable. To use different hostnames, copy `deploy/helm/multica/values.yaml`, edit `ingress.frontend.host` / `ingress.backend.host` and the matching `backend.config.appUrl` / `frontendOrigin` / `localUploadBaseUrl` / `googleRedirectUri`, then install with `-f my-values.yaml`.
+Defaults assume the hostnames `didian.dev.lan` (web) and `api.didian.dev.lan` (backend). Add them to `/etc/hosts` (or local DNS) pointing at any node IP where your Ingress is reachable. To use different hostnames, copy `deploy/helm/didian/values.yaml`, edit `ingress.frontend.host` / `ingress.backend.host` and the matching `backend.config.appUrl` / `frontendOrigin` / `localUploadBaseUrl` / `googleRedirectUri`, then install with `-f my-values.yaml`.
 
 On a cold cluster the backend can stay `Running` but not `Ready` for a few minutes while it waits on Postgres and runs migrations — a startupProbe absorbs this, so the pod should not restart. Once it's `Ready`:
 
 ```bash
-curl -H "Host: api.multica.dev.lan" http://<ingress-ip>/healthz
+curl -H "Host: api.didian.dev.lan" http://<ingress-ip>/healthz
 # {"status":"ok","checks":{"db":"ok","migrations":"ok"}}
 ```
 
-Then open `http://multica.dev.lan` and continue at [Step 4 — First login](#4-first-login--create-a-workspace) above. Point the CLI at your Ingress hostnames:
+Then open `http://didian.dev.lan` and continue at [Step 4 — First login](#4-first-login--create-a-workspace) above. Point the CLI at your Ingress hostnames:
 
 ```bash
-multica setup self-host \
-  --server-url http://api.multica.dev.lan \
-  --app-url http://multica.dev.lan
+didian setup self-host \
+  --server-url http://api.didian.dev.lan \
+  --app-url http://didian.dev.lan
 ```
 
-To pull the latest images without changing the chart, `kubectl -n multica rollout restart deploy/multica-backend deploy/multica-frontend`. To pin a specific Multica release, set `images.backend.tag` / `images.frontend.tag` in your values file and `helm upgrade`. `helm -n multica uninstall multica` removes the workloads but keeps the PVCs and Secret; `kubectl delete namespace multica` wipes everything.
+To pull the latest images without changing the chart, `kubectl -n didian rollout restart deploy/didian-backend deploy/didian-frontend`. To pin a specific Didian release, set `images.backend.tag` / `images.frontend.tag` in your values file and `helm upgrade`. `helm -n didian uninstall didian` removes the workloads but keeps the PVCs and Secret; `kubectl delete namespace didian` wipes everything.
 
-The full reference — three login modes, the `backend` ExternalName workaround for the build-time-baked `REMOTE_API_URL` in the web image, resource limits, and TLS — lives in the repo's [`SELF_HOSTING.md`](https://github.com/multica-ai/multica/blob/main/SELF_HOSTING.md#kubernetes-deployment-alternative).
+The full reference — three login modes, the `backend` ExternalName workaround for the build-time-baked `REMOTE_API_URL` in the web image, resource limits, and TLS — lives in the repo's [`SELF_HOSTING.md`](https://github.com/didian-ai/didian/blob/main/SELF_HOSTING.md#kubernetes-deployment-alternative).
 
 ## Common issues
 
@@ -277,4 +277,4 @@ The full reference — three login modes, the `backend` ExternalName workaround 
 - [Auth setup](/auth-setup) — Resend / OAuth / signup allowlist in detail
 - [GitHub integration](/github-integration) — connect a GitHub App so PRs auto-link to issues and merging closes them
 - [Troubleshooting](/troubleshooting) — start here when things go wrong
-- [Desktop app](/desktop-app) — optional Desktop setup via `~/.multica/desktop.json`; the web frontend + CLI remains the quickest self-host path
+- [Desktop app](/desktop-app) — optional Desktop setup via `~/.didian/desktop.json`; the web frontend + CLI remains the quickest self-host path

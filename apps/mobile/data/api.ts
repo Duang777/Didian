@@ -156,7 +156,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
  *  timeout, a refetch fired after returning to foreground can leave the
  *  query stuck in `isRefetching` state forever (visible as the
  *  pull-to-refresh spinner never going away). 30s is generous for any
- *  reasonable Multica payload size on cellular. */
+ *  reasonable Didian payload size on cellular. */
 const FETCH_TIMEOUT_MS = 30_000;
 
 export class ApiError extends Error {

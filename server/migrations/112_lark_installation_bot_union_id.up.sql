@@ -3,7 +3,7 @@
 -- (union_id) instead of the per-app open_id.
 --
 -- Why this column exists: Bohan's live-env triage on MUL-2671 showed that
--- in a group chat where two Multica-installed bots are bound, Lark's
+-- in a group chat where two Didian-installed bots are bound, Lark's
 -- `mentions[].id.open_id` field on `im.message.receive_v1` is structurally
 -- inverse to /open-apis/bot/v3/info's `bot.open_id`. The bot whose WS
 -- receives the event sees its OWN payload-form open_id when the OTHER

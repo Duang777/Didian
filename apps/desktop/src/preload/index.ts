@@ -53,7 +53,7 @@ const runtimeConfig = fetchRuntimeConfig();
 // Read the OS-preferred locale that main injected via additionalArguments.
 // Zero IPC, zero blocking — process.argv is populated before preload runs.
 function fetchSystemLocale(): string {
-  const arg = process.argv.find((a) => a.startsWith("--multica-locale="));
+  const arg = process.argv.find((a) => a.startsWith("--didian-locale="));
   return arg?.split("=")[1] ?? "en";
 }
 

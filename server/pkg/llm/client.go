@@ -53,14 +53,14 @@ var ErrNotConfigured = errors.New("llm: no API key or base URL configured")
 // Config holds the tunables for the LLM layer. All fields are optional; an
 // empty Config yields a disabled client (see Client.Enabled).
 type Config struct {
-	// APIKey authenticates against the upstream. Maps to MULTICA_LLM_API_KEY.
+	// APIKey authenticates against the upstream. Maps to DIDIAN_LLM_API_KEY.
 	APIKey string
 	// BaseURL points at OpenAI or any OpenAI-compatible gateway. When empty the
 	// SDK's default (https://api.openai.com/v1) is used. Maps to
-	// MULTICA_LLM_BASE_URL.
+	// DIDIAN_LLM_BASE_URL.
 	BaseURL string
 	// DefaultModel is used when a request omits the model. Maps to
-	// MULTICA_LLM_DEFAULT_MODEL. When empty, FallbackModel is used.
+	// DIDIAN_LLM_DEFAULT_MODEL. When empty, FallbackModel is used.
 	DefaultModel string
 	// MaxRetries overrides the SDK default (2). A negative value is treated as
 	// zero (no retries).

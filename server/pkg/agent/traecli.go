@@ -230,7 +230,7 @@ func (b *traecliBackend) Execute(ctx context.Context, prompt string, opts ExecOp
 		initResult, err := c.request(runCtx, "initialize", map[string]any{
 			"protocolVersion": 1,
 			"clientInfo": map[string]any{
-				"name":    "multica-agent-sdk",
+				"name":    "didian-agent-sdk",
 				"version": "0.2.0",
 			},
 			"clientCapabilities": map[string]any{},

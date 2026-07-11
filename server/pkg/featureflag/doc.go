@@ -1,5 +1,5 @@
 // Package featureflag is a framework-level feature flag library for the
-// multica backend.
+// didian backend.
 //
 // It implements the canonical Toggle Point / Toggle Router / Toggle
 // Configuration separation described by Martin Fowler:
@@ -25,8 +25,8 @@
 //
 // Wiring:
 //
-// The standard way to construct the Service inside the multica server is
-// featureflag.NewServiceFromEnv, which reads MULTICA_FEATURE_FLAGS_FILE for
+// The standard way to construct the Service inside the didian server is
+// featureflag.NewServiceFromEnv, which reads DIDIAN_FEATURE_FLAGS_FILE for
 // the YAML rule set and layers an EnvProvider on top so individual flags
 // can be overridden at runtime via FF_<KEY> env vars. The core types only
 // depend on the standard library; the YAML loader pulls in gopkg.in/yaml.v3

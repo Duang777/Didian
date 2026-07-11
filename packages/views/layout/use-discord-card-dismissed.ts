@@ -14,7 +14,7 @@ import { useCallback, useSyncExternalStore } from "react";
  * not sync across devices. Both are acceptable for a low-stakes promo.
  */
 
-const STORAGE_PREFIX = "multica.discord_card.dismissed.";
+const STORAGE_PREFIX = "didian.discord_card.dismissed.";
 
 function storageKey(userId: string): string {
   return `${STORAGE_PREFIX}${userId}`;

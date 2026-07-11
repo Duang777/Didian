@@ -42,7 +42,7 @@ type EnvProvider struct {
 }
 
 // NewEnvProvider returns an EnvProvider with the supplied prefix. Pass
-// "FF_" for the conventional multica prefix.
+// "FF_" for the conventional didian prefix.
 func NewEnvProvider(prefix string) *EnvProvider {
 	return &EnvProvider{Prefix: prefix, lookup: os.LookupEnv}
 }

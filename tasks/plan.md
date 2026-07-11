@@ -11,7 +11,7 @@ Didian 是一个从浏览器到云盘的资源任务工作台。第一阶段的�
 - **云盘使用 adapter 接缝。** MVP 使用 `MockDriveAdapter`；未来迅雷、本地文件夹、浏览器辅助 adapter 共用同一契约。
 - **使用动态任务图。** UX 展示 plan、checkpoint、tool、action 进度，而不是固定一组命名 Agent。
 - **写入前必须确认。** 任何资源操作在写入云盘前都必须被用户审核，即使是 mock 模式。
-- **品牌迁移分层执行。** 用户可见品牌先迁移为 Didian；`@didian/*` workspace scope、`multica` CLI/protocol、`~/.multica` 配置目录、metrics/env/API 等深层标识分成后续独立迁移，保留兼容路径后再替换。
+- **品牌迁移分层执行。** 用户可见品牌先迁移为 Didian；`@didian/*` workspace scope、`didian` CLI/protocol、`~/.didian` 配置目录、metrics/env/API 等深层标识分成后续独立迁移，保留兼容路径后再替换。
 
 ## 依赖图
 
@@ -66,13 +66,13 @@ Didian 是一个从浏览器到云盘的资源任务工作台。第一阶段的�
 
 - [x] 用户可见品牌：README、主要 UI 文案、本地化产品名、desktop productName、reload 提示和 GitHub release metadata 使用 Didian。
 - [ ] Workspace package scope：`@didian/*` 迁移到 Didian scope，独立验证 imports、package exports、Turbo filters 和 TS references。
-- [ ] 深层技术标识：CLI、protocol、`~/.multica` 本地目录、release asset、metrics/env/API 采用兼容别名或 expand/contract 策略迁移。
+- [ ] 深层技术标识：CLI、protocol、`~/.didian` 本地目录、release asset、metrics/env/API 采用兼容别名或 expand/contract 策略迁移。
 
 ### Checkpoint：命名迁移
 
 - [x] 表层品牌替换不触碰 CLI/protocol/config/DB/API 兼容面。
 - [ ] `rg '@didian/'` 只剩迁移文档或兼容 shim。
-- [ ] `rg 'multica'` 中剩余项均有保留理由或迁移任务。
+- [ ] `rg 'didian'` 中剩余项均有保留理由或迁移任务。
 
 ## Phase 2：本地 Runtime 可见性
 

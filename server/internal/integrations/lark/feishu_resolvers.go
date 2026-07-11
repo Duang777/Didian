@@ -103,14 +103,14 @@ func (r *feishuIdentityResolver) ResolveSender(ctx context.Context, inst engine.
 		}
 		return engine.ResolvedIdentity{}, err
 	}
-	isMember, err := r.store.IsWorkspaceMember(ctx, inst.WorkspaceID, binding.MulticaUserID)
+	isMember, err := r.store.IsWorkspaceMember(ctx, inst.WorkspaceID, binding.DidianUserID)
 	if err != nil {
 		return engine.ResolvedIdentity{}, err
 	}
 	if !isMember {
 		return engine.ResolvedIdentity{}, engine.ErrSenderNotMember
 	}
-	return engine.ResolvedIdentity{UserID: binding.MulticaUserID}, nil
+	return engine.ResolvedIdentity{UserID: binding.DidianUserID}, nil
 }
 
 // ---- dedup ----

@@ -1,6 +1,6 @@
 {
   "title": "請求（テストページ）",
-  "subtitle": "multica-cloud の /api/v1/billing/* に直接パススルーします。完成した UI ではなく、proxy と Stripe フローを検証するためにすべての endpoint を 1 つのページにまとめたものです。",
+  "subtitle": "didian-cloud の /api/v1/billing/* に直接パススルーします。完成した UI ではなく、proxy と Stripe フローを検証するためにすべての endpoint を 1 つのページにまとめたものです。",
   "endpoints": {
     "balance": "GET /api/cloud-billing/balance",
     "transactions": "GET /api/cloud-billing/transactions",

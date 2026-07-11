@@ -1,6 +1,6 @@
 import { LoginPage } from "@didian/views/auth";
 import { DragStrip } from "@didian/views/platform";
-import { MulticaIcon } from "@didian/ui/components/common/multica-icon";
+import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 
 function requireRuntimeAppUrl(): string {
   const runtimeConfig = window.desktopAPI.runtimeConfig;
@@ -16,7 +16,7 @@ export function DesktopLoginPage() {
   const webUrl = requireRuntimeAppUrl();
   const handleGoogleLogin = () => {
     // Open web login page in the default browser with platform=desktop flag.
-    // The web callback will redirect back via multica:// deep link with the token.
+    // The web callback will redirect back via didian:// deep link with the token.
     window.desktopAPI.openExternal(
       `${webUrl}/login?platform=desktop`,
     );
@@ -26,7 +26,7 @@ export function DesktopLoginPage() {
     <div className="flex h-screen flex-col">
       <DragStrip />
       <LoginPage
-        logo={<MulticaIcon bordered size="lg" />}
+        logo={<DidianIcon bordered size="lg" />}
         onSuccess={() => {
           // Auth store update triggers AppContent re-render → shows DesktopShell.
           // Initial workspace navigation happens in routes.tsx via IndexRedirect.

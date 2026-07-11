@@ -6,8 +6,8 @@ import { copyText } from "@didian/ui/lib/clipboard";
 import { useLocale } from "../../i18n";
 
 const INSTALL_CMD =
-  "curl -fsSL https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.sh | bash";
-const SETUP_CMD = "multica setup";
+  "curl -fsSL https://raw.githubusercontent.com/didian-ai/didian/main/scripts/install.sh | bash";
+const SETUP_CMD = "didian setup";
 
 /**
  * Scenario-first CLI section. Copy leans into servers / remote dev

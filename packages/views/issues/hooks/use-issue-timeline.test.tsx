@@ -121,7 +121,7 @@ describe("useIssueTimeline", () => {
   });
 
   // CommentCard is wrapped in React.memo (perf fix for long timelines, see
-  // multica#1968). The memo only pays off if the callbacks passed down keep
+  // didian#1968). The memo only pays off if the callbacks passed down keep
   // the same identity across unrelated parent re-renders. TanStack Query v5
   // returns a *new* mutation result wrapper on every render, so a useCallback
   // listing the whole mutation object as a dep flips its identity every time

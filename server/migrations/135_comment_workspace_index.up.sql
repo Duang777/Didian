@@ -8,7 +8,7 @@
 -- when the subquery scans the entire `comment` table filtered only by
 -- LIKE, because for common tokens (e.g. "search", "agent") the bigm/trgm
 -- GIN index matches hundreds of thousands of rows across every
--- workspace. Confirmed on prd against `multica-prod`: a search for
+-- workspace. Confirmed on prd against `didian-prod`: a search for
 -- '%search%' returned 536,761 comment bigm hits, spilled work_mem into a
 -- lossy bitmap (`Heap Blocks: exact=48297 lossy=164696`), rechecked 1.9M
 -- rows, and the outer query took 32.3 s despite indexes being present.

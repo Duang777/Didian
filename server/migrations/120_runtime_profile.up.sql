@@ -37,7 +37,7 @@ CREATE TABLE runtime_profile (
     display_name TEXT NOT NULL,
     -- protocol_family must stay in lockstep with the agent.New() switch in
     -- server/pkg/agent/agent.go. A profile may only be based on a backend
-    -- Multica already officially supports and tests.
+    -- Didian already officially supports and tests.
     protocol_family TEXT NOT NULL CHECK (protocol_family IN (
         'claude',
         'codebuddy',

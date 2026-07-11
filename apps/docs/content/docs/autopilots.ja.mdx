@@ -5,7 +5,7 @@ description: エージェントが cron スケジュールやインバウンド 
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-オートパイロットは、[エージェント](/agents)が**スケジュールに従って自動的に作業を開始**できるようにします — cron 式とタイムゾーンを設定すると、あなたが何もトリガーしなくても Multica が自ら [`task`](/tasks) をディスパッチします。定期点検、繰り返しのレポート、夜間のクリーンアップ作業など、「常設指示（standing order）」の形の作業に適しています。残りの 3 つのトリガー経路（[割り当て](/assigning-issues)、[@-メンション](/mentioning-agents)、[チャット](/chat) — いずれもあなた自身が起点となる方式）と比べたとき、オートパイロットの核心的な違いは**時間駆動**であることです。
+オートパイロットは、[エージェント](/agents)が**スケジュールに従って自動的に作業を開始**できるようにします — cron 式とタイムゾーンを設定すると、あなたが何もトリガーしなくても Didian が自ら [`task`](/tasks) をディスパッチします。定期点検、繰り返しのレポート、夜間のクリーンアップ作業など、「常設指示（standing order）」の形の作業に適しています。残りの 3 つのトリガー経路（[割り当て](/assigning-issues)、[@-メンション](/mentioning-agents)、[チャット](/chat) — いずれもあなた自身が起点となる方式）と比べたとき、オートパイロットの核心的な違いは**時間駆動**であることです。
 
 ## オートパイロットを構成する
 
@@ -35,7 +35,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 - `*/30 * * * *`, `UTC` — 30 分ごと
 - `0 3 * * *`, `UTC` — 毎日 UTC 午前 3 時
 
-Multica サーバーは**30 秒**ごとに期限が来たトリガーをスキャンします — **実際の発火時刻は最大 30 秒まで遅れる可能性があり**、秒単位で正確ではありません。発火時刻のあたりでサーバーが再起動された場合、起動時に逃したトリガーを追いつきます（何も失われませんが、すぐに発火します）。
+Didian サーバーは**30 秒**ごとに期限が来たトリガーをスキャンします — **実際の発火時刻は最大 30 秒まで遅れる可能性があり**、秒単位で正確ではありません。発火時刻のあたりでサーバーが再起動された場合、起動時に逃したトリガーを追いつきます（何も失われませんが、すぐに発火します）。
 
 ## 一度だけ手動でトリガーする
 
@@ -45,23 +45,23 @@ Multica サーバーは**30 秒**ごとに期限が来たトリガーをスキ�
 - CLI:
 
 ```bash
-multica autopilot trigger <autopilot-id>
+didian autopilot trigger <autopilot-id>
 ```
 
 手動トリガーは `schedule` トリガーとまったく同じ実行フローを通り — 実行レコードの `source` フィールドのみが `manual` とマークされます。
 
 ## webhook からトリガーする
 
-オートパイロットはインバウンドの HTTP webhook でも発火できます。オートパイロット詳細ページで **Webhook** トリガーを追加すると、Multica は次のような形の一意の URL を生成します。
+オートパイロットはインバウンドの HTTP webhook でも発火できます。オートパイロット詳細ページで **Webhook** トリガーを追加すると、Didian は次のような形の一意の URL を生成します。
 
 ```
-https://<your-multica-host>/api/webhooks/autopilots/awt_…
+https://<your-didian-host>/api/webhooks/autopilots/awt_…
 ```
 
-その URL に任意の JSON を POST してください — Multica は `source = webhook` で実行を記録し、本文を実行の `trigger_payload` として保存し、schedule トリガーとまったく同じ方法でエージェントをディスパッチします。
+その URL に任意の JSON を POST してください — Didian は `source = webhook` で実行を記録し、本文を実行の `trigger_payload` として保存し、schedule トリガーとまったく同じ方法でエージェントをディスパッチします。
 
 ```bash
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H "Content-Type: application/json" \
   -d '{"event":"demo.received","eventPayload":{"message":"hello"}}'
 ```
@@ -76,7 +76,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 { "event": "github.pull_request.opened", "eventPayload": { } }
 ```
 
-…または任意の JSON オブジェクト / 配列を送ることもできます。Multica はこれを内部エンベロープに正規化します。
+…または任意の JSON オブジェクト / 配列を送ることもできます。Didian はこれを内部エンベロープに正規化します。
 
 ```json
 {
@@ -86,7 +86,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 }
 ```
 
-`event` フィールドを指定しない場合、Multica は一般的なヘッダーと本文フィールドからこれを推論します（`X-GitHub-Event` + 本文 `action`、`X-Gitlab-Event`、`X-Event-Type`、本文の `event`/`type`/`action`）。どれも一致しない場合、イベントは `webhook.received` になります。
+`event` フィールドを指定しない場合、Didian は一般的なヘッダーと本文フィールドからこれを推論します（`X-GitHub-Event` + 本文 `action`、`X-Gitlab-Event`、`X-Event-Type`、本文の `event`/`type`/`action`）。どれも一致しない場合、イベントは `webhook.received` になります。
 
 GitHub のようなソースを構成するときは、content type を `application/json` に設定してください — フォームエンコードされた webhook payload は受け付けられません。
 
@@ -94,7 +94,7 @@ GitHub のようなソースを構成するときは、content type を `applica
 
 新しい webhook トリガーはインバウンドの POST ごとに発火します。単一用途の URL には問題ありませんが、多数のイベントタイプをファンアウトするソース（GitHub が代表的です — 単一のリポジトリ webhook 一つが `push`、`pull_request`、`workflow_run`、`check_suite` などを配信できます）にはノイズになります。webhook トリガーの**イベントフィルター（Event filters）**セクションを使うと、実際に実行をディスパッチするイベントを制限でき、それ以外のすべては `status = ignored`、`reason = event_filtered` で配信履歴に記録され、実行もイシューも作成されません。
 
-各行は 1 つのルールです。**イベント名（event name）**と、任意でカンマ区切りの **action** リストで構成されます。Multica は**いずれか 1 つ**の行でも一致すれば webhook を許可します。セクションを空のままにすると、すべてを受け付けます（フィルタリング以前の動作）。
+各行は 1 つのルールです。**イベント名（event name）**と、任意でカンマ区切りの **action** リストで構成されます。Didian は**いずれか 1 つ**の行でも一致すれば webhook を許可します。セクションを空のままにすると、すべてを受け付けます（フィルタリング以前の動作）。
 
 例:
 
@@ -106,18 +106,18 @@ GitHub のようなソースを構成するときは、content type を `applica
 
 #### イベント名と action の出所
 
-Multica は次の順序でインバウンドリクエストから `event` 名と `action` を導き出します — **最初に一致したものが優先されます**。
+Didian は次の順序でインバウンドリクエストから `event` 名と `action` を導き出します — **最初に一致したものが優先されます**。
 
 **1. 本文エンベロープ（Body envelope）。** 本文が文字列の `event` フィールドを持つ JSON オブジェクトであれば、その値がそのままイベント名になります。任意の `eventPayload` オブジェクトは、自身の `action` / `state` / `conclusion` / `status` フィールドから action 候補を提供します。
 
 ```bash
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'Content-Type: application/json' \
   -d '{"event":"trigger","eventPayload":{"action":"true"}}'
 # inferred: event = trigger, action candidate = true
 ```
 
-**2. ヘッダー（Headers）。** 本文エンベロープがない場合、Multica は次のよく知られたプロバイダーヘッダーを読みます。
+**2. ヘッダー（Headers）。** 本文エンベロープがない場合、Didian は次のよく知られたプロバイダーヘッダーを読みます。
 
 - `X-GitHub-Event: <event>` — （存在する場合）最上位の本文 `action` フィールドと組み合わされて `github.<event>.<action>` を形成します。
 - `X-Gitlab-Event: <event>` — `gitlab.<event>` になります。
@@ -125,7 +125,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 
 ```bash
 # GitHub-style: header gives the event name, body gives the action.
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'X-GitHub-Event: workflow_run' \
   -H 'Content-Type: application/json' \
   -d '{"action":"completed"}'
@@ -133,17 +133,17 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 #        → matches a filter row of workflow_run / completed
 
 # Generic event-type header — no body fields needed.
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'X-Event-Type: trigger.true' \
   -H 'Content-Type: application/json' \
   -d '{}'
 # inferred: event = trigger.true → matches trigger / true
 ```
 
-**3. 本文フォールバック（Body fallback）。** 本文エンベロープも既知のヘッダーもない場合、Multica は次の順序で最上位の本文文字列フィールドにフォールバックします: `event` → `type` → `action`。
+**3. 本文フォールバック（Body fallback）。** 本文エンベロープも既知のヘッダーもない場合、Didian は次の順序で最上位の本文文字列フィールドにフォールバックします: `event` → `type` → `action`。
 
 ```bash
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'Content-Type: application/json' \
   -d '{"type":"trigger","action":"true"}'
 # inferred: event = trigger (from `type`), action candidate = true
@@ -151,7 +151,7 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 
 **4. デフォルト（Default）。** 上記のいずれも一致しない場合、イベントは `webhook.received` で、action 候補はありません。
 
-**action 候補、全リスト。** イベントが決定されると、Multica は以下のすべての値を可能な action 一致対象として考慮します。
+**action 候補、全リスト。** イベントが決定されると、Didian は以下のすべての値を可能な action 一致対象として考慮します。
 
 - イベントが `provider.event.<action>` の形のときのイベント名のサフィックス（例: `github.workflow_run.completed` → `completed`）。
 - 本文フィールド `action`、`state`、`conclusion`、`status` — **JSON 文字列のときのみ該当します**。ブール値（`{"action": true}`）や数値は資格がないため、`event=trigger, action=true` を期待するフィルターは `{"trigger": true}` の本文とは決して一致しません。`true` は文字列ではなく bool だからです。
@@ -164,14 +164,14 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 
 ```bash
 # Allowed — header drives event=workflow_run, body drives action=completed
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'X-GitHub-Event: workflow_run' \
   -H 'Content-Type: application/json' \
   -d '{"action":"completed"}'
 # → 200 {"status":"accepted", ...}
 
 # Filtered — same event, action not in allowlist
-curl -X POST "$MULTICA_WEBHOOK_URL" \
+curl -X POST "$DIDIAN_WEBHOOK_URL" \
   -H 'X-GitHub-Event: workflow_run' \
   -H 'Content-Type: application/json' \
   -d '{"action":"in_progress"}'
@@ -183,13 +183,13 @@ curl -X POST "$MULTICA_WEBHOOK_URL" \
 生成された URL **そのものが**認証情報です。それを持っている人は誰でもオートパイロットを発火できます。トークンのように扱ってください。
 
 - **公開のイシュースレッド、スクリーンショット、チャット履歴に貼り付けないでください。**
-- **漏洩したら交換してください** — トリガー行で「Rotate URL」をクリックするか、`multica autopilot trigger-rotate-url <autopilot-id> <trigger-id>` を実行してください。古い URL はただちに動作を停止します。
+- **漏洩したら交換してください** — トリガー行で「Rotate URL」をクリックするか、`didian autopilot trigger-rotate-url <autopilot-id> <trigger-id>` を実行してください。古い URL はただちに動作を停止します。
 - 強力なソース認証が必要なソースの場合は、トリガーごとの HMAC 署名検証を待ってください。この v1 URL は bearer 方式のみをサポートします。
 - 現時点では、オートパイロットを閲覧できるワークスペースメンバーであればその webhook URL を読めます — 役割ごとのより厳格な secret の可視性は後続作業です。
 
 ### ステータスコードの意味
 
-Multica は正常な no-op の結果に対して `status` フィールド付きで `200 OK` を返すため、プロバイダーの webhook 再試行メカニズムが URL を叩き続けることはありません。
+Didian は正常な no-op の結果に対して `status` フィールド付きで `200 OK` を返すため、プロバイダーの webhook 再試行メカニズムが URL を叩き続けることはありません。
 
 - `{"status":"accepted","run_id":"…","autopilot_id":"…","trigger_id":"…"}` — 実行がディスパッチされました。
 - `{"status":"skipped","run_id":"…","reason":"agent runtime is offline at dispatch time"}` — `run_only` オートパイロットでは、割り当て先のランタイムがオフラインのためタスクはキューに入りません。`create_issue` オートパイロットは追跡可能な issue を作成し、ランタイム復帰後に引き継げるようにします。
@@ -206,7 +206,7 @@ Multica は正常な no-op の結果に対して `status` フィールド付き�
 
 ### セルフホスト: 公開 URL を構成する
 
-サーバーに `MULTICA_PUBLIC_URL` が設定されている場合（例: `https://multica.example.com`）、トリガー応答に絶対パスの `webhook_url` が含まれ、UI にはすぐにコピーできる URL が表示されます。設定しない場合、UI はクライアントの API origin から URL を構成します — デスクトップと同一オリジンの Web には問題ありませんが、カスタムのセルフホストリバースプロキシには適しません。Multica は、誤って構成されたリバースプロキシが攻撃者の制御するホストを指す webhook URL をサーバーに発行させて欺くことができないよう、`Host` / `X-Forwarded-Host` ヘッダーから公開ホストを導出しないよう意図的に設計されています。
+サーバーに `DIDIAN_PUBLIC_URL` が設定されている場合（例: `https://didian.example.com`）、トリガー応答に絶対パスの `webhook_url` が含まれ、UI にはすぐにコピーできる URL が表示されます。設定しない場合、UI はクライアントの API origin から URL を構成します — デスクトップと同一オリジンの Web には問題ありませんが、カスタムのセルフホストリバースプロキシには適しません。Didian は、誤って構成されたリバースプロキシが攻撃者の制御するホストを指す webhook URL をサーバーに発行させて欺くことができないよう、`Host` / `X-Forwarded-Host` ヘッダーから公開ホストを導出しないよう意図的に設計されています。
 
 ## 実行履歴を見る
 

@@ -68,32 +68,32 @@ func TestLoadFromFS_Invalid(t *testing.T) {
 			wantErr: "parse",
 		},
 		{
-			name: "missing slug",
+			name:    "missing slug",
 			content: `{"name": "X", "instructions": "do", "skills": [{"source_url":"u"}]}`,
 			wantErr: "missing slug",
 		},
 		{
-			name: "slug mismatches filename",
+			name:    "slug mismatches filename",
 			content: `{"slug":"other","name":"X","instructions":"do","skills":[{"source_url":"u"}]}`,
 			wantErr: "does not match filename",
 		},
 		{
-			name: "bad slug",
+			name:    "bad slug",
 			content: `{"slug":"Bad_Slug","name":"X","instructions":"do","skills":[{"source_url":"u"}]}`,
 			wantErr: "kebab-case",
 		},
 		{
-			name: "missing name",
+			name:    "missing name",
 			content: `{"slug":"x","instructions":"do","skills":[{"source_url":"u"}]}`,
 			wantErr: "missing name",
 		},
 		{
-			name: "missing instructions",
+			name:    "missing instructions",
 			content: `{"slug":"x","name":"X","skills":[{"source_url":"u"}]}`,
 			wantErr: "missing instructions",
 		},
 		{
-			name: "skill missing url",
+			name:    "skill missing url",
 			content: `{"slug":"x","name":"X","instructions":"do","skills":[{}]}`,
 			wantErr: "missing source_url",
 		},

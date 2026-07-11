@@ -1,40 +1,40 @@
 ---
 title: 故障排查
-description: self-host Multica 常见问题——症状、原因、怎么查、怎么修。
+description: self-host Didian 常见问题——症状、原因、怎么查、怎么修。
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-按症状查问题。每条问题都给**症状 / 可能原因 / 怎么查 / 怎么修**四段。如果你的情况不在下面，到 [GitHub](https://github.com/multica-ai/multica/issues) 提 issue。
+按症状查问题。每条问题都给**症状 / 可能原因 / 怎么查 / 怎么修**四段。如果你的情况不在下面，到 [GitHub](https://github.com/didian-ai/didian/issues) 提 issue。
 
 ## 守护进程连不上服务器
 
-**症状**：[`multica daemon`](/cli) 的 `status` 命令显示 `offline` 或 `connection refused`；服务器日志里没有 `/api/daemon/register` 或 `/api/daemon/heartbeat` 的请求。守护进程机制详见 [守护进程与运行时](/daemon-runtimes)。
+**症状**：[`didian daemon`](/cli) 的 `status` 命令显示 `offline` 或 `connection refused`；服务器日志里没有 `/api/daemon/register` 或 `/api/daemon/heartbeat` 的请求。守护进程机制详见 [守护进程与运行时](/daemon-runtimes)。
 
 **可能原因**：
 
-1. **`MULTICA_SERVER_URL` 指错地址** —— 默认是 `ws://localhost:8080/ws`，self-host 要改成你自己的 server 地址
+1. **`DIDIAN_SERVER_URL` 指错地址** —— 默认是 `ws://localhost:8080/ws`，self-host 要改成你自己的 server 地址
 2. **网络 / 防火墙阻挡** —— daemon 和 server 不在同一网络，或出站被 block
-3. **Token 过期或无效** —— 你从来没跑过 `multica login`，或 PAT 被撤销
+3. **Token 过期或无效** —— 你从来没跑过 `didian login`，或 PAT 被撤销
 4. **服务器拒绝注册** —— 你登录的账号不在目标工作区（register 返 403）
 5. **DNS 解析失败** —— hostname 在 daemon 机器上解不出来
 
 **怎么查**：
 
 ```bash
-multica daemon logs --lines 100    # 看 daemon 侧错误
-echo $MULTICA_SERVER_URL          # 确认地址配对
+didian daemon logs --lines 100    # 看 daemon 侧错误
+echo $DIDIAN_SERVER_URL          # 确认地址配对
 curl -i http://<server-host>:8080/health   # 直接戳 server
 curl -i http://<server-host>:8080/readyz  # 连同 DB + migration readiness 一起检查
-cat ~/.multica/config.json        # 看 api_token 是否存在
-multica workspace list            # 确认你是目标工作区成员
+cat ~/.didian/config.json        # 看 api_token 是否存在
+didian workspace list            # 确认你是目标工作区成员
 ```
 
-**怎么修**：按上面原因对症处理。最常见的两个是**改 `MULTICA_SERVER_URL` 重启 daemon**（`multica daemon restart`）和**重新登录**（`multica logout && multica login`）。
+**怎么修**：按上面原因对症处理。最常见的两个是**改 `DIDIAN_SERVER_URL` 重启 daemon**（`didian daemon restart`）和**重新登录**（`didian logout && didian login`）。
 
 ## 任务一直卡在 queued
 
-**症状**：把 issue 分给 agent 后，issue 状态立刻变 `in_progress`，但过了很久页面没有 agent 执行的迹象；`multica daemon status` 显示 daemon `online`。
+**症状**：把 issue 分给 agent 后，issue 状态立刻变 `in_progress`，但过了很久页面没有 agent 执行的迹象；`didian daemon status` 显示 daemon `online`。
 
 **可能原因**（按触发概率排）：
 
@@ -47,19 +47,19 @@ multica workspace list            # 确认你是目标工作区成员
 **怎么查**：
 
 ```bash
-multica daemon status --output json       # runtime 列表 + last_seen_at
-multica agent list                         # 查 agent 的 archived 状态
-multica issue show <issue-id>             # 看 task 历史
+didian daemon status --output json       # runtime 列表 + last_seen_at
+didian agent list                         # 查 agent 的 archived 状态
+didian issue show <issue-id>             # 看 task 历史
 ```
 
 服务器侧（self-host）可以 grep `"no_tasks"` / `"no_capacity"` 看 claim 的结果。
 
 **怎么修**：
 
-- 并发打满 → 等现有任务跑完，或 `multica agent update <id> --max-concurrent-tasks 10` 提升上限
+- 并发打满 → 等现有任务跑完，或 `didian agent update <id> --max-concurrent-tasks 10` 提升上限
 - 同 issue 串行 → 等前一个任务结束，或改分给不同 agent
-- Agent 被 archive → `multica agent restore <id>`
-- Runtime 未注册 → `multica daemon restart`，daemon 会重新注册
+- Agent 被 archive → `didian agent restore <id>`
+- Runtime 未注册 → `didian daemon restart`，daemon 会重新注册
 
 ## WebSocket 连不上
 
@@ -80,7 +80,7 @@ multica issue show <issue-id>             # 看 task 历史
 
 **怎么修**：
 
-- Origin 错 → 在 server 的 `.env` 设 `FRONTEND_ORIGIN=https://multica.yourdomain.com`（或逗号分隔的 `CORS_ALLOWED_ORIGINS`），重启 server
+- Origin 错 → 在 server 的 `.env` 设 `FRONTEND_ORIGIN=https://didian.yourdomain.com`（或逗号分隔的 `CORS_ALLOWED_ORIGINS`），重启 server
 - 协议不匹配 → 确保 `FRONTEND_ORIGIN` 的协议和前端一致
 - 反向代理 → 在 Nginx 加 `proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade";`
 - Cookie 过期 → 刷新页面重新登录
@@ -128,11 +128,11 @@ SMTP 路径把每个失败都按阶段包装好，所以 server 日志已经告�
 
 | 错误日志 | 含义 | 怎么修 |
 |---|---|---|
-| `smtp dial <host>:<port>: dial tcp …: connect: connection refused` / `i/o timeout` | backend 容器连不上 relay —— host / port 错、防火墙挡了、或者 relay 没开 | 在容器里确认能解析和连通：`docker compose -f docker-compose.selfhost.yml exec backend nslookup <host>` 以及 `nc -vz <host> <port>`；放行从 Multica 主机到 relay 的网络 |
+| `smtp dial <host>:<port>: dial tcp …: connect: connection refused` / `i/o timeout` | backend 容器连不上 relay —— host / port 错、防火墙挡了、或者 relay 没开 | 在容器里确认能解析和连通：`docker compose -f docker-compose.selfhost.yml exec backend nslookup <host>` 以及 `nc -vz <host> <port>`；放行从 Didian 主机到 relay 的网络 |
 | `smtp starttls: x509: certificate signed by unknown authority`（或 `certificate is not valid for any names`） | relay 用了私有 CA / 自签证书，容器的信任库不接受 | 要么把 CA 装进容器，要么在确认 relay 走的是可信网段后设 `SMTP_TLS_INSECURE=true` |
 | `smtp auth: 535 5.7.8 Authentication credentials invalid`（或 `534`/`530`） | `SMTP_USERNAME` / `SMTP_PASSWORD` 不对，或 relay 不接受 `PLAIN` 认证 | 找邮件管理员复核 service account 凭据；Exchange 匿名内部 relay 应当把两者都留空 |
 | `smtp MAIL FROM: 550 5.7.1 Client does not have permissions to send as this sender` | relay 不接受 `RESEND_FROM_EMAIL` 作为信封发件人 —— Exchange 常见 "anonymous users not allowed" 或 DMARC 对齐问题 | 把 `RESEND_FROM_EMAIL` 改成 relay 接受的域名；Exchange 上给来源 IP 授 `ms-Exch-SMTP-Accept-Any-Sender` |
-| `smtp RCPT TO <addr>: 550 5.7.1 Unable to relay` | relay 的 receive connector 不允许这个子网把邮件中继到外部收件人（匿名内部 relay 发给外部域时常见） | 邀请仅限内部域，或者把 Multica 主机的子网加进 Exchange "Anonymous Users → Relay" 权限列表 |
+| `smtp RCPT TO <addr>: 550 5.7.1 Unable to relay` | relay 的 receive connector 不允许这个子网把邮件中继到外部收件人（匿名内部 relay 发给外部域时常见） | 邀请仅限内部域，或者把 Didian 主机的子网加进 Exchange "Anonymous Users → Relay" 权限列表 |
 | `smtp DATA` / `smtp write body` / `smtp end data` | 会话被接受但 body 被丢 —— 通常是消息大小限制、内容过滤、或中途断连 | 在 relay 端按同一个 `Message-ID`（日志里是 `<unixnano>@<host>`）找上下文；必要时调大消息大小限制 |
 
 `MAIL FROM` / `RCPT TO` / `DATA` 的错误日志里都带着 relay 返回的状态码，可以和 Exchange / Postfix 那边的日志对齐。验证码和邀请 token **不会**出现在这些包装的错误里。
@@ -148,7 +148,7 @@ SMTP 路径把每个失败都按阶段包装好，所以 server 日志已经告�
 - host / port 不对 → 改 `SMTP_HOST` / `SMTP_PORT` 后重启 backend；支持的 relay 模式见 [登录与注册配置 → Option B：SMTP relay](/auth-setup)
 - 证书校验失败 → 把 relay 的 CA 装进容器，或在可信网段上临时 `SMTP_TLS_INSECURE=true`
 - 认证失败 → 复核凭据；匿名内部 relay 应把 `SMTP_USERNAME` 和 `SMTP_PASSWORD` 都留空
-- `Unable to relay` → 邀请仅限内部域，或在 Exchange receive connector 上给 Multica 主机授中继权限
+- `Unable to relay` → 邀请仅限内部域，或在 Exchange receive connector 上给 Didian 主机授中继权限
 
 ## 固定本地测试验证码登不进去
 
@@ -156,23 +156,23 @@ SMTP 路径把每个失败都按阶段包装好，所以 server 日志已经告�
 
 **可能原因**（互斥）：
 
-1. **`MULTICA_DEV_VERIFICATION_CODE` 为空** —— 固定验证码默认关闭
+1. **`DIDIAN_DEV_VERIFICATION_CODE` 为空** —— 固定验证码默认关闭
 2. **`APP_ENV=production`** —— 这是正确的生产配置；固定本地测试验证码在 production 中会被忽略
 3. **配置的验证码不是 6 位数字** —— 这个快捷码只接受 6 位数字
 
 **怎么查**：
 
 ```bash
-cat .env | grep -E 'APP_ENV|MULTICA_DEV_VERIFICATION_CODE'
-docker exec <container> env | grep -E 'APP_ENV|MULTICA_DEV_VERIFICATION_CODE'
+cat .env | grep -E 'APP_ENV|DIDIAN_DEV_VERIFICATION_CODE'
+docker exec <container> env | grep -E 'APP_ENV|DIDIAN_DEV_VERIFICATION_CODE'
 ```
 
 检查邮箱（含 spam）看有没有收到真实验证码。
 
 **怎么修**：
 
-- 生产环境保持 `MULTICA_DEV_VERIFICATION_CODE` 为空，配好 Resend 后使用真实验证码
-- 本地开发或内网测试可以从 server 日志抄生成的验证码；如果需要 `888888`，设置 `APP_ENV=development` 和 `MULTICA_DEV_VERIFICATION_CODE=888888`。不要在公网实例启用固定验证码（详见 [登录与注册配置 → 固定本地测试验证码](/auth-setup#固定本地测试验证码)）
+- 生产环境保持 `DIDIAN_DEV_VERIFICATION_CODE` 为空，配好 Resend 后使用真实验证码
+- 本地开发或内网测试可以从 server 日志抄生成的验证码；如果需要 `888888`，设置 `APP_ENV=development` 和 `DIDIAN_DEV_VERIFICATION_CODE=888888`。不要在公网实例启用固定验证码（详见 [登录与注册配置 → 固定本地测试验证码](/auth-setup#固定本地测试验证码)）
 
 ## Usage 看板一直是 0
 
@@ -181,7 +181,7 @@ docker exec <container> env | grep -E 'APP_ENV|MULTICA_DEV_VERIFICATION_CODE'
 **可能原因**：
 
 1. **`rollup_task_usage_hourly()` 没被认领** —— Usage / Runtime 看板读的是派生表 `task_usage_hourly`，这张表必须靠 `rollup_task_usage_hourly()` 周期性填充。从 MUL-2957 起后端通过 DB 后端调度器（`sys_cron_executions`）在进程内跑 rollup；旧版本 binary、未应用 migration `113`、或者所有副本长时间下线，都可能让这张表里没有最近的 SUCCESS 行。
-2. **`pg_cron` 作为兼容路径配着、但指向了错的库** —— `pg_cron.database_name` 默认是 `postgres`；如果你的 Multica 数据库名不是 `postgres`，调度任务根本看不到 `rollup_task_usage_hourly()`。进程内调度器不依赖这一项，但如果你刻意拿掉了进程内调度而靠 `pg_cron`，DB 名就必须对得上。
+2. **`pg_cron` 作为兼容路径配着、但指向了错的库** —— `pg_cron.database_name` 默认是 `postgres`；如果你的 Didian 数据库名不是 `postgres`，调度任务根本看不到 `rollup_task_usage_hourly()`。进程内调度器不依赖这一项，但如果你刻意拿掉了进程内调度而靠 `pg_cron`，DB 名就必须对得上。
 3. **handler 被认领了、但静默报错** —— 比如 migration 没全部应用导致 SQL 函数缺失、或 DB role / search_path 配错了。看 `sys_cron_executions` 里的 FAILED 审计行。
 
 **怎么查**：
@@ -241,7 +241,7 @@ ERROR: refusing to drop legacy daily rollups:
      ./backfill_task_usage_hourly --sleep-between-slices=2s
 
    # Kubernetes
-   kubectl -n multica exec deploy/multica-backend -- \
+   kubectl -n didian exec deploy/didian-backend -- \
      ./backfill_task_usage_hourly --sleep-between-slices=2s
    ```
 
@@ -252,7 +252,7 @@ ERROR: refusing to drop legacy daily rollups:
 
 ## 端口冲突
 
-**症状**：`multica server` 或 `multica daemon start` 启动失败，报 `address already in use`。
+**症状**：`didian server` 或 `didian daemon start` 启动失败，报 `address already in use`。
 
 **可能原因**：
 
@@ -277,13 +277,13 @@ netstat -ano | findstr :8080    # Windows
 
 | 组件 | 位置 | 命令 |
 |---|---|---|
-| **守护进程** | `~/.multica/daemon.log`（后台模式）或前台 stdout | `multica daemon logs -f --lines 100` |
-| **守护进程（崩溃）** | `~/.multica/daemon.err.log` | 直接打开——panic / 启动早期错误会写到这里 |
+| **守护进程** | `~/.didian/daemon.log`（后台模式）或前台 stdout | `didian daemon logs -f --lines 100` |
+| **守护进程（崩溃）** | `~/.didian/daemon.err.log` | 直接打开——panic / 启动早期错误会写到这里 |
 | **服务器（Docker）** | container stdout | `docker logs -f <container>` |
-| **服务器（systemd）** | journal | `journalctl -u multica-server -f` |
+| **服务器（systemd）** | journal | `journalctl -u didian-server -f` |
 | **前端（dev）** | `pnpm dev` 所在终端 | 直接看 |
 | **前端（browser）** | DevTools → Console | 按 `F12` |
 
-后台模式下 `daemon.log` 会按大小轮转（默认 20MB × 5 份 gzip 备份；可用 `MULTICA_DAEMON_LOG_MAX_SIZE_MB` / `_MAX_BACKUPS` / `_MAX_AGE_DAYS` 调整），所以文件不会大到打不开。Go 运行时 panic 和 logger 建立前的错误会写到独立且有上限的 `daemon.err.log`。
+后台模式下 `daemon.log` 会按大小轮转（默认 20MB × 5 份 gzip 备份；可用 `DIDIAN_DAEMON_LOG_MAX_SIZE_MB` / `_MAX_BACKUPS` / `_MAX_AGE_DAYS` 调整），所以文件不会大到打不开。Go 运行时 panic 和 logger 建立前的错误会写到独立且有上限的 `daemon.err.log`。
 
-需要更详细的 daemon 日志，把它从后台挪到前台跑：`multica daemon stop && multica daemon start --foreground`。前台运行会把日志实时打到终端，而不是写入轮转文件。
+需要更详细的 daemon 日志，把它从后台挪到前台跑：`didian daemon stop && didian daemon start --foreground`。前台运行会把日志实时打到终端，而不是写入轮转文件。

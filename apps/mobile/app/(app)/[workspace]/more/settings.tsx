@@ -68,7 +68,7 @@ export default function SettingsPage() {
   const onSignOut = () => {
     Alert.alert(
       "Sign out",
-      "You'll need to sign in again to use Multica on this device.",
+      "You'll need to sign in again to use Didian on this device.",
       [
         { text: "Cancel", style: "cancel" },
         {

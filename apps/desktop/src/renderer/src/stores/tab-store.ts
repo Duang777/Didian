@@ -674,7 +674,7 @@ export const useTabStore = create<TabStore>()(
       },
     }),
     {
-      name: "multica_tabs",
+      name: "didian_tabs",
       version: 3,
       storage: createJSONStorage(() => createPersistStorage(defaultStorage)),
       migrate: (persistedState, version) => {

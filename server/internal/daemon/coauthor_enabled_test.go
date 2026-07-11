@@ -18,10 +18,10 @@ import (
 // their historical behavior.
 func TestWorkspaceCoAuthoredByEnabled(t *testing.T) {
 	cases := []struct {
-		name       string
-		register   bool
-		settings   string
-		want       bool
+		name     string
+		register bool
+		settings string
+		want     bool
 	}{
 		{"unknown workspace defaults on", false, "", true},
 		{"registered workspace, nil settings defaults on", true, "", true},

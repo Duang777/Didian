@@ -65,7 +65,7 @@ vi.mock("../../../navigation", () => ({
     searchParams: new URLSearchParams(),
     back: vi.fn(),
     replace: vi.fn(),
-    getShareableUrl: (p: string) => `https://app.multica.com${p}`,
+    getShareableUrl: (p: string) => `https://app.didian.com${p}`,
   }),
 }));
 
@@ -196,7 +196,7 @@ describe("useIssueActions", () => {
     });
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-      "https://app.multica.com/test/issues/issue-1",
+      "https://app.didian.com/test/issues/issue-1",
     );
   });
 

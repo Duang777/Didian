@@ -48,7 +48,7 @@ var contactSalesAllowedCompanySize = []string{
 }
 
 // contactSalesAllowedUseCase mirrors the "How do you plan to use or
-// collaborate with Multica?" dropdown.
+// collaborate with Didian?" dropdown.
 var contactSalesAllowedUseCase = []string{
 	"evaluate",
 	"adopt_team",
@@ -103,7 +103,7 @@ type CreateContactSalesRequest struct {
 	Goals         string `json:"goals"`
 	// Source identifies where the form was opened from. Frontend
 	// enumerates {page, onboarding, agents_page}; the metric label
-	// `multica_contact_sales_submitted_total{source=...}` reads it
+	// `didian_contact_sales_submitted_total{source=...}` reads it
 	// via the metrics.NormalizeContactSalesSource allow-list, anything
 	// else collapses to "other". Empty falls back to "page" so legacy
 	// clients that don't send the field don't blackhole the metric.

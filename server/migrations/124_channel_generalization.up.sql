@@ -39,8 +39,8 @@
 --     version upgrade is a clean cutover. Only a self-host re-tuned to
 --     multi-replica RollingUpdate needs the prd procedure below.
 --
---     PRD (rolling multica-api, maxUnavailable:0) overlapped old and new pods.
---     A one-time MULTICA_LARK_HUB_DISABLED park-switch existed during the
+--     PRD (rolling didian-api, maxUnavailable:0) overlapped old and new pods.
+--     A one-time DIDIAN_LARK_HUB_DISABLED park-switch existed during the
 --     cutover to hold a hub dormant while the API stayed up, so only one hub
 --     was ever live (invariant b). That cutover is complete and the switch has
 --     since been removed (MUL-3515); this note is kept as history. Rollback to
@@ -130,7 +130,7 @@ FROM lark_installation;
 CREATE TABLE channel_user_binding (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id     UUID NOT NULL,
-    multica_user_id  UUID NOT NULL,
+    didian_user_id  UUID NOT NULL,
     installation_id  UUID NOT NULL,
     channel_type     TEXT NOT NULL,
     channel_user_id  TEXT NOT NULL,
@@ -140,16 +140,16 @@ CREATE TABLE channel_user_binding (
 );
 
 CREATE INDEX idx_channel_user_binding_user
-    ON channel_user_binding(multica_user_id, workspace_id);
+    ON channel_user_binding(didian_user_id, workspace_id);
 CREATE INDEX idx_channel_user_binding_workspace_user
     ON channel_user_binding(workspace_id, channel_user_id);
 
 INSERT INTO channel_user_binding (
-    id, workspace_id, multica_user_id, installation_id,
+    id, workspace_id, didian_user_id, installation_id,
     channel_type, channel_user_id, config, bound_at
 )
 SELECT
-    id, workspace_id, multica_user_id, installation_id,
+    id, workspace_id, didian_user_id, installation_id,
     'feishu', lark_open_id,
     jsonb_strip_nulls(jsonb_build_object('union_id', union_id)),
     bound_at

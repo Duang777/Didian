@@ -124,7 +124,7 @@ export function RuntimesPage({
     [],
   );
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: "multica_runtimes_layout",
+    id: "didian_runtimes_layout",
   });
   const isMobile = useIsMobile();
 

@@ -187,10 +187,10 @@ func TestPiExecuteRetainsOnlyLastTurnOutput(t *testing.T) {
 
 func TestStripPiToolCallMarkup(t *testing.T) {
 	tests := map[string]string{
-		`before call:bash{command:<|"|>cd repo/path && ls -F<|"|>}<tool_call|> after`:                           "before  after",
-		`before call:read{path:<|"|>repo/path/roles/example/verify.yml<|"|>} after`:                             "before  after",
-		`before response:bash{command:<|"|>multica issue comment list issue-id --all --output json<|"|>} after`: "before  after",
-		`before call:bash{command:<|"|>printf '{"key":"value"}'<|"|>} after`:                                    "before  after",
+		`before call:bash{command:<|"|>cd repo/path && ls -F<|"|>}<tool_call|> after`:                          "before  after",
+		`before call:read{path:<|"|>repo/path/roles/example/verify.yml<|"|>} after`:                            "before  after",
+		`before response:bash{command:<|"|>didian issue comment list issue-id --all --output json<|"|>} after`: "before  after",
+		`before call:bash{command:<|"|>printf '{"key":"value"}'<|"|>} after`:                                   "before  after",
 		`before <|turn>model after`: "before  after",
 	}
 	for in, want := range tests {

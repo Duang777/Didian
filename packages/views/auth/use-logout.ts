@@ -49,7 +49,7 @@ export function useLogout() {
     // Clear desktop tab state. Tab paths can contain workspace slugs and
     // issue UUIDs that must not survive across user sessions on a shared
     // machine. No-op on web (web doesn't write this key).
-    defaultStorage.removeItem("multica_tabs");
+    defaultStorage.removeItem("didian_tabs");
 
     queryClient.clear();
     authLogout();

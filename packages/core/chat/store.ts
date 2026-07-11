@@ -6,12 +6,12 @@ import { createLogger } from "../logger";
 
 const logger = createLogger("chat.store");
 
-const AGENT_STORAGE_KEY = "multica:chat:selectedAgentId";
-const SESSION_STORAGE_KEY = "multica:chat:activeSessionId";
+const AGENT_STORAGE_KEY = "didian:chat:selectedAgentId";
+const SESSION_STORAGE_KEY = "didian:chat:activeSessionId";
 /** Drafts are stored as one JSON blob per workspace: { [sessionId]: text }. */
-const DRAFTS_KEY = "multica:chat:drafts";
+const DRAFTS_KEY = "didian:chat:drafts";
 /** Draft attachment records per workspace: { [sessionId]: Attachment[] }. */
-const DRAFT_ATTACHMENTS_KEY = "multica:chat:draft-attachments";
+const DRAFT_ATTACHMENTS_KEY = "didian:chat:draft-attachments";
 /** Placeholder sessionId for a chat that hasn't been created yet. */
 export const DRAFT_NEW_SESSION = "__new__";
 
@@ -24,9 +24,9 @@ export const DRAFT_NEW_SESSION = "__new__";
 export function newSessionDraftKey(selectedAgentId: string | null): string {
   return `${DRAFT_NEW_SESSION}:${selectedAgentId ?? ""}`;
 }
-const CHAT_WIDTH_KEY = "multica:chat:width";
-const CHAT_HEIGHT_KEY = "multica:chat:height";
-const CHAT_EXPANDED_KEY = "multica:chat:expanded";
+const CHAT_WIDTH_KEY = "didian:chat:width";
+const CHAT_HEIGHT_KEY = "didian:chat:height";
+const CHAT_EXPANDED_KEY = "didian:chat:expanded";
 /**
  * Open/closed preference, persisted globally (not per-workspace) — most users
  * have one habitual chat-panel preference across workspaces. Missing key =
@@ -35,7 +35,7 @@ const CHAT_EXPANDED_KEY = "multica:chat:expanded";
  * Once the user toggles even once, their explicit choice is respected on
  * every subsequent reload.
  */
-const OPEN_KEY = "multica:chat:isOpen";
+const OPEN_KEY = "didian:chat:isOpen";
 /**
  * Whether the floating chat window (FAB + overlay) is available at all,
  * persisted globally like OPEN_KEY. This is the Settings → Chat preference:
@@ -43,7 +43,7 @@ const OPEN_KEY = "multica:chat:isOpen";
  * Missing key = default ON — the floating window is on by default and can
  * be turned off from the Settings → Chat tab.
  */
-const FLOATING_KEY = "multica:chat:floatingChatEnabled";
+const FLOATING_KEY = "didian:chat:floatingChatEnabled";
 
 function readDrafts(storage: StorageAdapter, key: string): Record<string, string> {
   const raw = storage.getItem(key);

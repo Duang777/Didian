@@ -9,8 +9,8 @@ import (
 
 // BackfillRegionFromLegacyOverride is the upgrade-repair path for self-host
 // deployments that ran the WHOLE Lark integration against Lark international
-// via the deployment-wide MULTICA_LARK_HTTP_BASE_URL /
-// MULTICA_LARK_CALLBACK_BASE_URL override, before per-installation region
+// via the deployment-wide DIDIAN_LARK_HTTP_BASE_URL /
+// DIDIAN_LARK_CALLBACK_BASE_URL override, before per-installation region
 // existed.
 //
 // Migration 116 backfilled every existing row to 'feishu' (the mainland

@@ -245,7 +245,7 @@ func TestEnrichForwardedResolvesNames(t *testing.T) {
 	fake.userNames = map[string]string{"ou_jiayuan": "Jiayuan", "ou_bohan": "Bohan"}
 	fake.byID["om_forward"] = []LarkMessage{
 		{MessageID: "om_forward", MessageType: "merge_forward", SenderID: "ou_bohan", SenderType: "user", Content: `{"content":"Merged and Forwarded Message"}`},
-		textMsg("c1", "ou_jiayuan", "你们线上的 Multica 能用吗", "1000"),
+		textMsg("c1", "ou_jiayuan", "你们线上的 Didian 能用吗", "1000"),
 		textMsg("c2", "ou_bohan", "我这边都能登陆", "2000"),
 	}
 	in := InboundMessage{
@@ -260,7 +260,7 @@ func TestEnrichForwardedResolvesNames(t *testing.T) {
 	out := enrich(t, fake, in, InboundEnricherConfig{})
 
 	want := `<forwarded_messages count="2">
-[Jiayuan]: 你们线上的 Multica 能用吗
+[Jiayuan]: 你们线上的 Didian 能用吗
 [Bohan]: 我这边都能登陆
 </forwarded_messages>`
 	if out.Body != want {

@@ -7,7 +7,7 @@ import type { User, Workspace, MemberWithUser, Agent } from "@didian/core/types"
 export const mockUser: User = {
   id: "user-1",
   name: "Test User",
-  email: "test@multica.ai",
+  email: "test@didian.ai",
   avatar_url: null,
   onboarded_at: "2026-01-01T00:00:00Z",
   onboarding_questionnaire: {},
@@ -45,7 +45,7 @@ export const mockMembers: MemberWithUser[] = [
     role: "owner",
     created_at: "2026-01-01T00:00:00Z",
     name: "Test User",
-    email: "test@multica.ai",
+    email: "test@didian.ai",
     avatar_url: null,
   },
 ];

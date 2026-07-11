@@ -194,7 +194,7 @@ func (b *kiroBackend) Execute(ctx context.Context, prompt string, opts ExecOptio
 		initResult, err := c.request(runCtx, "initialize", map[string]any{
 			"protocolVersion": 1,
 			"clientInfo": map[string]any{
-				"name":    "multica-agent-sdk",
+				"name":    "didian-agent-sdk",
 				"version": "0.2.0",
 			},
 			"clientCapabilities": map[string]any{},
@@ -442,7 +442,7 @@ func isKiroIssueCommentAddTool(msg Message) bool {
 func isKiroIssueCommentAddCommand(command string) bool {
 	parts := trimLeadingEnvAssignments(strings.Fields(command))
 	// Some runtimes route terminal calls through a shell wrapper such as
-	// `sh -c "multica issue comment add ..."`; unwrap a single such layer so
+	// `sh -c "didian issue comment add ..."`; unwrap a single such layer so
 	// the real invocation is still recognized.
 	if len(parts) >= 3 && isPOSIXShellName(parts[0]) && parts[1] == "-c" {
 		inner := strings.Trim(strings.Join(parts[2:], " "), "\"'")
@@ -452,14 +452,14 @@ func isKiroIssueCommentAddCommand(command string) bool {
 		return false
 	}
 	executable := strings.TrimPrefix(parts[0], "./")
-	if executable != "multica" && !strings.HasSuffix(executable, "/multica") {
+	if executable != "didian" && !strings.HasSuffix(executable, "/didian") {
 		return false
 	}
 	return parts[1] == "issue" && parts[2] == "comment" && parts[3] == "add"
 }
 
 // trimLeadingEnvAssignments drops leading `KEY=VALUE` tokens so an invocation
-// like `MULTICA_TOKEN=x multica issue comment add ...` is still recognized.
+// like `DIDIAN_TOKEN=x didian issue comment add ...` is still recognized.
 func trimLeadingEnvAssignments(parts []string) []string {
 	for len(parts) > 0 && isEnvAssignment(parts[0]) {
 		parts = parts[1:]

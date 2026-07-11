@@ -121,7 +121,7 @@ func (e *NetworkError) Unwrap() error { return e.Err }
 // UserMessageError attaches a command-specific, user-facing message to an
 // underlying error. FormatError shows Msg verbatim (in preference to the
 // generic kind-based copy it would otherwise derive from a wrapped
-// *NetworkError / *HTTPError), so command-level guidance — e.g. a `multica
+// *NetworkError / *HTTPError), so command-level guidance — e.g. a `didian
 // login` failure that is more helpful than the generic 401/timeout line — is
 // visible in the default (non-debug) output.
 //
@@ -284,28 +284,28 @@ func DetectLanguage() Language {
 // kindMessages holds the {English, Chinese} user-facing message for each kind.
 var kindMessages = map[ErrorKind][2]string{
 	KindNetworkTimeout: {
-		"Request timed out: the server did not respond in time. Check your network connection or try again later. You can raise the limit with MULTICA_HTTP_TIMEOUT.",
-		"请求超时：服务器未在规定时间内响应。请检查网络连接或稍后重试。可通过 MULTICA_HTTP_TIMEOUT 调高超时时间。",
+		"Request timed out: the server did not respond in time. Check your network connection or try again later. You can raise the limit with DIDIAN_HTTP_TIMEOUT.",
+		"请求超时：服务器未在规定时间内响应。请检查网络连接或稍后重试。可通过 DIDIAN_HTTP_TIMEOUT 调高超时时间。",
 	},
 	KindNetworkDNS: {
-		"Could not resolve the Multica server address. Check your network connection or the --server-url setting.",
-		"无法解析 Multica 服务器地址。请检查网络连接或 --server-url 配置。",
+		"Could not resolve the Didian server address. Check your network connection or the --server-url setting.",
+		"无法解析 Didian 服务器地址。请检查网络连接或 --server-url 配置。",
 	},
 	KindNetworkRefused: {
-		"Could not connect to the Multica server. Make sure the server address is correct and reachable.",
-		"无法连接到 Multica 服务器。请确认服务器地址正确且网络可达。",
+		"Could not connect to the Didian server. Make sure the server address is correct and reachable.",
+		"无法连接到 Didian 服务器。请确认服务器地址正确且网络可达。",
 	},
 	KindNetworkTLS: {
-		"Could not establish a secure connection to the Multica server (TLS/certificate error). Check your system clock and CA certificates.",
-		"无法与 Multica 服务器建立安全连接（TLS/证书错误）。请检查系统时间和 CA 证书。",
+		"Could not establish a secure connection to the Didian server (TLS/certificate error). Check your system clock and CA certificates.",
+		"无法与 Didian 服务器建立安全连接（TLS/证书错误）。请检查系统时间和 CA 证书。",
 	},
 	KindNetworkOffline: {
-		"Could not reach the Multica server. Check your network connection.",
-		"无法访问 Multica 服务器。请检查网络连接。",
+		"Could not reach the Didian server. Check your network connection.",
+		"无法访问 Didian 服务器。请检查网络连接。",
 	},
 	KindAuthRequired: {
-		"Your session has expired or you are not signed in. Run `multica login` to sign in again. On a self-hosted or non-OAuth setup, ask your administrator for valid credentials.",
-		"登录已过期或尚未登录。请运行 `multica login` 重新登录。自托管或非 OAuth 场景请联系管理员获取有效凭证。",
+		"Your session has expired or you are not signed in. Run `didian login` to sign in again. On a self-hosted or non-OAuth setup, ask your administrator for valid credentials.",
+		"登录已过期或尚未登录。请运行 `didian login` 重新登录。自托管或非 OAuth 场景请联系管理员获取有效凭证。",
 	},
 	KindForbidden: {
 		"You do not have permission to access this resource. Check that you are in the right workspace, or ask an administrator to grant access.",
@@ -328,8 +328,8 @@ var kindMessages = map[ErrorKind][2]string{
 		"请求过于频繁。请稍候重试；若持续出现，请降低 API 调用频率。",
 	},
 	KindServerError: {
-		"The Multica service is temporarily unavailable (server error). Please try again later; if it persists, contact support. Re-run with --debug to see the raw server response.",
-		"Multica 服务暂时不可用（服务器错误）。请稍后重试；若持续出现请联系支持。可加 --debug 查看服务器原始响应。",
+		"The Didian service is temporarily unavailable (server error). Please try again later; if it persists, contact support. Re-run with --debug to see the raw server response.",
+		"Didian 服务暂时不可用（服务器错误）。请稍后重试；若持续出现请联系支持。可加 --debug 查看服务器原始响应。",
 	},
 	KindUnknown: {
 		"An unexpected error occurred.",
@@ -356,7 +356,7 @@ func messageFor(kind ErrorKind, lang Language) string {
 //
 // When debug is false it skips the internal verb chain ("resolve issue: ...")
 // and the raw URL/JSON body, showing only the friendly message. When debug is
-// true (or MULTICA_DEBUG is set) it additionally prints the full original
+// true (or DIDIAN_DEBUG is set) it additionally prints the full original
 // error chain for troubleshooting.
 func FormatError(err error, debug bool) string {
 	if err == nil {
@@ -433,7 +433,7 @@ func extractServerMessage(body string) string {
 }
 
 // debugDetail renders the full original error chain plus any structured
-// details from typed errors, for --debug / MULTICA_DEBUG output.
+// details from typed errors, for --debug / DIDIAN_DEBUG output.
 func debugDetail(err error) string {
 	var sb strings.Builder
 	sb.WriteString("[debug] ")
@@ -451,9 +451,9 @@ func debugDetail(err error) string {
 	return sb.String()
 }
 
-// debugEnabled reports whether MULTICA_DEBUG requests debug output.
+// debugEnabled reports whether DIDIAN_DEBUG requests debug output.
 func debugEnabled() bool {
-	switch strings.ToLower(strings.TrimSpace(os.Getenv("MULTICA_DEBUG"))) {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv("DIDIAN_DEBUG"))) {
 	case "", "0", "false", "no", "off":
 		return false
 	default:

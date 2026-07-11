@@ -42,8 +42,8 @@ func NewRegistry(opts RegistryOptions) *Registry {
 	reg.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
 	buildInfo := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "multica_build_info",
-		Help: "Build information for the Multica server binary.",
+		Name: "didian_build_info",
+		Help: "Build information for the Didian server binary.",
 	}, []string{"version", "commit"})
 	buildInfo.WithLabelValues(defaultLabel(opts.Version, "dev"), defaultLabel(opts.Commit, "unknown")).Set(1)
 	reg.MustRegister(buildInfo)

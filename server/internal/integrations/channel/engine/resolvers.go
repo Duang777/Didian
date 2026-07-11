@@ -72,7 +72,7 @@ type ResolvedInstallation struct {
 	Platform        any
 }
 
-// ResolvedIdentity is the sender mapped to a Multica user.
+// ResolvedIdentity is the sender mapped to a Didian user.
 type ResolvedIdentity struct {
 	UserID pgtype.UUID
 }
@@ -139,7 +139,7 @@ type InstallationResolver interface {
 	ResolveInstallation(ctx context.Context, msg channel.InboundMessage) (ResolvedInstallation, error)
 }
 
-// IdentityResolver maps the message sender to a Multica user within the
+// IdentityResolver maps the message sender to a Didian user within the
 // installation, re-checking workspace membership. Return ErrSenderUnbound or
 // ErrSenderNotMember for the product cases.
 type IdentityResolver interface {

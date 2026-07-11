@@ -12,7 +12,7 @@ const workspaceRef = vi.hoisted(() => ({
     id: "workspace-1",
     name: "Test Workspace",
     slug: "test-workspace",
-    repos: [{ url: "https://github.com/multica-ai/multica" }] as { url: string; description?: string }[],
+    repos: [{ url: "https://github.com/didian-ai/didian" }] as { url: string; description?: string }[],
   },
 }));
 const membersRef = vi.hoisted(() => ({
@@ -75,7 +75,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
       id: "workspace-1",
       name: "Test Workspace",
       slug: "test-workspace",
-      repos: [{ url: "https://github.com/multica-ai/multica" }],
+      repos: [{ url: "https://github.com/didian-ai/didian" }],
     };
     membersRef.current = [{ user_id: "user-1", role: "owner" }];
   });
@@ -83,7 +83,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
   it("renders persisted repos in display mode (no input)", () => {
     render(<RepositoriesTab />, { wrapper: I18nWrapper });
     expect(screen.queryByRole("textbox")).toBeNull();
-    expect(screen.getByText("https://github.com/multica-ai/multica")).toBeTruthy();
+    expect(screen.getByText("https://github.com/didian-ai/didian")).toBeTruthy();
   });
 
   it("Save button is disabled when clean", () => {
@@ -98,7 +98,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
     await user.click(screen.getByRole("button", { name: "Edit repository" }));
 
     const inputs = screen.getAllByRole("textbox") as HTMLInputElement[];
-    expect(inputs[0]!.value).toBe("https://github.com/multica-ai/multica");
+    expect(inputs[0]!.value).toBe("https://github.com/didian-ai/didian");
   });
 
   it("Save re-enables after editing, then returns to display mode + disabled on success", async () => {
@@ -113,7 +113,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
     await user.click(screen.getByRole("button", { name: "Edit repository" }));
     const input = screen.getAllByRole("textbox")[0]!;
     await user.clear(input);
-    await user.type(input, "https://github.com/multica-ai/edited");
+    await user.type(input, "https://github.com/didian-ai/edited");
 
     const saveBtn = screen.getByRole("button", { name: /^Save$/ });
     expect(saveBtn).not.toBeDisabled();
@@ -160,7 +160,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
     await user.click(screen.getByRole("button", { name: "Cancel edit" }));
 
     expect(screen.queryByRole("textbox")).toBeNull();
-    expect(screen.getByText("https://github.com/multica-ai/multica")).toBeTruthy();
+    expect(screen.getByText("https://github.com/didian-ai/didian")).toBeTruthy();
     expect(screen.getByRole("button", { name: /^Save$/ })).toBeDisabled();
     expect(mockUpdateWorkspace).not.toHaveBeenCalled();
   });
@@ -172,13 +172,13 @@ describe("RepositoriesTab — view/edit toggle", () => {
     await user.click(screen.getByRole("button", { name: "Edit repository" }));
     const input = screen.getAllByRole("textbox")[0] as HTMLInputElement;
     await user.clear(input);
-    await user.type(input, "https://github.com/multica-ai/changed");
+    await user.type(input, "https://github.com/didian-ai/changed");
     expect(screen.getByRole("button", { name: /^Save$/ })).not.toBeDisabled();
 
     await user.click(screen.getByRole("button", { name: "Cancel edit" }));
 
     expect(screen.queryByRole("textbox")).toBeNull();
-    expect(screen.getByText("https://github.com/multica-ai/multica")).toBeTruthy();
+    expect(screen.getByText("https://github.com/didian-ai/didian")).toBeTruthy();
     expect(screen.getByRole("button", { name: /^Save$/ })).toBeDisabled();
   });
 
@@ -193,7 +193,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
 
     expect(screen.queryByRole("textbox")).toBeNull();
     // Original persisted row is still there; the new empty row is gone.
-    expect(screen.getByText("https://github.com/multica-ai/multica")).toBeTruthy();
+    expect(screen.getByText("https://github.com/didian-ai/didian")).toBeTruthy();
     expect(screen.getByRole("button", { name: /^Save$/ })).toBeDisabled();
   });
 
@@ -211,7 +211,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
     await user.click(screen.getByRole("button", { name: "Edit repository" }));
     const input = screen.getAllByRole("textbox")[0] as HTMLInputElement;
     await user.clear(input);
-    await user.type(input, "git@github.com:multica-ai/multica.git");
+    await user.type(input, "git@github.com:didian-ai/didian.git");
 
     // type="text" (not "url") so the browser does not run native URL
     // validation; the value reaches the server which has the real check.
@@ -222,7 +222,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
 
     await waitFor(() => {
       expect(mockUpdateWorkspace).toHaveBeenCalledWith("workspace-1", {
-        repos: [{ url: "git@github.com:multica-ai/multica.git" }],
+        repos: [{ url: "git@github.com:didian-ai/didian.git" }],
       });
     });
   });
@@ -254,7 +254,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
   it("description field is editable and included in save payload", async () => {
     workspaceRef.current = {
       ...workspaceRef.current,
-      repos: [{ url: "https://github.com/multica-ai/multica", description: "Main app" }],
+      repos: [{ url: "https://github.com/didian-ai/didian", description: "Main app" }],
     };
     const user = userEvent.setup();
     mockUpdateWorkspace.mockImplementation(
@@ -280,7 +280,7 @@ describe("RepositoriesTab — view/edit toggle", () => {
 
     await waitFor(() => {
       expect(mockUpdateWorkspace).toHaveBeenCalledWith("workspace-1", {
-        repos: [{ url: "https://github.com/multica-ai/multica", description: "Updated description" }],
+        repos: [{ url: "https://github.com/didian-ai/didian", description: "Updated description" }],
       });
     });
   });

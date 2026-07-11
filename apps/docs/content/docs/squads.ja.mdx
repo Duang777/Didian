@@ -52,18 +52,18 @@ import { Callout } from "fumadocs-ui/components/callout";
 CLI での同等のコマンド:
 
 ```bash
-multica squad create --name "Frontend Team" --leader frontend-lead-agent
-multica squad member add <squad-id> --member-id <agent-or-user-uuid> --type agent --role "Owns Tailwind / shadcn surface"
+didian squad create --name "Frontend Team" --leader frontend-lead-agent
+didian squad member add <squad-id> --member-id <agent-or-user-uuid> --type agent --role "Owns Tailwind / shadcn surface"
 ```
 
 ## スクワッドに割り当てられたイシューの実行方法
 
-Backlog でないイシューがスクワッドに割り当てられると、Multica はただちに**リーダーエージェント**のための `task` をキューに入れます（すべてのメンバーのためではありません）。その後のフローは次のようになります。
+Backlog でないイシューがスクワッドに割り当てられると、Didian はただちに**リーダーエージェント**のための `task` をキューに入れます（すべてのメンバーのためではありません）。その後のフローは次のようになります。
 
 1. **リーダーがタスクを引き受けます。** エージェントランタイムが次のポーリングでタスクを引き受けます。これは他のエージェント割り当てと同じです。
-2. **リーダーがブリーフィングを受けます。** 引き受けた時点で、Multica はリーダーのシステムプロンプトに 3 つのセクションを追記します — 下記の[リーダーが毎ターン見る内容](#what-the-leader-sees-on-every-turn)を参照してください。
+2. **リーダーがブリーフィングを受けます。** 引き受けた時点で、Didian はリーダーのシステムプロンプトに 3 つのセクションを追記します — 下記の[リーダーが毎ターン見る内容](#what-the-leader-sees-on-every-turn)を参照してください。
 3. **リーダーが 1 つの委任コメントを投稿します。** そのコメントは、名簿（roster）にある正確なメンションマークダウンを使って、選んだメンバーを `@` でメンションします。このメンションが、メンションされた各エージェントのための新しい `task` をトリガーします。
-4. **リーダーが評価を記録します** — `multica squad activity <issue-id> action --reason "..."` を通じて記録します。これはイシューのアクティビティタイムラインにエントリを書き込み、リーダーが実際にトリガーを評価したことを人が確認できるようにします。
+4. **リーダーが評価を記録します** — `didian squad activity <issue-id> action --reason "..."` を通じて記録します。これはイシューのアクティビティタイムラインにエントリを書き込み、リーダーが実際にトリガーを評価したことを人が確認できるようにします。
 5. **リーダーが停止します。** リーダーは実装作業を自分では行いません。委任されたメンバーが返信を投稿すると、リーダーが再びトリガーされて更新を読み、次のステップを委任するか、エスカレーションするか、沈黙を保ちます。
 
 イシューが **Backlog** の状態であれば、リーダーはトリガーされません — Backlog は駐車場であり、エージェントへ直接割り当てる場合と同じルールが適用されます。
@@ -74,7 +74,7 @@ Backlog でないイシューがスクワッドに割り当てられると、Mul
 
 - **Squad Operating Protocol** — ハードコードされたルール集です: イシューを読み、`@` メンションで委任し、簡潔に（イシュー本文を繰り返さない — 担当者が自分で読めます）書き、毎ターン評価を記録し、**ディスパッチ後に停止する**。このプロトコルはシステムが管理しており、編集できません。
 - **Squad Roster** — リーダー自身の行と、アーカイブされていないメンバーごとに 1 行ずつで構成されます。各行には、リーダーが貼り付けるべき正確なメンションマークダウン（`[@Name](mention://agent/<uuid>)` または `[@Name](mention://member/<uuid>)`）が含まれています — 単なるテキストの `@name` を入力しても誰もトリガーされません。
-- **Squad Instructions** — このスクワッドのためのカスタムガイダンスです（スクワッドの詳細ページで設定するか、`multica squad update --instructions` で設定）。ルーティングルール（「DB 作業は Alice に、フロントエンドは Bob に」）、エスカレーションポリシー、その他イシュー自体にはない、リーダーが知っておくべき事柄を書くのに使ってください。
+- **Squad Instructions** — このスクワッドのためのカスタムガイダンスです（スクワッドの詳細ページで設定するか、`didian squad update --instructions` で設定）。ルーティングルール（「DB 作業は Alice に、フロントエンドは Bob に」）、エスカレーションポリシー、その他イシュー自体にはない、リーダーが知っておくべき事柄を書くのに使ってください。
 
 ## リーダーが再トリガーされる場合
 
@@ -104,7 +104,7 @@ Backlog でないイシューがスクワッドに割り当てられると、Mul
 
 **イシューをスクワッドから別の担当者に再割り当てする**のは、他のあらゆる担当者変更と同じように動作します。イシューのアクティブなタスク（リーダーのものを含む）がすべてキャンセルされ、新しい担当者（エージェント、メンバー、または別のスクワッド）がキューに入ります。「担当者を変えずにスクワッドだけを外す」という別個の操作はありません。別の担当者を選んでください。
 
-**スクワッドのアーカイブ**（`multica squad delete <id>`、または詳細ページの Archive ボタン）:
+**スクワッドのアーカイブ**（`didian squad delete <id>`、または詳細ページの Archive ボタン）:
 
 1. **現在スクワッドに割り当てられているイシューをリーダーエージェントに移管し**、作業が途切れる代わりに具体的なエージェントを相手に継続するようにします。
 2. スクワッドに `archived_at` / `archived_by` を記録します。行は保存されるため過去のアクティビティエントリは引き続き解決されますが、スクワッドは一覧、ピッカー、@メンションのドロップダウンから消えます。
@@ -116,17 +116,17 @@ Backlog でないイシューがスクワッドに割り当てられると、Mul
 
 | コマンド | 用途 |
 |---|---|
-| `multica squad list` | ワークスペースのスクワッド一覧を表示 |
-| `multica squad get <id>` | 1 つのスクワッドの名前、リーダー、説明、指示を表示 |
-| `multica squad create --name "..." --leader <agent>` | スクワッドを作成（owner / admin） |
-| `multica squad update <id> [--name X] [--description X] [--instructions X] [--leader Y] [--avatar-url Z]` | 1 つ以上のフィールドを更新 |
-| `multica squad delete <id>` | アーカイブ（ソフト削除） — 割り当てられたイシューをリーダーに移管 |
-| `multica squad member list <id>` | スクワッドのメンバー一覧を表示 |
-| `multica squad member add <id> --member-id <uuid> --type agent\|member [--role "..."]` | メンバーを追加（owner / admin） |
-| `multica squad member remove <id> --member-id <uuid> --type agent\|member` | メンバーを削除（リーダーは削除できません — 先にリーダーを変更してください） |
-| `multica squad activity <issue-id> <action\|no_action\|failed> --reason "..."` | リーダーエージェントが毎ターン終了時に記録 |
+| `didian squad list` | ワークスペースのスクワッド一覧を表示 |
+| `didian squad get <id>` | 1 つのスクワッドの名前、リーダー、説明、指示を表示 |
+| `didian squad create --name "..." --leader <agent>` | スクワッドを作成（owner / admin） |
+| `didian squad update <id> [--name X] [--description X] [--instructions X] [--leader Y] [--avatar-url Z]` | 1 つ以上のフィールドを更新 |
+| `didian squad delete <id>` | アーカイブ（ソフト削除） — 割り当てられたイシューをリーダーに移管 |
+| `didian squad member list <id>` | スクワッドのメンバー一覧を表示 |
+| `didian squad member add <id> --member-id <uuid> --type agent\|member [--role "..."]` | メンバーを追加（owner / admin） |
+| `didian squad member remove <id> --member-id <uuid> --type agent\|member` | メンバーを削除（リーダーは削除できません — 先にリーダーを変更してください） |
+| `didian squad activity <issue-id> <action\|no_action\|failed> --reason "..."` | リーダーエージェントが毎ターン終了時に記録 |
 
-`--leader` はエージェント名または UUID を受け付けます。それ以外の ID は `multica agent list --output json`、`multica workspace member list --output json`、`multica squad list --output json` から取得します。
+`--leader` はエージェント名または UUID を受け付けます。それ以外の ID は `didian agent list --output json`、`didian workspace member list --output json`、`didian squad list --output json` から取得します。
 
 ## 次に
 

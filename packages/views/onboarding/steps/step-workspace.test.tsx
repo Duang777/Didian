@@ -145,20 +145,20 @@ describe("StepWorkspace — DISABLE_WORKSPACE_CREATION gate", () => {
 });
 
 // #4263: the workspace URL prefix must reflect the deployment's own host on
-// self-hosted instances instead of the hardcoded `multica.ai`.
+// self-hosted instances instead of the hardcoded `didian.ai`.
 describe("StepWorkspace — workspace URL prefix", () => {
   it("shows the brand host when no app URL is configured", () => {
     renderStep({ existing: null, disabled: false });
-    expect(screen.getByText("multica.ai/")).toBeInTheDocument();
+    expect(screen.getByText("didian.ai/")).toBeInTheDocument();
   });
 
   it("shows the deployment host for self-hosted instances", () => {
     renderStep({
       existing: null,
       disabled: false,
-      daemonAppUrl: "https://multica.example.com",
+      daemonAppUrl: "https://didian.example.com",
     });
-    expect(screen.getByText("multica.example.com/")).toBeInTheDocument();
-    expect(screen.queryByText("multica.ai/")).not.toBeInTheDocument();
+    expect(screen.getByText("didian.example.com/")).toBeInTheDocument();
+    expect(screen.queryByText("didian.ai/")).not.toBeInTheDocument();
   });
 });

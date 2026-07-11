@@ -33,7 +33,7 @@ func TestProjectResourceLifecycle(t *testing.T) {
 	req = newRequest("POST", "/api/projects/"+project.ID+"/resources", map[string]any{
 		"resource_type": "github_repo",
 		"resource_ref": map[string]any{
-			"url": "https://github.com/multica-ai/multica",
+			"url": "https://github.com/didian-ai/didian",
 			"ref": "release/v2",
 		},
 	})
@@ -56,7 +56,7 @@ func TestProjectResourceLifecycle(t *testing.T) {
 	if err := json.Unmarshal(created.ResourceRef, &ref); err != nil {
 		t.Fatalf("decode resource_ref: %v", err)
 	}
-	if ref.URL != "https://github.com/multica-ai/multica" {
+	if ref.URL != "https://github.com/didian-ai/didian" {
 		t.Errorf("created.ResourceRef.url = %q", ref.URL)
 	}
 	if ref.Ref != "release/v2" {
@@ -90,7 +90,7 @@ func TestProjectResourceLifecycle(t *testing.T) {
 	req = newRequest("POST", "/api/projects/"+project.ID+"/resources", map[string]any{
 		"resource_type": "github_repo",
 		"resource_ref": map[string]any{
-			"url": "https://github.com/multica-ai/multica",
+			"url": "https://github.com/didian-ai/didian",
 			"ref": "release/v2",
 		},
 	})
@@ -173,8 +173,8 @@ func TestProjectResourceAcceptsSSHRepoURLs(t *testing.T) {
 		name string
 		url  string
 	}{
-		{"scp-like", "git@github.com:multica-ai/multica.git"},
-		{"ssh-scheme", "ssh://git@github.com/multica-ai/multica.git"},
+		{"scp-like", "git@github.com:didian-ai/didian.git"},
+		{"ssh-scheme", "ssh://git@github.com/didian-ai/didian.git"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -207,24 +207,24 @@ func TestProjectResourceAcceptsSSHRepoURLs(t *testing.T) {
 
 func TestIsValidGitRepoURL(t *testing.T) {
 	good := []string{
-		"https://github.com/multica-ai/multica",
-		"https://github.com/multica-ai/multica.git",
+		"https://github.com/didian-ai/didian",
+		"https://github.com/didian-ai/didian.git",
 		"http://github.example.com/x/y",
-		"ssh://git@github.com/multica-ai/multica.git",
-		"ssh://git@github.com:22/multica-ai/multica.git",
-		"git@github.com:multica-ai/multica.git",
+		"ssh://git@github.com/didian-ai/didian.git",
+		"ssh://git@github.com:22/didian-ai/didian.git",
+		"git@github.com:didian-ai/didian.git",
 		"git@gitlab.example.com:group/sub/repo.git",
 	}
 	bad := []string{
 		"",
 		"not-a-url",
-		"github.com/multica-ai/multica", // no scheme, no scp-style colon
-		"https://",                      // empty host
-		"git@github.com",                // missing :path
-		"git@:foo/bar",                  // missing host
-		"git@github.com:",               // missing path
-		"ftp://example.com/repo",        // unsupported scheme
-		"file:///tmp/repo",              // unsupported scheme
+		"github.com/didian-ai/didian", // no scheme, no scp-style colon
+		"https://",                    // empty host
+		"git@github.com",              // missing :path
+		"git@:foo/bar",                // missing host
+		"git@github.com:",             // missing path
+		"ftp://example.com/repo",      // unsupported scheme
+		"file:///tmp/repo",            // unsupported scheme
 		"some random text with spaces",
 		"github.com:org/repo@branch", // '@' after ':' belongs to the path, not user
 		"foo:bar@baz",                // '@' after ':' with no scheme
@@ -470,7 +470,7 @@ func TestCreateProjectAttachesResources(t *testing.T) {
 		"resources": []map[string]any{
 			{
 				"resource_type": "github_repo",
-				"resource_ref":  map[string]any{"url": "https://github.com/multica-ai/multica"},
+				"resource_ref":  map[string]any{"url": "https://github.com/didian-ai/didian"},
 			},
 		},
 	})
@@ -539,7 +539,7 @@ func TestProjectResourceCountBreadcrumb(t *testing.T) {
 	w = httptest.NewRecorder()
 	req = newRequest("POST", "/api/projects/"+project.ID+"/resources", map[string]any{
 		"resource_type": "github_repo",
-		"resource_ref":  map[string]any{"url": "https://github.com/multica-ai/breadcrumb"},
+		"resource_ref":  map[string]any{"url": "https://github.com/didian-ai/breadcrumb"},
 	})
 	req = withURLParam(req, "id", project.ID)
 	testHandler.CreateProjectResource(w, req)
@@ -633,7 +633,7 @@ func TestCreateProjectWithResourcesEchoesCount(t *testing.T) {
 		"resources": []map[string]any{
 			{
 				"resource_type": "github_repo",
-				"resource_ref":  map[string]any{"url": "https://github.com/multica-ai/echo-count"},
+				"resource_ref":  map[string]any{"url": "https://github.com/didian-ai/echo-count"},
 			},
 		},
 	})

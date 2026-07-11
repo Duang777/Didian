@@ -1,11 +1,11 @@
 ---
 title: セルフホスティングのクイックスタート
-description: Docker で自分のサーバーやマシン上に Multica を実行します（Kubernetes では Helm が利用できます）。所要時間は約10分です。
+description: Docker で自分のサーバーやマシン上に Didian を実行します（Kubernetes では Helm が利用できます）。所要時間は約10分です。
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-このページでは、Docker を使って Multica **サーバー**（バックエンド + フロントエンド + PostgreSQL）を自分のマシンやサーバー上で実行する手順を案内します。完了すると、[ワークスペース](/workspaces)、[イシュー](/issues)、[コメント](/comments)、[エージェント](/agents)の構成を含むデータが、完全にあなたの管理下に置かれます。
+このページでは、Docker を使って Didian **サーバー**（バックエンド + フロントエンド + PostgreSQL）を自分のマシンやサーバー上で実行する手順を案内します。完了すると、[ワークスペース](/workspaces)、[イシュー](/issues)、[コメント](/comments)、[エージェント](/agents)の構成を含むデータが、完全にあなたの管理下に置かれます。
 
 エージェントの **実行** は、依然としてローカルで動かす[デーモン](/daemon-runtimes)と、そのマシンにインストールされた [AI コーディングツール](/providers)に依存します — Cloud とまったく同じです。セルフホスティングはサーバー層を置き換えるだけで、実行層を置き換えるわけではありません。
 
@@ -23,15 +23,15 @@ import { Callout } from "fumadocs-ui/components/callout";
 </Callout>
 
 ```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
+git clone https://github.com/didian-ai/didian.git
+cd didian
 make selfhost
 ```
 
 `make selfhost` は次のことを行います。
 
 1. `.env` がなければ `.env.example` から生成し、**ランダムな JWT_SECRET と Postgres パスワード** を併せて作成します
-2. 公式の Docker イメージ（PostgreSQL、Multica backend、Multica frontend）を取得します
+2. 公式の Docker イメージ（PostgreSQL、Didian backend、Didian frontend）を取得します
 3. `docker-compose.selfhost.yml` を使ってすべてのサービスを起動します
 4. バックエンドの `/health` エンドポイントが準備できるまで待機します
 
@@ -55,11 +55,11 @@ make selfhost
 ## 2. 重要: プロダクションの安全設定を維持する
 
 <Callout type="warning">
-**`docker-compose.selfhost.yml` はデフォルトで `APP_ENV` を `production` に設定し**、`MULTICA_DEV_VERIFICATION_CODE` を空のままにするため、公開インスタンスには固定コードがありません。
+**`docker-compose.selfhost.yml` はデフォルトで `APP_ENV` を `production` に設定し**、`DIDIAN_DEV_VERIFICATION_CODE` を空のままにするため、公開インスタンスには固定コードがありません。
 
-`MULTICA_DEV_VERIFICATION_CODE` はローカルまたは非公開のテスト自動化でのみ設定してください。`APP_ENV` が non-production のときに固定コードが有効になっていると、コードをリクエストできる誰もがその固定値でサインインできてしまいます。[認証設定 → 固定のローカルテストコード](/auth-setup#fixed-local-testing-codes)を参照してください。
+`DIDIAN_DEV_VERIFICATION_CODE` はローカルまたは非公開のテスト自動化でのみ設定してください。`APP_ENV` が non-production のときに固定コードが有効になっていると、コードをリクエストできる誰もがその固定値でサインインできてしまいます。[認証設定 → 固定のローカルテストコード](/auth-setup#fixed-local-testing-codes)を参照してください。
 
-公開デプロイの前には、`.env` に `APP_ENV=production` が設定され、`MULTICA_DEV_VERIFICATION_CODE` が空であることを必ず確認してください。
+公開デプロイの前には、`.env` に `APP_ENV=production` が設定され、`DIDIAN_DEV_VERIFICATION_CODE` が空であることを必ず確認してください。
 </Callout>
 
 ## 3. メールサービスを構成する（任意ですが推奨）
@@ -99,7 +99,7 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com  # reused as the From: header
 ```bash
 SMTP_HOST=smtp.internal.example.com
 SMTP_PORT=587
-SMTP_USERNAME=multica
+SMTP_USERNAME=didian
 SMTP_PASSWORD=...
 SMTP_TLS_INSECURE=false        # set true only for private CA / self-signed
 RESEND_FROM_EMAIL=noreply@yourdomain.com
@@ -110,7 +110,7 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com
 ```bash
 SMTP_HOST=smtp.qiye.aliyun.com
 SMTP_PORT=465
-SMTP_USERNAME=multica@yourdomain.com
+SMTP_USERNAME=didian@yourdomain.com
 SMTP_PASSWORD=...
 SMTP_TLS=implicit              # optional on 465; required on a non-standard SMTPS port
 RESEND_FROM_EMAIL=noreply@yourdomain.com
@@ -135,19 +135,19 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com
 
 - メールアドレスを入力します
 - 構成したメールバックエンド（Resend または SMTP relay）から認証コードを受け取ります。どちらも構成していない場合は、サーバーコンテナの stdout からコピーしてください — `[DEV] Verification code` の行を探します
-- non-production の非公開インスタンスで `MULTICA_DEV_VERIFICATION_CODE=888888` を明示的に設定した場合を除き、`888888` を使わないでください
+- non-production の非公開インスタンスで `DIDIAN_DEV_VERIFICATION_CODE=888888` を明示的に設定した場合を除き、`888888` を使わないでください
 - ログインして最初のワークスペースを作成します
 
 ## 5. CLI を自分のサーバーに向ける
 
-CLI のインストールは [Cloud クイックスタート → 2. CLI をインストールする](/cloud-quickstart#2-install-the-multica-cli) と同じです — Homebrew / スクリプト / PowerShell のいずれかを選んでください。
+CLI のインストールは [Cloud クイックスタート → 2. CLI をインストールする](/cloud-quickstart#2-install-the-didian-cli) と同じです — Homebrew / スクリプト / PowerShell のいずれかを選んでください。
 
 ### 5a. 同じマシン
 
 CLI とサーバーが同じホストで動作している場合、デフォルト値ですでに動作します。
 
 ```bash
-multica setup self-host
+didian setup self-host
 ```
 
 これにより CLI が `http://localhost:8080`（バックエンド）と `http://localhost:3000`（フロントエンド）を指すようになり、ブラウザログインを案内し、PAT をローカルに保存して、**デーモンを自動的に起動します**。
@@ -157,19 +157,19 @@ multica setup self-host
 compose スタックは `127.0.0.1` でのみ待ち受けるため、別のマシンにあるデーモンは `http://<server-ip>:8080` に直接接続できません — そして、そうなることを望むべきでもありません。さもなければサーバーのシークレットが公開インターネットから到達可能になってしまうからです。TLS を終端し、`127.0.0.1:8080`（バックエンド）と `127.0.0.1:3000`（フロントエンド）へ転送するリバースプロキシをサーバーに置き、CLI を公開 HTTPS URL に向けてください。
 
 ```bash
-multica setup self-host \
+didian setup self-host \
   --server-url https://<your-domain> \
   --app-url https://<your-domain>
 ```
 
 <Callout type="info">
-フラグより環境変数を使いたい場合は、対応するフラグを省略すると `setup self-host` が `MULTICA_SERVER_URL` と `MULTICA_APP_URL` を読み取ります（両方設定した場合はフラグが優先されます）。`MULTICA_SERVER_URL` は[環境変数](/environment-variables)で示される `ws://…/ws` というデーモン形式も受け付け、HTTP ベース URL に正規化します。
+フラグより環境変数を使いたい場合は、対応するフラグを省略すると `setup self-host` が `DIDIAN_SERVER_URL` と `DIDIAN_APP_URL` を読み取ります（両方設定した場合はフラグが優先されます）。`DIDIAN_SERVER_URL` は[環境変数](/environment-variables)で示される `ws://…/ws` というデーモン形式も受け付け、HTTP ベース URL に正規化します。
 </Callout>
 
 単一のホスト名でフロントエンドとバックエンドの両方を前段に置く（デーモンと Web アプリの両方に必要な WebSocket サポートを含む）最小限の Caddyfile は次のとおりです。
 
 ```nginx
-multica.example.com {
+didian.example.com {
     # WebSocket route — must come before the catch-all
     @ws path /ws /ws/*
     handle @ws {
@@ -188,7 +188,7 @@ multica.example.com {
 }
 ```
 
-プロキシを立ち上げたら、サーバーの `.env` に `FRONTEND_ORIGIN=https://multica.example.com` を設定してバックエンドを再起動してください — そうしないと WebSocket の origin チェックがブラウザを拒否します（[トラブルシューティング → WebSocket が接続できない](/troubleshooting#websocket-cant-connect)）。
+プロキシを立ち上げたら、サーバーの `.env` に `FRONTEND_ORIGIN=https://didian.example.com` を設定してバックエンドを再起動してください — そうしないと WebSocket の origin チェックがブラウザを拒否します（[トラブルシューティング → WebSocket が接続できない](/troubleshooting#websocket-cant-connect)）。
 
 [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) も堅実な選択肢です — ホストにポートを一切公開せずに TLS と公開ホスト名を提供してくれます。Nginx で同等に構成する方法（`app.` / `api.` を別々のホスト名に分離、WebSocket 用の `proxy_set_header Upgrade`）も同じくらいうまく動作します。重要な要件は、TLS の終端と `/ws` での `Upgrade` ヘッダーの転送です。
 
@@ -215,54 +215,54 @@ SELECT cron.unschedule('rollup_task_usage_hourly')
 
 **`v0.3.4 → v0.3.5+` からのアップグレード。** 以前のリリースでは、migration 103 を適用する前にオペレーターが手動で `cmd/backfill_task_usage_hourly` を実行する必要があり、そうしないと migration の fail-closed ガードが `migrate up` を中断していました。MUL-2957 以降、これは自動化されました — migrate コマンドが migration 103 を適用する直前に冪等な月単位スライスのバックフィル（advisory lock 4246 の下）を実行してから処理を続行します。忙しい DB では `--sleep-between-slices=2s` で読み取り負荷を絞るためにスタンドアロンの backfill を実行することもできますが、もはや必須ではありません。
 
-完全なリファレンス（運用ノートと Kubernetes デプロイ形態を含む）は、リポジトリの [`SELF_HOSTING_ADVANCED.md → Usage Dashboard Rollup`](https://github.com/multica-ai/multica/blob/main/SELF_HOSTING_ADVANCED.md#usage-dashboard-rollup) にあります。
+完全なリファレンス（運用ノートと Kubernetes デプロイ形態を含む）は、リポジトリの [`SELF_HOSTING_ADVANCED.md → Usage Dashboard Rollup`](https://github.com/didian-ai/didian/blob/main/SELF_HOSTING_ADVANCED.md#usage-dashboard-rollup) にあります。
 
 ## Kubernetes デプロイ（代替手段）
 
-すでに Kubernetes クラスターを運用している場合、リポジトリには `deploy/helm/multica/` に Helm チャートも同梱されています。k8s 用の `make selfhost` に相当します — 同じバックエンドイメージ、フロントエンドイメージ、`pgvector/pgvector:pg17` の Postgres を Deployment / Service / Ingress としてパッケージングし、`values.yaml` からレンダリングされた1つの `ConfigMap` を併せて提供します。k3s + Traefik + `local-path` を基準に作成されており、Ingress コントローラーとデフォルトの `ReadWriteOnce` StorageClass があるあらゆるクラスターで動作するはずです。
+すでに Kubernetes クラスターを運用している場合、リポジトリには `deploy/helm/didian/` に Helm チャートも同梱されています。k8s 用の `make selfhost` に相当します — 同じバックエンドイメージ、フロントエンドイメージ、`pgvector/pgvector:pg17` の Postgres を Deployment / Service / Ingress としてパッケージングし、`values.yaml` からレンダリングされた1つの `ConfigMap` を併せて提供します。k3s + Traefik + `local-path` を基準に作成されており、Ingress コントローラーとデフォルトの `ReadWriteOnce` StorageClass があるあらゆるクラスターで動作するはずです。
 
-このチャートは **シークレット値をテンプレート化しません**。`multica-secrets` という名前の Secret を名前で参照するため、実際の JWT / DB / Resend / Google キーが git や `values.yaml` に置かれる必要はまったくありません。ネームスペースと Secret を kubectl で一度作成してください。
+このチャートは **シークレット値をテンプレート化しません**。`didian-secrets` という名前の Secret を名前で参照するため、実際の JWT / DB / Resend / Google キーが git や `values.yaml` に置かれる必要はまったくありません。ネームスペースと Secret を kubectl で一度作成してください。
 
 ```bash
-kubectl create namespace multica
+kubectl create namespace didian
 
-kubectl -n multica create secret generic multica-secrets \
+kubectl -n didian create secret generic didian-secrets \
   --from-literal=JWT_SECRET="$(openssl rand -hex 32)" \
   --from-literal=POSTGRES_PASSWORD="$(openssl rand -hex 16)" \
   --from-literal=RESEND_API_KEY="" \
   --from-literal=GOOGLE_CLIENT_SECRET="" \
   --from-literal=CLOUDFRONT_PRIVATE_KEY="" \
-  --from-literal=MULTICA_DEV_VERIFICATION_CODE=""
+  --from-literal=DIDIAN_DEV_VERIFICATION_CODE=""
 ```
 
 その後、チャートをインストールします。
 
 ```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
-helm install multica deploy/helm/multica -n multica
+git clone https://github.com/didian-ai/didian.git
+cd didian
+helm install didian deploy/helm/didian -n didian
 ```
 
-デフォルト値はホスト名 `multica.dev.lan`（web）と `api.multica.dev.lan`（バックエンド）を想定しています。これらを `/etc/hosts`（またはローカル DNS）に追加し、Ingress に到達可能な任意のノード IP を指すようにしてください。別のホスト名を使うには、`deploy/helm/multica/values.yaml` をコピーして `ingress.frontend.host` / `ingress.backend.host` と、それに対応する `backend.config.appUrl` / `frontendOrigin` / `localUploadBaseUrl` / `googleRedirectUri` を編集し、`-f my-values.yaml` でインストールしてください。
+デフォルト値はホスト名 `didian.dev.lan`（web）と `api.didian.dev.lan`（バックエンド）を想定しています。これらを `/etc/hosts`（またはローカル DNS）に追加し、Ingress に到達可能な任意のノード IP を指すようにしてください。別のホスト名を使うには、`deploy/helm/didian/values.yaml` をコピーして `ingress.frontend.host` / `ingress.backend.host` と、それに対応する `backend.config.appUrl` / `frontendOrigin` / `localUploadBaseUrl` / `googleRedirectUri` を編集し、`-f my-values.yaml` でインストールしてください。
 
 コールドクラスターでは、バックエンドが Postgres を待ち、migration を実行する間、数分間 `Running` 状態だが `Ready` ではないことがあります — startupProbe がこれを吸収するため、ポッドは再起動されないはずです。`Ready` になったら:
 
 ```bash
-curl -H "Host: api.multica.dev.lan" http://<ingress-ip>/healthz
+curl -H "Host: api.didian.dev.lan" http://<ingress-ip>/healthz
 # {"status":"ok","checks":{"db":"ok","migrations":"ok"}}
 ```
 
-その後 `http://multica.dev.lan` を開き、上記の [ステップ4 — 初回ログイン](#4-first-login--create-a-workspace)から続けてください。CLI を Ingress のホスト名に向けます。
+その後 `http://didian.dev.lan` を開き、上記の [ステップ4 — 初回ログイン](#4-first-login--create-a-workspace)から続けてください。CLI を Ingress のホスト名に向けます。
 
 ```bash
-multica setup self-host \
-  --server-url http://api.multica.dev.lan \
-  --app-url http://multica.dev.lan
+didian setup self-host \
+  --server-url http://api.didian.dev.lan \
+  --app-url http://didian.dev.lan
 ```
 
-チャートを変更せずに最新のイメージだけを取得するには、`kubectl -n multica rollout restart deploy/multica-backend deploy/multica-frontend` を実行してください。特定の Multica リリースに固定するには、values ファイルで `images.backend.tag` / `images.frontend.tag` を設定して `helm upgrade` を実行してください。`helm -n multica uninstall multica` はワークロードを削除しますが、PVC と Secret は保持します。`kubectl delete namespace multica` はすべてを消去します。
+チャートを変更せずに最新のイメージだけを取得するには、`kubectl -n didian rollout restart deploy/didian-backend deploy/didian-frontend` を実行してください。特定の Didian リリースに固定するには、values ファイルで `images.backend.tag` / `images.frontend.tag` を設定して `helm upgrade` を実行してください。`helm -n didian uninstall didian` はワークロードを削除しますが、PVC と Secret は保持します。`kubectl delete namespace didian` はすべてを消去します。
 
-完全なリファレンス — 3つのログインモード、web イメージにビルド時に焼き込まれた `REMOTE_API_URL` に対する `backend` ExternalName の回避策、リソース制限、TLS — は、リポジトリの [`SELF_HOSTING.md`](https://github.com/multica-ai/multica/blob/main/SELF_HOSTING.md#kubernetes-deployment-alternative) にあります。
+完全なリファレンス — 3つのログインモード、web イメージにビルド時に焼き込まれた `REMOTE_API_URL` に対する `backend` ExternalName の回避策、リソース制限、TLS — は、リポジトリの [`SELF_HOSTING.md`](https://github.com/didian-ai/didian/blob/main/SELF_HOSTING.md#kubernetes-deployment-alternative) にあります。
 
 ## よくある問題
 
@@ -278,4 +278,4 @@ multica setup self-host \
 - [認証設定](/auth-setup) — Resend / OAuth / サインアップ許可リストの詳細
 - [GitHub 連携](/github-integration) — GitHub App を接続して、PR がイシューに自動でリンクされ、マージするとイシューが閉じられるように設定する
 - [トラブルシューティング](/troubleshooting) — うまくいかないときはここから始めてください
-- [デスクトップアプリ](/desktop-app) — `~/.multica/desktop.json` を通じた任意のデスクトップ設定。Web フロントエンド + CLI が依然として最速のセルフホスティング経路です
+- [デスクトップアプリ](/desktop-app) — `~/.didian/desktop.json` を通じた任意のデスクトップ設定。Web フロントエンド + CLI が依然として最速のセルフホスティング経路です

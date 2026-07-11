@@ -10,7 +10,7 @@
  *   - Tap dispatches into the global LightboxProvider for fullscreen
  *     viewing with pinch-zoom + swipe-down-to-dismiss.
  *
- * URI resolution: markdown content authored in Multica stores image
+ * URI resolution: markdown content authored in Didian stores image
  * references using the internal `mc://file/<id>` scheme rather than
  * baking signed HTTPS URLs into the content (signed URLs expire). iOS
  * doesn't understand `mc://`, so we look the URI up in the supplied

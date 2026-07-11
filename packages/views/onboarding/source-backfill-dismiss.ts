@@ -17,7 +17,7 @@ import { useCallback, useSyncExternalStore } from "react";
  * later," and asking again on a fresh browser is fine.
  */
 
-const STORAGE_PREFIX = "multica.source_backfill.dismiss.";
+const STORAGE_PREFIX = "didian.source_backfill.dismiss.";
 
 function storageKey(userId: string): string {
   return `${STORAGE_PREFIX}${userId}`;

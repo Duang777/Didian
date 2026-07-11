@@ -15,11 +15,11 @@ func TestFlattenPostContent_IssueExample(t *testing.T) {
 			[{ "tag": "text", "text": "本周完成：" }],
 			[
 				{ "tag": "text", "text": "Lark 集成" },
-				{ "tag": "a", "href": "https://github.com/multica-ai/multica/pull/3277", "text": "PR #3277" }
+				{ "tag": "a", "href": "https://github.com/didian-ai/didian/pull/3277", "text": "PR #3277" }
 			]
 		]
 	}`
-	want := "周报\n本周完成：\nLark 集成 PR #3277 (https://github.com/multica-ai/multica/pull/3277)"
+	want := "周报\n本周完成：\nLark 集成 PR #3277 (https://github.com/didian-ai/didian/pull/3277)"
 	if got := flattenPostContent(raw); got != want {
 		t.Errorf("flattenPostContent()\n got = %q\nwant = %q", got, want)
 	}

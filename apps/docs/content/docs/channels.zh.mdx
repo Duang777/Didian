@@ -1,12 +1,12 @@
 ---
 title: 聊天集成（channels）
-description: Multica 如何把智能体接入聊天平台——一个统一的 channel 引擎，加上针对飞书（Lark）和 Slack 的各平台适配器——涵盖入站流水线、会话与授权。
+description: Didian 如何把智能体接入聊天平台——一个统一的 channel 引擎，加上针对飞书（Lark）和 Slack 的各平台适配器——涵盖入站流水线、会话与授权。
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 import { Mermaid } from "@/components/mermaid";
 
-**channel** 把一个 Multica [智能体](/agents)接入聊天平台，团队就能在他们日常沟通的地方直接使用它。目前有两个 channel——[Lark（飞书）](/lark-bot-integration) 和 [Slack](/slack-bot-integration)——两者都跑在**同一个引擎**上：一个平台无关的内核，加上一层很薄的各平台适配器。新增一个平台是「实现适配器」，而不是「重建流水线」。
+**channel** 把一个 Didian [智能体](/agents)接入聊天平台，团队就能在他们日常沟通的地方直接使用它。目前有两个 channel——[Lark（飞书）](/lark-bot-integration) 和 [Slack](/slack-bot-integration)——两者都跑在**同一个引擎**上：一个平台无关的内核，加上一层很薄的各平台适配器。新增一个平台是「实现适配器」，而不是「重建流水线」。
 
 **安装（installation）** 是把这一切串起来的单元：一个 Bot 绑定到一个 `(workspace, agent)`。入站消息被路由到某个安装，再经过共享的流水线；智能体的回复会被发回同一个聊天里。
 
@@ -39,7 +39,7 @@ flowchart LR
 1. **路由到安装** —— 把事件映射到一个 `channel_installation`（→ workspace + agent）。Lark 按 `app_id` 路由；Slack 按事件携带的 app id 路由。
 2. **寻址过滤** —— 在群 / 频道里，只有 **@ 了 Bot** 的消息才会继续往下走；无关的群聊闲谈会被丢弃（不读取）。
 3. **去重** —— 一个两阶段的 `(installation, message_id)` 认领机制保证恰好处理一次，即便跨多个服务器副本也成立。
-4. **身份 + 授权** —— 把发送者的平台用户 id 解析成一个 Multica 用户（即[账号绑定](#账号绑定)），然后再次校验 workspace 成员身份。未绑定的发送者会收到一条「绑定你的账号」提示；非成员会被丢弃。
+4. **身份 + 授权** —— 把发送者的平台用户 id 解析成一个 Didian 用户（即[账号绑定](#账号绑定)），然后再次校验 workspace 成员身份。未绑定的发送者会收到一条「绑定你的账号」提示；非成员会被丢弃。
 5. **会话** —— 为这段对话找到或创建一个 [chat 会话](/chat)，并把消息追加进去（见[会话](#会话与上下文)）。
 6. **触发** —— 入队一个智能体[任务](/tasks)；一个[守护进程](/daemon-runtimes)运行智能体，回复会被发回聊天里。
 
@@ -60,8 +60,8 @@ flowchart LR
 
 在共享群里，有两道相互独立的关卡保护着 Bot——两者都在引擎里对每一条消息强制执行，且 Lark 和 Slack 一视同仁：
 
-- **账号绑定（认证）** —— 发送者的平台用户 id 必须关联到一个 Multica 用户。某人第一次给 Bot 发消息时，会拿到一个一次性链接，把自己的身份绑定到**他自己的** Multica 账号；在那之前不会有任何智能体运行。
-- **Workspace 成员身份（授权）** —— 绑定后的 Multica 用户必须是该安装所属 workspace 的成员，每条消息都会重新校验。非成员会被静默丢弃。
+- **账号绑定（认证）** —— 发送者的平台用户 id 必须关联到一个 Didian 用户。某人第一次给 Bot 发消息时，会拿到一个一次性链接，把自己的身份绑定到**他自己的** Didian 账号；在那之前不会有任何智能体运行。
+- **Workspace 成员身份（授权）** —— 绑定后的 Didian 用户必须是该安装所属 workspace 的成员，每条消息都会重新校验。非成员会被静默丢弃。
 
 所以把 Bot 加进一个公开频道是安全的：只有已绑定身份的 workspace 成员才能驱动智能体，而且每个发送者都会被独立校验。面向用户的提示文案请见各平台的页面。
 
@@ -72,7 +72,7 @@ flowchart LR
 </Callout>
 
 <Callout type="info">
-**Slack —— 自带应用。** workspace 管理员创建一个 Slack app，把它安装到自己的 Slack workspace，再把它的 bot token + app-level token 粘贴进 Multica。每个智能体都有自己的 Slack app，所以多个智能体可以在同一个 Slack workspace 里各自拥有一个独立的 Bot。manifest 和分步设置见 [Slack Bot 接入](/slack-bot-integration)。
+**Slack —— 自带应用。** workspace 管理员创建一个 Slack app，把它安装到自己的 Slack workspace，再把它的 bot token + app-level token 粘贴进 Didian。每个智能体都有自己的 Slack app，所以多个智能体可以在同一个 Slack workspace 里各自拥有一个独立的 Bot。manifest 和分步设置见 [Slack Bot 接入](/slack-bot-integration)。
 </Callout>
 
 ## 自部署
@@ -80,11 +80,11 @@ flowchart LR
 每个 channel 在**你设置好它的静态加密密钥之前都是关闭的**（这个密钥会在每个 Bot 的 token 落库之前对其加密）：
 
 ```dotenv
-MULTICA_LARK_SECRET_KEY=<base64-encoded 32-byte key>
-MULTICA_SLACK_SECRET_KEY=<base64-encoded 32-byte key>
+DIDIAN_LARK_SECRET_KEY=<base64-encoded 32-byte key>
+DIDIAN_SLACK_SECRET_KEY=<base64-encoded 32-byte key>
 ```
 
-在 Multica Cloud 上两者都已配置好。完整参考见[环境变量](/environment-variables)。
+在 Didian Cloud 上两者都已配置好。完整参考见[环境变量](/environment-variables)。
 
 ## 下一步
 

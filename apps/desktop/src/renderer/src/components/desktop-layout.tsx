@@ -139,8 +139,8 @@ function useInternalLinkHandler() {
       const tabId = store.openTab(path, path, icon);
       store.setActiveTab(tabId);
     };
-    window.addEventListener("multica:navigate", handler);
-    return () => window.removeEventListener("multica:navigate", handler);
+    window.addEventListener("didian:navigate", handler);
+    return () => window.removeEventListener("didian:navigate", handler);
   }, []);
 }
 
@@ -160,7 +160,7 @@ function useInternalLinkHandler() {
  *      covers both click-to-select and URL-param-select paths.
  *
  * The click routes through `useNavigation().push` — NOT the
- * `multica:navigate` event, whose handler `openTab`s into the ACTIVE
+ * `didian:navigate` event, whose handler `openTab`s into the ACTIVE
  * workspace's tab group. The navigation adapter detects a cross-workspace
  * path and translates it into `switchWorkspace(slug, path)`, so clicking a
  * workspace-A notification while B is active performs a real workspace

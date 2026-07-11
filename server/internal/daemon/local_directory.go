@@ -214,7 +214,7 @@ func validateLocalPath(absPath string) error {
 
 // isBlacklistedLocalPath rejects paths that map to the whole machine or an
 // entire user profile. The intent is to keep the daemon from accidentally
-// stamping context files (.agent_context/, .claude/skills/, .multica/) at
+// stamping context files (.agent_context/, .claude/skills/, .didian/) at
 // the root of a user's account or the OS — a misconfiguration on the UI
 // side should fail fast rather than litter the user's home.
 //
@@ -326,7 +326,7 @@ func checkDirReadWrite(dir string) error {
 	if _, err := os.ReadDir(dir); err != nil {
 		return fmt.Errorf("read %q: %w", dir, err)
 	}
-	probe, err := os.CreateTemp(dir, ".multica-rwcheck-*")
+	probe, err := os.CreateTemp(dir, ".didian-rwcheck-*")
 	if err != nil {
 		return fmt.Errorf("write %q: %w", dir, err)
 	}

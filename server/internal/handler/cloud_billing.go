@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Cloud billing endpoints proxy to the same multica-cloud HTTP service
+// Cloud billing endpoints proxy to the same didian-cloud HTTP service
 // that backs cloud-runtime (Fleet and Billing share `:8080` per the
 // upstream README). All paths here forward verbatim to /api/v1/billing/*
 // on the cloud side, mirroring the cloud-runtime handler shape:

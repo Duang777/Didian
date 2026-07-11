@@ -16,7 +16,7 @@ const PATTERNS: Array<[RegExp, string]> = [
   // Emails.
   [/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi, REDACTED],
   // URL query/fragment (may carry tokens / PII) — keep scheme+host+path.
-  [/((?:https?|file|multica):\/\/[^\s?#]*)[?#]\S*/gi, `$1?${REDACTED}`],
+  [/((?:https?|file|didian):\/\/[^\s?#]*)[?#]\S*/gi, `$1?${REDACTED}`],
   // Long opaque tokens: JWTs, API keys, UUIDs, session ids (24+ chars).
   [/\b[A-Za-z0-9_-]{24,}\b/g, REDACTED],
 ];

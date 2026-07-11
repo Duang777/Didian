@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-const defaultCLIConfigPath = ".multica/config.json"
+const defaultCLIConfigPath = ".didian/config.json"
 
 // CLIConfig holds persistent CLI settings.
 type CLIConfig struct {
@@ -30,7 +30,7 @@ type CLIConfig struct {
 	// but the same logical profile may live at a different path on each
 	// machine (or not be on PATH at all). This map lets an operator pin the
 	// exact binary for a profile on this host via
-	// `multica runtime profile set-path`; the daemon prefers it over the
+	// `didian runtime profile set-path`; the daemon prefers it over the
 	// PATH lookup in appendProfileRuntimes. Empty / absent means "resolve the
 	// profile's command_name on PATH" — the default behavior. The mapping is
 	// intentionally local-only (it is never sent to the server) because the
@@ -54,18 +54,18 @@ type BackendOverrides struct {
 //
 // Resolution precedence (env beats config beats default, for back-compat):
 //
-//	BinaryPath: MULTICA_OPENCLAW_PATH (env)  > backends.openclaw.binary_path > PATH lookup
+//	BinaryPath: DIDIAN_OPENCLAW_PATH (env)  > backends.openclaw.binary_path > PATH lookup
 //	StateDir:   OPENCLAW_STATE_DIR (env)     > backends.openclaw.state_dir   > OpenClaw's built-in default (~/.openclaw)
 //
 // The StateDir env var here is OpenClaw's own OPENCLAW_STATE_DIR — NOT a new
-// MULTICA_OPENCLAW_STATE_DIR. Rationale: OpenClaw already honors its own env
+// DIDIAN_OPENCLAW_STATE_DIR. Rationale: OpenClaw already honors its own env
 // var, the daemon already forwards inherited env to spawned children via
 // `mergeEnv`, and a user who exports OPENCLAW_STATE_DIR in their shell
 // already gets the right behavior with zero daemon changes today. This field
 // is purely additive: when set, the daemon injects OPENCLAW_STATE_DIR=<value>
 // into the spawned child's env unless the user already exported one upstream.
 // (If a future use case needs daemon-namespaced isolation distinct from
-// OpenClaw's own env, MULTICA_OPENCLAW_STATE_DIR can be layered on top
+// OpenClaw's own env, DIDIAN_OPENCLAW_STATE_DIR can be layered on top
 // without breaking this contract — see #3875 discussion.)
 //
 // Setting StateDir is the fix for the long-standing usability gap where
@@ -87,8 +87,8 @@ func CLIConfigPath() (string, error) {
 }
 
 // CLIConfigPathForProfile returns the config file path for the given profile.
-// An empty profile returns the default path (~/.multica/config.json).
-// A named profile returns ~/.multica/profiles/<name>/config.json.
+// An empty profile returns the default path (~/.didian/config.json).
+// A named profile returns ~/.didian/profiles/<name>/config.json.
 func CLIConfigPathForProfile(profile string) (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -97,20 +97,20 @@ func CLIConfigPathForProfile(profile string) (string, error) {
 	if profile == "" {
 		return filepath.Join(home, defaultCLIConfigPath), nil
 	}
-	return filepath.Join(home, ".multica", "profiles", profile, "config.json"), nil
+	return filepath.Join(home, ".didian", "profiles", profile, "config.json"), nil
 }
 
 // ProfileDir returns the base directory for a profile's state files (pid, log).
-// An empty profile returns ~/.multica/. A named profile returns ~/.multica/profiles/<name>/.
+// An empty profile returns ~/.didian/. A named profile returns ~/.didian/profiles/<name>/.
 func ProfileDir(profile string) (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("resolve profile dir: %w", err)
 	}
 	if profile == "" {
-		return filepath.Join(home, ".multica"), nil
+		return filepath.Join(home, ".didian"), nil
 	}
-	return filepath.Join(home, ".multica", "profiles", profile), nil
+	return filepath.Join(home, ".didian", "profiles", profile), nil
 }
 
 // LoadCLIConfig reads the CLI config from disk (default profile).

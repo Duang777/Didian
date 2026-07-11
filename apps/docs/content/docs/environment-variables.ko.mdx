@@ -1,11 +1,11 @@
 ---
 title: 환경 변수
-description: 자체 호스팅 Multica 서버를 실행하기 위한 환경 변수 전체 목록입니다.
+description: 자체 호스팅 Didian 서버를 실행하기 위한 환경 변수 전체 목록입니다.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-자체 호스팅 Multica [서버](/self-host-quickstart)는 시작 시 환경 변수에서 설정을 읽습니다 — 데이터베이스, 로그인, 이메일, 스토리지, 가입 허용 목록이 모두 여기에 있습니다. 이 페이지는 모든 변수를 용도별로 그룹화합니다: 각 섹션은 **설정하지 않으면 어떻게 되는지**, 그리고 **프로덕션에서 반드시 설정해야 하는 변수가 무엇인지**를 명확히 설명합니다. auth 관련 변수를 실제로 어떻게 설정하는지는 [로그인 및 가입 설정](/auth-setup)을 참고하세요.
+자체 호스팅 Didian [서버](/self-host-quickstart)는 시작 시 환경 변수에서 설정을 읽습니다 — 데이터베이스, 로그인, 이메일, 스토리지, 가입 허용 목록이 모두 여기에 있습니다. 이 페이지는 모든 변수를 용도별로 그룹화합니다: 각 섹션은 **설정하지 않으면 어떻게 되는지**, 그리고 **프로덕션에서 반드시 설정해야 하는 변수가 무엇인지**를 명확히 설명합니다. auth 관련 변수를 실제로 어떻게 설정하는지는 [로그인 및 가입 설정](/auth-setup)을 참고하세요.
 
 ## 핵심 서버 변수
 
@@ -13,15 +13,15 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 | 변수 | 기본값 | 프로덕션 필수? |
 |---|---|---|
-| `DATABASE_URL` | `postgres://multica:multica@localhost:5432/multica?sslmode=disable` | **예** |
+| `DATABASE_URL` | `postgres://didian:didian@localhost:5432/didian?sslmode=disable` | **예** |
 | `PORT` | `8080` | 아니오 (포트를 변경하는 경우 제외) |
-| `JWT_SECRET` | `multica-dev-secret-change-in-production` | **예** (기본값은 안전하지 않음) |
+| `JWT_SECRET` | `didian-dev-secret-change-in-production` | **예** (기본값은 안전하지 않음) |
 | `APP_ENV` | 비어 있음 | **예** (`production`이어야 함) |
 | `FRONTEND_ORIGIN` | 비어 있음 | **예** (자체 호스팅은 자체 도메인을 설정해야 함) |
-| `MULTICA_DEV_VERIFICATION_CODE` | 비어 있음 | 아니오 (프로덕션에서는 반드시 비워 두어야 함) |
+| `DIDIAN_DEV_VERIFICATION_CODE` | 비어 있음 | 아니오 (프로덕션에서는 반드시 비워 두어야 함) |
 
 <Callout type="warning">
-**프로덕션에서는 `MULTICA_DEV_VERIFICATION_CODE`를 비워 두세요.** 고정된 로컬 테스트 코드는 기본적으로 비활성화되어 있지만, `MULTICA_DEV_VERIFICATION_CODE=888888`로 활성화하면 `APP_ENV`가 production이 아닌 동안에는 코드를 요청할 수 있는 누구나 그 고정 값으로 로그인할 수 있습니다. 이 단축 코드는 `APP_ENV=production`일 때 무시됩니다.
+**프로덕션에서는 `DIDIAN_DEV_VERIFICATION_CODE`를 비워 두세요.** 고정된 로컬 테스트 코드는 기본적으로 비활성화되어 있지만, `DIDIAN_DEV_VERIFICATION_CODE=888888`로 활성화하면 `APP_ENV`가 production이 아닌 동안에는 코드를 요청할 수 있는 누구나 그 고정 값으로 로그인할 수 있습니다. 이 단축 코드는 `APP_ENV=production`일 때 무시됩니다.
 </Callout>
 
 ### 데이터베이스 커넥션 풀
@@ -35,14 +35,14 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 ## 이메일 설정
 
-Multica는 두 가지 전송 백엔드를 지원합니다 — 클라우드 배포용 [Resend](https://resend.com/), 또는 내부 / 온프레미스 네트워크용 SMTP relay. 둘 다 설정된 경우 `SMTP_HOST`가 `RESEND_API_KEY`보다 우선합니다.
+Didian는 두 가지 전송 백엔드를 지원합니다 — 클라우드 배포용 [Resend](https://resend.com/), 또는 내부 / 온프레미스 네트워크용 SMTP relay. 둘 다 설정된 경우 `SMTP_HOST`가 `RESEND_API_KEY`보다 우선합니다.
 
 ### Resend
 
 | 변수 | 기본값 | 설명 |
 |---|---|---|
 | `RESEND_API_KEY` | 비어 있음 | Resend API key |
-| `RESEND_FROM_EMAIL` | `noreply@multica.ai` | 발신 주소 (Resend 계정에서 검증된 도메인이어야 하며, SMTP를 사용할 때도 `From:` 헤더로 재사용됨) |
+| `RESEND_FROM_EMAIL` | `noreply@didian.ai` | 발신 주소 (Resend 계정에서 검증된 도메인이어야 하며, SMTP를 사용할 때도 `From:` 헤더로 재사용됨) |
 
 ### SMTP relay
 
@@ -76,7 +76,7 @@ Multica는 두 가지 전송 백엔드를 지원합니다 — 클라우드 배�
 
 ## 파일 스토리지 설정
 
-Multica는 사용자가 업로드한 첨부 파일(댓글의 이미지와 파일)을 저장합니다. **S3가 권장됩니다**; S3가 설정되어 있지 않으면 로컬 디스크로 폴백합니다.
+Didian는 사용자가 업로드한 첨부 파일(댓글의 이미지와 파일)을 저장합니다. **S3가 권장됩니다**; S3가 설정되어 있지 않으면 로컬 디스크로 폴백합니다.
 
 ### S3 / S3 호환 스토리지
 
@@ -132,7 +132,7 @@ S3 앞에 CloudFront를 두는 경우 세 가지 변수가 적용됩니다: `CLO
 
 **직관에 반하는 부분**: `ALLOWED_EMAIL_DOMAINS=company.io` + `ALLOW_SIGNUP=true`는 "company.io 또는 모두를 허용"한다는 뜻이 **아니라** **company.io만 허용**한다는 뜻입니다. 허용 목록 계층은 AND 시맨틱입니다 — 전체 결정 트리는 [로그인 및 가입 설정 → 가입 허용 목록](/auth-setup#restricting-who-can-sign-up)에 있습니다.
 
-**초대 흐름 자체는 가입 허용 목록을 확인하지 않습니다** — 하지만 초대받은 사람은 초대를 수락하기 전에 여전히 **로그인**할 수 있어야 합니다. 이미 Multica 계정이 있다면(예: 다른 워크스페이스에서) 허용 목록의 영향을 받지 않고 바로 수락할 수 있습니다; **한 번도 가입한 적이 없다면**, 로그인의 첫 단계(인증 코드 요청)는 여전히 허용 목록 확인을 거치며, `ALLOW_SIGNUP=false`나 `ALLOWED_EMAILS` / `ALLOWED_EMAIL_DOMAINS`에 의해 거부된 이메일은 **가입을 완료할 수 없고, 따라서 초대를 수락할 수 없습니다**.
+**초대 흐름 자체는 가입 허용 목록을 확인하지 않습니다** — 하지만 초대받은 사람은 초대를 수락하기 전에 여전히 **로그인**할 수 있어야 합니다. 이미 Didian 계정이 있다면(예: 다른 워크스페이스에서) 허용 목록의 영향을 받지 않고 바로 수락할 수 있습니다; **한 번도 가입한 적이 없다면**, 로그인의 첫 단계(인증 코드 요청)는 여전히 허용 목록 확인을 거치며, `ALLOW_SIGNUP=false`나 `ALLOWED_EMAILS` / `ALLOWED_EMAIL_DOMAINS`에 의해 거부된 이메일은 **가입을 완료할 수 없고, 따라서 초대를 수락할 수 없습니다**.
 
 ## 워크스페이스 생성 잠그기
 
@@ -148,7 +148,7 @@ S3 앞에 CloudFront를 두는 경우 세 가지 변수가 적용됩니다: `CLO
 2. 관리자로 로그인하여 공유 워크스페이스를 생성합니다.
 3. `DISABLE_WORKSPACE_CREATION=true`로 설정하고 백엔드를 재시작합니다. 이 시점부터 사용자는 초대를 통해서만 참여할 수 있습니다.
 
-초대받은 사용자가 첫 인증 코드로 가입을 완료할 수 있도록 `ALLOW_SIGNUP=true`를 유지하고 싶다면, `DISABLE_WORKSPACE_CREATION=true`를 `ALLOWED_EMAIL_DOMAINS` / `ALLOWED_EMAILS`와 결합하여 어떤 주소가 가입할 수 있는지 범위를 지정하세요. `ALLOW_SIGNUP=false`로 설정하면 대기 중인 초대 대상자가 계정을 만드는 것조차 추가로 차단됩니다 — 모든 멤버가 이미 Multica 계정을 가지고 있는 인스턴스에서만 유용합니다.
+초대받은 사용자가 첫 인증 코드로 가입을 완료할 수 있도록 `ALLOW_SIGNUP=true`를 유지하고 싶다면, `DISABLE_WORKSPACE_CREATION=true`를 `ALLOWED_EMAIL_DOMAINS` / `ALLOWED_EMAILS`와 결합하여 어떤 주소가 가입할 수 있는지 범위를 지정하세요. `ALLOW_SIGNUP=false`로 설정하면 대기 중인 초대 대상자가 계정을 만드는 것조차 추가로 차단됩니다 — 모든 멤버가 이미 Didian 계정을 가지고 있는 인스턴스에서만 유용합니다.
 
 ## 속도 제한 (선택적 Redis)
 
@@ -168,7 +168,7 @@ S3 앞에 CloudFront를 두는 경우 세 가지 변수가 적용됩니다: `CLO
 **리버스 프록시 뒤에서는 `RATE_LIMIT_TRUSTED_PROXIES`를 반드시 설정해야 합니다.** 그렇지 않으면 백엔드 관점에서 모든 실제 사용자가 프록시의 IP를 공유하게 되어, 배포 전체가 하나의 버킷에 들어가고, `/auth/send-code`가 사이트 전체에 대해 분당 5회가 됩니다. 일반적인 값: 같은 호스트의 Caddy / Nginx에는 `127.0.0.1/32,::1/128`; Cloudflare / ALB / CloudFront에는 해당 CDN의 공개된 IP 범위. `RemoteAddr`이 이 CIDR 중 하나에 속하는 IP만 `X-Forwarded-For`를 사용해 클라이언트를 식별할 수 있습니다.
 </Callout>
 
-이 별도의 `RATE_LIMIT_TRUSTED_PROXIES`는 오토파일럿 webhook 리미터(`/api/webhooks/autopilots/{token}`)를 제어하는 `MULTICA_TRUSTED_PROXIES`와는 **다릅니다**. 각 리미터는 자체 목록을 파싱하므로, 프록시 뒤에 있는 배포는 둘 다 설정해야 합니다.
+이 별도의 `RATE_LIMIT_TRUSTED_PROXIES`는 오토파일럿 webhook 리미터(`/api/webhooks/autopilots/{token}`)를 제어하는 `DIDIAN_TRUSTED_PROXIES`와는 **다릅니다**. 각 리미터는 자체 목록을 파싱하므로, 프록시 뒤에 있는 배포는 둘 다 설정해야 합니다.
 
 ## 데몬 튜닝 파라미터
 
@@ -176,22 +176,22 @@ S3 앞에 CloudFront를 두는 경우 세 가지 변수가 적용됩니다: `CLO
 
 | 변수 | 기본값 | 설명 |
 |---|---|---|
-| `MULTICA_SERVER_URL` | `ws://localhost:8080/ws` | 서버 주소 (자체 호스팅: 자신의 도메인으로 교체) |
-| `MULTICA_DAEMON_HEARTBEAT_INTERVAL` | `15s` | 하트비트 간격 |
-| `MULTICA_DAEMON_POLL_INTERVAL` | `3s` | 작업 폴링 간격 |
-| `MULTICA_DAEMON_MAX_CONCURRENT_TASKS` | `20` | 최대 동시 작업 수 |
-| `MULTICA_<PROVIDER>_PATH` | CLI 이름과 일치 | 각 AI 코딩 도구 실행 파일의 경로 (예: `MULTICA_CLAUDE_PATH`) |
-| `MULTICA_<PROVIDER>_MODEL` | 비어 있음 | 각 AI 코딩 도구의 기본 모델 |
-| `MULTICA_<PROVIDER>_ARGS` | 비어 있음 | 백엔드별 데몬 전역 기본 CLI 인자. 각 작업에 대해 각 에이전트 자체의 `custom_args`보다 먼저 적용됩니다. `MULTICA_CLAUDE_ARGS`, `MULTICA_CODEX_ARGS`, `MULTICA_CODEBUDDY_ARGS`를 지원 |
+| `DIDIAN_SERVER_URL` | `ws://localhost:8080/ws` | 서버 주소 (자체 호스팅: 자신의 도메인으로 교체) |
+| `DIDIAN_DAEMON_HEARTBEAT_INTERVAL` | `15s` | 하트비트 간격 |
+| `DIDIAN_DAEMON_POLL_INTERVAL` | `3s` | 작업 폴링 간격 |
+| `DIDIAN_DAEMON_MAX_CONCURRENT_TASKS` | `20` | 최대 동시 작업 수 |
+| `DIDIAN_<PROVIDER>_PATH` | CLI 이름과 일치 | 각 AI 코딩 도구 실행 파일의 경로 (예: `DIDIAN_CLAUDE_PATH`) |
+| `DIDIAN_<PROVIDER>_MODEL` | 비어 있음 | 각 AI 코딩 도구의 기본 모델 |
+| `DIDIAN_<PROVIDER>_ARGS` | 비어 있음 | 백엔드별 데몬 전역 기본 CLI 인자. 각 작업에 대해 각 에이전트 자체의 `custom_args`보다 먼저 적용됩니다. `DIDIAN_CLAUDE_ARGS`, `DIDIAN_CODEX_ARGS`, `DIDIAN_CODEBUDDY_ARGS`를 지원 |
 
 각 파라미터가 데몬 동작에 어떻게 영향을 미치는지에 대한 전체 설명은 [데몬과 런타임](/daemon-runtimes)을 참고하세요.
 
-### 기본 에이전트 인자 (`MULTICA_<PROVIDER>_ARGS`)
+### 기본 에이전트 인자 (`DIDIAN_<PROVIDER>_ARGS`)
 
 백엔드에 대해 **플릿 전역 기본값** 계층의 CLI 플래그를 설정합니다. 각 에이전트의 `custom_args`를 일일이 수정하지 않고도 데몬의 모든 에이전트에 기본 비용·리소스 기준선(예: `--max-turns`)을 적용할 수 있는 편리한 방법입니다. 이는 넘을 수 없는 상한이 아니라 기본 계층입니다. 각 에이전트 자체의 `custom_args`가 뒤에 추가되어 이를 덮어쓸 수 있습니다(아래 **우선순위** 참고).
 
 - **우선순위:** 기본 인자가 먼저 적용되고, 그다음 각 에이전트 자체의 `custom_args`가 추가됩니다. 값을 받는 플래그의 경우 다운스트림 CLI 자체의 인자 파서가 최종 적용 값을 결정합니다(대부분의 도구는 마지막 항목이 우선). 따라서 개별 에이전트는 데몬 기본값을 높일 수 있지만, 에이전트가 덮어쓰지 않은 부분에는 기본값이 계속 적용됩니다.
-- **파싱:** 값은 POSIX 셸 단어 규칙으로 분할되므로 따옴표를 사용할 수 있습니다 — `MULTICA_CLAUDE_ARGS='--append-system-prompt "multi word"'`는 두 개의 토큰으로 파싱됩니다.
+- **파싱:** 값은 POSIX 셸 단어 규칙으로 분할되므로 따옴표를 사용할 수 있습니다 — `DIDIAN_CLAUDE_ARGS='--append-system-prompt "multi word"'`는 두 개의 토큰으로 파싱됩니다.
 - **안전성:** 기본 인자 계층과 에이전트별 `custom_args` 계층 모두 동일한 blocked-flags 필터를 통과합니다. 따라서 프로토콜에 중요한 플래그(Claude의 `-p`, `--output-format`, `--input-format`, `--permission-mode`, `--mcp-config` 및 Codex의 `--listen` 등)는 어느 계층을 통해서도 주입할 수 없습니다.
 - **미설정/빈 값**은 동작에 변화가 없음을 의미합니다.
 
@@ -199,12 +199,12 @@ S3 앞에 CloudFront를 두는 경우 세 가지 변수가 적용됩니다: `CLO
 
 | 변수 | 기본값 | 설명 |
 |---|---|---|
-| `FRONTEND_ORIGIN` | 비어 있음 | 프론트엔드 주소. 초대 이메일 링크, CORS 허용 목록, cookie 도메인이 모두 이 값에서 파생됩니다. 설정하지 않으면 초대 이메일 링크는 호스팅 도메인 `https://app.multica.ai`로 폴백합니다 — 자체 호스팅은 이를 명시적으로 설정해야 합니다 |
+| `FRONTEND_ORIGIN` | 비어 있음 | 프론트엔드 주소. 초대 이메일 링크, CORS 허용 목록, cookie 도메인이 모두 이 값에서 파생됩니다. 설정하지 않으면 초대 이메일 링크는 호스팅 도메인 `https://app.didian.ai`로 폴백합니다 — 자체 호스팅은 이를 명시적으로 설정해야 합니다 |
 | `CORS_ALLOWED_ORIGINS` | 비어 있음 | 추가로 허용할 CORS origin (쉼표로 구분) |
 | `ALLOWED_ORIGINS` | 비어 있음 | WebSocket 전용 origin 허용 목록 (쉼표로 구분); 설정하지 않으면 폴백 순서는 `CORS_ALLOWED_ORIGINS` → `FRONTEND_ORIGIN` → `localhost:3000/5173/5174`입니다 |
 
 <Callout type="warning">
-**`FRONTEND_ORIGIN`을 설정하지 않으면 두 가지 조용한 실패가 발생합니다**: (1) 초대 이메일 링크가 `https://app.multica.ai`(호스팅 도메인)를 가리켜, 클릭해도 사용자가 자체 호스팅 인스턴스로 돌아오지 않습니다; (2) WebSocket Origin 검사가 `localhost:3000 / 5173 / 5174`로 폴백하여, 프로덕션 배포의 모든 WebSocket 연결이 거부되고 프론트엔드가 "실시간 업데이트를 받지 못하는" 것처럼 보입니다.
+**`FRONTEND_ORIGIN`을 설정하지 않으면 두 가지 조용한 실패가 발생합니다**: (1) 초대 이메일 링크가 `https://app.didian.ai`(호스팅 도메인)를 가리켜, 클릭해도 사용자가 자체 호스팅 인스턴스로 돌아오지 않습니다; (2) WebSocket Origin 검사가 `localhost:3000 / 5173 / 5174`로 폴백하여, 프로덕션 배포의 모든 WebSocket 연결이 거부되고 프론트엔드가 "실시간 업데이트를 받지 못하는" 것처럼 보입니다.
 </Callout>
 
 ## GitHub 연동
@@ -221,17 +221,17 @@ S3 앞에 CloudFront를 두는 경우 세 가지 변수가 적용됩니다: `CLO
 **필수 변수 중 하나라도 설정하지 않았을 때의 동작:**
 
 - 설정 → GitHub의 `Connect GitHub`가 **비활성화**되고 admin에게 "not configured" 힌트를 표시합니다.
-- `/api/webhooks/github` 엔드포인트는 **`503 github webhooks not configured`**를 반환합니다 — Multica는 모든 서명을 유효한 것으로 취급하기보다, secret 없이는 이벤트 처리를 거부합니다.
+- `/api/webhooks/github` 엔드포인트는 **`503 github webhooks not configured`**를 반환합니다 — Didian는 모든 서명을 유효한 것으로 취급하기보다, secret 없이는 이벤트 처리를 거부합니다.
 
 **선택 `GITHUB_APP_ID` / `GITHUB_APP_PRIVATE_KEY`가 설정되지 않았을 때의 동작:**
 
-- 설치 직후 연결 카드에 잠시 `Connected to unknown`이 표시됩니다. GitHub의 `installation.created` 웹훅이 도착하면(보통 몇 초 이내) Multica가 행을 실제 조직/사용자 이름으로 갱신하고 실시간 브로드캐스트를 보내, 열려 있는 Settings → GitHub 탭이 수동 새로고침 없이 업데이트됩니다.
+- 설치 직후 연결 카드에 잠시 `Connected to unknown`이 표시됩니다. GitHub의 `installation.created` 웹훅이 도착하면(보통 몇 초 이내) Didian가 행을 실제 조직/사용자 이름으로 갱신하고 실시간 브로드캐스트를 보내, 열려 있는 Settings → GitHub 탭이 수동 새로고침 없이 업데이트됩니다.
 
 **참고:** `GITHUB_WEBHOOK_SECRET`은 설치 흐름 state token의 서명 키로 재사용되므로, 운영자는 secret 하나만 관리하면 됩니다. 이것은 GitHub App의 *Client* secret이 **아닙니다** — Client secret은 OAuth 관련이며 이 연동에서는 사용되지 않습니다. 전체 안내는 [GitHub 연동 → 자체 호스팅 설정](/github-integration#self-host-setup)을 참고하세요.
 
 ## 사용량 분석
 
-기본적으로 서버는 Multica의 공식 PostHog 인스턴스로 보고합니다. 옵트아웃하려면 `ANALYTICS_DISABLED=true`로 설정하세요.
+기본적으로 서버는 Didian의 공식 PostHog 인스턴스로 보고합니다. 옵트아웃하려면 `ANALYTICS_DISABLED=true`로 설정하세요.
 
 | 변수 | 기본값 | 설명 |
 |---|---|---|
@@ -244,4 +244,4 @@ S3 앞에 CloudFront를 두는 경우 세 가지 변수가 적용됩니다: `CLO
 - [로그인 및 가입 설정](/auth-setup) — 위의 auth 관련 변수를 실제로 어떻게 설정하는지, 그리고 함정이 어디에 있는지
 - [GitHub 연동](/github-integration) — `GITHUB_APP_SLUG` / `GITHUB_WEBHOOK_SECRET`을 뒷받침하는 GitHub App을 어떻게 설정하는지
 - [문제 해결](/troubleshooting) — 흔한 설정 오류의 증상과 해결책
-- [데몬과 런타임](/daemon-runtimes) — `MULTICA_DAEMON_*` 파라미터가 실제로 하는 일
+- [데몬과 런타임](/daemon-runtimes) — `DIDIAN_DAEMON_*` 파라미터가 실제로 하는 일

@@ -63,7 +63,7 @@ func seedRebindOwners(t *testing.T, ctx context.Context, pool *pgxpool.Pool) {
 			ws, "rebind "+ws, "rebind-"+ws)
 	}
 	exec(`INSERT INTO agent_runtime (id, workspace_id, name, runtime_mode, provider)
-VALUES ($1, $2, 'rebind runtime', 'local', 'multica_daemon') ON CONFLICT (id) DO NOTHING`, rbRuntime, rbWS)
+VALUES ($1, $2, 'rebind runtime', 'local', 'didian_daemon') ON CONFLICT (id) DO NOTHING`, rbRuntime, rbWS)
 	// Names must be unique per workspace (agent_workspace_name_unique), so key
 	// each on its id.
 	for _, agent := range []string{rbAgentA, rbAgentB} {
@@ -97,7 +97,7 @@ func TestChannelStore_ReclaimDeadRevokedFences(t *testing.T) {
 	apps := []string{rbAppSame, rbAppDiff, rbAppActive, rbAppWsFence, rbAppWsActive, rbAppReactivate, rbAppMove}
 	clean := func() {
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_installation WHERE config->>'app_id' = ANY($1)`, apps)
-		_, _ = pool.Exec(ctx, `DELETE FROM channel_user_binding WHERE multica_user_id = $1`, rbUser)
+		_, _ = pool.Exec(ctx, `DELETE FROM channel_user_binding WHERE didian_user_id = $1`, rbUser)
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_chat_session_binding WHERE chat_session_id = $1`, rbChatSess)
 	}
 	clean()
@@ -205,7 +205,7 @@ func TestChannelStore_ReinstallReactivationSemantics(t *testing.T) {
 	apps := []string{rbAppReactivate, rbAppMove}
 	clean := func() {
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_installation WHERE config->>'app_id' = ANY($1)`, apps)
-		_, _ = pool.Exec(ctx, `DELETE FROM channel_user_binding WHERE multica_user_id = $1`, rbUser)
+		_, _ = pool.Exec(ctx, `DELETE FROM channel_user_binding WHERE didian_user_id = $1`, rbUser)
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_chat_session_binding WHERE chat_session_id = $1`, rbChatSess)
 	}
 	clean()
@@ -228,7 +228,7 @@ RETURNING id
 	// a real workspace accumulates them while the bot is connected.
 	attachBindings := func(installID pgtype.UUID) {
 		if _, err := pool.Exec(ctx, `
-INSERT INTO channel_user_binding (workspace_id, multica_user_id, installation_id, channel_type, channel_user_id)
+INSERT INTO channel_user_binding (workspace_id, didian_user_id, installation_id, channel_type, channel_user_id)
 VALUES ($1, $2, $3, 'feishu', 'ou_rb_user')
 `, rbWS, rbUser, installID); err != nil {
 			t.Fatalf("insert user binding: %v", err)
@@ -330,7 +330,7 @@ func TestChannelStore_RebindCleansDependentRows(t *testing.T) {
 	)
 	clean := func() {
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_installation WHERE config->>'app_id' = $1`, app)
-		_, _ = pool.Exec(ctx, `DELETE FROM channel_user_binding WHERE multica_user_id = $1`, rbUser)
+		_, _ = pool.Exec(ctx, `DELETE FROM channel_user_binding WHERE didian_user_id = $1`, rbUser)
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_chat_session_binding WHERE chat_session_id = $1`, rbChatSess)
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_outbound_card_message WHERE chat_session_id = $1`, rbChatSess)
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_binding_token WHERE token_hash = $1`, tokenHash)
@@ -356,7 +356,7 @@ RETURNING id
 			t.Fatalf("seed dependent row: %v", err)
 		}
 	}
-	seed(`INSERT INTO channel_user_binding (workspace_id, multica_user_id, installation_id, channel_type, channel_user_id)
+	seed(`INSERT INTO channel_user_binding (workspace_id, didian_user_id, installation_id, channel_type, channel_user_id)
 VALUES ($1, $2, $3, 'feishu', 'ou_rb_user')`, rbWS, rbUser, oldID)
 	seed(`INSERT INTO channel_chat_session_binding (chat_session_id, installation_id, channel_type, channel_chat_id, chat_type)
 VALUES ($1, $2, 'feishu', 'oc_rb_chat', 'p2p')`, rbChatSess, oldID)
@@ -439,7 +439,7 @@ func TestChannelStore_RebindGuardedDeleteRaceWithReactivation(t *testing.T) {
 	)
 	clean := func() {
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_installation WHERE config->>'app_id' = $1`, app)
-		_, _ = pool.Exec(ctx, `DELETE FROM channel_user_binding WHERE multica_user_id = $1`, rbUser)
+		_, _ = pool.Exec(ctx, `DELETE FROM channel_user_binding WHERE didian_user_id = $1`, rbUser)
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_chat_session_binding WHERE chat_session_id = $1`, rbChatSess)
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_binding_token WHERE token_hash = $1`, tokenHash)
 		_, _ = pool.Exec(ctx, `DELETE FROM channel_inbound_audit WHERE channel_event_id = $1`, auditEvent)
@@ -463,7 +463,7 @@ RETURNING id
 			t.Fatalf("seed dependent row: %v", err)
 		}
 	}
-	seed(`INSERT INTO channel_user_binding (workspace_id, multica_user_id, installation_id, channel_type, channel_user_id)
+	seed(`INSERT INTO channel_user_binding (workspace_id, didian_user_id, installation_id, channel_type, channel_user_id)
 VALUES ($1, $2, $3, 'feishu', 'ou_rb_user')`, rbWS, rbUser, idStr)
 	seed(`INSERT INTO channel_chat_session_binding (chat_session_id, installation_id, channel_type, channel_chat_id, chat_type)
 VALUES ($1, $2, 'feishu', 'oc_rb_chat', 'p2p')`, rbChatSess, idStr)

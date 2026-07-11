@@ -10,8 +10,8 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -21,7 +21,7 @@ import (
 // call from InstallationCredentials.Region via Region.OpenPlatformBaseURL
 // (Lark returns the actual wss URL in the response body, so only the
 // bootstrap POST host has to be region-aware). A deployment-wide
-// MULTICA_LARK_CALLBACK_BASE_URL still overrides every installation when
+// DIDIAN_LARK_CALLBACK_BASE_URL still overrides every installation when
 // set (staging / mock).
 
 // HTTPConnectionTokenFetcher is the production EndpointFetcher. It
@@ -47,7 +47,7 @@ import (
 // call returns a structured "app type not supported" error, this code
 // surfaces the code+msg directly so the Hub's backoff loop logs the
 // real reason instead of looping silently. The smoke test path is
-// `multica` -> register a PersonalAgent -> enable WS -> watch logs.
+// `didian` -> register a PersonalAgent -> enable WS -> watch logs.
 type HTTPConnectionTokenFetcher struct {
 	cfg HTTPConnectionTokenConfig
 }
@@ -69,7 +69,7 @@ func (c HTTPConnectionTokenConfig) withDefaults() HTTPConnectionTokenConfig {
 	// deployment-wide override" — Endpoint() then resolves the bootstrap
 	// host per installation from InstallationCredentials.Region, so one
 	// fetcher serves both Feishu and Lark. A non-empty BaseURL
-	// (MULTICA_LARK_CALLBACK_BASE_URL, or an httptest URL in tests)
+	// (DIDIAN_LARK_CALLBACK_BASE_URL, or an httptest URL in tests)
 	// forces every installation to that host.
 	c.BaseURL = strings.TrimRight(c.BaseURL, "/")
 	if c.HTTPClient == nil {
@@ -139,7 +139,7 @@ func (f *HTTPConnectionTokenFetcher) Endpoint(ctx context.Context, creds Install
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	// Locale header is sent verbatim by the SDK — Lark uses it for the
 	// error `msg` field (Chinese vs English). We pick zh because that's
-	// the audience Multica server logs are read by today; if i18n
+	// the audience Didian server logs are read by today; if i18n
 	// matters later this becomes an env or a per-installation knob.
 	req.Header.Set("locale", "zh")
 	resp, err := f.cfg.HTTPClient.Do(req)

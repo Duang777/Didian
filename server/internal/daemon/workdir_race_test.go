@@ -28,7 +28,7 @@ import (
 // Before the fix: handleTask called StartTask before invoking the runner,
 // flipping the server-side state to "running" while the per-task workdir
 // still didn't exist on disk. Hermes/OpenClaw agents that resolved
-// /multica_workspaces/{ws}/{short-id}/workdir from the running signal
+// /didian_workspaces/{ws}/{short-id}/workdir from the running signal
 // would then hit FileNotFoundError.
 func TestHandleTask_DoesNotCallStartTaskItself(t *testing.T) {
 	t.Parallel()

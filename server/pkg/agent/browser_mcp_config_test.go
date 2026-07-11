@@ -85,7 +85,7 @@ func TestHardenWindowsBrowserMcpConfigAddsPlaywrightLaunchConfigAndEdgeFallback(
 
 func TestHardenWindowsBrowserMcpConfigRespectsExplicitBrowserArgs(t *testing.T) {
 	withBrowserMcpTestHost(t, "windows", map[string]string{
-		"MULTICA_CHROME_DEVTOOLS_EXECUTABLE_PATH": `D:\Browsers\Chrome\chrome.exe`,
+		"DIDIAN_CHROME_DEVTOOLS_EXECUTABLE_PATH": `D:\Browsers\Chrome\chrome.exe`,
 	}, nil)
 
 	tempDir := t.TempDir()
@@ -171,7 +171,7 @@ func TestWindowsChromiumFallbackExecutableSkipsMissingInstallDirs(t *testing.T) 
 func TestWindowsChromiumFallbackExecutablePropagatesOverride(t *testing.T) {
 	override := filepath.Clean(`D:\Browsers\Chromium\chrome.exe`)
 	withBrowserMcpTestHost(t, "windows", map[string]string{
-		"MULTICA_CHROME_DEVTOOLS_EXECUTABLE_PATH": override,
+		"DIDIAN_CHROME_DEVTOOLS_EXECUTABLE_PATH": override,
 	}, map[string]bool{})
 
 	got, ok := windowsChromiumFallbackExecutable()

@@ -111,7 +111,7 @@ describe("installContextMenu — link items", () => {
     const wc = makeWebContents();
     installContextMenu(wc as never);
     wc.fire({
-      ...baseSelection({ linkURL: "https://multica.ai/welcome" }),
+      ...baseSelection({ linkURL: "https://didian.ai/welcome" }),
     });
 
     const labels = lastMenuLabels();
@@ -121,11 +121,11 @@ describe("installContextMenu — link items", () => {
     // The two click handlers must route to the existing
     // openExternalSafely allowlist + clipboard.writeText.
     invokeByLabel("Open Link in Browser");
-    expect(ctx.openExternalSpy).toHaveBeenCalledWith("https://multica.ai/welcome");
+    expect(ctx.openExternalSpy).toHaveBeenCalledWith("https://didian.ai/welcome");
 
     invokeByLabel("Copy Link Address");
     expect(ctx.clipboardWriteText).toHaveBeenCalledWith(
-      "https://multica.ai/welcome",
+      "https://didian.ai/welcome",
     );
     expect(ctx.popupSpy).toHaveBeenCalledTimes(1);
   });
@@ -169,7 +169,7 @@ describe("installContextMenu — link items", () => {
     ctx.preferredLanguagesRef.current = ["zh-CN"];
     const wc = makeWebContents();
     installContextMenu(wc as never);
-    wc.fire(baseSelection({ linkURL: "https://multica.ai" }));
+    wc.fire(baseSelection({ linkURL: "https://didian.ai" }));
     expect(lastMenuLabels()).toContain("在浏览器中打开链接");
     expect(lastMenuLabels()).toContain("复制链接地址");
   });
@@ -178,7 +178,7 @@ describe("installContextMenu — link items", () => {
     ctx.preferredLanguagesRef.current = ["fr-FR"];
     const wc = makeWebContents();
     installContextMenu(wc as never);
-    wc.fire(baseSelection({ linkURL: "https://multica.ai" }));
+    wc.fire(baseSelection({ linkURL: "https://didian.ai" }));
     expect(lastMenuLabels()).toContain("Open Link in Browser");
   });
 });

@@ -14,8 +14,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // editors without fighting ProseMirror.
 // ---------------------------------------------------------------------------
 
-const HIGHLIGHT_NAME = "multica-find";
-const ACTIVE_HIGHLIGHT_NAME = "multica-find-active";
+const HIGHLIGHT_NAME = "didian-find";
+const ACTIVE_HIGHLIGHT_NAME = "didian-find-active";
 
 // Feature detection, evaluated lazily per call site. On browsers without the
 // CSS Custom Highlight API the bar still opens and navigates, it just paints
