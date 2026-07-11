@@ -4,16 +4,16 @@ import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Tag, Plus, Settings2 } from "lucide-react";
 import { toast } from "sonner";
-import type { Label } from "@multica/core/types";
-import { Dialog, DialogContent, DialogTitle } from "@multica/ui/components/ui/dialog";
-import { useWorkspaceId } from "@multica/core/hooks";
+import type { Label } from "@didian/core/types";
+import { Dialog, DialogContent, DialogTitle } from "@didian/ui/components/ui/dialog";
+import { useWorkspaceId } from "@didian/core/hooks";
 import {
   labelListOptions,
   issueLabelsOptions,
   useAttachLabel,
   useDetachLabel,
   useCreateLabel,
-} from "@multica/core/labels";
+} from "@didian/core/labels";
 import { LabelChip } from "../../../labels/label-chip";
 import { LabelsPanel } from "../labels-panel";
 import {

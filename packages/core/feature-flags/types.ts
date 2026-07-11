@@ -1,5 +1,5 @@
 /**
- * Public types for the @multica/core/feature-flags module.
+ * Public types for the @didian/core/feature-flags module.
  *
  * The shape mirrors the Go-side server/pkg/featureflag package on purpose so
  * a Decision returned by the backend can be marshalled directly into the

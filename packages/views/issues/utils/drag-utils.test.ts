@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Issue } from "@multica/core/types";
+import type { Issue } from "@didian/core/types";
 import { insertIdByPosition } from "./drag-utils";
 
 function mk(id: string, position: number): Issue {

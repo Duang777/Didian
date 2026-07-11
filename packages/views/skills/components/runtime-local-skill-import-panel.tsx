@@ -18,36 +18,36 @@ import type {
   RuntimeLocalSkillImportConflict,
   RuntimeLocalSkillSummary,
   Skill,
-} from "@multica/core/types";
-import { useAuthStore } from "@multica/core/auth";
-import { useWorkspaceId } from "@multica/core/hooks";
+} from "@didian/core/types";
+import { useAuthStore } from "@didian/core/auth";
+import { useWorkspaceId } from "@didian/core/hooks";
 import {
   runtimeListOptions,
   runtimeLocalSkillsKeys,
   runtimeLocalSkillsOptions,
   resolveRuntimeLocalSkillImport,
-} from "@multica/core/runtimes";
+} from "@didian/core/runtimes";
 import {
   memberListOptions,
   skillDetailOptions,
   workspaceKeys,
-} from "@multica/core/workspace/queries";
-import { Button } from "@multica/ui/components/ui/button";
-import { Badge } from "@multica/ui/components/ui/badge";
-import { Checkbox } from "@multica/ui/components/ui/checkbox";
-import { Input } from "@multica/ui/components/ui/input";
-import { Label } from "@multica/ui/components/ui/label";
-import { Progress } from "@multica/ui/components/ui/progress";
-import { Textarea } from "@multica/ui/components/ui/textarea";
+} from "@didian/core/workspace/queries";
+import { Button } from "@didian/ui/components/ui/button";
+import { Badge } from "@didian/ui/components/ui/badge";
+import { Checkbox } from "@didian/ui/components/ui/checkbox";
+import { Input } from "@didian/ui/components/ui/input";
+import { Label } from "@didian/ui/components/ui/label";
+import { Progress } from "@didian/ui/components/ui/progress";
+import { Textarea } from "@didian/ui/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@multica/ui/components/ui/select";
-import { Skeleton } from "@multica/ui/components/ui/skeleton";
-import { useScrollFade } from "@multica/ui/hooks/use-scroll-fade";
+} from "@didian/ui/components/ui/select";
+import { Skeleton } from "@didian/ui/components/ui/skeleton";
+import { useScrollFade } from "@didian/ui/hooks/use-scroll-fade";
 import { useT } from "../../i18n";
 import { isNameConflictError } from "../lib/utils";
 

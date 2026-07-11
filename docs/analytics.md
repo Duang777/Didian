@@ -116,7 +116,7 @@ handler → analytics.Client.Capture(Event)   ← non-blocking, returns immediat
   (role, use_case, team_size, platform_preference) that a user can
   legitimately change during onboarding. `Event.Set` on the backend
   maps to `$set`; the frontend helper is
-  `setPersonProperties()` in `@multica/core/analytics`. Use
+  `setPersonProperties()` in `@didian/core/analytics`. Use
   `$set_once` only for values that must never be overwritten (email,
   initial attribution, first-completion timestamp).
 

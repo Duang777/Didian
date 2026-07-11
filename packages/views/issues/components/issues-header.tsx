@@ -22,8 +22,8 @@ import {
   UserPen,
   Waves,
 } from "lucide-react";
-import { Button } from "@multica/ui/components/ui/button";
-import { Spinner } from "@multica/ui/components/ui/spinner";
+import { Button } from "@didian/ui/components/ui/button";
+import { Spinner } from "@didian/ui/components/ui/spinner";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -38,24 +38,24 @@ import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
-} from "@multica/ui/components/ui/dropdown-menu";
+} from "@didian/ui/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "@multica/ui/components/ui/popover";
-import { Calendar } from "@multica/ui/components/ui/calendar";
-import { Switch } from "@multica/ui/components/ui/switch";
+} from "@didian/ui/components/ui/popover";
+import { Calendar } from "@didian/ui/components/ui/calendar";
+import { Switch } from "@didian/ui/components/ui/switch";
 import {
   ALL_STATUSES,
   PRIORITY_ORDER,
-} from "@multica/core/issues/config";
+} from "@didian/core/issues/config";
 import { StatusIcon, PriorityIcon } from ".";
 import { useQuery } from "@tanstack/react-query";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { memberListOptions, agentListOptions, squadListOptions } from "@multica/core/workspace/queries";
-import { projectListOptions } from "@multica/core/projects/queries";
-import { labelListOptions } from "@multica/core/labels/queries";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { memberListOptions, agentListOptions, squadListOptions } from "@didian/core/workspace/queries";
+import { projectListOptions } from "@didian/core/projects/queries";
+import { labelListOptions } from "@didian/core/labels/queries";
 import { ProjectIcon } from "../../projects/components/project-icon";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { LabelChip } from "../../labels/label-chip";
@@ -71,15 +71,15 @@ import {
   type IssueGrouping,
   type SwimlaneGrouping,
   type ViewMode,
-} from "@multica/core/issues/stores/view-store";
-import { useViewStore, useViewStoreApi } from "@multica/core/issues/stores/view-store-context";
-import { addDaysDateOnly, dateOnlyToLocalDate, formatDateOnly, toDateOnly, todayDateOnly } from "@multica/core/issues/date";
+} from "@didian/core/issues/stores/view-store";
+import { useViewStore, useViewStoreApi } from "@didian/core/issues/stores/view-store-context";
+import { addDaysDateOnly, dateOnlyToLocalDate, formatDateOnly, toDateOnly, todayDateOnly } from "@didian/core/issues/date";
 import {
   useIssuesScopeStore,
   type IssuesScope,
-} from "@multica/core/issues/stores/issues-scope-store";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@multica/ui/components/ui/tooltip";
-import type { Issue } from "@multica/core/types";
+} from "@didian/core/issues/stores/issues-scope-store";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@didian/ui/components/ui/tooltip";
+import type { Issue } from "@didian/core/types";
 import { useT } from "../../i18n";
 import { matchesPinyin } from "../../editor/extensions/pinyin-match";
 import { FILTER_ITEM_CLASS, HoverCheck } from "../../common/hover-check";

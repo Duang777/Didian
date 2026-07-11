@@ -3,19 +3,19 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { sanitizeNextUrl, useAuthStore } from "@multica/core/auth";
-import { workspaceKeys } from "@multica/core/workspace/queries";
-import { paths, resolvePostAuthDestination } from "@multica/core/paths";
-import { api } from "@multica/core/api";
-import { validateCliCallback, redirectToCliCallback } from "@multica/views/auth";
+import { sanitizeNextUrl, useAuthStore } from "@didian/core/auth";
+import { workspaceKeys } from "@didian/core/workspace/queries";
+import { paths, resolvePostAuthDestination } from "@didian/core/paths";
+import { api } from "@didian/core/api";
+import { validateCliCallback, redirectToCliCallback } from "@didian/views/auth";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "@multica/ui/components/ui/card";
-import { Button } from "@multica/ui/components/ui/button";
+} from "@didian/ui/components/ui/card";
+import { Button } from "@didian/ui/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 function CallbackContent() {

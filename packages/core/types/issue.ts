@@ -53,7 +53,7 @@ export interface Issue {
   // finishes; see server/internal/handler/issue_child_done.go.
   stage: number | null;
   // Calendar days as date-only "YYYY-MM-DD" (no time, no timezone). Use the
-  // helpers in @multica/core/issues/date to format/compare — never `new Date()`
+  // helpers in @didian/core/issues/date to format/compare — never `new Date()`
   // + local formatting, which shifts the day by the viewer's offset.
   start_date: string | null;
   due_date: string | null;

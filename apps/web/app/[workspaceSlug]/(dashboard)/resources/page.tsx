@@ -1,7 +1,7 @@
 "use client";
 
-import { ErrorBoundary } from "@multica/ui/components/common/error-boundary";
-import { ResourcesWorkbenchPage } from "@multica/views/resources";
+import { ErrorBoundary } from "@didian/ui/components/common/error-boundary";
+import { ResourcesWorkbenchPage } from "@didian/views/resources";
 
 export default function Page() {
   return (

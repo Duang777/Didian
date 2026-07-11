@@ -1,7 +1,7 @@
-import { Badge } from "@multica/ui/components/ui/badge";
-import { Progress } from "@multica/ui/components/ui/progress";
-import { ScrollArea } from "@multica/ui/components/ui/scroll-area";
-import { cn } from "@multica/ui/lib/utils";
+import { Badge } from "@didian/ui/components/ui/badge";
+import { Progress } from "@didian/ui/components/ui/progress";
+import { ScrollArea } from "@didian/ui/components/ui/scroll-area";
+import { cn } from "@didian/ui/lib/utils";
 import type { ResourceTask, ResourceTaskStatus } from "../mock-data";
 
 const statusOrder = ["needs_confirmation", "scanning", "indexed"] as const satisfies ResourceTaskStatus[];

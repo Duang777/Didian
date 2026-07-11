@@ -27,7 +27,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Image as RNImage, Pressable, View } from "react-native";
 import { Image as ExpoImage } from "expo-image";
-import type { Attachment } from "@multica/core/types";
+import type { Attachment } from "@didian/core/types";
 import { resolveAttachmentUrl } from "@/lib/attachment-url";
 import { useLightbox } from "./lightbox-provider";
 

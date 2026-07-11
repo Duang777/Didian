@@ -4,18 +4,18 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ChevronRight, ExternalLink, MessagesSquare, Trash2 } from "lucide-react";
-import { cn } from "@multica/ui/lib/utils";
-import { Button } from "@multica/ui/components/ui/button";
-import { Card, CardContent } from "@multica/ui/components/ui/card";
+import { cn } from "@didian/ui/lib/utils";
+import { Button } from "@didian/ui/components/ui/button";
+import { Card, CardContent } from "@didian/ui/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
-import { Input } from "@multica/ui/components/ui/input";
-import { Label } from "@multica/ui/components/ui/label";
+} from "@didian/ui/components/ui/dialog";
+import { Input } from "@didian/ui/components/ui/input";
+import { Label } from "@didian/ui/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,14 +25,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@multica/ui/components/ui/alert-dialog";
-import { useAuthStore } from "@multica/core/auth";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { memberListOptions } from "@multica/core/workspace/queries";
-import { useActorName } from "@multica/core/workspace/hooks";
-import { slackInstallationsOptions, slackKeys } from "@multica/core/slack";
-import { api } from "@multica/core/api";
-import type { SlackInstallation } from "@multica/core/types";
+} from "@didian/ui/components/ui/alert-dialog";
+import { useAuthStore } from "@didian/core/auth";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { memberListOptions } from "@didian/core/workspace/queries";
+import { useActorName } from "@didian/core/workspace/hooks";
+import { slackInstallationsOptions, slackKeys } from "@didian/core/slack";
+import { api } from "@didian/core/api";
+import type { SlackInstallation } from "@didian/core/types";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { openExternal } from "../../platform";
 import { useT } from "../../i18n";

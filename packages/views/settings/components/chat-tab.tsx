@@ -1,7 +1,7 @@
 "use client";
 
-import { Switch } from "@multica/ui/components/ui/switch";
-import { useChatStore } from "@multica/core/chat";
+import { Switch } from "@didian/ui/components/ui/switch";
+import { useChatStore } from "@didian/core/chat";
 import { useT } from "../../i18n";
 
 /**

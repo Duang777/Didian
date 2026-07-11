@@ -1,5 +1,5 @@
 {
-  "name": "@multica/core",
+  "name": "@didian/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -130,8 +130,8 @@
     "react": "catalog:"
   },
   "devDependencies": {
-    "@multica/eslint-config": "workspace:*",
-    "@multica/tsconfig": "workspace:*",
+    "@didian/eslint-config": "workspace:*",
+    "@didian/tsconfig": "workspace:*",
     "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "jsdom": "catalog:",

@@ -7,7 +7,7 @@
 - Next.js API 只能在这里或 `apps/web/platform/` 使用。
 - 共享资源工作台页面属于 `packages/views/`，不要直接塞进 app route。
 - route 文件应该组合 provider 和共享 view，避免在 `page.tsx` 里写大型业务组件。
-- API 响应必须先经过 `@multica/core` schema 解析，再交给 UI 逻辑。
+- API 响应必须先经过 `@didian/core` schema 解析，再交给 UI 逻辑。
 - 使用 `packages/ui/styles/` 中的语义化设计 token。
 
 ## 迁移说明

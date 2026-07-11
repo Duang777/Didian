@@ -97,7 +97,7 @@
 - [x] Artifact 预览能安全渲染 Markdown。
 
 **验证：**
-- [x] `pnpm --filter @multica/views typecheck`
+- [x] `pnpm --filter @didian/views typecheck`
 - [x] needs-confirmation 和 completed 状态组件测试
 
 **依赖：** Task 4
@@ -110,7 +110,7 @@
 
 ## Task 5A：Didian 用户可见品牌清理
 
-**描述：** 先把用户直接看到的 Multica 品牌表层迁移为 Didian，同时保留 `@multica/*` 包名、CLI binary、protocol scheme、本地配置目录和数据库/API 技术标识，避免在同一切片里破坏运行链路。
+**描述：** 先把用户直接看到的 Multica 品牌表层迁移为 Didian，同时保留 `@didian/*` 包名、CLI binary、protocol scheme、本地配置目录和数据库/API 技术标识，避免在同一切片里破坏运行链路。
 
 **验收标准：**
 - [x] Web/desktop 可见文案使用 Didian。
@@ -119,8 +119,8 @@
 - [x] 深层技术标识保留为后续迁移任务。
 
 **验证：**
-- [x] `pnpm --filter @multica/views typecheck`
-- [x] `pnpm --filter @multica/desktop typecheck`
+- [x] `pnpm --filter @didian/views typecheck`
+- [x] `pnpm --filter @didian/desktop typecheck`
 - [x] Staged 文件不包含 `.env`、`.next`、`node_modules` 或真实密钥。
 
 **依赖：** Task 2、Task 4
@@ -136,17 +136,17 @@
 
 ## Task 5B：Workspace package scope 迁移
 
-**描述：** 将内部 workspace package scope 从 `@multica/*` 迁移到 Didian scope，例如 `@didian/core`、`@didian/ui`、`@didian/views`。这是构建系统级迁移，必须独立于产品功能提交。
+**描述：** 将内部 workspace package scope 从 `@didian/*` 迁移到 Didian scope，例如 `@didian/core`、`@didian/ui`、`@didian/views`。这是构建系统级迁移，必须独立于产品功能提交。
 
 **验收标准：**
 - [ ] package names、exports、imports、Turbo filters 和 TS references 全部一致。
-- [ ] 旧 `@multica/*` imports 不再出现在应用源码中。
+- [ ] 旧 `@didian/*` imports 不再出现在应用源码中。
 - [ ] 迁移后 views/web/desktop typecheck 通过。
 
 **验证：**
 - [ ] `pnpm typecheck`
 - [ ] `pnpm --filter @didian/views test`
-- [ ] `rg '@multica/'` 只剩迁移文档或兼容说明。
+- [ ] `rg '@didian/'` 只剩迁移文档或兼容说明。
 
 **依赖：** Task 5A
 

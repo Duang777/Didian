@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useAuthStore } from "@multica/core/auth";
+import { useAuthStore } from "@didian/core/auth";
 import { DISCORD_URL, DiscordIcon } from "./discord";
 import { useDiscordCardDismissed } from "./use-discord-card-dismissed";
 import { useT } from "../i18n";

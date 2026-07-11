@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import { ArrowLeft, MessageSquare } from "lucide-react";
-import { Button } from "@multica/ui/components/ui/button";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
-} from "@multica/ui/components/ui/resizable";
-import { useIsMobile } from "@multica/ui/hooks/use-mobile";
-import { useWorkspacePaths } from "@multica/core/paths";
-import { useChatStore } from "@multica/core/chat";
-import type { Agent, ChatSession } from "@multica/core/types";
+} from "@didian/ui/components/ui/resizable";
+import { useIsMobile } from "@didian/ui/hooks/use-mobile";
+import { useWorkspacePaths } from "@didian/core/paths";
+import { useChatStore } from "@didian/core/chat";
+import type { Agent, ChatSession } from "@didian/core/types";
 import { PageHeader } from "../layout/page-header";
 import { useNavigation } from "../navigation";
 import { useT } from "../i18n";

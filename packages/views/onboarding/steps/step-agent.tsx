@@ -3,21 +3,21 @@
 import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@multica/ui/components/ui/button";
-import { useScrollFade } from "@multica/ui/hooks/use-scroll-fade";
-import { cn } from "@multica/ui/lib/utils";
-import { api } from "@multica/core/api";
+import { Button } from "@didian/ui/components/ui/button";
+import { useScrollFade } from "@didian/ui/hooks/use-scroll-fade";
+import { cn } from "@didian/ui/lib/utils";
+import { api } from "@didian/core/api";
 import {
   recommendTemplate,
   type AgentTemplateId,
   type QuestionnaireAnswers,
-} from "@multica/core/onboarding";
+} from "@didian/core/onboarding";
 import type {
   Agent,
   AgentRuntime,
   CreateAgentRequest,
-} from "@multica/core/types";
-import { DragStrip } from "@multica/views/platform";
+} from "@didian/core/types";
+import { DragStrip } from "@didian/views/platform";
 import { StepHeader } from "../components/step-header";
 import { useT } from "../../i18n";
 

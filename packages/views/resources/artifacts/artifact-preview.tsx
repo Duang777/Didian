@@ -1,7 +1,7 @@
 import { FileText } from "lucide-react";
-import { Badge } from "@multica/ui/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@multica/ui/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@multica/ui/components/ui/tabs";
+import { Badge } from "@didian/ui/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@didian/ui/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@didian/ui/components/ui/tabs";
 import { Markdown } from "../../common/markdown";
 import type { ResourceArtifact } from "../mock-data";
 

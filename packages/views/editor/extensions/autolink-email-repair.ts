@@ -17,7 +17,7 @@
  */
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { detectLinks } from "@multica/ui/markdown/linkify";
+import { detectLinks } from "@didian/ui/markdown/linkify";
 
 export const AutolinkEmailRepairExtension = Extension.create({
   name: "autolinkEmailRepair",

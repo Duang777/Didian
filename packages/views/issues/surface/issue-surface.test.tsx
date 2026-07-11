@@ -4,27 +4,27 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { setApiInstance } from "@multica/core/api";
-import type { ApiClient } from "@multica/core/api/client";
-import { pruneIssueSurfaceViewStates } from "@multica/core/issues/stores/surface-view-store";
+import { setApiInstance } from "@didian/core/api";
+import type { ApiClient } from "@didian/core/api/client";
+import { pruneIssueSurfaceViewStates } from "@didian/core/issues/stores/surface-view-store";
 import type {
   AgentTask,
   Issue,
   ListIssuesParams,
   ListIssuesResponse,
-} from "@multica/core/types";
+} from "@didian/core/types";
 import { IssueSurface } from "./issue-surface";
 
 // Mutable so tests can simulate a workspace switch — the workspace layout
 // does not remount its children on switch, so the surface must handle the
 // wsId change itself.
 const mockWsId = vi.hoisted(() => ({ current: "ws-1" }));
-vi.mock("@multica/core/hooks", () => ({
+vi.mock("@didian/core/hooks", () => ({
   useWorkspaceId: () => mockWsId.current,
 }));
 
 const mockAuthUser = { id: "user-1", email: "test@test.com", name: "Test User" };
-vi.mock("@multica/core/auth", () => ({
+vi.mock("@didian/core/auth", () => ({
   useAuthStore: Object.assign(
     (selector?: (state: unknown) => unknown) => {
       const state = { user: mockAuthUser, isAuthenticated: true };
@@ -50,9 +50,9 @@ vi.mock("../../navigation", () => ({
   useNavigation: () => ({ push: vi.fn(), pathname: "/" }),
 }));
 
-vi.mock("@multica/core/paths", async () => {
-  const actual = await vi.importActual<typeof import("@multica/core/paths")>(
-    "@multica/core/paths",
+vi.mock("@didian/core/paths", async () => {
+  const actual = await vi.importActual<typeof import("@didian/core/paths")>(
+    "@didian/core/paths",
   );
   return {
     ...actual,

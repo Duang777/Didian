@@ -1,7 +1,7 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
-import { cn } from "@multica/ui/lib/utils";
+import { cn } from "@didian/ui/lib/utils";
 import { useTabHistory } from "@/hooks/use-tab-history";
 import { useActiveTitleSync } from "@/hooks/use-tab-sync";
 import { useTabStore, resolveRouteIcon } from "@/stores/tab-store";
@@ -9,15 +9,15 @@ import {
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
-} from "@multica/ui/components/ui/sidebar";
-import { ModalRegistry } from "@multica/views/modals/registry";
-import { AppSidebar } from "@multica/views/layout";
-import { SearchCommand, SearchTrigger } from "@multica/views/search";
-import { FloatingChat } from "@multica/views/chat";
-import { WorkspaceSlugProvider, paths, useCurrentWorkspace } from "@multica/core/paths";
-import { useNavigation } from "@multica/views/navigation";
-import { getCurrentSlug, subscribeToCurrentSlug } from "@multica/core/platform";
-import { useDesktopUnreadBadge } from "@multica/views/platform";
+} from "@didian/ui/components/ui/sidebar";
+import { ModalRegistry } from "@didian/views/modals/registry";
+import { AppSidebar } from "@didian/views/layout";
+import { SearchCommand, SearchTrigger } from "@didian/views/search";
+import { FloatingChat } from "@didian/views/chat";
+import { WorkspaceSlugProvider, paths, useCurrentWorkspace } from "@didian/core/paths";
+import { useNavigation } from "@didian/views/navigation";
+import { getCurrentSlug, subscribeToCurrentSlug } from "@didian/core/platform";
+import { useDesktopUnreadBadge } from "@didian/views/platform";
 import { DesktopNavigationProvider } from "@/platform/navigation";
 import { TabBar } from "./tab-bar";
 import { TabContent } from "./tab-content";

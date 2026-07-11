@@ -10,16 +10,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
-import { Button } from "@multica/ui/components/ui/button";
-import { Textarea } from "@multica/ui/components/ui/textarea";
-import { Spinner } from "@multica/ui/components/ui/spinner";
-import type { IssueAssigneeType, UpdateIssueRequest } from "@multica/core/types";
-import { useUpdateIssue, useBatchUpdateIssues } from "@multica/core/issues/mutations";
-import { useActorName } from "@multica/core/workspace/hooks";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { agentListOptions } from "@multica/core/workspace/queries";
-import { runtimeListOptions, readRuntimeCliVersion, handoffSupported } from "@multica/core/runtimes";
+} from "@didian/ui/components/ui/dialog";
+import { Button } from "@didian/ui/components/ui/button";
+import { Textarea } from "@didian/ui/components/ui/textarea";
+import { Spinner } from "@didian/ui/components/ui/spinner";
+import type { IssueAssigneeType, UpdateIssueRequest } from "@didian/core/types";
+import { useUpdateIssue, useBatchUpdateIssues } from "@didian/core/issues/mutations";
+import { useActorName } from "@didian/core/workspace/hooks";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { agentListOptions } from "@didian/core/workspace/queries";
+import { runtimeListOptions, readRuntimeCliVersion, handoffSupported } from "@didian/core/runtimes";
 import { useIssueTriggerPreview } from "../issues/hooks/use-issue-trigger-preview";
 import { useT } from "../i18n";
 

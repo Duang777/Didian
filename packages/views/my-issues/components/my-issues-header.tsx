@@ -2,18 +2,18 @@
 
 import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
-import { Button } from "@multica/ui/components/ui/button";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@multica/ui/components/ui/dropdown-menu";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@multica/ui/components/ui/tooltip";
-import type { Issue } from "@multica/core/types";
-import type { MyIssuesScope } from "@multica/core/issues/stores/my-issues-view-store";
-import { useViewStore } from "@multica/core/issues/stores/view-store-context";
+} from "@didian/ui/components/ui/dropdown-menu";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@didian/ui/components/ui/tooltip";
+import type { Issue } from "@didian/core/types";
+import type { MyIssuesScope } from "@didian/core/issues/stores/my-issues-view-store";
+import { useViewStore } from "@didian/core/issues/stores/view-store-context";
 import { useT } from "../../i18n";
 import { WorkspaceAgentWorkingChip } from "../../issues/components/workspace-agent-working-chip";
 import {

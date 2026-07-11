@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AgentTask } from "@multica/core/types";
+import type { AgentTask } from "@didian/core/types";
 import {
   deriveAvgDurationLast30d,
   formatDurationMs,

@@ -19,11 +19,11 @@
  * just slot HtmlPreviewBody as the body.
  */
 
-import { cn } from "@multica/ui/lib/utils";
+import { cn } from "@didian/ui/lib/utils";
 import {
   PreviewTooLargeError,
   PreviewUnsupportedError,
-} from "@multica/core/api";
+} from "@didian/core/api";
 import { useT } from "../i18n";
 import { CodeBlockIframe } from "./code-block-iframe";
 import { withFragmentNavShim } from "./utils/iframe-fragment-nav";

@@ -2,8 +2,8 @@
 
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { I18nProvider } from "@multica/core/i18n/react";
-import type { RuntimeProfile } from "@multica/core/types";
+import { I18nProvider } from "@didian/core/i18n/react";
+import type { RuntimeProfile } from "@didian/core/types";
 import enCommon from "../../locales/en/common.json";
 import enRuntimes from "../../locales/en/runtimes.json";
 
@@ -34,7 +34,7 @@ vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
 
-vi.mock("@multica/core/runtimes", () => ({
+vi.mock("@didian/core/runtimes", () => ({
   runtimeProfileListOptions: vi.fn((wsId: string) => ({
     queryKey: ["runtime-profiles", wsId, "list"],
   })),

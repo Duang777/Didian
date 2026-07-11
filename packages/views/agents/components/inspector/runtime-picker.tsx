@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Cloud, Lock, Monitor } from "lucide-react";
-import type { AgentRuntime, MemberWithUser } from "@multica/core/types";
-import { runtimeDisplayName } from "@multica/core/runtimes";
+import type { AgentRuntime, MemberWithUser } from "@didian/core/types";
+import { runtimeDisplayName } from "@didian/core/runtimes";
 import { ActorAvatar } from "../../../common/actor-avatar";
 import {
   PickerItem,

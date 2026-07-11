@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
-import { runtimeModelsOptions } from "@multica/core/runtimes";
-import { Input } from "@multica/ui/components/ui/input";
+import { runtimeModelsOptions } from "@didian/core/runtimes";
+import { Input } from "@didian/ui/components/ui/input";
 import {
   PickerItem,
   PropertyPicker,

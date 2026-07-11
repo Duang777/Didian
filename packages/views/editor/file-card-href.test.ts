@@ -4,7 +4,7 @@ import {
   FILE_CARD_URL_PATTERN,
   isAllowedFileCardHref,
   preprocessFileCards,
-} from "@multica/ui/markdown";
+} from "@didian/ui/markdown";
 
 const ATTACHMENT_ID = "11111111-2222-3333-4444-555555555555";
 const ATTACHMENT_DOWNLOAD = `/api/attachments/${ATTACHMENT_ID}/download`;

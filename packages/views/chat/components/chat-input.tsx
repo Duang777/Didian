@@ -2,21 +2,21 @@
 
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { cn } from "@multica/ui/lib/utils";
+import { cn } from "@didian/ui/lib/utils";
 import {
   ContentEditor,
   type ContentEditorRef,
   useFileDropZone,
   FileDropOverlay,
 } from "../../editor";
-import { SubmitButton } from "@multica/ui/components/common/submit-button";
+import { SubmitButton } from "@didian/ui/components/common/submit-button";
 import { ChatAddMenu } from "./chat-add-menu";
-import { useChatStore, newSessionDraftKey } from "@multica/core/chat";
-import { createLogger } from "@multica/core/logger";
-import { enterKey, formatShortcut, modKey } from "@multica/core/platform";
-import type { UploadResult } from "@multica/core/hooks/use-file-upload";
+import { useChatStore, newSessionDraftKey } from "@didian/core/chat";
+import { createLogger } from "@didian/core/logger";
+import { enterKey, formatShortcut, modKey } from "@didian/core/platform";
+import type { UploadResult } from "@didian/core/hooks/use-file-upload";
 import type { MentionItem } from "../../editor/extensions/mention-suggestion";
-import type { Attachment } from "@multica/core/types";
+import type { Attachment } from "@didian/core/types";
 import { useT } from "../../i18n";
 
 const logger = createLogger("chat.ui");

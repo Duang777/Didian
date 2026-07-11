@@ -11,24 +11,24 @@ import {
   Server,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@multica/core/auth";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { agentTaskSnapshotOptions } from "@multica/core/agents";
-import { runtimeListOptions, runtimeKeys } from "@multica/core/runtimes/queries";
-import { useUpdatableRuntimeIds } from "@multica/core/runtimes/hooks";
-import { useWSEvent } from "@multica/core/realtime";
-import { agentListOptions } from "@multica/core/workspace/queries";
-import { memberListOptions } from "@multica/core/workspace/queries";
-import { Button } from "@multica/ui/components/ui/button";
-import { Input } from "@multica/ui/components/ui/input";
+import { useAuthStore } from "@didian/core/auth";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { agentTaskSnapshotOptions } from "@didian/core/agents";
+import { runtimeListOptions, runtimeKeys } from "@didian/core/runtimes/queries";
+import { useUpdatableRuntimeIds } from "@didian/core/runtimes/hooks";
+import { useWSEvent } from "@didian/core/realtime";
+import { agentListOptions } from "@didian/core/workspace/queries";
+import { memberListOptions } from "@didian/core/workspace/queries";
+import { Button } from "@didian/ui/components/ui/button";
+import { Input } from "@didian/ui/components/ui/input";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@multica/ui/components/ui/resizable";
-import { Skeleton } from "@multica/ui/components/ui/skeleton";
-import { useIsMobile } from "@multica/ui/hooks/use-mobile";
-import { cn } from "@multica/ui/lib/utils";
+} from "@didian/ui/components/ui/resizable";
+import { Skeleton } from "@didian/ui/components/ui/skeleton";
+import { useIsMobile } from "@didian/ui/hooks/use-mobile";
+import { cn } from "@didian/ui/lib/utils";
 import { PageHeader } from "../../layout/page-header";
 import { ConnectRemoteDialog } from "./connect-remote-dialog";
 import { CloudRuntimeDialog } from "./cloud-runtime-dialog";

@@ -46,16 +46,16 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "@multica/ui/components/ui/context-menu";
-import { useScrollFade } from "@multica/ui/hooks/use-scroll-fade";
-import { cn } from "@multica/ui/lib/utils";
+} from "@didian/ui/components/ui/context-menu";
+import { useScrollFade } from "@didian/ui/hooks/use-scroll-fade";
+import { cn } from "@didian/ui/lib/utils";
 import {
   useTabStore,
   useActiveGroup,
   resolveRouteIcon,
   type Tab,
 } from "@/stores/tab-store";
-import { paths } from "@multica/core/paths";
+import { paths } from "@didian/core/paths";
 
 const TAB_ICONS: Record<string, LucideIcon> = {
   Inbox,

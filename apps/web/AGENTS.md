@@ -19,7 +19,7 @@
 
 - 不要把共享 UI 或业务逻辑直接写进 `apps/web/`。
 - 不要导入 Electron 或桌面端专属 API。
-- 不要绕过 `@multica/core` 的 API schema 直接消费后端数据。
+- 不要绕过 `@didian/core` 的 API schema 直接消费后端数据。
 - 路由组件不要直接调用具体云盘 adapter。
 
 ## 验证

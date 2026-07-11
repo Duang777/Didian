@@ -1,5 +1,5 @@
-import type { IssuePriority } from "@multica/core/types";
-import { PRIORITY_CONFIG } from "@multica/core/issues/config";
+import type { IssuePriority } from "@didian/core/types";
+import { PRIORITY_CONFIG } from "@didian/core/issues/config";
 
 export function PriorityIcon({
   priority,

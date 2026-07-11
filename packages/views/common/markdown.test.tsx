@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Markdown as MarkdownBase } from "@multica/ui/markdown";
+import { Markdown as MarkdownBase } from "@didian/ui/markdown";
 import { Markdown } from "./markdown";
 
 const { resolveMock } = vi.hoisted(() => ({ resolveMock: vi.fn() }));
@@ -10,7 +10,7 @@ vi.mock("../issues/hooks", () => ({
   useResolveIssueIdentifier: (identifier: string) => resolveMock(identifier),
 }));
 
-vi.mock("@multica/core/config", () => ({
+vi.mock("@didian/core/config", () => ({
   useConfigStore: (selector: (state: { cdnDomain: string }) => unknown) =>
     selector({ cdnDomain: "" }),
 }));
@@ -21,8 +21,8 @@ vi.mock("../issues/components/issue-mention-card", () => ({
   ),
 }));
 
-vi.mock("@multica/core/paths", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@multica/core/paths")>();
+vi.mock("@didian/core/paths", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@didian/core/paths")>();
   return {
     ...actual,
     useWorkspaceSlug: () => "acme",

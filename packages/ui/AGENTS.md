@@ -11,7 +11,7 @@
 
 ## 边界
 
-- 不允许导入 `@multica/core`。
+- 不允许导入 `@didian/core`。
 - 不放业务逻辑、API 调用、路由逻辑或云盘概念。
 - 不使用 localStorage 或平台 API。
 - 组件保持通用、可组合。

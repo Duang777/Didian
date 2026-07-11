@@ -3,8 +3,8 @@ import {
   closestCenter,
   type CollisionDetection,
 } from "@dnd-kit/core";
-import type { Issue, IssueAssigneeType, IssueStatus, UpdateIssueRequest } from "@multica/core/types";
-import type { IssueGrouping } from "@multica/core/issues/stores/view-store";
+import type { Issue, IssueAssigneeType, IssueStatus, UpdateIssueRequest } from "@didian/core/types";
+import type { IssueGrouping } from "@didian/core/issues/stores/view-store";
 import type { BoardColumnGroup } from "../components/board-column";
 
 export type DragMoveUpdates = Pick<
@@ -69,7 +69,7 @@ export function computePosition(ids: string[], activeId: string, issueMap: Map<s
 /**
  * Insert `id` into `ids` at the slot implied by `position ASC`, reading each
  * id's position from `issueMap`. Mirrors `insertByPosition` in
- * `@multica/core/issues/cache-helpers` so the board's optimistic placement on
+ * `@didian/core/issues/cache-helpers` so the board's optimistic placement on
  * drop matches the cache the settle reconcile rebuilds from — otherwise the
  * card would land in one slot, then jump when local columns re-derive from TQ.
  */

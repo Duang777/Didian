@@ -4,29 +4,29 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeftRight, Check, ChevronRight, Maximize2, Minimize2, X as XIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { DialogTitle } from "@multica/ui/components/ui/dialog";
-import { Button } from "@multica/ui/components/ui/button";
-import { Switch } from "@multica/ui/components/ui/switch";
-import { api, ApiError } from "@multica/core/api";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { useCurrentWorkspace } from "@multica/core/paths";
-import { agentListOptions, squadListOptions } from "@multica/core/workspace/queries";
-import { projectListOptions } from "@multica/core/projects/queries";
+import { DialogTitle } from "@didian/ui/components/ui/dialog";
+import { Button } from "@didian/ui/components/ui/button";
+import { Switch } from "@didian/ui/components/ui/switch";
+import { api, ApiError } from "@didian/core/api";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { useCurrentWorkspace } from "@didian/core/paths";
+import { agentListOptions, squadListOptions } from "@didian/core/workspace/queries";
+import { projectListOptions } from "@didian/core/projects/queries";
 import {
   useQuickCreateStore,
   type QuickCreateActorType,
-} from "@multica/core/issues/stores/quick-create-store";
-import { useIssueDraftStore } from "@multica/core/issues/stores/draft-store";
-import { useCreateModeStore } from "@multica/core/issues/stores/create-mode-store";
+} from "@didian/core/issues/stores/quick-create-store";
+import { useIssueDraftStore } from "@didian/core/issues/stores/draft-store";
+import { useCreateModeStore } from "@didian/core/issues/stores/create-mode-store";
 import {
   runtimeListOptions,
   checkQuickCreateCliVersion,
   readRuntimeCliVersion,
   MIN_QUICK_CREATE_CLI_VERSION,
-} from "@multica/core/runtimes";
-import { useFileUpload } from "@multica/core/hooks/use-file-upload";
-import { formatShortcut, modKey, enterKey } from "@multica/core/platform";
-import { contentReferencesAttachment, type Agent, type Attachment, type Squad } from "@multica/core/types";
+} from "@didian/core/runtimes";
+import { useFileUpload } from "@didian/core/hooks/use-file-upload";
+import { formatShortcut, modKey, enterKey } from "@didian/core/platform";
+import { contentReferencesAttachment, type Agent, type Attachment, type Squad } from "@didian/core/types";
 import { ActorAvatar } from "../common/actor-avatar";
 import { PillButton } from "../common/pill-button";
 import { ProjectPicker } from "../projects/components/project-picker";
@@ -37,15 +37,15 @@ import {
   PickerSection,
   PickerEmpty,
 } from "../issues/components/pickers/property-picker";
-import { useAuthStore } from "@multica/core/auth";
-import { memberListOptions } from "@multica/core/workspace/queries";
+import { useAuthStore } from "@didian/core/auth";
+import { memberListOptions } from "@didian/core/workspace/queries";
 import {
   ContentEditor,
   type ContentEditorRef,
   useFileDropZone,
   FileDropOverlay,
 } from "../editor";
-import { FileUploadButton } from "@multica/ui/components/common/file-upload-button";
+import { FileUploadButton } from "@didian/ui/components/common/file-upload-button";
 import { useT } from "../i18n";
 import { matchesPinyin } from "../editor/extensions/pinyin-match";
 

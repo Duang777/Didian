@@ -8,13 +8,13 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { useAuthStore } from "@multica/core/auth";
-import { agentListOptions, memberListOptions } from "@multica/core/workspace/queries";
-import { canAssignAgent } from "@multica/views/issues/components";
-import { api } from "@multica/core/api";
-import { useAgentPresenceDetail, useWorkspaceAgentAvailability } from "@multica/core/agents";
-import { useFileUpload } from "@multica/core/hooks/use-file-upload";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { useAuthStore } from "@didian/core/auth";
+import { agentListOptions, memberListOptions } from "@didian/core/workspace/queries";
+import { canAssignAgent } from "@didian/views/issues/components";
+import { api } from "@didian/core/api";
+import { useAgentPresenceDetail, useWorkspaceAgentAvailability } from "@didian/core/agents";
+import { useFileUpload } from "@didian/core/hooks/use-file-upload";
 import {
   chatSessionsOptions,
   chatMessagesPageOptions,
@@ -22,21 +22,21 @@ import {
   chatKeys,
   isTaskMessageTaskId,
   sortChatSessions,
-} from "@multica/core/chat/queries";
+} from "@didian/core/chat/queries";
 import {
   useCreateChatSession,
   useMarkChatSessionRead,
   useSetChatSessionArchived,
-} from "@multica/core/chat/mutations";
-import { useChatStore } from "@multica/core/chat";
-import { createLogger } from "@multica/core/logger";
+} from "@didian/core/chat/mutations";
+import { useChatStore } from "@didian/core/chat";
+import { createLogger } from "@didian/core/logger";
 import type {
   Agent,
   Attachment,
   ChatMessage,
   ChatMessagesPage,
   ChatPendingTask,
-} from "@multica/core/types";
+} from "@didian/core/types";
 import { useT } from "../../i18n";
 
 const uiLogger = createLogger("chat.ui");

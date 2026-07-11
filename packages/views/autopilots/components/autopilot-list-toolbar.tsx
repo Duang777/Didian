@@ -7,7 +7,7 @@ import {
   Filter,
   X,
 } from "lucide-react";
-import type { Autopilot } from "@multica/core/types";
+import type { Autopilot } from "@didian/core/types";
 import {
   AUTOPILOT_SCOPES,
   type AutopilotColumnKey,
@@ -15,9 +15,9 @@ import {
   type AutopilotScope,
   type AutopilotSortDirection,
   type AutopilotSortField,
-} from "@multica/core/autopilots/stores";
-import { useActorName } from "@multica/core/workspace/hooks";
-import { Button } from "@multica/ui/components/ui/button";
+} from "@didian/core/autopilots/stores";
+import { useActorName } from "@didian/core/workspace/hooks";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -28,18 +28,18 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@multica/ui/components/ui/dropdown-menu";
+} from "@didian/ui/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@multica/ui/components/ui/popover";
-import { Switch } from "@multica/ui/components/ui/switch";
+} from "@didian/ui/components/ui/popover";
+import { Switch } from "@didian/ui/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@multica/ui/components/ui/tooltip";
+} from "@didian/ui/components/ui/tooltip";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { FILTER_ITEM_CLASS, HoverCheck } from "../../common/hover-check";
 import { useT } from "../../i18n";

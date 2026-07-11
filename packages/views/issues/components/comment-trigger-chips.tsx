@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { CommentTriggerPreviewAgent } from "@multica/core/types";
-import { useAgentPresenceDetail } from "@multica/core/agents";
-import { useCurrentWorkspace } from "@multica/core/paths";
-import { ActorAvatar as ActorAvatarBase } from "@multica/ui/components/common/actor-avatar";
-import { AVATAR_SIZE_PX } from "@multica/ui/lib/avatar-size";
+import type { CommentTriggerPreviewAgent } from "@didian/core/types";
+import { useAgentPresenceDetail } from "@didian/core/agents";
+import { useCurrentWorkspace } from "@didian/core/paths";
+import { ActorAvatar as ActorAvatarBase } from "@didian/ui/components/common/actor-avatar";
+import { AVATAR_SIZE_PX } from "@didian/ui/lib/avatar-size";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@multica/ui/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@multica/ui/components/ui/tooltip";
-import { cn } from "@multica/ui/lib/utils";
+} from "@didian/ui/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@didian/ui/components/ui/tooltip";
+import { cn } from "@didian/ui/lib/utils";
 import { AgentStatusDot } from "../../common/actor-avatar";
 import { useT } from "../../i18n";
 

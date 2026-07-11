@@ -10,12 +10,12 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { Autopilot } from "@multica/core/types";
+import type { Autopilot } from "@didian/core/types";
 import {
   useDeleteAutopilot,
   useUpdateAutopilot,
-} from "@multica/core/autopilots";
-import { Button } from "@multica/ui/components/ui/button";
+} from "@didian/core/autopilots";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -23,14 +23,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
+} from "@didian/ui/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@multica/ui/components/ui/dropdown-menu";
+} from "@didian/ui/components/ui/dropdown-menu";
 import { useT } from "../../i18n";
 
 // ---------------------------------------------------------------------------

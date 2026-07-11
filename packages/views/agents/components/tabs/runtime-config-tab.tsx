@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Save } from "lucide-react";
-import type { Agent } from "@multica/core/types";
+import type { Agent } from "@didian/core/types";
 import {
   OPENCLAW_GATEWAY_TOKEN_MASK,
   type OpenclawRoutingMode,
@@ -10,11 +10,11 @@ import {
   openclawRuntimeConfigEquals,
   parseOpenclawRuntimeConfig,
   serializeOpenclawRuntimeConfig,
-} from "@multica/core/agents";
-import { Button } from "@multica/ui/components/ui/button";
-import { Input } from "@multica/ui/components/ui/input";
-import { Label } from "@multica/ui/components/ui/label";
-import { Switch } from "@multica/ui/components/ui/switch";
+} from "@didian/core/agents";
+import { Button } from "@didian/ui/components/ui/button";
+import { Input } from "@didian/ui/components/ui/input";
+import { Label } from "@didian/ui/components/ui/label";
+import { Switch } from "@didian/ui/components/ui/switch";
 import { toast } from "sonner";
 import { useT } from "../../../i18n";
 

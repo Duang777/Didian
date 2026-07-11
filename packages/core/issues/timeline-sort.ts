@@ -1,4 +1,4 @@
-import type { TimelineEntry } from "@multica/core/types";
+import type { TimelineEntry } from "@didian/core/types";
 
 /**
  * Stable-ascending sort for flat TimelineEntry[] caches.

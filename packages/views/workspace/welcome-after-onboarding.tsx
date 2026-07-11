@@ -3,22 +3,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { api } from "@multica/core/api";
-import { useAuthStore } from "@multica/core/auth";
-import { useWelcomeStore } from "@multica/core/onboarding";
-import { paths, useCurrentWorkspace } from "@multica/core/paths";
-import { resolvePublicFileUrl } from "@multica/core/workspace/avatar-url";
-import { issueKeys } from "@multica/core/issues/queries";
-import { workspaceKeys } from "@multica/core/workspace/queries";
-import type { Agent, CreateIssueRequest, Issue } from "@multica/core/types";
+import { api } from "@didian/core/api";
+import { useAuthStore } from "@didian/core/auth";
+import { useWelcomeStore } from "@didian/core/onboarding";
+import { paths, useCurrentWorkspace } from "@didian/core/paths";
+import { resolvePublicFileUrl } from "@didian/core/workspace/avatar-url";
+import { issueKeys } from "@didian/core/issues/queries";
+import { workspaceKeys } from "@didian/core/workspace/queries";
+import type { Agent, CreateIssueRequest, Issue } from "@didian/core/types";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
-import { Button } from "@multica/ui/components/ui/button";
-import { cn } from "@multica/ui/lib/utils";
+} from "@didian/ui/components/ui/dialog";
+import { Button } from "@didian/ui/components/ui/button";
+import { cn } from "@didian/ui/lib/utils";
 import { useNavigation } from "../navigation";
 import { useT } from "../i18n";
 import {

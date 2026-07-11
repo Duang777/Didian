@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@multica/ui/components/ui/card";
-import { Button } from "@multica/ui/components/ui/button";
-import { api } from "@multica/core/api";
-import { useAuthStore } from "@multica/core/auth";
+import { Card, CardContent } from "@didian/ui/components/ui/card";
+import { Button } from "@didian/ui/components/ui/button";
+import { api } from "@didian/core/api";
+import { useAuthStore } from "@didian/core/auth";
 import { useNavigation } from "../navigation";
 import { useT } from "../i18n";
 

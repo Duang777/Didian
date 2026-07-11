@@ -14,20 +14,20 @@ import {
   Square,
   Trash2,
 } from "lucide-react";
-import { cn } from "@multica/ui/lib/utils";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { useWorkspacePresenceMap } from "@multica/core/agents";
-import { api } from "@multica/core/api";
-import { pendingChatTasksOptions, chatKeys, sortChatSessions } from "@multica/core/chat/queries";
+import { cn } from "@didian/ui/lib/utils";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { useWorkspacePresenceMap } from "@didian/core/agents";
+import { api } from "@didian/core/api";
+import { pendingChatTasksOptions, chatKeys, sortChatSessions } from "@didian/core/chat/queries";
 import {
   useDeleteChatSession,
   useSetChatSessionArchived,
   useSetChatSessionPinned,
-} from "@multica/core/chat/mutations";
-import { useChatStore } from "@multica/core/chat";
-import type { Agent, ChatSession, PendingChatTasksResponse } from "@multica/core/types";
+} from "@didian/core/chat/mutations";
+import { useChatStore } from "@didian/core/chat";
+import type { Agent, ChatSession, PendingChatTasksResponse } from "@didian/core/types";
 import { ActorAvatar } from "../../common/actor-avatar";
-import { createLogger } from "@multica/core/logger";
+import { createLogger } from "@didian/core/logger";
 import { removeChatMessageFromCaches } from "./use-chat-controller";
 import { useT } from "../../i18n";
 

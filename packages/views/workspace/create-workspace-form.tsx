@@ -2,22 +2,22 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Input } from "@multica/ui/components/ui/input";
-import { Label } from "@multica/ui/components/ui/label";
-import { Button } from "@multica/ui/components/ui/button";
-import { Card, CardContent } from "@multica/ui/components/ui/card";
-import { useCreateWorkspace } from "@multica/core/workspace/mutations";
-import type { Workspace } from "@multica/core/types";
-import { isImeComposing } from "@multica/core/utils";
+import { Input } from "@didian/ui/components/ui/input";
+import { Label } from "@didian/ui/components/ui/label";
+import { Button } from "@didian/ui/components/ui/button";
+import { Card, CardContent } from "@didian/ui/components/ui/card";
+import { useCreateWorkspace } from "@didian/core/workspace/mutations";
+import type { Workspace } from "@didian/core/types";
+import { isImeComposing } from "@didian/core/utils";
 import {
   WORKSPACE_SLUG_REGEX,
   isWorkspaceSlugConflict,
   nameToWorkspaceSlug,
 } from "./slug";
 import { useT } from "../i18n";
-import { isReservedSlug } from "@multica/core/paths";
-import { useConfigStore } from "@multica/core/config";
-import { workspaceUrlHost } from "@multica/core/workspace/workspace-url";
+import { isReservedSlug } from "@didian/core/paths";
+import { useConfigStore } from "@didian/core/config";
+import { workspaceUrlHost } from "@didian/core/workspace/workspace-url";
 
 export interface CreateWorkspaceFormProps {
   onSuccess: (workspace: Workspace) => void | Promise<void>;

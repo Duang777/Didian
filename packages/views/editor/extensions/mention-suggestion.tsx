@@ -11,29 +11,29 @@ import {
   type ReactNode,
 } from "react";
 import type { QueryClient } from "@tanstack/react-query";
-import { getCurrentWsId } from "@multica/core/platform";
-import { flattenIssueBuckets, issueKeys } from "@multica/core/issues/queries";
-import { workspaceKeys } from "@multica/core/workspace/queries";
-import { useAuthStore } from "@multica/core/auth";
-import { canAssignAgentToIssue } from "@multica/core/permissions";
-import { api } from "@multica/core/api";
-import { isImeComposing } from "@multica/core/utils";
+import { getCurrentWsId } from "@didian/core/platform";
+import { flattenIssueBuckets, issueKeys } from "@didian/core/issues/queries";
+import { workspaceKeys } from "@didian/core/workspace/queries";
+import { useAuthStore } from "@didian/core/auth";
+import { canAssignAgentToIssue } from "@didian/core/permissions";
+import { api } from "@didian/core/api";
+import { isImeComposing } from "@didian/core/utils";
 import type {
   Issue,
   ListIssuesCache,
   MemberWithUser,
   Agent,
   Squad,
-} from "@multica/core/types";
+} from "@didian/core/types";
 import { ListTodo } from "lucide-react";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { StatusIcon } from "../../issues/components/status-icon";
 import { ProjectIcon } from "../../projects/components/project-icon";
 import { useT } from "../../i18n";
-import { Badge } from "@multica/ui/components/ui/badge";
-import { cn } from "@multica/ui/lib/utils";
-import type { IssueStatus, ProjectStatus } from "@multica/core/types";
-import { PROJECT_STATUS_CONFIG } from "@multica/core/projects/config";
+import { Badge } from "@didian/ui/components/ui/badge";
+import { cn } from "@didian/ui/lib/utils";
+import type { IssueStatus, ProjectStatus } from "@didian/core/types";
+import { PROJECT_STATUS_CONFIG } from "@didian/core/projects/config";
 import type { SuggestionOptions } from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
 import {

@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { LarkBindPage } from "@multica/views/lark";
+import { LarkBindPage } from "@didian/views/lark";
 
 // /lark/bind?token=<raw> is the Bot's "you're not bound yet, click here"
 // destination. Suspense wraps useSearchParams per Next.js 15's CSR-bailout

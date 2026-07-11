@@ -16,13 +16,13 @@ vi.mock("../issues/hooks", () => ({
     resolveIssueIdentifierMock(identifier),
 }));
 
-vi.mock("@multica/core/api", () => ({
+vi.mock("@didian/core/api", () => ({
   api: { getAttachmentTextContent: getAttachmentTextContentMock },
   PreviewTooLargeError: class extends Error {},
   PreviewUnsupportedError: class extends Error {},
 }));
 
-vi.mock("@multica/core/paths", () => ({
+vi.mock("@didian/core/paths", () => ({
   useWorkspacePaths: () => ({
     issueDetail: (id: string) => `/test/issues/${id}`,
   }),

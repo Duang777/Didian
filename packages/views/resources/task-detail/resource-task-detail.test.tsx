@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { resourceTaskDetails, resourceTasks } from "../mock-data";
 import { ResourceTaskDetail } from "./resource-task-detail";
 
-vi.mock("@multica/ui/components/ui/scroll-area", () => ({
+vi.mock("@didian/ui/components/ui/scroll-area", () => ({
   ScrollArea: ({ children, className }: { children: ReactNode; className?: string }) => (
     <div className={className}>{children}</div>
   ),

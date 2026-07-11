@@ -2,11 +2,11 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Inter, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@multica/ui/components/ui/sonner";
-import { cn } from "@multica/ui/lib/utils";
+import { Toaster } from "@didian/ui/components/ui/sonner";
+import { cn } from "@didian/ui/lib/utils";
 import { WebProviders } from "@/components/web-providers";
-import type { SupportedLocale } from "@multica/core/i18n";
-import { RESOURCES } from "@multica/views/locales";
+import type { SupportedLocale } from "@didian/core/i18n";
+import { RESOURCES } from "@didian/views/locales";
 import { getRequestLocale } from "@/lib/request-locale";
 import "./globals.css";
 

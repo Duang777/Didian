@@ -1,6 +1,6 @@
-import type { IssueScope } from "@multica/core/issues/surface/scope";
-import type { CreateIssueRequest } from "@multica/core/types";
-import type { ViewMode } from "@multica/core/issues/stores/view-store";
+import type { IssueScope } from "@didian/core/issues/surface/scope";
+import type { CreateIssueRequest } from "@didian/core/types";
+import type { ViewMode } from "@didian/core/issues/stores/view-store";
 
 export type IssueCreateDefaults = Partial<
   Omit<

@@ -3,13 +3,13 @@
 import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import type { AgentTask } from "@multica/core/types/agent";
-import { useTranscriptViewStore } from "@multica/core/agents/stores";
+import type { AgentTask } from "@didian/core/types/agent";
+import { useTranscriptViewStore } from "@didian/core/agents/stores";
 import { renderWithI18n } from "../../test/i18n";
 import { AgentTranscriptDialog } from "./agent-transcript-dialog";
 import type { TimelineItem } from "./build-timeline";
 
-vi.mock("@multica/core/api", () => ({
+vi.mock("@didian/core/api", () => ({
   api: {
     getAgent: vi.fn().mockResolvedValue(null),
     listRuntimes: vi.fn().mockResolvedValue([]),
@@ -20,7 +20,7 @@ vi.mock("../actor-avatar", () => ({
   ActorAvatar: () => <span data-testid="actor-avatar" />,
 }));
 
-vi.mock("@multica/ui/components/ui/dialog", () => ({
+vi.mock("@didian/ui/components/ui/dialog", () => ({
   Dialog: ({ open, children }: { open: boolean; children: ReactNode }) =>
     open ? <>{children}</> : null,
   DialogContent: ({ children }: { children: ReactNode }) => (
@@ -29,7 +29,7 @@ vi.mock("@multica/ui/components/ui/dialog", () => ({
   DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
 }));
 
-vi.mock("@multica/ui/components/ui/dropdown-menu", () => ({
+vi.mock("@didian/ui/components/ui/dropdown-menu", () => ({
   DropdownMenu: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   DropdownMenuTrigger: ({
     children,
@@ -72,7 +72,7 @@ vi.mock("@multica/ui/components/ui/dropdown-menu", () => ({
   ),
 }));
 
-vi.mock("@multica/ui/components/ui/collapsible", async () => {
+vi.mock("@didian/ui/components/ui/collapsible", async () => {
   const React = await import("react");
   const Context = React.createContext<{
     open: boolean;

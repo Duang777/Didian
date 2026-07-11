@@ -5,7 +5,7 @@
 ## 职责
 
 - 资源工作台页面、面板、表单、任务看板、时间线和 artifact 视图。
-- 组合 `@multica/core` 的 hooks/types 与 `@multica/ui` 组件。
+- 组合 `@didian/core` 的 hooks/types 与 `@didian/ui` 组件。
 - 为共享功能组件编写 UI 行为测试。
 
 ## 资源工作台方向

@@ -9,17 +9,17 @@ const showStatus = vi.hoisted(() => vi.fn());
 const select = vi.hoisted(() => vi.fn());
 const deselect = vi.hoisted(() => vi.fn());
 
-vi.mock("@multica/core/hooks", () => ({
+vi.mock("@didian/core/hooks", () => ({
   useWorkspaceId: () => "ws-1",
 }));
 
-vi.mock("@multica/core/modals", () => ({
+vi.mock("@didian/core/modals", () => ({
   useModalStore: {
     getState: () => ({ open: openModal }),
   },
 }));
 
-vi.mock("@multica/core/issues/stores/view-store-context", () => ({
+vi.mock("@didian/core/issues/stores/view-store-context", () => ({
   useViewStore: (selector?: any) => {
     const state = {
       grouping: "status",
@@ -34,7 +34,7 @@ vi.mock("@multica/core/issues/stores/view-store-context", () => ({
   }),
 }));
 
-vi.mock("@multica/core/issues/mutations", () => ({
+vi.mock("@didian/core/issues/mutations", () => ({
   useLoadMoreByStatus: () => ({
     total: 0,
     loaded: 0,
@@ -44,7 +44,7 @@ vi.mock("@multica/core/issues/mutations", () => ({
   }),
 }));
 
-vi.mock("@multica/core/workspace/hooks", () => ({
+vi.mock("@didian/core/workspace/hooks", () => ({
   useActorName: () => ({
     getActorName: (_type: string, id: string) => id,
   }),

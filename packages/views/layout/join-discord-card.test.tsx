@@ -21,7 +21,7 @@ vi.mock("../i18n", () => ({
 }));
 
 const userId = { current: "user-1" as string | undefined };
-vi.mock("@multica/core/auth", () => ({
+vi.mock("@didian/core/auth", () => ({
   useAuthStore: (selector: (s: { user?: { id?: string } }) => unknown) =>
     selector({ user: userId.current ? { id: userId.current } : undefined }),
 }));

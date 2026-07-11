@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Trash2, Plus, Pencil, Check, X } from "lucide-react";
-import { Input } from "@multica/ui/components/ui/input";
-import { Label as UILabel } from "@multica/ui/components/ui/label";
-import { Button } from "@multica/ui/components/ui/button";
+import { Input } from "@didian/ui/components/ui/input";
+import { Label as UILabel } from "@didian/ui/components/ui/label";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -15,12 +15,12 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@multica/ui/components/ui/alert-dialog";
+} from "@didian/ui/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { labelListOptions, useCreateLabel, useUpdateLabel, useDeleteLabel } from "@multica/core/labels";
-import type { Label } from "@multica/core/types";
-import { isImeComposing } from "@multica/core/utils";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { labelListOptions, useCreateLabel, useUpdateLabel, useDeleteLabel } from "@didian/core/labels";
+import type { Label } from "@didian/core/types";
+import { isImeComposing } from "@didian/core/utils";
 import { LabelChip } from "../../labels/label-chip";
 import { useT } from "../../i18n";
 

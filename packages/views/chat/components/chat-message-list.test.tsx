@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { I18nProvider } from "@multica/core/i18n/react";
-import { chatKeys } from "@multica/core/chat/queries";
-import type { TaskMessagePayload } from "@multica/core/types";
+import { I18nProvider } from "@didian/core/i18n/react";
+import { chatKeys } from "@didian/core/chat/queries";
+import type { TaskMessagePayload } from "@didian/core/types";
 import enChat from "../../locales/en/chat.json";
 
 import { ChatMessageList } from "./chat-message-list";

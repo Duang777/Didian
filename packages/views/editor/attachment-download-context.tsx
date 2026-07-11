@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, use, useMemo, type ReactNode } from "react";
-import type { Attachment } from "@multica/core/types";
-import { attachmentIdFromDownloadURL } from "@multica/core/types/attachment-url";
+import type { Attachment } from "@didian/core/types";
+import { attachmentIdFromDownloadURL } from "@didian/core/types/attachment-url";
 import { openExternal } from "../platform";
 import { useDownloadAttachment } from "./use-download-attachment";
 

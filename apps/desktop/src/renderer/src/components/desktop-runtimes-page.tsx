@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RuntimesPage } from "@multica/views/runtimes";
+import { RuntimesPage } from "@didian/views/runtimes";
 import { DaemonRuntimeActions } from "./daemon-runtime-card";
 import type { DaemonStatus } from "../../../shared/daemon-types";
 

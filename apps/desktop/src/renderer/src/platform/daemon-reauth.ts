@@ -1,4 +1,4 @@
-import { useAuthStore } from "@multica/core/auth";
+import { useAuthStore } from "@didian/core/auth";
 import { toast } from "sonner";
 
 /**

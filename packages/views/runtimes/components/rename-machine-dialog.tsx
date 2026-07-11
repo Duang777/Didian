@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useUpdateRuntime } from "@multica/core/runtimes/mutations";
+import { useUpdateRuntime } from "@didian/core/runtimes/mutations";
 import {
   AlertDialog,
   AlertDialogContent,
-} from "@multica/ui/components/ui/alert-dialog";
-import { Button } from "@multica/ui/components/ui/button";
-import { Input } from "@multica/ui/components/ui/input";
+} from "@didian/ui/components/ui/alert-dialog";
+import { Button } from "@didian/ui/components/ui/button";
+import { Input } from "@didian/ui/components/ui/input";
 import { useT } from "../../i18n";
 
 // RenameMachineDialog names a whole machine (MUL-4217). A machine hosts one

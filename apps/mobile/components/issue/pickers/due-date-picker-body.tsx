@@ -4,7 +4,7 @@
  * area — this body only handles the picker spinner + the local draft state.
  *
  * due_date is a calendar day (date-only "YYYY-MM-DD", no time/timezone — see
- * @multica/core/issues/date and GH #3618). Mirrors web's
+ * @didian/core/issues/date and GH #3618). Mirrors web's
  * packages/views/issues/components/pickers/due-date-picker.tsx: read the stored
  * day into a local-midnight Date for the spinner, write back the picked local
  * day as a date-only string.
@@ -12,7 +12,7 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { toDateOnly, dateOnlyToLocalDate } from "@multica/core/issues/date";
+import { toDateOnly, dateOnlyToLocalDate } from "@didian/core/issues/date";
 
 interface Props {
   value: string | null;

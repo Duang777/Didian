@@ -18,25 +18,25 @@ import {
   autopilotDeliveriesOptions,
   autopilotDeliveryOptions,
   useReplayAutopilotDelivery,
-} from "@multica/core/autopilots";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { Skeleton } from "@multica/ui/components/ui/skeleton";
-import { Button } from "@multica/ui/components/ui/button";
-import { Badge } from "@multica/ui/components/ui/badge";
+} from "@didian/core/autopilots";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { Skeleton } from "@didian/ui/components/ui/skeleton";
+import { Button } from "@didian/ui/components/ui/button";
+import { Badge } from "@didian/ui/components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
-import { cn } from "@multica/ui/lib/utils";
-import { copyText } from "@multica/ui/lib/clipboard";
+} from "@didian/ui/components/ui/dialog";
+import { cn } from "@didian/ui/lib/utils";
+import { copyText } from "@didian/ui/lib/clipboard";
 import { toast } from "sonner";
 import { useT } from "../../i18n";
 import type {
   WebhookDelivery,
   WebhookDeliveryStatus,
   WebhookSignatureStatus,
-} from "@multica/core/types";
+} from "@didian/core/types";
 
 // --- Status visuals -------------------------------------------------------
 

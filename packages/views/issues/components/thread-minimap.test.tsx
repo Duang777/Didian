@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen } from "@testing-library/react";
-import type { TimelineEntry } from "@multica/core/types";
+import type { TimelineEntry } from "@didian/core/types";
 import { renderWithI18n } from "../../test/i18n";
 import { ThreadMinimap, commentPreview, waveScale } from "./thread-minimap";
 
-vi.mock("@multica/core/workspace/hooks", () => ({
+vi.mock("@didian/core/workspace/hooks", () => ({
   useActorName: () => ({
     getActorName: (type: string, id: string) => `${type}:${id}`,
   }),

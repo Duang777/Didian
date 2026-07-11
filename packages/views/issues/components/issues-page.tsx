@@ -1,9 +1,9 @@
 "use client";
 
 import { ListTodo } from "lucide-react";
-import type { Issue } from "@multica/core/types";
-import { useIssuesScopeStore } from "@multica/core/issues/stores/issues-scope-store";
-import { useViewStore } from "@multica/core/issues/stores/view-store-context";
+import type { Issue } from "@didian/core/types";
+import { useIssuesScopeStore } from "@didian/core/issues/stores/issues-scope-store";
+import { useViewStore } from "@didian/core/issues/stores/view-store-context";
 import { PageHeader } from "../../layout/page-header";
 import { useT } from "../../i18n";
 import { IssueSurface } from "../surface/issue-surface";

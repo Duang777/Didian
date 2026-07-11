@@ -2,10 +2,10 @@
 
 import { useMemo } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { selectRecentContexts, useRecentContextStore, type RecentContextEntry } from "@multica/core/chat";
-import { issueDetailOptions } from "@multica/core/issues/queries";
-import { projectDetailOptions } from "@multica/core/projects/queries";
-import type { Issue, Project } from "@multica/core/types";
+import { selectRecentContexts, useRecentContextStore, type RecentContextEntry } from "@didian/core/chat";
+import { issueDetailOptions } from "@didian/core/issues/queries";
+import { projectDetailOptions } from "@didian/core/projects/queries";
+import type { Issue, Project } from "@didian/core/types";
 import type { MentionItem } from "../../editor/extensions/mention-suggestion";
 import { useNavigation } from "../../navigation";
 

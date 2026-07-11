@@ -11,13 +11,13 @@ import {
 import type { QueryClient } from "@tanstack/react-query";
 import type { SuggestionOptions } from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
-import { useAuthStore } from "@multica/core/auth";
-import { useChatStore } from "@multica/core/chat";
-import { getCurrentWsId } from "@multica/core/platform";
-import { canAssignAgentToIssue } from "@multica/core/permissions";
-import { isImeComposing } from "@multica/core/utils";
-import { workspaceKeys } from "@multica/core/workspace/queries";
-import type { Agent, MemberWithUser } from "@multica/core/types";
+import { useAuthStore } from "@didian/core/auth";
+import { useChatStore } from "@didian/core/chat";
+import { getCurrentWsId } from "@didian/core/platform";
+import { canAssignAgentToIssue } from "@didian/core/permissions";
+import { isImeComposing } from "@didian/core/utils";
+import { workspaceKeys } from "@didian/core/workspace/queries";
+import type { Agent, MemberWithUser } from "@didian/core/types";
 import { useT } from "../../i18n";
 import { createSuggestionPopupRender, isPickerAcceptKey } from "./suggestion-popup";
 

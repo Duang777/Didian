@@ -3,7 +3,7 @@
 Multica ships a framework-level feature flag implementation:
 
 - **Backend**: `server/pkg/featureflag` — Go package.
-- **Frontend**: `@multica/core/feature-flags` — TypeScript module with React hooks.
+- **Frontend**: `@didian/core/feature-flags` — TypeScript module with React hooks.
 
 Both sides share the same vocabulary (`Decision`, `EvalContext`, `Rule`, `PercentRollout`) and the same FNV-1a percent bucketing, so a flag evaluated on the server and on the client lands in the same bucket for the same user.
 
@@ -135,7 +135,7 @@ import {
   FeatureFlagsProvider,
   FeatureFlagService,
   StaticProvider,
-} from "@multica/core/feature-flags";
+} from "@didian/core/feature-flags";
 
 const service = new FeatureFlagService(
   new StaticProvider({
@@ -160,7 +160,7 @@ When the backend pushes a fresh rule set (via an API response or WebSocket), cal
 ### Toggle point in a component
 
 ```tsx
-import { useFlag, useVariant } from "@multica/core/feature-flags";
+import { useFlag, useVariant } from "@didian/core/feature-flags";
 
 function BillingPage() {
   const showV2 = useFlag("billing_v2_dashboard", false);

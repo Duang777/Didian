@@ -1,15 +1,15 @@
 "use client";
 
 import { Eye, MoreHorizontal } from "lucide-react";
-import type { IssueStatus } from "@multica/core/types";
-import { Button } from "@multica/ui/components/ui/button";
+import type { IssueStatus } from "@didian/core/types";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@multica/ui/components/ui/dropdown-menu";
-import { useViewStoreApi } from "@multica/core/issues/stores/view-store-context";
+} from "@didian/ui/components/ui/dropdown-menu";
+import { useViewStoreApi } from "@didian/core/issues/stores/view-store-context";
 import { StatusIcon } from "./status-icon";
 import { useT } from "../../i18n";
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Issue, IssueAssigneeGroup } from "@multica/core/types";
+import type { Issue, IssueAssigneeGroup } from "@didian/core/types";
 import {
   applyIssueFilters,
   filterAssigneeGroups,

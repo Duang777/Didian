@@ -2,11 +2,11 @@ import { StrictMode, type ReactNode } from "react";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { I18nProvider } from "@multica/core/i18n/react";
+import { I18nProvider } from "@didian/core/i18n/react";
 import enCommon from "../../locales/en/common.json";
 import enSettings from "../../locales/en/settings.json";
 
-// ApiError is re-exported from @multica/core/api; we mock the api module
+// ApiError is re-exported from @didian/core/api; we mock the api module
 // itself but still need a real ApiError class so `e instanceof ApiError`
 // in the polling catch behaves the way it does at runtime.
 const ApiError = vi.hoisted(() => {
@@ -59,11 +59,11 @@ vi.mock("@tanstack/react-query", () => ({
   queryOptions: <T,>(opts: T) => opts,
 }));
 
-vi.mock("@multica/core/hooks", () => ({
+vi.mock("@didian/core/hooks", () => ({
   useWorkspaceId: () => "workspace-1",
 }));
 
-vi.mock("@multica/core/workspace/queries", () => ({
+vi.mock("@didian/core/workspace/queries", () => ({
   memberListOptions: () => ({ queryKey: ["members"], queryFn: vi.fn() }),
 }));
 
@@ -74,7 +74,7 @@ vi.mock("@multica/core/workspace/queries", () => ({
 const agentNameByIdRef = vi.hoisted(() => ({
   current: new Map<string, string>(),
 }));
-vi.mock("@multica/core/workspace/hooks", () => ({
+vi.mock("@didian/core/workspace/hooks", () => ({
   useActorName: () => ({
     getAgentName: (agentId: string) =>
       agentNameByIdRef.current.get(agentId) ?? "Unknown Agent",
@@ -96,7 +96,7 @@ vi.mock("../../common/actor-avatar", () => ({
   ),
 }));
 
-vi.mock("@multica/core/lark", () => ({
+vi.mock("@didian/core/lark", () => ({
   larkInstallationsOptions: () => ({
     queryKey: ["lark", "installations"],
     queryFn: vi.fn(),
@@ -104,7 +104,7 @@ vi.mock("@multica/core/lark", () => ({
   larkKeys: { installations: (wsId: string) => ["lark", "installations", wsId] },
 }));
 
-vi.mock("@multica/core/api", () => ({
+vi.mock("@didian/core/api", () => ({
   api: {
     beginLarkInstall: mockBeginInstall,
     getLarkInstallStatus: mockGetStatus,
@@ -113,7 +113,7 @@ vi.mock("@multica/core/api", () => ({
   ApiError,
 }));
 
-vi.mock("@multica/core/auth", () => {
+vi.mock("@didian/core/auth", () => {
   const useAuthStore = Object.assign(
     (sel?: (s: { user: { id: string } }) => unknown) =>
       sel ? sel({ user: { id: "user-1" } }) : { user: { id: "user-1" } },

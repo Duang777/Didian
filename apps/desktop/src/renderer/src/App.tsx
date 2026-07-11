@@ -1,16 +1,16 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CoreProvider } from "@multica/core/platform";
-import { pickLocale, type SupportedLocale } from "@multica/core/i18n";
-import { useAuthStore } from "@multica/core/auth";
-import { useWelcomeStore } from "@multica/core/onboarding";
-import { workspaceKeys, workspaceListOptions } from "@multica/core/workspace/queries";
-import { api } from "@multica/core/api";
-import { useHasOnboarded } from "@multica/core/paths";
-import { setCurrentWorkspace } from "@multica/core/platform";
-import { ThemeProvider } from "@multica/ui/components/common/theme-provider";
-import { MulticaIcon } from "@multica/ui/components/common/multica-icon";
-import { Toaster } from "@multica/ui/components/ui/sonner";
+import { CoreProvider } from "@didian/core/platform";
+import { pickLocale, type SupportedLocale } from "@didian/core/i18n";
+import { useAuthStore } from "@didian/core/auth";
+import { useWelcomeStore } from "@didian/core/onboarding";
+import { workspaceKeys, workspaceListOptions } from "@didian/core/workspace/queries";
+import { api } from "@didian/core/api";
+import { useHasOnboarded } from "@didian/core/paths";
+import { setCurrentWorkspace } from "@didian/core/platform";
+import { ThemeProvider } from "@didian/ui/components/common/theme-provider";
+import { MulticaIcon } from "@didian/ui/components/common/multica-icon";
+import { Toaster } from "@didian/ui/components/ui/sonner";
 import { DesktopLoginPage } from "./pages/login";
 import { DesktopShell } from "./components/desktop-layout";
 import { UpdateNotification } from "./components/update-notification";
@@ -18,8 +18,8 @@ import { useTabStore } from "./stores/tab-store";
 import { useWindowOverlayStore } from "./stores/window-overlay-store";
 import { useDaemonIPCBridge } from "./platform/daemon-ipc-bridge";
 import { createDesktopLocaleAdapter } from "./platform/i18n-adapter";
-import { captureEvent } from "@multica/core/analytics";
-import { RESOURCES } from "@multica/views/locales";
+import { captureEvent } from "@didian/core/analytics";
+import { RESOURCES } from "@didian/views/locales";
 
 // BCP-47 region tags for the <html lang> attribute, mirroring
 // apps/web/app/layout.tsx HTML_LANG. index.html ships a static lang="en";

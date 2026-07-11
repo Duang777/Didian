@@ -2,7 +2,7 @@
 
 import { cleanup, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AgentTask } from "@multica/core/types";
+import type { AgentTask } from "@didian/core/types";
 import { renderWithI18n } from "../../test/i18n";
 
 // The hover card renders one row per task and counts tasks, so its header
@@ -11,11 +11,11 @@ import { renderWithI18n } from "../../test/i18n";
 // the card lists three task rows). An agent-worded header here would print
 // "3 agents working" for those two agents, contradicting the chip. MUL-3872.
 
-vi.mock("@multica/core/hooks", () => ({
+vi.mock("@didian/core/hooks", () => ({
   useWorkspaceId: () => "ws-1",
 }));
 
-vi.mock("@multica/core/workspace/hooks", () => ({
+vi.mock("@didian/core/workspace/hooks", () => ({
   useActorName: () => ({
     getActorName: (_type: string, id: string) =>
       ({ "agent-1": "Niko", "agent-2": "J" })[id] ?? "Unknown Agent",
@@ -28,19 +28,19 @@ vi.mock("@multica/core/workspace/hooks", () => ({
 // The card only reads these query results for avatars / availability, never
 // for the header count, so empty lists keep the row chrome inert while the
 // header still derives from the task array.
-vi.mock("@multica/core/runtimes/queries", () => ({
+vi.mock("@didian/core/runtimes/queries", () => ({
   runtimeListOptions: () => ({ queryKey: ["runtimes"] }),
 }));
 
-vi.mock("@multica/core/workspace/queries", () => ({
+vi.mock("@didian/core/workspace/queries", () => ({
   agentListOptions: () => ({ queryKey: ["agents"] }),
 }));
 
-vi.mock("@multica/core/agents", () => ({
+vi.mock("@didian/core/agents", () => ({
   deriveAgentAvailability: () => "online",
 }));
 
-vi.mock("@multica/ui/components/common/actor-avatar", () => ({
+vi.mock("@didian/ui/components/common/actor-avatar", () => ({
   ActorAvatar: ({ name }: { name: string }) => (
     <span data-testid="actor-avatar">{name}</span>
   ),

@@ -175,7 +175,7 @@ Installation / Authentication / Setup / Daemon / Workspace / Issue / Comment / A
 
 ### 7.1 视觉基础（Phase 1）
 
-- `apps/docs/app/global.css` 里 `@import "@multica/ui/styles/tokens.css"`，覆盖 Fumadocs 的 `neutral.css`
+- `apps/docs/app/global.css` 里 `@import "@didian/ui/styles/tokens.css"`，覆盖 Fumadocs 的 `neutral.css`
 - 字体：Heading serif（**Fraunces** 或 **Source Serif 4**，`next/font` 加载）+ Body `--font-sans` + Code `--font-mono`
 - 排版：主列 ~720px，段间距 1.2×，h1/h2 serif，代码块深色高对比，链接保留下划线
 
@@ -189,7 +189,7 @@ Fumadocs 原生支持：`content/docs/[lang]/...`。初期只英文，中文后�
 
 ### 7.4 CI（Phase 0）
 
-当前 `.github/workflows/ci.yml:33` 用 `--filter='!@multica/docs'` 排除了 docs build。**在 Phase 0 做一个独立小 PR 把它加回来**——否则 MDX 语法错 CI 不拦，只有 Vercel 部署时才发现。
+当前 `.github/workflows/ci.yml:33` 用 `--filter='!@didian/docs'` 排除了 docs build。**在 Phase 0 做一个独立小 PR 把它加回来**——否则 MDX 语法错 CI 不拦，只有 Vercel 部署时才发现。
 
 ### 7.5 dev:docs 快捷命令（已做）
 

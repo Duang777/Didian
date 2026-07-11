@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { Archive, Bot, FileText, FolderOpen, HardDrive, Link2, ListChecks, Monitor, Play, Search } from "lucide-react";
-import { Badge } from "@multica/ui/components/ui/badge";
-import { Button } from "@multica/ui/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@multica/ui/components/ui/card";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@multica/ui/components/ui/resizable";
-import { ScrollArea } from "@multica/ui/components/ui/scroll-area";
-import { cn } from "@multica/ui/lib/utils";
+import { Badge } from "@didian/ui/components/ui/badge";
+import { Button } from "@didian/ui/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@didian/ui/components/ui/card";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@didian/ui/components/ui/resizable";
+import { ScrollArea } from "@didian/ui/components/ui/scroll-area";
+import { cn } from "@didian/ui/lib/utils";
 import { PageHeader } from "../layout/page-header";
 import { resourceTaskDetails, resourceTasks, type ResourceTask } from "./mock-data";
 import { ResourceTaskBoard } from "./task-board/resource-task-board";

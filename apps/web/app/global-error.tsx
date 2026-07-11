@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { captureException } from "@multica/core/analytics";
+import { captureException } from "@didian/core/analytics";
 
 /**
  * Route-level error boundary for the web app. Next.js renders this (replacing
@@ -9,7 +9,7 @@ import { captureException } from "@multica/core/analytics";
  * white-screen case. React catches these before they reach window.onerror, so
  * posthog-js's automatic exception capture never sees them; we report them
  * explicitly here. Section-level failures are handled in place by
- * `@multica/ui` ErrorBoundary and don't reach this far.
+ * `@didian/ui` ErrorBoundary and don't reach this far.
  */
 export default function GlobalError({
   error,

@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import type { RuntimeProfile } from "@multica/core/types";
+import type { RuntimeProfile } from "@didian/core/types";
 import {
   parseRuntimeProfileBoundConflict,
   useDeleteRuntimeProfile,
-} from "@multica/core/runtimes";
+} from "@didian/core/runtimes";
 import {
   AlertDialog,
   AlertDialogContent,
-} from "@multica/ui/components/ui/alert-dialog";
-import { Button } from "@multica/ui/components/ui/button";
+} from "@didian/ui/components/ui/alert-dialog";
+import { Button } from "@didian/ui/components/ui/button";
 import { useT } from "../../i18n";
 
 // Confirmation dialog for deleting a custom runtime profile. The server

@@ -1,8 +1,8 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { MemberDetailPage as SharedMemberDetailPage } from "@multica/views/members";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { memberListOptions } from "@multica/core/workspace/queries";
+import { MemberDetailPage as SharedMemberDetailPage } from "@didian/views/members";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { memberListOptions } from "@didian/core/workspace/queries";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export function MemberDetailPage() {

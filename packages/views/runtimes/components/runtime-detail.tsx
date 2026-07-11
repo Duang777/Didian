@@ -15,27 +15,27 @@ import type {
   Agent,
   MemberWithUser,
   RuntimeProfile,
-} from "@multica/core/types";
-import { useAuthStore } from "@multica/core/auth";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { memberListOptions, agentListOptions } from "@multica/core/workspace/queries";
-import { useUpdateRuntime } from "@multica/core/runtimes/mutations";
+} from "@didian/core/types";
+import { useAuthStore } from "@didian/core/auth";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { memberListOptions, agentListOptions } from "@didian/core/workspace/queries";
+import { useUpdateRuntime } from "@didian/core/runtimes/mutations";
 import {
   deriveRuntimeHealth,
   runtimeDisplayName,
   runtimeProfileListOptions,
-} from "@multica/core/runtimes";
+} from "@didian/core/runtimes";
 import {
   type AgentPresenceDetail,
   useWorkspacePresenceMap,
-} from "@multica/core/agents";
-import { useWorkspacePaths } from "@multica/core/paths";
-import { Button } from "@multica/ui/components/ui/button";
+} from "@didian/core/agents";
+import { useWorkspacePaths } from "@didian/core/paths";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@multica/ui/components/ui/tooltip";
+} from "@didian/ui/components/ui/tooltip";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { BreadcrumbHeader } from "../../layout/breadcrumb-header";
 import { AppLink, useNavigation } from "../../navigation";

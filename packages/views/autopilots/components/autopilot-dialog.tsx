@@ -20,14 +20,14 @@ import {
   X as XIcon,
   Zap,
 } from "lucide-react";
-import { cn } from "@multica/ui/lib/utils";
-import { copyText } from "@multica/ui/lib/clipboard";
+import { cn } from "@didian/ui/lib/utils";
+import { copyText } from "@didian/ui/lib/clipboard";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@multica/ui/components/ui/tooltip";
+} from "@didian/ui/components/ui/dialog";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@didian/ui/components/ui/tooltip";
 import {
   Popover,
   PopoverTrigger,
@@ -35,35 +35,35 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverDescription,
-} from "@multica/ui/components/ui/popover";
-import { Button } from "@multica/ui/components/ui/button";
+} from "@didian/ui/components/ui/popover";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@multica/ui/components/ui/select";
-import { TimeInput } from "@multica/ui/components/ui/time-input";
+} from "@didian/ui/components/ui/select";
+import { TimeInput } from "@didian/ui/components/ui/time-input";
 import { TimezonePicker } from "./pickers/timezone-picker";
-import { useCurrentWorkspace } from "@multica/core/paths";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { agentListOptions, squadListOptions } from "@multica/core/workspace/queries";
-import { projectListOptions } from "@multica/core/projects/queries";
+import { useCurrentWorkspace } from "@didian/core/paths";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { agentListOptions, squadListOptions } from "@didian/core/workspace/queries";
+import { projectListOptions } from "@didian/core/projects/queries";
 import {
   useCreateAutopilot,
   useCreateAutopilotTrigger,
   useUpdateAutopilot,
   useUpdateAutopilotTrigger,
-} from "@multica/core/autopilots/mutations";
-import { buildAutopilotWebhookUrl } from "@multica/core/autopilots";
-import { api } from "@multica/core/api";
+} from "@didian/core/autopilots/mutations";
+import { buildAutopilotWebhookUrl } from "@didian/core/autopilots";
+import { api } from "@didian/core/api";
 import type {
   AutopilotAssigneeType,
   AutopilotCollaborator,
   AutopilotExecutionMode,
   AutopilotTrigger,
-} from "@multica/core/types";
+} from "@didian/core/types";
 import { TitleEditor, ContentEditor } from "../../editor";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { ProjectPicker } from "../../projects/components/project-picker";
@@ -82,7 +82,7 @@ import {
 import { WebhookEventFilterSection } from "./webhook-event-filter-section";
 import { useT } from "../../i18n";
 import { formatSchedulePartialFailureToast } from "./autopilot-dialog-toast";
-import type { WebhookEventFilter } from "@multica/core/types";
+import type { WebhookEventFilter } from "@didian/core/types";
 
 // ---------------------------------------------------------------------------
 // Types

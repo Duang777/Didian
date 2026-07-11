@@ -1,9 +1,9 @@
 "use client";
 
-import { DashboardLayout } from "@multica/views/layout";
-import { MulticaIcon } from "@multica/ui/components/common/multica-icon";
-import { SearchCommand, SearchTrigger } from "@multica/views/search";
-import { FloatingChat } from "@multica/views/chat";
+import { DashboardLayout } from "@didian/views/layout";
+import { MulticaIcon } from "@didian/ui/components/common/multica-icon";
+import { SearchCommand, SearchTrigger } from "@didian/views/search";
+import { FloatingChat } from "@didian/views/chat";
 import { WebNotificationBridge } from "@/components/web-notification-bridge";
 
 export default function Layout({ children }: { children: React.ReactNode }) {

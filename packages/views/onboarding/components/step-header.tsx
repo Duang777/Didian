@@ -3,8 +3,8 @@
 import {
   ONBOARDING_STEP_ORDER,
   type OnboardingStep,
-} from "@multica/core/onboarding";
-import { cn } from "@multica/ui/lib/utils";
+} from "@didian/core/onboarding";
+import { cn } from "@didian/ui/lib/utils";
 import { useT } from "../../i18n";
 
 /**

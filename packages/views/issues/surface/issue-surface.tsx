@@ -2,14 +2,14 @@
 
 import { useCallback, useMemo, type ReactNode } from "react";
 import { ListTodo, Plus } from "lucide-react";
-import { Button } from "@multica/ui/components/ui/button";
-import { Skeleton } from "@multica/ui/components/ui/skeleton";
-import { cn } from "@multica/ui/lib/utils";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { ViewStoreProvider } from "@multica/core/issues/stores/view-store-context";
-import { getIssueSurfaceViewStore } from "@multica/core/issues/stores/surface-view-store";
-import { issueScopeKey } from "@multica/core/issues/surface/scope";
-import type { Issue } from "@multica/core/types";
+import { Button } from "@didian/ui/components/ui/button";
+import { Skeleton } from "@didian/ui/components/ui/skeleton";
+import { cn } from "@didian/ui/lib/utils";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { ViewStoreProvider } from "@didian/core/issues/stores/view-store-context";
+import { getIssueSurfaceViewStore } from "@didian/core/issues/stores/surface-view-store";
+import { issueScopeKey } from "@didian/core/issues/surface/scope";
+import type { Issue } from "@didian/core/types";
 import { BoardView } from "../components/board-view";
 import { BatchActionToolbar } from "../components/batch-action-toolbar";
 import { GanttView } from "../components/gantt-view";

@@ -6,10 +6,10 @@ import {
   type MarkdownProps as MarkdownBaseProps,
   type RenderMode,
   isIssueIdentifier,
-} from "@multica/ui/markdown";
-import { useConfigStore } from "@multica/core/config";
-import type { Attachment as AttachmentRecord } from "@multica/core/types";
-import { useWorkspacePaths } from "@multica/core/paths";
+} from "@didian/ui/markdown";
+import { useConfigStore } from "@didian/core/config";
+import type { Attachment as AttachmentRecord } from "@didian/core/types";
+import { useWorkspacePaths } from "@didian/core/paths";
 import { IssueMentionCard } from "../issues/components/issue-mention-card";
 import { useResolveIssueIdentifier } from "../issues/hooks";
 import { ProjectChip } from "../projects/components/project-chip";

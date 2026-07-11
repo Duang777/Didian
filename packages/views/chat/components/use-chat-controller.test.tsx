@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import type { Agent, ChatSession } from "@multica/core/types";
+import type { Agent, ChatSession } from "@didian/core/types";
 
 // --- Shared mutable state (hoisted so vi.mock factories can reach it) --------
 const h = vi.hoisted(() => {
@@ -23,38 +23,38 @@ const h = vi.hoisted(() => {
   };
 });
 
-vi.mock("@multica/core/hooks", () => ({ useWorkspaceId: () => "ws-1" }));
-vi.mock("@multica/core/auth", () => ({
+vi.mock("@didian/core/hooks", () => ({ useWorkspaceId: () => "ws-1" }));
+vi.mock("@didian/core/auth", () => ({
   useAuthStore: (sel: (s: { user: { id: string } }) => unknown) =>
     sel({ user: { id: "user-1" } }),
 }));
-vi.mock("@multica/core/workspace/queries", () => ({
+vi.mock("@didian/core/workspace/queries", () => ({
   agentListOptions: () => ({ queryKey: ["agents"] }),
   memberListOptions: () => ({ queryKey: ["members"] }),
 }));
-vi.mock("@multica/views/issues/components", () => ({ canAssignAgent: () => true }));
-vi.mock("@multica/core/api", () => ({
+vi.mock("@didian/views/issues/components", () => ({ canAssignAgent: () => true }));
+vi.mock("@didian/core/api", () => ({
   api: { sendChatMessage: vi.fn(), cancelTaskById: vi.fn() },
 }));
-vi.mock("@multica/core/agents", () => ({
+vi.mock("@didian/core/agents", () => ({
   useAgentPresenceDetail: () => ({ availability: "online" }),
   useWorkspaceAgentAvailability: () => "available",
 }));
-vi.mock("@multica/core/hooks/use-file-upload", () => ({
+vi.mock("@didian/core/hooks/use-file-upload", () => ({
   useFileUpload: () => ({ uploadWithToast: vi.fn() }),
 }));
-vi.mock("@multica/core/chat/mutations", () => ({
+vi.mock("@didian/core/chat/mutations", () => ({
   useCreateChatSession: () => ({ mutateAsync: vi.fn() }),
   useMarkChatSessionRead: () => ({ mutate: vi.fn() }),
   useSetChatSessionArchived: () => ({ mutate: h.archivedMutate }),
 }));
-vi.mock("@multica/core/chat", () => ({
+vi.mock("@didian/core/chat", () => ({
   useChatStore: Object.assign(
     (sel: (s: typeof h.store) => unknown) => sel(h.store),
     { getState: () => h.store },
   ),
 }));
-vi.mock("@multica/core/logger", () => ({
+vi.mock("@didian/core/logger", () => ({
   createLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
 }));
 vi.mock("../../i18n", () => ({ useT: () => ({ t: () => "x" }) }));

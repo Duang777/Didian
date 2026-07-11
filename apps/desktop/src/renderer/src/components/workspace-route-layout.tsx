@@ -1,17 +1,17 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { WorkspaceSlugProvider, paths } from "@multica/core/paths";
+import { WorkspaceSlugProvider, paths } from "@didian/core/paths";
 import {
   workspaceBySlugOptions,
   workspaceListOptions,
-} from "@multica/core/workspace";
-import { setCurrentWorkspace } from "@multica/core/platform";
-import { useAuthStore } from "@multica/core/auth";
-import { useWorkspaceSeen } from "@multica/views/workspace/use-workspace-seen";
-import { WelcomeAfterOnboarding } from "@multica/views/workspace/welcome-after-onboarding";
-import { WorkspacePresencePrefetch } from "@multica/views/layout";
-import { SourceBackfillModal } from "@multica/views/onboarding";
+} from "@didian/core/workspace";
+import { setCurrentWorkspace } from "@didian/core/platform";
+import { useAuthStore } from "@didian/core/auth";
+import { useWorkspaceSeen } from "@didian/views/workspace/use-workspace-seen";
+import { WelcomeAfterOnboarding } from "@didian/views/workspace/welcome-after-onboarding";
+import { WorkspacePresencePrefetch } from "@didian/views/layout";
+import { SourceBackfillModal } from "@didian/views/onboarding";
 import { useTabStore } from "@/stores/tab-store";
 import { useWindowOverlayStore } from "@/stores/window-overlay-store";
 

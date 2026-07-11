@@ -1,6 +1,6 @@
 # Multica Mobile (iOS)
 
-Expo + React Native iOS client for Multica. Independent from web/desktop — shares only types from `@multica/core/`. See [`CLAUDE.md`](./CLAUDE.md) for the locked tech-stack baseline and import rules.
+Expo + React Native iOS client for Multica. Independent from web/desktop — shares only types from `@didian/core/`. See [`CLAUDE.md`](./CLAUDE.md) for the locked tech-stack baseline and import rules.
 
 ## Just want to use it on your phone? (no development)
 

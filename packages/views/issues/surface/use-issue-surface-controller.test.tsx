@@ -5,21 +5,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { setApiInstance } from "@multica/core/api";
-import type { ApiClient } from "@multica/core/api/client";
-import { issueKeys } from "@multica/core/issues/queries";
+import { setApiInstance } from "@didian/core/api";
+import type { ApiClient } from "@didian/core/api/client";
+import { issueKeys } from "@didian/core/issues/queries";
 import {
   getIssueSurfaceViewStore,
   pruneIssueSurfaceViewStates,
-} from "@multica/core/issues/stores/surface-view-store";
-import { ViewStoreProvider } from "@multica/core/issues/stores/view-store-context";
+} from "@didian/core/issues/stores/surface-view-store";
+import { ViewStoreProvider } from "@didian/core/issues/stores/view-store-context";
 import type {
   AgentTask,
   Issue,
   IssueStatus,
   ListIssuesParams,
   ListIssuesResponse,
-} from "@multica/core/types";
+} from "@didian/core/types";
 import { useIssueSurfaceController } from "./use-issue-surface-controller";
 
 function makeIssue(
@@ -54,11 +54,11 @@ const batchUpdateMutateAsync = vi.hoisted(() => vi.fn());
 const batchDeleteMutateAsync = vi.hoisted(() => vi.fn());
 const openModal = vi.hoisted(() => vi.fn());
 
-vi.mock("@multica/core/hooks", () => ({
+vi.mock("@didian/core/hooks", () => ({
   useWorkspaceId: () => "ws-1",
 }));
 
-vi.mock("@multica/core/issues/mutations", () => ({
+vi.mock("@didian/core/issues/mutations", () => ({
   useUpdateIssue: () => ({ mutate: updateIssueMutate, isPending: false }),
   useBatchUpdateIssues: () => ({
     mutateAsync: batchUpdateMutateAsync,
@@ -70,7 +70,7 @@ vi.mock("@multica/core/issues/mutations", () => ({
   }),
 }));
 
-vi.mock("@multica/core/modals", () => ({
+vi.mock("@didian/core/modals", () => ({
   useModalStore: {
     getState: () => ({ open: openModal }),
   },

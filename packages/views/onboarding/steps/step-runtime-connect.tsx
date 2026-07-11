@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Loader2, RefreshCw } from "lucide-react";
-import { Button } from "@multica/ui/components/ui/button";
-import { cn } from "@multica/ui/lib/utils";
-import { useScrollFade } from "@multica/ui/hooks/use-scroll-fade";
-import { runtimeKeys } from "@multica/core/runtimes/queries";
-import type { AgentRuntime } from "@multica/core/types";
-import { DragStrip } from "@multica/views/platform";
+import { Button } from "@didian/ui/components/ui/button";
+import { cn } from "@didian/ui/lib/utils";
+import { useScrollFade } from "@didian/ui/hooks/use-scroll-fade";
+import { runtimeKeys } from "@didian/core/runtimes/queries";
+import type { AgentRuntime } from "@didian/core/types";
+import { DragStrip } from "@didian/views/platform";
 import { StepHeader } from "../components/step-header";
 import { RuntimeAsidePanel } from "../components/runtime-aside-panel";
 import { useRuntimePicker } from "../components/use-runtime-picker";

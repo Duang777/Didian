@@ -13,11 +13,11 @@
   "iconLibrary": "lucide",
   "rtl": false,
   "aliases": {
-    "components": "@multica/ui/components",
-    "utils": "@multica/ui/lib/utils",
-    "ui": "@multica/ui/components/ui",
-    "lib": "@multica/ui/lib",
-    "hooks": "@multica/ui/hooks"
+    "components": "@didian/ui/components",
+    "utils": "@didian/ui/lib/utils",
+    "ui": "@didian/ui/components/ui",
+    "lib": "@didian/ui/lib",
+    "hooks": "@didian/ui/hooks"
   },
   "menuColor": "default",
   "menuAccent": "subtle",

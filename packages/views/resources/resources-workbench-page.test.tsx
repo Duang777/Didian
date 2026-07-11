@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { ResourcesWorkbenchPage } from "./resources-workbench-page";
 
-vi.mock("@multica/ui/components/ui/resizable", () => ({
+vi.mock("@didian/ui/components/ui/resizable", () => ({
   ResizablePanelGroup: ({ children, className }: { children: ReactNode; className?: string }) => (
     <div className={className}>{children}</div>
   ),
@@ -14,7 +14,7 @@ vi.mock("@multica/ui/components/ui/resizable", () => ({
   ResizableHandle: () => <div />,
 }));
 
-vi.mock("@multica/ui/components/ui/scroll-area", () => ({
+vi.mock("@didian/ui/components/ui/scroll-area", () => ({
   ScrollArea: ({ children, className }: { children: ReactNode; className?: string }) => (
     <div className={className}>{children}</div>
   ),

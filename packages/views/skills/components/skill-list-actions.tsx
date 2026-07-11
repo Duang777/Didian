@@ -13,18 +13,18 @@ import {
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { Agent, SkillSummary } from "@multica/core/types";
-import { api } from "@multica/core/api";
-import { workspaceKeys } from "@multica/core/workspace/queries";
-import { resolvePublicFileUrl } from "@multica/core/workspace/avatar-url";
-import { Button } from "@multica/ui/components/ui/button";
-import { Checkbox } from "@multica/ui/components/ui/checkbox";
-import { Input } from "@multica/ui/components/ui/input";
+import type { Agent, SkillSummary } from "@didian/core/types";
+import { api } from "@didian/core/api";
+import { workspaceKeys } from "@didian/core/workspace/queries";
+import { resolvePublicFileUrl } from "@didian/core/workspace/avatar-url";
+import { Button } from "@didian/ui/components/ui/button";
+import { Checkbox } from "@didian/ui/components/ui/checkbox";
+import { Input } from "@didian/ui/components/ui/input";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@multica/ui/components/ui/collapsible";
+} from "@didian/ui/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -32,21 +32,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
+} from "@didian/ui/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@multica/ui/components/ui/dropdown-menu";
+} from "@didian/ui/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@multica/ui/components/ui/tooltip";
-import { ActorAvatar } from "@multica/ui/components/common/actor-avatar";
-import { cn } from "@multica/ui/lib/utils";
+} from "@didian/ui/components/ui/tooltip";
+import { ActorAvatar } from "@didian/ui/components/common/actor-avatar";
+import { cn } from "@didian/ui/lib/utils";
 import { useT } from "../../i18n";
 import type { SkillRow } from "./skills-page";
 

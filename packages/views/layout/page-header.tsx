@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@multica/ui/lib/utils";
-import { SidebarTrigger, useSidebarSafe } from "@multica/ui/components/ui/sidebar";
+import { cn } from "@didian/ui/lib/utils";
+import { SidebarTrigger, useSidebarSafe } from "@didian/ui/components/ui/sidebar";
 
 function MobileSidebarTrigger() {
   const sidebar = useSidebarSafe();

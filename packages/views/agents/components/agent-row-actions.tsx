@@ -11,11 +11,11 @@ import {
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { Agent } from "@multica/core/types";
-import type { AgentPresenceDetail } from "@multica/core/agents";
-import { api } from "@multica/core/api";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { workspaceKeys } from "@multica/core/workspace/queries";
+import type { Agent } from "@didian/core/types";
+import type { AgentPresenceDetail } from "@didian/core/agents";
+import { api } from "@didian/core/api";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { workspaceKeys } from "@didian/core/workspace/queries";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,14 +25,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@multica/ui/components/ui/alert-dialog";
+} from "@didian/ui/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@multica/ui/components/ui/dropdown-menu";
+} from "@didian/ui/components/ui/dropdown-menu";
 import { useT } from "../../i18n";
 
 interface AgentRowActionsProps {

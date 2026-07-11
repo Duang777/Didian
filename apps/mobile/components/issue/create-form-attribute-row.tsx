@@ -18,7 +18,7 @@ import { ActorAvatar } from "@/components/ui/actor-avatar";
 import { PriorityIcon } from "@/components/ui/priority-icon";
 import { ProjectIcon } from "@/components/ui/project-icon";
 import { StatusIcon } from "@/components/ui/status-icon";
-import { formatDateOnly } from "@multica/core/issues/date";
+import { formatDateOnly } from "@didian/core/issues/date";
 import { useActorLookup } from "@/data/use-actor-name";
 import { useNewIssueDraftStore } from "@/data/stores/new-issue-draft-store";
 import { useWorkspaceStore } from "@/data/workspace-store";

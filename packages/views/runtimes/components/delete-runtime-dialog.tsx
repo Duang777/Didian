@@ -4,27 +4,27 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Globe, Info, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { ApiError } from "@multica/core/api";
-import type { Agent, AgentRuntime, MemberWithUser } from "@multica/core/types";
+import { ApiError } from "@didian/core/api";
+import type { Agent, AgentRuntime, MemberWithUser } from "@didian/core/types";
 import {
   useDeleteRuntime,
   useArchiveAgentsAndDeleteRuntime,
-} from "@multica/core/runtimes/mutations";
+} from "@didian/core/runtimes/mutations";
 import {
   agentListOptions,
   memberListOptions,
-} from "@multica/core/workspace/queries";
+} from "@didian/core/workspace/queries";
 import {
   type AgentPresenceDetail,
   useWorkspacePresenceMap,
-} from "@multica/core/agents";
-import { useAuthStore } from "@multica/core/auth";
+} from "@didian/core/agents";
+import { useAuthStore } from "@didian/core/auth";
 import {
   AlertDialog,
   AlertDialogContent,
-} from "@multica/ui/components/ui/alert-dialog";
-import { Button } from "@multica/ui/components/ui/button";
-import { Checkbox } from "@multica/ui/components/ui/checkbox";
+} from "@didian/ui/components/ui/alert-dialog";
+import { Button } from "@didian/ui/components/ui/button";
+import { Checkbox } from "@didian/ui/components/ui/checkbox";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { availabilityConfig, workloadConfig } from "../../agents/presence";
 import { useT } from "../../i18n";

@@ -2,9 +2,9 @@
 
 import type { KeyboardEvent } from "react";
 import { ChevronDown, ChevronUp, Search, X } from "lucide-react";
-import { Input } from "@multica/ui/components/ui/input";
-import { Button } from "@multica/ui/components/ui/button";
-import { cn } from "@multica/ui/lib/utils";
+import { Input } from "@didian/ui/components/ui/input";
+import { Button } from "@didian/ui/components/ui/button";
+import { cn } from "@didian/ui/lib/utils";
 import { useT } from "../../i18n";
 import type { UseInPageFindResult } from "../hooks/use-in-page-find";
 

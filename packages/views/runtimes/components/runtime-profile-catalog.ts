@@ -2,7 +2,7 @@ import {
   RUNTIME_PROFILE_PROTOCOL_FAMILIES,
   type RuntimeProfile,
   type RuntimeProtocolFamily,
-} from "@multica/core/types";
+} from "@didian/core/types";
 
 // A single row in the runtimes catalog the management dialog renders: the
 // built-in protocol families ship as read-only reference rows, while custom

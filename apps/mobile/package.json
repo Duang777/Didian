@@ -1,5 +1,5 @@
 {
-  "name": "@multica/mobile",
+  "name": "@didian/mobile",
   "version": "0.1.0",
   "private": true,
   "main": "expo-router/entry",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
-    "@multica/core": "workspace:*",
+    "@didian/core": "workspace:*",
     "@react-native-community/datetimepicker": "8.6.0",
     "@react-native-community/netinfo": "11.5.2",
     "@react-native-segmented-control/segmented-control": "2.5.7",

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { FileText, Search } from "lucide-react";
-import type { SkillSummary } from "@multica/core/types";
-import { Checkbox } from "@multica/ui/components/ui/checkbox";
-import { Input } from "@multica/ui/components/ui/input";
-import { cn } from "@multica/ui/lib/utils";
+import type { SkillSummary } from "@didian/core/types";
+import { Checkbox } from "@didian/ui/components/ui/checkbox";
+import { Input } from "@didian/ui/components/ui/input";
+import { cn } from "@didian/ui/lib/utils";
 import { useT } from "../../i18n";
 
 interface SkillPickerListProps {

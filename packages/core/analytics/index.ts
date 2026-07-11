@@ -261,7 +261,7 @@ export function captureEvent(
  * handlers can't see.
  *
  * Currently called by the web route-level `global-error`. Section-level
- * `@multica/ui` ErrorBoundary can opt in by passing `onError={captureException}`
+ * `@didian/ui` ErrorBoundary can opt in by passing `onError={captureException}`
  * at its call sites; it is not wired app-wide (those failures already degrade
  * gracefully with fallback UI).
  *

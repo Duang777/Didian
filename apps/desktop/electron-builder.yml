@@ -19,7 +19,7 @@ mac:
   target:
     - dmg
     - zip
-  # Hardcoded name avoids the `@multica/desktop-*` subdirectory that
+  # Hardcoded name avoids the `@didian/desktop-*` subdirectory that
   # `${name}` produces for scoped package names.
   # Naming scheme: didian-desktop-<version>-<platform>-<arch>.<ext>
   # so the filename alone surfaces kind, version, platform, and CPU arch.
@@ -33,7 +33,7 @@ dmg:
   artifactName: didian-desktop-${version}-mac-${arch}.${ext}
 linux:
   # Override the Linux executable name to avoid leaking the scoped npm
-  # package name (`@multica/desktop`) into the installed binary, the
+  # package name (`@didian/desktop`) into the installed binary, the
   # `.desktop` file, and the hicolor icon filename. Without this override
   # electron-builder defaults `executableName` to the package `name`,
   # which after slash-stripping becomes `@multicadesktop` — producing
@@ -51,8 +51,8 @@ linux:
   # ASAR's `package.json` — `productName` if present, otherwise `name`.
   # PR #2437 assumed electron-builder.yml's productName fed app.getName()
   # directly; it does not. With our source package.json carrying only
-  # `name: "@multica/desktop"`, packaged Electron emitted
-  # `WM_CLASS=@multica/desktop`, which broke association with this entry
+  # `name: "@didian/desktop"`, packaged Electron emitted
+  # `WM_CLASS=@didian/desktop`, which broke association with this entry
   # and reproduced #2515 on Ubuntu 0.2.31. The fix lives in two places
   # outside this file — `productName: "Didian"` on the source
   # package.json (so the ASAR carries it) and `app.setName("Didian")`

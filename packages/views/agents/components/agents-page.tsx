@@ -19,7 +19,7 @@ import type {
   AgentRuntime,
   CreateAgentRequest,
   MemberWithUser,
-} from "@multica/core/types";
+} from "@didian/core/types";
 import {
   type AgentActivity,
   agentRunCounts30dOptions,
@@ -27,7 +27,7 @@ import {
   useWorkspacePresenceMap,
   VISIBILITY_TOOLTIP,
   type AgentPresenceDetail,
-} from "@multica/core/agents";
+} from "@didian/core/agents";
 import {
   useAgentsViewStore,
   AGENT_DEFAULT_HIDDEN_COLUMNS,
@@ -35,19 +35,19 @@ import {
   type AgentColumnKey,
   type AgentsScope,
   type AgentSortField,
-} from "@multica/core/agents/stores";
-import { api } from "@multica/core/api";
-import { useAuthStore } from "@multica/core/auth";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { useWorkspacePaths } from "@multica/core/paths";
+} from "@didian/core/agents/stores";
+import { api } from "@didian/core/api";
+import { useAuthStore } from "@didian/core/auth";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { useWorkspacePaths } from "@didian/core/paths";
 import {
   agentListOptions,
   memberListOptions,
   workspaceKeys,
-} from "@multica/core/workspace/queries";
-import { runtimeListOptions } from "@multica/core/runtimes";
-import { Button } from "@multica/ui/components/ui/button";
-import { Checkbox } from "@multica/ui/components/ui/checkbox";
+} from "@didian/core/workspace/queries";
+import { runtimeListOptions } from "@didian/core/runtimes";
+import { Button } from "@didian/ui/components/ui/button";
+import { Checkbox } from "@didian/ui/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +55,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
+} from "@didian/ui/components/ui/dialog";
 import {
   LIST_GRID_BOTTOM_CLEARANCE,
   ListGrid,
@@ -65,13 +65,13 @@ import {
   ListGridHeaderCell,
   ListGridRow,
   type ListGridSortDirection,
-} from "@multica/ui/components/ui/list-grid";
-import { Skeleton } from "@multica/ui/components/ui/skeleton";
+} from "@didian/ui/components/ui/list-grid";
+import { Skeleton } from "@didian/ui/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@multica/ui/components/ui/tooltip";
+} from "@didian/ui/components/ui/tooltip";
 import { useNavigation, useRowLink } from "../../navigation";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { PageHeader } from "../../layout/page-header";

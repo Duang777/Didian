@@ -14,8 +14,8 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { GitHubMark } from "./github-mark";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@multica/ui/components/ui/tabs";
-import { useCurrentWorkspace } from "@multica/core/paths";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@didian/ui/components/ui/tabs";
+import { useCurrentWorkspace } from "@didian/core/paths";
 import { useNavigation } from "../../navigation";
 import { AccountTab } from "./account-tab";
 import { PreferencesTab } from "./preferences-tab";

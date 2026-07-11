@@ -1,6 +1,6 @@
-import { LoginPage } from "@multica/views/auth";
-import { DragStrip } from "@multica/views/platform";
-import { MulticaIcon } from "@multica/ui/components/common/multica-icon";
+import { LoginPage } from "@didian/views/auth";
+import { DragStrip } from "@didian/views/platform";
+import { MulticaIcon } from "@didian/ui/components/common/multica-icon";
 
 function requireRuntimeAppUrl(): string {
   const runtimeConfig = window.desktopAPI.runtimeConfig;

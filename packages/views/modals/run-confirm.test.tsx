@@ -32,8 +32,8 @@ vi.mock("@tanstack/react-query", () => ({
     return { data: [] };
   },
 }));
-vi.mock("@multica/core/hooks", () => ({ useWorkspaceId: () => "ws-test" }));
-vi.mock("@multica/core/workspace/queries", () => ({
+vi.mock("@didian/core/hooks", () => ({ useWorkspaceId: () => "ws-test" }));
+vi.mock("@didian/core/workspace/queries", () => ({
   agentListOptions: (wsId: string) => ({ queryKey: ["workspaces", wsId, "agents"] }),
 }));
 // Stub the runtimes barrel: the query-options builder would otherwise drag the
@@ -42,7 +42,7 @@ vi.mock("@multica/core/workspace/queries", () => ({
 // packages/core/runtimes/cli-version.test.ts; here we only need a faithful
 // stand-in for the >= 0.3.28 threshold so the cache → version → verdict wiring
 // is exercised end to end.
-vi.mock("@multica/core/runtimes", () => ({
+vi.mock("@didian/core/runtimes", () => ({
   runtimeListOptions: (wsId: string) => ({ queryKey: ["runtimes", wsId, "list"] }),
   readRuntimeCliVersion: (m?: { cli_version?: unknown }) =>
     typeof m?.cli_version === "string" ? m.cli_version : "",
@@ -55,12 +55,12 @@ vi.mock("@multica/core/runtimes", () => ({
 
 const mockUpdate = vi.fn().mockResolvedValue(undefined);
 const mockBatch = vi.fn().mockResolvedValue(undefined);
-vi.mock("@multica/core/issues/mutations", () => ({
+vi.mock("@didian/core/issues/mutations", () => ({
   useUpdateIssue: () => ({ mutateAsync: mockUpdate }),
   useBatchUpdateIssues: () => ({ mutateAsync: mockBatch }),
 }));
 
-vi.mock("@multica/core/workspace/hooks", () => ({
+vi.mock("@didian/core/workspace/hooks", () => ({
   useActorName: () => ({ getActorName: () => "Walt" }),
 }));
 
@@ -92,7 +92,7 @@ vi.mock("../i18n", () => ({
 }));
 
 // Keep the ui primitives as light DOM so the logic is what's under test.
-vi.mock("@multica/ui/components/ui/dialog", () => ({
+vi.mock("@didian/ui/components/ui/dialog", () => ({
   Dialog: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -100,15 +100,15 @@ vi.mock("@multica/ui/components/ui/dialog", () => ({
   DialogTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogDescription: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-vi.mock("@multica/ui/components/ui/button", () => ({
+vi.mock("@didian/ui/components/ui/button", () => ({
   Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
     <button {...props}>{children}</button>
   ),
 }));
-vi.mock("@multica/ui/components/ui/textarea", () => ({
+vi.mock("@didian/ui/components/ui/textarea", () => ({
   Textarea: (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => <textarea {...props} />,
 }));
-vi.mock("@multica/ui/components/ui/spinner", () => ({
+vi.mock("@didian/ui/components/ui/spinner", () => ({
   Spinner: () => <span data-testid="spinner" />,
 }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));

@@ -3,10 +3,10 @@
 import { useRef, useState } from "react";
 import { Bot, Camera, Loader2, Users, X } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@multica/core/api";
-import { useFileUpload } from "@multica/core/hooks/use-file-upload";
-import { resolvePublicFileUrl } from "@multica/core/workspace/avatar-url";
-import { cn } from "@multica/ui/lib/utils";
+import { api } from "@didian/core/api";
+import { useFileUpload } from "@didian/core/hooks/use-file-upload";
+import { resolvePublicFileUrl } from "@didian/core/workspace/avatar-url";
+import { cn } from "@didian/ui/lib/utils";
 import { useT } from "../i18n";
 import { AvatarCropDialog } from "./avatar-crop-dialog";
 

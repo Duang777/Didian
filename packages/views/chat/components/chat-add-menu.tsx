@@ -2,13 +2,13 @@
 
 import { useRef } from "react";
 import { Plus, Image as ImageIcon } from "lucide-react";
-import { Button } from "@multica/ui/components/ui/button";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@multica/ui/components/ui/dropdown-menu";
+} from "@didian/ui/components/ui/dropdown-menu";
 import { useT } from "../../i18n";
 
 interface ChatAddMenuProps {

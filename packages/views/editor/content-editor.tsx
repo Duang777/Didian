@@ -40,14 +40,14 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
-import { cn } from "@multica/ui/lib/utils";
-import type { UploadResult } from "@multica/core/hooks/use-file-upload";
-import { useWorkspaceSlug } from "@multica/core/paths";
+import { cn } from "@didian/ui/lib/utils";
+import type { UploadResult } from "@didian/core/hooks/use-file-upload";
+import { useWorkspaceSlug } from "@didian/core/paths";
 import { useQueryClient } from "@tanstack/react-query";
-import { issueIdentifierOptions } from "@multica/core/issues/queries";
-import { workspaceListOptions } from "@multica/core/workspace/queries";
-import { isIssueIdentifier } from "@multica/ui/markdown";
-import type { Attachment } from "@multica/core/types";
+import { issueIdentifierOptions } from "@didian/core/issues/queries";
+import { workspaceListOptions } from "@didian/core/workspace/queries";
+import { isIssueIdentifier } from "@didian/ui/markdown";
+import type { Attachment } from "@didian/core/types";
 import {
   parseMarkdownChunked,
   MARKDOWN_CHUNK_THRESHOLD,

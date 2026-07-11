@@ -2,11 +2,11 @@
 
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@multica/core/auth";
-import { workspaceKeys } from "@multica/core/workspace/queries";
-import { clearWorkspaceStorage, defaultStorage } from "@multica/core/platform";
-import { paths } from "@multica/core/paths";
-import type { Workspace } from "@multica/core/types";
+import { useAuthStore } from "@didian/core/auth";
+import { workspaceKeys } from "@didian/core/workspace/queries";
+import { clearWorkspaceStorage, defaultStorage } from "@didian/core/platform";
+import { paths } from "@didian/core/paths";
+import type { Workspace } from "@didian/core/types";
 import { useNavigation } from "../navigation";
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
-import { useChatStore } from "@multica/core/chat";
-import { useWorkspacePaths } from "@multica/core/paths";
+import { useChatStore } from "@didian/core/chat";
+import { useWorkspacePaths } from "@didian/core/paths";
 import { useNavigation } from "../navigation";
 import { ChatFab } from "./components/chat-fab";
 import { ChatWindow } from "./components/chat-window";

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import type { RuntimeUsage } from "@multica/core/types";
-import { useCustomPricingStore } from "@multica/core/runtimes/custom-pricing-store";
+import type { RuntimeUsage } from "@didian/core/types";
+import { useCustomPricingStore } from "@didian/core/runtimes/custom-pricing-store";
 import { addDaysIso, estimateCost, todayIso, weekStartIso } from "../../utils";
 import { useT } from "../../../i18n";
 

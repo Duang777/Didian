@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { issueIdentifierOptions } from "@multica/core/issues/queries";
-import { useCurrentWorkspace } from "@multica/core/paths";
-import { isIssueIdentifier } from "@multica/ui/markdown";
-import type { Issue } from "@multica/core/types";
+import { issueIdentifierOptions } from "@didian/core/issues/queries";
+import { useCurrentWorkspace } from "@didian/core/paths";
+import { isIssueIdentifier } from "@didian/ui/markdown";
+import type { Issue } from "@didian/core/types";
 
 /**
  * Resolve a bare issue identifier ("MUL-123") to a real issue in the current

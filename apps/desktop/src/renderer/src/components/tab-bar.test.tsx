@@ -6,7 +6,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { useScrollFade } from "@multica/ui/hooks/use-scroll-fade";
+import { useScrollFade } from "@didian/ui/hooks/use-scroll-fade";
 
 type MockTab = {
   id: string;
@@ -63,7 +63,7 @@ vi.mock("@/stores/tab-store", () => {
   return { useTabStore, useActiveGroup, resolveRouteIcon };
 });
 
-vi.mock("@multica/core/paths", () => ({
+vi.mock("@didian/core/paths", () => ({
   paths: {
     workspace: (slug: string) => ({
       issues: () => `/${slug}/issues`,

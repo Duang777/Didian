@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Milestone } from "lucide-react";
-import type { UpdateIssueRequest } from "@multica/core/types";
+import type { UpdateIssueRequest } from "@didian/core/types";
 import { PropertyPicker, PickerItem } from "./property-picker";
 import { useT } from "../../../i18n";
 

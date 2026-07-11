@@ -3,8 +3,8 @@ import {
   preprocessMentionShortcodes,
   preprocessFileCards,
   preprocessIssueIdentifiers,
-} from "@multica/ui/markdown";
-import { configStore } from "@multica/core/config";
+} from "@didian/ui/markdown";
+import { configStore } from "@didian/core/config";
 
 /**
  * Preprocess a markdown string before loading into Tiptap via contentType: 'markdown'.

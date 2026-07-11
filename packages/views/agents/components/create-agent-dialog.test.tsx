@@ -3,11 +3,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import type { Agent, MemberWithUser, RuntimeDevice } from "@multica/core/types";
-import { I18nProvider } from "@multica/core/i18n/react";
-import { WorkspaceSlugProvider } from "@multica/core/paths";
-import { configStore } from "@multica/core/config";
-import { COMPOSIO_MCP_APPS_FLAG } from "@multica/core/feature-flags";
+import type { Agent, MemberWithUser, RuntimeDevice } from "@didian/core/types";
+import { I18nProvider } from "@didian/core/i18n/react";
+import { WorkspaceSlugProvider } from "@didian/core/paths";
+import { configStore } from "@didian/core/config";
+import { COMPOSIO_MCP_APPS_FLAG } from "@didian/core/feature-flags";
 import { NavigationProvider, type NavigationAdapter } from "../../navigation";
 import enCommon from "../../locales/en/common.json";
 import enAgents from "../../locales/en/agents.json";
@@ -23,7 +23,7 @@ const navigationStub: NavigationAdapter = {
 
 const TEST_RESOURCES = { en: { common: enCommon, agents: enAgents } };
 
-vi.mock("@multica/core/hooks", () => ({
+vi.mock("@didian/core/hooks", () => ({
   useWorkspaceId: () => "ws-1",
 }));
 

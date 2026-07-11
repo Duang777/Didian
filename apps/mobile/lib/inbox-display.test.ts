@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { InboxItem } from "@multica/core/types";
+import type { InboxItem } from "@didian/core/types";
 import { deduplicateInboxItems } from "./inbox-display";
 
 function item(overrides: Partial<InboxItem>): InboxItem {

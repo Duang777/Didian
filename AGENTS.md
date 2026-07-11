@@ -40,7 +40,7 @@
 ## 包边界硬规则
 
 - `packages/core/`：不允许 `react-dom`、UI 库、直接 `localStorage`、`process.env`、具体云盘实现。
-- `packages/ui/`：不允许导入 `@multica/core`，不允许业务逻辑。
+- `packages/ui/`：不允许导入 `@didian/core`，不允许业务逻辑。
 - `packages/views/`：不允许 `next/*`、`react-router-dom`、Zustand store；路由用 NavigationAdapter。
 - `apps/web/platform/`：Web 专属 Next.js API 的位置。
 - `server/internal/daemon/`：保留本地执行生命周期，不要随意改 claim/prepare/start/run/report 流程。

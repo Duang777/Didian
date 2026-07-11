@@ -5,7 +5,7 @@
  * (react-markdown link component), and link-hover-card (Open button).
  */
 
-import { isGlobalPath } from "@multica/core/paths";
+import { isGlobalPath } from "@didian/core/paths";
 
 /**
  * Top-level workspace-scoped routes. Used to detect "/{route}/..." paths that

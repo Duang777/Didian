@@ -7,21 +7,21 @@ import type {
   IssueAssigneeGroup,
   IssueStatus,
   Project,
-} from "@multica/core/types";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { dateOnlyToLocalDate } from "@multica/core/issues/date";
+} from "@didian/core/types";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { dateOnlyToLocalDate } from "@didian/core/issues/date";
 import type {
   AssigneeGroupedIssuesFilter,
   IssueSortParam,
   MyIssuesFilter,
-} from "@multica/core/issues/queries";
+} from "@didian/core/issues/queries";
 import {
   buildIssueSurfaceQueryPlan,
   type IssueSurfaceQueryPlan,
-} from "@multica/core/issues/surface/query-plan";
-import type { IssueScope } from "@multica/core/issues/surface/scope";
-import type { IssueDateFilter } from "@multica/core/issues/stores/view-store";
-import { useViewStore } from "@multica/core/issues/stores/view-store-context";
+} from "@didian/core/issues/surface/query-plan";
+import type { IssueScope } from "@didian/core/issues/surface/scope";
+import type { IssueDateFilter } from "@didian/core/issues/stores/view-store";
+import { useViewStore } from "@didian/core/issues/stores/view-store-context";
 import type { IssueFilters } from "../utils/filter";
 import type { ChildProgress } from "../components/list-row";
 import type { IssueSurfaceMode } from "./types";

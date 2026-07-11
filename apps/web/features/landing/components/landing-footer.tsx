@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { MulticaIcon } from "@multica/ui/components/common/multica-icon";
-import { cn } from "@multica/ui/lib/utils";
-import { useAuthStore } from "@multica/core/auth";
+import { MulticaIcon } from "@didian/ui/components/common/multica-icon";
+import { cn } from "@didian/ui/lib/utils";
+import { useAuthStore } from "@didian/core/auth";
 import {
   XMark,
   GitHubMark,

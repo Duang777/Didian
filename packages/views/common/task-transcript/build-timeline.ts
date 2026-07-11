@@ -1,4 +1,4 @@
-import type { TaskMessagePayload } from "@multica/core/types/events";
+import type { TaskMessagePayload } from "@didian/core/types/events";
 import { redactSecrets } from "./redact";
 
 /** A unified timeline entry: tool calls, thinking, text, and errors in chronological order. */

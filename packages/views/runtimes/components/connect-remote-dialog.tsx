@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronRight, Copy, Terminal } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { runtimeKeys } from "@multica/core/runtimes/queries";
-import { useWSEvent } from "@multica/core/realtime";
-import { paths, useWorkspaceSlug } from "@multica/core/paths";
-import { useConfigStore } from "@multica/core/config";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { runtimeKeys } from "@didian/core/runtimes/queries";
+import { useWSEvent } from "@didian/core/realtime";
+import { paths, useWorkspaceSlug } from "@didian/core/paths";
+import { useConfigStore } from "@didian/core/config";
 import {
   Dialog,
   DialogContent,
@@ -15,11 +15,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
-import { Button } from "@multica/ui/components/ui/button";
-import { CODE_LIGATURE_CLASS } from "@multica/ui/lib/code-style";
-import { copyText } from "@multica/ui/lib/clipboard";
-import { cn } from "@multica/ui/lib/utils";
+} from "@didian/ui/components/ui/dialog";
+import { Button } from "@didian/ui/components/ui/button";
+import { CODE_LIGATURE_CLASS } from "@didian/ui/lib/code-style";
+import { copyText } from "@didian/ui/lib/clipboard";
+import { cn } from "@didian/ui/lib/utils";
 import { useNavigation } from "../../navigation";
 import { useT } from "../../i18n";
 

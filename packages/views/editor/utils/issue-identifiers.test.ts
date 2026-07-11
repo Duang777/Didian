@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   preprocessIssueIdentifiers,
   isIssueIdentifier,
-} from "@multica/ui/markdown";
+} from "@didian/ui/markdown";
 
 /**
  * Pure detector for the Linear-style issue-identifier autolink. Lives in
- * @multica/ui/markdown (no test runner there), exercised here where views'
+ * @didian/ui/markdown (no test runner there), exercised here where views'
  * vitest can reach it.
  */
 describe("preprocessIssueIdentifiers", () => {

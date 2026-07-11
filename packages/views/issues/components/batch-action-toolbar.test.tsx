@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import type { Issue } from "@multica/core/types";
+import type { Issue } from "@didian/core/types";
 import { BatchActionToolbar } from "./batch-action-toolbar";
 
 // Mutable selection state shared with the store mock below. The real toolbar
@@ -11,12 +11,12 @@ const selection = vi.hoisted(() => ({
   clear: () => {},
 }));
 
-vi.mock("@multica/core/issues/stores/selection-store", () => ({
+vi.mock("@didian/core/issues/stores/selection-store", () => ({
   useIssueSelectionStore: (selector: (s: typeof selection) => unknown) =>
     selector(selection),
 }));
 
-vi.mock("@multica/core/issues/mutations", () => ({
+vi.mock("@didian/core/issues/mutations", () => ({
   useBatchUpdateIssues: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useBatchDeleteIssues: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));

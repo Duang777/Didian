@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { QueryClient, type InfiniteData } from "@tanstack/react-query";
-import { chatKeys } from "@multica/core/chat/queries";
-import type { ChatMessage, ChatMessagesPage, ChatPendingTask } from "@multica/core/types";
+import { chatKeys } from "@didian/core/chat/queries";
+import type { ChatMessage, ChatMessagesPage, ChatPendingTask } from "@didian/core/types";
 import { hasOptimisticInFlight } from "./use-chat-controller";
 
 // hasOptimisticInFlight is the discriminator the stale-session self-heal uses

@@ -11,9 +11,9 @@ import {
   Search,
   X,
 } from "lucide-react";
-import type { Agent, MemberWithUser } from "@multica/core/types";
-import { resolvePublicFileUrl } from "@multica/core/workspace/avatar-url";
-import { Button } from "@multica/ui/components/ui/button";
+import type { Agent, MemberWithUser } from "@didian/core/types";
+import { resolvePublicFileUrl } from "@didian/core/workspace/avatar-url";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -24,20 +24,20 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@multica/ui/components/ui/dropdown-menu";
-import { Input } from "@multica/ui/components/ui/input";
+} from "@didian/ui/components/ui/dropdown-menu";
+import { Input } from "@didian/ui/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@multica/ui/components/ui/popover";
-import { Switch } from "@multica/ui/components/ui/switch";
+} from "@didian/ui/components/ui/popover";
+import { Switch } from "@didian/ui/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@multica/ui/components/ui/tooltip";
-import { ActorAvatar } from "@multica/ui/components/common/actor-avatar";
+} from "@didian/ui/components/ui/tooltip";
+import { ActorAvatar } from "@didian/ui/components/common/actor-avatar";
 import { FILTER_ITEM_CLASS, HoverCheck } from "../../common/hover-check";
 import {
   type SkillColumnKey,
@@ -45,7 +45,7 @@ import {
   type SkillOriginType,
   type SkillSortDirection,
   type SkillSortField,
-} from "@multica/core/skills/stores";
+} from "@didian/core/skills/stores";
 import { useT } from "../../i18n";
 import type { SkillRow } from "./skills-page";
 

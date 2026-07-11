@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
-import { Input } from "@multica/ui/components/ui/input";
-import { Label } from "@multica/ui/components/ui/label";
-import { Button } from "@multica/ui/components/ui/button";
-import { Card, CardContent } from "@multica/ui/components/ui/card";
-import { Textarea } from "@multica/ui/components/ui/textarea";
+import { Input } from "@didian/ui/components/ui/input";
+import { Label } from "@didian/ui/components/ui/label";
+import { Button } from "@didian/ui/components/ui/button";
+import { Card, CardContent } from "@didian/ui/components/ui/card";
+import { Textarea } from "@didian/ui/components/ui/textarea";
 import { toast } from "sonner";
-import { useAuthStore } from "@multica/core/auth";
-import { api } from "@multica/core/api";
+import { useAuthStore } from "@didian/core/auth";
+import { api } from "@didian/core/api";
 import { AvatarUploadControl } from "../../common/avatar-upload-control";
 import { useT } from "../../i18n";
 

@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Bot, Users } from "lucide-react";
-import { cn } from "@multica/ui/lib/utils";
+import { cn } from "@didian/ui/lib/utils";
 import {
   AVATAR_SIZE_PX,
   DEFAULT_AVATAR_SIZE,
   type AvatarSize,
-} from "@multica/ui/lib/avatar-size";
+} from "@didian/ui/lib/avatar-size";
 import { MulticaIcon } from "./multica-icon";
 
 interface ActorAvatarProps {

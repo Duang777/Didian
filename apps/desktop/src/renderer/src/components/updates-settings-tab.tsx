@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { AlertCircle, ArrowDownToLine, Check, Loader2 } from "lucide-react";
-import { Button } from "@multica/ui/components/ui/button";
-import { useT } from "@multica/views/i18n";
+import { Button } from "@didian/ui/components/ui/button";
+import { useT } from "@didian/views/i18n";
 
 type CheckState =
   | { status: "idle" }

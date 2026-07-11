@@ -3,14 +3,14 @@
 import { useCallback, useMemo, useState } from "react";
 import { useStore } from "zustand";
 import { ListTodo, Search } from "lucide-react";
-import type { Issue } from "@multica/core/types";
+import type { Issue } from "@didian/core/types";
 import {
   actorIssuesViewStore,
   type ActorIssuesScope,
-} from "@multica/core/issues/stores/actor-issues-view-store";
-import { Button } from "@multica/ui/components/ui/button";
-import { Input } from "@multica/ui/components/ui/input";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@multica/ui/components/ui/tooltip";
+} from "@didian/core/issues/stores/actor-issues-view-store";
+import { Button } from "@didian/ui/components/ui/button";
+import { Input } from "@didian/ui/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@didian/ui/components/ui/tooltip";
 import {
   IssueDisplayControls,
   ViewRefreshIndicator,

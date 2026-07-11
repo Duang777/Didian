@@ -2,8 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@multica/ui/components/ui/button";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@multica/ui/components/ui/tooltip";
+import { Button } from "@didian/ui/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@didian/ui/components/ui/tooltip";
 import { ActorAvatar } from "../../common/actor-avatar";
 import {
   PickerEmpty,
@@ -12,7 +12,7 @@ import {
   PropertyPicker,
 } from "../../issues/components/pickers/property-picker";
 import { matchesPinyin } from "../../editor/extensions/pinyin-match";
-import type { Agent } from "@multica/core/types";
+import type { Agent } from "@didian/core/types";
 import { useT } from "../../i18n";
 
 /**

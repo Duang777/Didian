@@ -1,8 +1,8 @@
 "use client";
 
 import { Globe, Lock } from "lucide-react";
-import type { AgentVisibility } from "@multica/core/types";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@multica/ui/components/ui/tooltip";
+import type { AgentVisibility } from "@didian/core/types";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@didian/ui/components/ui/tooltip";
 import { useT } from "../../i18n";
 
 /**

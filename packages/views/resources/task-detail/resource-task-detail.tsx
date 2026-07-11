@@ -10,13 +10,13 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { Badge } from "@multica/ui/components/ui/badge";
-import { Button } from "@multica/ui/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@multica/ui/components/ui/card";
-import { ScrollArea } from "@multica/ui/components/ui/scroll-area";
-import { Separator } from "@multica/ui/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@multica/ui/components/ui/tabs";
-import { cn } from "@multica/ui/lib/utils";
+import { Badge } from "@didian/ui/components/ui/badge";
+import { Button } from "@didian/ui/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@didian/ui/components/ui/card";
+import { ScrollArea } from "@didian/ui/components/ui/scroll-area";
+import { Separator } from "@didian/ui/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@didian/ui/components/ui/tabs";
+import { cn } from "@didian/ui/lib/utils";
 import { ArtifactPreview } from "../artifacts/artifact-preview";
 import type { ResourceTask, ResourceTaskDetail, ResourceTaskStatus, ResourceTaskStepState } from "../mock-data";
 

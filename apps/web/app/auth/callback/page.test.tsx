@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, waitFor } from "@testing-library/react";
-import { paths } from "@multica/core/paths";
+import { paths } from "@didian/core/paths";
 
 const {
   mockPush,
@@ -46,10 +46,10 @@ vi.mock("@tanstack/react-query", () => ({
 
 // Preserve the real sanitizeNextUrl so the "drop unsafe ?next=" behavior is
 // exercised rather than silently diverging from the source of truth.
-vi.mock("@multica/core/auth", async () => {
+vi.mock("@didian/core/auth", async () => {
   const actual =
-    await vi.importActual<typeof import("@multica/core/auth")>(
-      "@multica/core/auth",
+    await vi.importActual<typeof import("@didian/core/auth")>(
+      "@didian/core/auth",
     );
   return {
     ...actual,
@@ -58,14 +58,14 @@ vi.mock("@multica/core/auth", async () => {
   };
 });
 
-vi.mock("@multica/core/workspace/queries", () => ({
+vi.mock("@didian/core/workspace/queries", () => ({
   workspaceKeys: {
     list: () => ["workspaces"],
     myInvitations: () => ["invitations", "mine"],
   },
 }));
 
-vi.mock("@multica/core/api", () => ({
+vi.mock("@didian/core/api", () => ({
   api: {
     listWorkspaces: mockListWorkspaces,
     listMyInvitations: mockListMyInvitations,
@@ -198,7 +198,7 @@ describe("CallbackPage", () => {
   });
 
   it("redirects to CLI callback with token when state contains valid cli_callback", async () => {
-    const { api: mockedApi } = await import("@multica/core/api");
+    const { api: mockedApi } = await import("@didian/core/api");
     const mockGoogleLogin = mockedApi.googleLogin as ReturnType<typeof vi.fn>;
 
     const hrefSetter = vi.fn();
@@ -258,7 +258,7 @@ describe("CallbackPage", () => {
   it("redirects to CLI callback even when state also contains platform:desktop", async () => {
     // cli_callback takes precedence over platform:desktop — the CLI flow
     // is a specific user intent that should not be derailed by desktop flag.
-    const { api: mockedApi } = await import("@multica/core/api");
+    const { api: mockedApi } = await import("@didian/core/api");
     const mockGoogleLogin = mockedApi.googleLogin as ReturnType<typeof vi.fn>;
 
     const hrefSetter = vi.fn();

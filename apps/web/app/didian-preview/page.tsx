@@ -1,6 +1,6 @@
 "use client";
 
-import { ResourcesWorkbenchPage } from "@multica/views/resources";
+import { ResourcesWorkbenchPage } from "@didian/views/resources";
 
 export default function Page() {
   return <ResourcesWorkbenchPage />;

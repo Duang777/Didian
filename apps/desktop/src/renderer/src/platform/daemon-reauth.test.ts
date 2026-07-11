@@ -7,7 +7,7 @@ const { mockGetState, logout } = vi.hoisted(() => ({
 
 const { toastError } = vi.hoisted(() => ({ toastError: vi.fn() }));
 
-vi.mock("@multica/core/auth", () => ({
+vi.mock("@didian/core/auth", () => ({
   useAuthStore: { getState: mockGetState },
 }));
 

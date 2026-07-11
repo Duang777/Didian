@@ -3,32 +3,32 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
-import { sanitizeNextUrl, useAuthStore } from "@multica/core/auth";
-import { useConfigStore } from "@multica/core/config";
+import { sanitizeNextUrl, useAuthStore } from "@didian/core/auth";
+import { useConfigStore } from "@didian/core/config";
 import {
   workspaceKeys,
   workspaceListOptions,
-} from "@multica/core/workspace/queries";
+} from "@didian/core/workspace/queries";
 import {
   paths,
   resolvePostAuthDestination,
   useHasOnboarded,
-} from "@multica/core/paths";
-import { api } from "@multica/core/api";
-import type { Workspace } from "@multica/core/types";
+} from "@didian/core/paths";
+import { api } from "@didian/core/api";
+import type { Workspace } from "@didian/core/types";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "@multica/ui/components/ui/card";
-import { Button } from "@multica/ui/components/ui/button";
+} from "@didian/ui/components/ui/card";
+import { Button } from "@didian/ui/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { setLoggedInCookie } from "@/features/auth/auth-cookie";
 import Link from "next/link";
-import { LoginPage, validateCliCallback } from "@multica/views/auth";
-import { useT } from "@multica/views/i18n";
+import { LoginPage, validateCliCallback } from "@didian/views/auth";
+import { useT } from "@didian/views/i18n";
 
 /**
  * Pick where a logged-in user with no explicit `?next=` should land.

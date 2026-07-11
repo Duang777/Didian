@@ -24,12 +24,12 @@ import {
   Eye,
   Maximize2,
 } from "lucide-react";
-import { cn } from "@multica/ui/lib/utils";
-import { copyText } from "@multica/ui/lib/clipboard";
+import { cn } from "@didian/ui/lib/utils";
+import { copyText } from "@didian/ui/lib/clipboard";
 import {
   Dialog,
   DialogContent,
-} from "@multica/ui/components/ui/dialog";
+} from "@didian/ui/components/ui/dialog";
 import { useT } from "../i18n";
 import { CodeBlockStatic } from "./code-block-static";
 import { HtmlPreviewBody } from "./html-preview-body";

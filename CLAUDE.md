@@ -62,7 +62,7 @@
 ## 包边界规则
 
 - `packages/core/`：不允许 `react-dom`、UI 库、直接 `localStorage`、`process.env`、具体云盘实现。
-- `packages/ui/`：不允许导入 `@multica/core`，不允许业务逻辑、API 调用、路由或云盘概念。
+- `packages/ui/`：不允许导入 `@didian/core`，不允许业务逻辑、API 调用、路由或云盘概念。
 - `packages/views/`：不允许 `next/*`、`react-router-dom`、stores；共享导航使用 `NavigationAdapter`、`useNavigation()`、`<AppLink>`。
 - `apps/web/platform/`：Web 专属 Next.js API 所在位置。
 - `apps/desktop/src/renderer/src/platform/`：桌面路由接线位置。
@@ -124,7 +124,7 @@
 
 修改 `apps/mobile/` 前必须阅读 `apps/mobile/CLAUDE.md`。
 
-- Mobile 只共享 `@multica/core` 类型和纯函数。
+- Mobile 只共享 `@didian/core` 类型和纯函数。
 - Mobile 必须匹配 Web/Desktop 产品语义：计数、权限、枚举/状态流转、数据身份。
 - Mobile UI/交互可以因手机场景不同而差异化。
 
@@ -175,8 +175,8 @@
 
 - 不要在 app test file 中测试共享组件行为。
 - `packages/views/` 测试不允许 mock `next/*` 或 `react-router-dom`。
-- Mock `@multica/core` stores 时使用 Zustand callable-store 形态。
-- Mock API 调用时 mock `@multica/core/api`。
+- Mock `@didian/core` stores 时使用 Zustand callable-store 形态。
+- Mock API 调用时 mock `@didian/core/api`。
 - E2E 使用 `TestApiClient` 做 setup/teardown。
 - 行为变更优先先写失败测试。
 

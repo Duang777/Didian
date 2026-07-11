@@ -10,29 +10,29 @@ import type {
   Agent,
   AgentRuntime,
   MemberWithUser,
-} from "@multica/core/types";
+} from "@didian/core/types";
 import {
   AGENT_DESCRIPTION_MAX_LENGTH,
   type AgentPresenceDetail,
-} from "@multica/core/agents";
-import { isImeComposing } from "@multica/core/utils";
+} from "@didian/core/agents";
+import { isImeComposing } from "@didian/core/utils";
 import { useTimeAgo } from "../../i18n";
-import { Button } from "@multica/ui/components/ui/button";
+import { Button } from "@didian/ui/components/ui/button";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { AvatarUploadControl } from "../../common/avatar-upload-control";
-import { Input } from "@multica/ui/components/ui/input";
+import { Input } from "@didian/ui/components/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@multica/ui/components/ui/dialog";
+} from "@didian/ui/components/ui/dialog";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@multica/ui/components/ui/popover";
+} from "@didian/ui/components/ui/popover";
 import { PropRow } from "../../common/prop-row";
 import { availabilityConfig } from "../presence";
 import { CharCounter } from "./char-counter";

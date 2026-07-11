@@ -1,5 +1,5 @@
 /**
- * Public surface for @multica/core/feature-flags.
+ * Public surface for @didian/core/feature-flags.
  *
  * Keep this list minimal — every new export becomes a contract we have to
  * preserve across the monorepo. Add to it only when a real caller appears.

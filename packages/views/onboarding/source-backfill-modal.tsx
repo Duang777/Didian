@@ -11,18 +11,18 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthStore } from "@multica/core/auth";
+import { useAuthStore } from "@didian/core/auth";
 import {
   needsSourceBackfill,
   saveQuestionnaire,
   type QuestionnaireAnswers,
   type Source,
-} from "@multica/core/onboarding";
-import { Button } from "@multica/ui/components/ui/button";
+} from "@didian/core/onboarding";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   Dialog,
   DialogContent,
-} from "@multica/ui/components/ui/dialog";
+} from "@didian/ui/components/ui/dialog";
 import {
   GitHubIcon,
   GoogleIcon,

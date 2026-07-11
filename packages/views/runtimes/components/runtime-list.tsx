@@ -16,38 +16,38 @@ import type {
   AgentTask,
   MemberWithUser,
   RuntimeProfile,
-} from "@multica/core/types";
-import { useAuthStore } from "@multica/core/auth";
-import { useWorkspaceId } from "@multica/core/hooks";
+} from "@didian/core/types";
+import { useAuthStore } from "@didian/core/auth";
+import { useWorkspaceId } from "@didian/core/hooks";
 import {
   agentListOptions,
   memberListOptions,
-} from "@multica/core/workspace/queries";
-import { agentTaskSnapshotOptions } from "@multica/core/agents";
+} from "@didian/core/workspace/queries";
+import { agentTaskSnapshotOptions } from "@didian/core/agents";
 import {
   deriveRuntimeHealth,
   runtimeProfileListOptions,
   runtimeUsageOptions,
-} from "@multica/core/runtimes";
-import { useWorkspacePaths } from "@multica/core/paths";
+} from "@didian/core/runtimes";
+import { useWorkspacePaths } from "@didian/core/paths";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@multica/ui/components/ui/dropdown-menu";
+} from "@didian/ui/components/ui/dropdown-menu";
 import {
   ListGrid,
   ListGridCell,
   ListGridHeader,
   ListGridHeaderCell,
   ListGridRow,
-} from "@multica/ui/components/ui/list-grid";
+} from "@didian/ui/components/ui/list-grid";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@multica/ui/components/ui/tooltip";
+} from "@didian/ui/components/ui/tooltip";
 import { useRowLink } from "../../navigation";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { useViewingTimezone } from "../../common/use-viewing-timezone";

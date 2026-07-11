@@ -4,9 +4,9 @@ import { useEffect, useRef } from "react";
 import {
   registerSystemNotificationClickHandler,
   type SystemNotificationPayload,
-} from "@multica/core/platform";
-import { paths } from "@multica/core/paths";
-import { useNavigation } from "@multica/views/navigation";
+} from "@didian/core/platform";
+import { paths } from "@didian/core/paths";
+import { useNavigation } from "@didian/views/navigation";
 
 /**
  * Routes browser notification clicks to the source workspace's inbox, focused

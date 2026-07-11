@@ -4,33 +4,33 @@ import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Virtuoso, type Components } from "react-virtuoso";
-import { cn } from "@multica/ui/lib/utils";
-import { Skeleton } from "@multica/ui/components/ui/skeleton";
-import { Button } from "@multica/ui/components/ui/button";
+import { cn } from "@didian/ui/lib/utils";
+import { Skeleton } from "@didian/ui/components/ui/skeleton";
+import { Button } from "@didian/ui/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@multica/ui/components/ui/collapsible";
+} from "@didian/ui/components/ui/collapsible";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from "@multica/ui/components/ui/tooltip";
+} from "@didian/ui/components/ui/tooltip";
 import { ChevronRight, ChevronDown, Brain, AlertCircle, AlertTriangle, Copy } from "lucide-react";
-import { useScrollFade } from "@multica/ui/hooks/use-scroll-fade";
-import { isTaskMessageTaskId, taskMessagesOptions } from "@multica/core/chat/queries";
-import { MemoizedMarkdown } from "@multica/views/common/markdown";
-import { copyText } from "@multica/ui/lib/clipboard";
+import { useScrollFade } from "@didian/ui/hooks/use-scroll-fade";
+import { isTaskMessageTaskId, taskMessagesOptions } from "@didian/core/chat/queries";
+import { MemoizedMarkdown } from "@didian/views/common/markdown";
+import { copyText } from "@didian/ui/lib/clipboard";
 import { AttachmentList } from "../../issues/components/comment-card";
-import type { AgentAvailability } from "@multica/core/agents";
+import type { AgentAvailability } from "@didian/core/agents";
 import type {
   ChatMessage,
   ChatPendingTask,
   TaskFailureReason,
   TaskMessagePayload,
-} from "@multica/core/types";
-import type { ChatTimelineItem } from "@multica/core/chat";
+} from "@didian/core/types";
+import type { ChatTimelineItem } from "@didian/core/chat";
 import { buildTimeline } from "../../common/task-transcript";
 import { TaskStatusPill } from "./task-status-pill";
 import { formatElapsedMs } from "../lib/format";
@@ -549,7 +549,7 @@ function TimelineView({
 }: {
   items: ChatTimelineItem[];
   isStreaming?: boolean;
-  attachments?: import("@multica/core/types").Attachment[];
+  attachments?: import("@didian/core/types").Attachment[];
 }) {
   const { preface, middle, final } = splitTimeline(items);
 
@@ -587,7 +587,7 @@ function OuterProcessFold({
 }: {
   items: ChatTimelineItem[];
   defaultOpen?: boolean;
-  attachments?: import("@multica/core/types").Attachment[];
+  attachments?: import("@didian/core/types").Attachment[];
 }) {
   const { t } = useT("chat");
   // useState seeds once at mount — subsequent renders never overwrite the
@@ -628,7 +628,7 @@ function MiddleTextRow({
   attachments,
 }: {
   item: ChatTimelineItem;
-  attachments?: import("@multica/core/types").Attachment[];
+  attachments?: import("@didian/core/types").Attachment[];
 }) {
   return (
     <div className="py-0.5 text-xs text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">

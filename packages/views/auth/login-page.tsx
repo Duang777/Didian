@@ -9,19 +9,19 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@multica/ui/components/ui/card";
-import { Input } from "@multica/ui/components/ui/input";
-import { Button } from "@multica/ui/components/ui/button";
-import { Label } from "@multica/ui/components/ui/label";
+} from "@didian/ui/components/ui/card";
+import { Input } from "@didian/ui/components/ui/input";
+import { Button } from "@didian/ui/components/ui/button";
+import { Label } from "@didian/ui/components/ui/label";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@multica/ui/components/ui/input-otp";
-import { useAuthStore } from "@multica/core/auth";
-import { workspaceKeys } from "@multica/core/workspace/queries";
-import { api } from "@multica/core/api";
-import type { User } from "@multica/core/types";
+} from "@didian/ui/components/ui/input-otp";
+import { useAuthStore } from "@didian/core/auth";
+import { workspaceKeys } from "@didian/core/workspace/queries";
+import { api } from "@didian/core/api";
+import type { User } from "@didian/core/types";
 import { useT } from "../i18n";
 
 // ---------------------------------------------------------------------------

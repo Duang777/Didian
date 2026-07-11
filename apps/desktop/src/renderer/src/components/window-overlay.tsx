@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { NewWorkspacePage } from "@multica/views/workspace/new-workspace-page";
-import { InvitePage } from "@multica/views/invite";
-import { InvitationsPage } from "@multica/views/invitations";
-import { OnboardingFlow } from "@multica/views/onboarding";
-import { useNavigation } from "@multica/views/navigation";
-import { paths } from "@multica/core/paths";
-import { workspaceListOptions } from "@multica/core/workspace/queries";
+import { NewWorkspacePage } from "@didian/views/workspace/new-workspace-page";
+import { InvitePage } from "@didian/views/invite";
+import { InvitationsPage } from "@didian/views/invitations";
+import { OnboardingFlow } from "@didian/views/onboarding";
+import { useNavigation } from "@didian/views/navigation";
+import { paths } from "@didian/core/paths";
+import { workspaceListOptions } from "@didian/core/workspace/queries";
 import { useWindowOverlayStore } from "@/stores/window-overlay-store";
 
 /**

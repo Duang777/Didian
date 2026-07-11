@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
-import type { CommentTriggerPreviewAgent } from "@multica/core/types";
+import type { CommentTriggerPreviewAgent } from "@didian/core/types";
 import { renderWithI18n } from "../../test/i18n";
 import { CommentTriggerChips } from "./comment-trigger-chips";
 
-vi.mock("@multica/core/agents", () => ({
+vi.mock("@didian/core/agents", () => ({
   useAgentPresenceDetail: () => ({ availability: "online", workload: "idle" }),
 }));
 
-vi.mock("@multica/core/paths", () => ({
+vi.mock("@didian/core/paths", () => ({
   useCurrentWorkspace: () => ({ id: "ws-1" }),
 }));
 

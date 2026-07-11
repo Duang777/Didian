@@ -52,7 +52,7 @@ export interface IssueIdentifierAutolinkOptions {
 }
 
 // Boundary-delimited, case-sensitive identifier — same shape as the readonly
-// detector in @multica/ui/markdown.
+// detector in @didian/ui/markdown.
 const IDENTIFIER_RE = /(?<![A-Za-z0-9_-])([A-Z][A-Z0-9]*-\d+)(?![A-Za-z0-9_-])/g;
 const BOUNDARY_RE = /[A-Za-z0-9_-]/;
 

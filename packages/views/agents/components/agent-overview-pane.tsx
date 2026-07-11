@@ -14,13 +14,13 @@ import {
   Webhook,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { Agent, AgentRuntime } from "@multica/core/types";
-import { providerSupportsMcpConfig } from "@multica/core/agents";
-import { useFeatureEnabled } from "@multica/core/config";
-import { COMPOSIO_MCP_APPS_FLAG } from "@multica/core/feature-flags";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { larkInstallationsOptions } from "@multica/core/lark";
-import { slackInstallationsOptions } from "@multica/core/slack";
+import type { Agent, AgentRuntime } from "@didian/core/types";
+import { providerSupportsMcpConfig } from "@didian/core/agents";
+import { useFeatureEnabled } from "@didian/core/config";
+import { COMPOSIO_MCP_APPS_FLAG } from "@didian/core/feature-flags";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { larkInstallationsOptions } from "@didian/core/lark";
+import { slackInstallationsOptions } from "@didian/core/slack";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +30,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@multica/ui/components/ui/alert-dialog";
+} from "@didian/ui/components/ui/alert-dialog";
 import { ActivityTab } from "./tabs/activity-tab";
 import { InstructionsTab } from "./tabs/instructions-tab";
 import { SkillsTab } from "./tabs/skills-tab";

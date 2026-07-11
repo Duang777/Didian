@@ -30,35 +30,35 @@ import type {
   MemberWithUser,
   SearchIssueResult,
   SearchProjectResult,
-} from "@multica/core/types";
-import { api } from "@multica/core/api";
+} from "@didian/core/types";
+import { api } from "@didian/core/api";
 import {
   openCreateIssueWithPreference,
   selectRecentIssues,
   useRecentIssuesStore,
-} from "@multica/core/issues/stores";
-import { issueDetailOptions } from "@multica/core/issues/queries";
-import { useWorkspaceId } from "@multica/core";
-import { useWorkspacePaths } from "@multica/core/paths";
-import type { WorkspacePaths } from "@multica/core/paths";
-import { useModalStore } from "@multica/core/modals";
-import { memberListOptions } from "@multica/core/workspace/queries";
-import { resolvePublicFileUrl } from "@multica/core/workspace/avatar-url";
+} from "@didian/core/issues/stores";
+import { issueDetailOptions } from "@didian/core/issues/queries";
+import { useWorkspaceId } from "@didian/core";
+import { useWorkspacePaths } from "@didian/core/paths";
+import type { WorkspacePaths } from "@didian/core/paths";
+import { useModalStore } from "@didian/core/modals";
+import { memberListOptions } from "@didian/core/workspace/queries";
+import { resolvePublicFileUrl } from "@didian/core/workspace/avatar-url";
 import { StatusIcon } from "../issues/components";
 import { ProjectIcon } from "../projects/components/project-icon";
-import { PROJECT_STATUS_CONFIG } from "@multica/core/projects/config";
-import type { ProjectStatus } from "@multica/core/types";
+import { PROJECT_STATUS_CONFIG } from "@didian/core/projects/config";
+import type { ProjectStatus } from "@didian/core/types";
 import { ActorAvatar } from "../common/actor-avatar";
-import { ActorAvatar as ActorAvatarBase } from "@multica/ui/components/common/actor-avatar";
+import { ActorAvatar as ActorAvatarBase } from "@didian/ui/components/common/actor-avatar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@multica/ui/components/ui/dialog";
-import { useTheme } from "@multica/ui/components/common/theme-provider";
-import { copyText } from "@multica/ui/lib/clipboard";
+} from "@didian/ui/components/ui/dialog";
+import { useTheme } from "@didian/ui/components/common/theme-provider";
+import { copyText } from "@didian/ui/lib/clipboard";
 import { useNavigation } from "../navigation";
 import { useT } from "../i18n";
 import { matchesPinyin } from "../editor/extensions/pinyin-match";

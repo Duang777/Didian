@@ -1,5 +1,5 @@
-import { resolvePublicFileUrl } from "@multica/core/workspace/avatar-url";
-import { cn } from "@multica/ui/lib/utils";
+import { resolvePublicFileUrl } from "@didian/core/workspace/avatar-url";
+import { cn } from "@didian/ui/lib/utils";
 
 const sizeMap = {
   sm: "h-5 w-5 text-xs rounded-full",

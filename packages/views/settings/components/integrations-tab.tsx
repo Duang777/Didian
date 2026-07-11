@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { LarkTab } from "./lark-tab";
 import { ComposioTab } from "./composio-tab";
 import { SlackTab } from "./slack-tab";
-import { ApiError } from "@multica/core/api";
-import { composioToolkitsOptions } from "@multica/core/composio";
-import { useFeatureEnabled } from "@multica/core/config";
-import { COMPOSIO_MCP_APPS_FLAG } from "@multica/core/feature-flags";
+import { ApiError } from "@didian/core/api";
+import { composioToolkitsOptions } from "@didian/core/composio";
+import { useFeatureEnabled } from "@didian/core/config";
+import { COMPOSIO_MCP_APPS_FLAG } from "@didian/core/feature-flags";
 import { useT } from "../../i18n";
 
 // Integrations is the umbrella tab for third-party platform connections.

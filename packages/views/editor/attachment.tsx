@@ -30,13 +30,13 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@multica/ui/lib/utils";
-import { copyText } from "@multica/ui/lib/clipboard";
+import { cn } from "@didian/ui/lib/utils";
+import { copyText } from "@didian/ui/lib/clipboard";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@multica/core/api";
-import { useConfigStore } from "@multica/core/config";
-import type { Attachment as AttachmentRecord } from "@multica/core/types";
-import { attachmentIdFromDownloadURL } from "@multica/core/types/attachment-url";
+import { api } from "@didian/core/api";
+import { useConfigStore } from "@didian/core/config";
+import type { Attachment as AttachmentRecord } from "@didian/core/types";
+import { attachmentIdFromDownloadURL } from "@didian/core/types/attachment-url";
 import { useT } from "../i18n";
 import { useAttachmentDownloadResolver } from "./attachment-download-context";
 import { useAttachmentPreview } from "./attachment-preview-modal";

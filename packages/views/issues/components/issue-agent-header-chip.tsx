@@ -6,12 +6,12 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@multica/ui/components/ui/popover";
-import { useActorName } from "@multica/core/workspace/hooks";
-import { cn } from "@multica/ui/lib/utils";
-import { api } from "@multica/core/api";
-import { issueKeys } from "@multica/core/issues/queries";
-import type { AgentTask } from "@multica/core/types";
+} from "@didian/ui/components/ui/popover";
+import { useActorName } from "@didian/core/workspace/hooks";
+import { cn } from "@didian/ui/lib/utils";
+import { api } from "@didian/core/api";
+import { issueKeys } from "@didian/core/issues/queries";
+import type { AgentTask } from "@didian/core/types";
 import { AgentAvatarStack } from "../../agents/components/agent-avatar-stack";
 import { ActiveTaskRow } from "./execution-log-section";
 import { useT } from "../../i18n";

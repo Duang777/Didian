@@ -15,7 +15,7 @@ const state = vi.hoisted(() => ({
   modalAriaLabel: "source-backfill-modal-marker",
 }));
 
-vi.mock("@multica/core/auth", () => {
+vi.mock("@didian/core/auth", () => {
   const useAuthStore = (selector: (s: typeof state) => unknown) => {
     if (selector.toString().includes("isLoading"))
       return state.isAuthLoading;
@@ -24,13 +24,13 @@ vi.mock("@multica/core/auth", () => {
   return { useAuthStore };
 });
 
-vi.mock("@multica/core/platform", () => ({
+vi.mock("@didian/core/platform", () => ({
   setCurrentWorkspace: vi.fn(),
 }));
 
-vi.mock("@multica/core/workspace", async () => {
-  const actual = await vi.importActual<typeof import("@multica/core/workspace")>(
-    "@multica/core/workspace",
+vi.mock("@didian/core/workspace", async () => {
+  const actual = await vi.importActual<typeof import("@didian/core/workspace")>(
+    "@didian/core/workspace",
   );
   return {
     ...actual,
@@ -45,9 +45,9 @@ vi.mock("@multica/core/workspace", async () => {
   };
 });
 
-vi.mock("@multica/core/paths", async () => {
-  const actual = await vi.importActual<typeof import("@multica/core/paths")>(
-    "@multica/core/paths",
+vi.mock("@didian/core/paths", async () => {
+  const actual = await vi.importActual<typeof import("@didian/core/paths")>(
+    "@didian/core/paths",
   );
   return {
     ...actual,
@@ -61,15 +61,15 @@ vi.mock("@multica/core/paths", async () => {
   };
 });
 
-vi.mock("@multica/views/workspace/use-workspace-seen", () => ({
+vi.mock("@didian/views/workspace/use-workspace-seen", () => ({
   useWorkspaceSeen: () => state.workspaceSeen,
 }));
 
-vi.mock("@multica/views/workspace/welcome-after-onboarding", () => ({
+vi.mock("@didian/views/workspace/welcome-after-onboarding", () => ({
   WelcomeAfterOnboarding: () => null,
 }));
 
-vi.mock("@multica/views/layout", () => ({
+vi.mock("@didian/views/layout", () => ({
   WorkspacePresencePrefetch: () => null,
 }));
 
@@ -77,7 +77,7 @@ vi.mock("@multica/views/layout", () => ({
 // SourceBackfillModal. We stub the real component with a marker that
 // renders only when the layout actually rendered it (and not e.g.
 // suppressed by overlayActive).
-vi.mock("@multica/views/onboarding", () => ({
+vi.mock("@didian/views/onboarding", () => ({
   SourceBackfillModal: () => {
     state.modalRenders += 1;
     return <div data-testid={state.modalAriaLabel} />;

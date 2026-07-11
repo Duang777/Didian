@@ -22,31 +22,31 @@ function GithubIcon({ className }: { className?: string }) {
   );
 }
 import { useQuery } from "@tanstack/react-query";
-import { useCreateProject } from "@multica/core/projects/mutations";
-import { useProjectDraftStore } from "@multica/core/projects";
+import { useCreateProject } from "@didian/core/projects/mutations";
+import { useProjectDraftStore } from "@didian/core/projects";
 import {
   PROJECT_STATUS_CONFIG,
   PROJECT_STATUS_ORDER,
   PROJECT_PRIORITY_ORDER,
-} from "@multica/core/projects/config";
-import { useWorkspaceId } from "@multica/core/hooks";
-import { useCurrentWorkspace, useWorkspacePaths } from "@multica/core/paths";
-import { memberListOptions, agentListOptions } from "@multica/core/workspace/queries";
-import { useActorName } from "@multica/core/workspace/hooks";
-import type { ProjectStatus, ProjectPriority } from "@multica/core/types";
-import { cn } from "@multica/ui/lib/utils";
+} from "@didian/core/projects/config";
+import { useWorkspaceId } from "@didian/core/hooks";
+import { useCurrentWorkspace, useWorkspacePaths } from "@didian/core/paths";
+import { memberListOptions, agentListOptions } from "@didian/core/workspace/queries";
+import { useActorName } from "@didian/core/workspace/hooks";
+import type { ProjectStatus, ProjectPriority } from "@didian/core/types";
+import { cn } from "@didian/ui/lib/utils";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogTitle } from "@multica/ui/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@didian/ui/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@multica/ui/components/ui/dropdown-menu";
-import { Popover, PopoverTrigger, PopoverContent } from "@multica/ui/components/ui/popover";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@multica/ui/components/ui/tooltip";
-import { Button } from "@multica/ui/components/ui/button";
-import { EmojiPicker } from "@multica/ui/components/common/emoji-picker";
+} from "@didian/ui/components/ui/dropdown-menu";
+import { Popover, PopoverTrigger, PopoverContent } from "@didian/ui/components/ui/popover";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@didian/ui/components/ui/tooltip";
+import { Button } from "@didian/ui/components/ui/button";
+import { EmojiPicker } from "@didian/ui/components/common/emoji-picker";
 import { ContentEditor, type ContentEditorRef, TitleEditor } from "../editor";
 import { PriorityIcon } from "../issues/components/priority-icon";
 import { ActorAvatar } from "../common/actor-avatar";
