@@ -26,13 +26,13 @@
 **描述：** 添加一个资源工作台 route，渲染新 shell，同时不移除现有 issue routes。
 
 **验收标准：**
-- [ ] Web 中可以渲染资源工作台 route。
-- [ ] Route 使用 `packages/views/` 中的共享 view component。
-- [ ] 现有 routes 不受影响。
+- [x] Web 中可以渲染资源工作台 route。
+- [x] Route 使用 `packages/views/` 中的共享 view component。
+- [x] 现有 routes 不受影响。
 
 **验证：**
-- [ ] `pnpm typecheck`
-- [ ] 手动检查 Web route
+- [x] `pnpm typecheck`
+- [x] 手动检查 Web route
 
 **依赖：** Task 1
 
@@ -47,13 +47,13 @@
 **描述：** 只复制工作台 shell 需要的开源 Cult UI/shadcn 组件到 `packages/ui/`，并适配现有 design tokens。
 
 **验收标准：**
-- [ ] 需要的 primitives 可以从 `packages/ui/` 使用。
-- [ ] 组件不包含业务逻辑。
-- [ ] 如复制代码需要归因，已添加 license/attribution 说明。
+- [x] 需要的 primitives 可以从 `packages/ui/` 使用。
+- [x] 组件不包含业务逻辑。
+- [x] 当前切片复用已有 shadcn primitives，未引入需额外归因的第三方源码。
 
 **验证：**
-- [ ] `pnpm typecheck`
-- [ ] 从 `packages/views/` 做组件 import smoke check
+- [x] `pnpm typecheck`
+- [x] 从 `packages/views/` 做组件 import smoke check
 
 **依赖：** Task 1
 
@@ -107,6 +107,86 @@
 - `packages/views/resources/artifacts/*`
 
 **规模预估：** M
+
+## Task 5A：Didian 用户可见品牌清理
+
+**描述：** 先把用户直接看到的 Multica 品牌表层迁移为 Didian，同时保留 `@multica/*` 包名、CLI binary、protocol scheme、本地配置目录和数据库/API 技术标识，避免在同一切片里破坏运行链路。
+
+**验收标准：**
+- [x] Web/desktop 可见文案使用 Didian。
+- [x] 主要本地化文案中的产品名使用 Didian。
+- [x] 桌面端 productName、reload 提示和 release metadata 使用 Didian。
+- [x] 深层技术标识保留为后续迁移任务。
+
+**验证：**
+- [x] `pnpm --filter @multica/views typecheck`
+- [x] `pnpm --filter @multica/desktop typecheck`
+- [x] Staged 文件不包含 `.env`、`.next`、`node_modules` 或真实密钥。
+
+**依赖：** Task 2、Task 4
+
+**可能触及文件：**
+- `apps/web/app/not-found.tsx`
+- `apps/desktop/*`
+- `packages/views/locales/*/*.json`
+- `tasks/plan.md`
+- `tasks/todo.md`
+
+**规模预估：** M
+
+## Task 5B：Workspace package scope 迁移
+
+**描述：** 将内部 workspace package scope 从 `@multica/*` 迁移到 Didian scope，例如 `@didian/core`、`@didian/ui`、`@didian/views`。这是构建系统级迁移，必须独立于产品功能提交。
+
+**验收标准：**
+- [ ] package names、exports、imports、Turbo filters 和 TS references 全部一致。
+- [ ] 旧 `@multica/*` imports 不再出现在应用源码中。
+- [ ] 迁移后 views/web/desktop typecheck 通过。
+
+**验证：**
+- [ ] `pnpm typecheck`
+- [ ] `pnpm --filter @didian/views test`
+- [ ] `rg '@multica/'` 只剩迁移文档或兼容说明。
+
+**依赖：** Task 5A
+
+**可能触及文件：**
+- `package.json`
+- `pnpm-workspace.yaml`
+- `apps/*/package.json`
+- `packages/*/package.json`
+- `apps/**/*.{ts,tsx,mjs,json}`
+- `packages/**/*.{ts,tsx,mjs,json}`
+
+**规模预估：** L
+
+## Task 5C：CLI、daemon、protocol 和持久化标识迁移
+
+**描述：** 分阶段迁移 `multica` CLI、desktop protocol、`~/.multica` 本地目录、server command、release asset、metrics/env/API 等深层技术标识。需要保留兼容别名或迁移路径，不能和 UI 品牌替换混在一起。
+
+**验收标准：**
+- [ ] 旧 CLI/protocol/config 用户有明确兼容路径。
+- [ ] 新 Didian 命令和 release asset 可以安装/启动 daemon。
+- [ ] 本地配置目录迁移不会丢失现有登录态或 runtime 配置。
+- [ ] DB/API/metrics 改名采用 expand/contract 或兼容别名策略。
+
+**验证：**
+- [ ] CLI/daemon Go 聚焦测试
+- [ ] Desktop login/deep-link 手动检查
+- [ ] Release asset name resolver 测试
+- [ ] 配置迁移测试
+
+**依赖：** Task 5B
+
+**可能触及文件：**
+- `server/cmd/multica/*`
+- `apps/desktop/src/main/daemon-manager.ts`
+- `apps/desktop/src/main/cli-*`
+- `apps/desktop/electron-builder.yml`
+- `server/internal/metrics/*`
+- migrations/config docs
+
+**规模预估：** L
 
 ## Task 6：使用现有 API 展示 Runtime 面板
 

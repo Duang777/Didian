@@ -2,7 +2,7 @@
 //
 // Two `pnpm dev:desktop` instances from two different git worktrees collide on
 // the renderer Vite port (5173) and the single-instance lock / userData dir
-// (keyed by the app name "Multica Canary"). The env hooks to override both
+// (keyed by the app name "Didian Canary"). The env hooks to override both
 // already exist — electron.vite.config.ts reads DESKTOP_RENDERER_PORT and
 // src/main/index.ts reads DESKTOP_APP_SUFFIX — but nothing derives unique
 // values per worktree. This module does, mirroring the offset scheme that
@@ -64,7 +64,7 @@ export function rendererPortForPath(path) {
 }
 
 // Worktree → a readable, unique, filesystem-safe suffix "<folder>-<offset>".
-// The dev app then shows e.g. "Multica Canary mul-3724-194" in Cmd+Tab and gets
+// The dev app then shows e.g. "Didian Canary mul-3724-194" in Cmd+Tab and gets
 // its own userData / single-instance lock under that name. The offset is what
 // makes the lock unique: the folder name alone collides for worktrees that share
 // a basename at different paths (e.g. /a/multica vs /b/multica) or whose names
@@ -81,7 +81,7 @@ export function appSuffixForPath(path) {
 
 // A linked git worktree has a `.git` FILE (a "gitdir:" pointer); the primary
 // checkout has a `.git` DIRECTORY. We only auto-isolate linked worktrees, so
-// the primary checkout keeps the unchanged 5173 / "Multica Canary" defaults.
+// the primary checkout keeps the unchanged 5173 / "Didian Canary" defaults.
 export function isLinkedWorktree(root) {
   try {
     return statSync(join(root, ".git")).isFile();
@@ -109,7 +109,7 @@ export function applyWorktreeDevEnv(env, { root, log = false } = {}) {
   if (log) {
     console.log(
       `[dev:desktop] worktree isolation → renderer port ${env.DESKTOP_RENDERER_PORT}, ` +
-        `app "Multica Canary ${env.DESKTOP_APP_SUFFIX}"`,
+        `app "Didian Canary ${env.DESKTOP_APP_SUFFIX}"`,
     );
   }
   return env;

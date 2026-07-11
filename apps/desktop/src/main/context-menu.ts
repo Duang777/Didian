@@ -122,12 +122,12 @@ const labelsByLocale: Record<string, ContextMenuLabels> = {
 // locales we ship copy for. We say "Open Link in Browser" rather than
 // "Open Link in New Window" because the link is opened via
 // shell.openExternal — it lands in the user's default browser, not in
-// another Multica window — so the wording matches what actually
+// another Didian window — so the wording matches what actually
 // happens.
 function pickLabels(): ContextMenuLabels {
   const preferred = app.getPreferredSystemLanguages()[0]?.toLowerCase() ?? "";
   if (preferred.startsWith("zh")) {
-    // All Chinese variants get the Simplified copy — Multica only
+    // All Chinese variants get the Simplified copy — Didian only
     // ships zh-Hans, and zh-Hant users falling through to en would be
     // worse than reading Simplified Chinese.
     return labelsByLocale["zh-Hans"];

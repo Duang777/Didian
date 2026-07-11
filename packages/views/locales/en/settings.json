@@ -87,7 +87,7 @@
     },
     "system": {
       "title": "System Notifications",
-      "description": "Control native OS notification banners shown when Multica is in the background.",
+      "description": "Control native OS notification banners shown when Didian is in the background.",
       "label": "Show system notifications",
       "hint": "Show a banner from your operating system for new inbox items when the app isn't focused."
     },
@@ -189,7 +189,7 @@
     "toast_failed": "Failed to update setting"
   },
   "github": {
-    "page_description": "Connect a GitHub App, control how Pull Requests show up inside Multica, and decide what your agents leave behind in commit history.",
+    "page_description": "Connect a GitHub App, control how Pull Requests show up inside Didian, and decide what your agents leave behind in commit history.",
     "section_master": "Enable GitHub features",
     "master_description_on": "When off, every GitHub UI affordance is hidden and no new side-effects are written. Existing data is kept on the backend. Not a development team? Just turn it off here.",
     "master_description_off": "GitHub features are turned off. The PR sidebar, co-author trailer, and auto-link are paused. Data on the backend is not deleted.",
@@ -206,7 +206,7 @@
     "disconnect": "Disconnect",
     "disconnecting": "Disconnecting…",
     "disconnect_confirm_title": "Disconnect GitHub App",
-    "disconnect_confirm_description": "Multica will stop receiving webhooks for this installation. Existing PR mirrors and links are kept; reconnect any time to resume updates.",
+    "disconnect_confirm_description": "Didian will stop receiving webhooks for this installation. Existing PR mirrors and links are kept; reconnect any time to resume updates.",
     "disconnect_confirm_cancel": "Cancel",
     "disconnect_confirm_action": "Disconnect",
     "not_configured": "GitHub integration is not configured for this deployment. Operators must set",
@@ -233,7 +233,7 @@
   },
   "lark": {
     "section_title": "Lark",
-    "page_description": "Connect each Multica Agent to a Lark (飞书) PersonalAgent Bot. Members can DM the Bot, @ it in groups, and type /issue to spin up a new Multica issue.",
+    "page_description": "Connect each Didian Agent to a Lark (飞书) PersonalAgent Bot. Members can DM the Bot, @ it in groups, and type /issue to spin up a new Didian issue.",
     "not_enabled_title": "Lark integration not enabled",
     "not_enabled_description_prefix": "Set",
     "not_enabled_description_suffix": "on the server to enable Lark Bot installations.",
@@ -299,7 +299,7 @@
     "install_error_expired": "QR expired before authorization. Scan again.",
     "install_error_access_denied": "Install cancelled in Lark.",
     "install_error_protocol": "Lark refused the install — try again.",
-    "install_error_bot_info": "Authorized, but Multica couldn't fetch the Bot's identity. Try again.",
+    "install_error_bot_info": "Authorized, but Didian couldn't fetch the Bot's identity. Try again.",
     "install_error_conflict": "Could not save the installation. Another bot may already be bound to this agent.",
     "install_error_installer_bind": "Installed the bot, but could not bind your Lark identity. Try again or contact support.",
     "install_error_session_lost": "Install session expired or was lost. Scan again to start over.",
@@ -338,7 +338,7 @@
   },
   "slack": {
     "section_title": "Slack",
-    "page_description": "Connect each Multica Agent to its own Slack bot. Members can DM the bot, @mention it in a channel, and type /issue to spin up a new Multica issue.",
+    "page_description": "Connect each Didian Agent to its own Slack bot. Members can DM the bot, @mention it in a channel, and type /issue to spin up a new Didian issue.",
     "not_enabled_title": "Slack integration not enabled",
     "not_enabled_description_prefix": "Set",
     "not_enabled_description_suffix": "on the server to enable Slack bot installations.",
@@ -370,7 +370,7 @@
     "agent_bot_manage_tooltip": "Open this bot's Slack workspace.",
     "byo_dialog_title": "Connect a Slack bot",
     "byo_video_cta": "Watch the setup walkthrough",
-    "byo_docs_link": "Step-by-step: connect your Multica agent to Slack",
+    "byo_docs_link": "Step-by-step: connect your Didian agent to Slack",
     "byo_bot_token_label": "Bot token (xoxb-)",
     "byo_app_token_label": "App-level token (xapp-)",
     "byo_submit": "Connect",
