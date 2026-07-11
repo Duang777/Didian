@@ -1,228 +1,219 @@
 # CLAUDE.md
 
-Guidance for Claude Code when working in this repository. Keep this file short and authoritative: rules here should be hard to infer from code or easy to get wrong.
+这个文件是本仓库给 Claude Code、Codex、Cursor Agent 等本地 Agent 的根级工程规范。规则应保持简洁、权威、可执行。模块目录下如果还有 `AGENTS.md` / `CLAUDE.md`，进入对应模块工作前也必须读取。
 
-## Conventions
+## 产品方向
 
-The source of truth for code naming, i18n glossary, and Chinese product voice is:
+本仓库的产品名称是 **Didian**，中文定位是 **Didian 资源工作台**。
 
-- `apps/docs/content/docs/developers/conventions.mdx`
-- `apps/docs/content/docs/developers/conventions.zh.mdx`
+新的产品方向是：从浏览器到云盘的 AI 资源任务工作台。用户可以采集浏览器标签页、链接、下载记录、收藏夹和云盘类资源；任务分发给用户本地的 Codex、Claude Code、Cursor Agent、OpenCode 等 runtime 执行；最终结果整理成结构化、去重、可追问的资源库。
 
-Read it before editing translations in `packages/views/locales/`, naming routes/packages/files/DB columns/types, or writing Chinese UI/docs copy. Do not rely on `packages/views/locales/glossary.md`; it is only a redirect stub.
+核心约束：
 
-## Project Shape
+- 第一阶段保留现有本地 daemon、runtime、任务队列架构，不重写执行底座。
+- 使用 shadcn/Cult UI 开源组件逐步替换产品 UI，构建资源工作台体验。
+- 云盘能力必须通过 adapter 接口接入；MVP 使用 `MockDriveAdapter`，不依赖私有云盘 API。
+- 交互上使用动态任务图：`扫描 -> 提取 -> 匹配 -> 合并 -> 规划 -> 确认 -> 执行 -> 入库`。
+- 所有云盘写入前必须经过显式确认。
+- MVP 禁止删除、覆盖、批量移动等 destructive actions。
+- 不直接复制付费 Cult UI Pro blocks；复制开源 Cult UI 组件时保留许可证/归因要求。
 
-Multica is an AI-native task management platform for small teams, with agents as first-class assignees that can own issues, comment, and change status.
+## 项目形态
 
-- `server/`: Go backend, Chi router, sqlc, gorilla/websocket.
-- `apps/web/`: Next.js App Router.
-- `apps/desktop/`: Electron desktop app.
-- `apps/mobile/`: Expo / React Native iOS app. Read `apps/mobile/CLAUDE.md` before touching it.
-- `packages/core/`: headless business logic, API client, React Query hooks, Zustand stores.
-- `packages/ui/`: atomic UI components only.
-- `packages/views/`: shared business pages/components for web and desktop.
-- `packages/tsconfig/`: shared TypeScript config.
+当前工程结构：
 
-Shared packages export raw `.ts` / `.tsx` and are compiled by consuming apps. Dependency direction is `views -> core + ui`; `core` and `ui` must stay independent.
+- `server/`：Go 后端，Chi router、sqlc、gorilla/websocket、任务队列、daemon API。
+- `server/internal/daemon/`：本地 runtime 执行器，负责检测 CLI、注册 runtime、领取任务、执行 agent、回传结果。
+- `apps/web/`：Next.js App Router 平台层。
+- `apps/desktop/`：Electron 桌面应用。
+- `apps/mobile/`：Expo / React Native iOS 应用。修改前先读 `apps/mobile/CLAUDE.md`。
+- `apps/extension/`：浏览器扩展，负责被动采集浏览器资源。
+- `packages/core/`：无界面业务逻辑、API client、schemas、React Query hooks、Zustand stores、资源领域纯逻辑。
+- `packages/ui/`：原子 UI 组件，只放通用 primitives。
+- `packages/views/`：共享业务页面和组件。
+- `packages/adapters/`：Mock Drive、Local Drive、未来官方云盘等 adapter。
 
-## State Rules
+依赖方向保持：`views -> core + ui`。`core` 和 `ui` 必须相互独立。
 
-Keep server state and client state separate.
+## 迁移策略
 
-- TanStack Query owns server state: issues, users, workspaces, inbox, agents, members, and anything fetched from the API.
-- Zustand owns client/view state: filters, drafts, modals, tab layout, and navigation history. Current workspace identity is route-driven; platform stores/singletons may mirror slug/id only for headers, persistence namespaces, and reconnects.
-- Shared Zustand stores live in `packages/core/`, never in `packages/views/` or app directories.
-- React Context is for platform plumbing only, such as `WorkspaceIdProvider` and `NavigationProvider`.
-- Only auth/workspace stores may call `api.*` directly. Other server interaction belongs in queries/mutations.
-- Workspace-scoped query keys must include `wsId`.
-- Optimistic updates only when ALL hold: outcome locally predictable, user stays on the same screen (no navigation), failure is rare, rollback is trivial. Canonical: status/assignee/toggle field patches — patch determinate caches, roll back on failure, invalidate uncertain projections on settle.
-- Flows that navigate or confirm (create, delete, leave) must await the server before navigating or cleaning up; never optimistically remove an entity from cache.
-- Chat/message send uses the pending-message pattern: render immediately with a visible pending state and retry on failure, not silent optimism.
-- WebSocket events invalidate or patch Query cache for server data. They must never mirror server payload data into Zustand; clearing client-owned pointers (active session, selection, current workspace) is allowed only with a single responder and a self-initiated guard when this client can cause the event.
-- Persist durable preferences/drafts/layout. Do not persist server data or ephemeral UI state.
-- Zustand selectors must return stable references. Do not return freshly allocated objects/arrays from selectors without shallow comparison.
-- Hooks that need workspace context should accept `wsId`; do not call `useWorkspaceId()` internally unless the hook is guaranteed to run under the provider.
+迁移分三步：
 
-## Package Boundaries
+1. **先换前端体验。** 在不破坏现有 issue UI 的前提下增加资源工作台 shell。
+2. **保留本地执行链路。** 继续使用现有 daemon/runtime/task queue，把资源任务分发给用户本地 Agent。
+3. **再替换领域模型。** 资源任务、浏览器采集、Mock Drive、artifact、资源问答等后端模型按垂直切片逐步接入。
 
-These are hard constraints:
+不要一开始做全仓库 issue -> resource task 大重命名。优先用 adapter seam 和薄切片证明路径。
 
-- `packages/core/`: no `react-dom`, `localStorage` (use `StorageAdapter`), `process.env`, or UI libraries.
-- `packages/ui/`: no `@multica/core` imports and no business logic.
-- `packages/views/`: no `next/*`, no `react-router-dom`, no stores. Use `NavigationAdapter`, `useNavigation()`, and `<AppLink>`.
-- `apps/web/platform/`: only place for Next.js navigation/platform APIs.
-- `apps/desktop/src/renderer/src/platform/`: only place for `react-router-dom` navigation wiring.
-- Every workspace under `apps/` and `packages/` must declare directly imported external packages in its own `package.json`.
-- Shared dependencies use `catalog:` from `pnpm-workspace.yaml`; `apps/mobile/` pins Expo/React Native related versions directly.
+## 状态管理规则
 
-## Sharing Rules
+- TanStack Query 管理服务端状态：issues/resource tasks、users、workspaces、inbox、agents、members、runtimes。
+- Zustand 管理客户端/视图状态：筛选、草稿、modal、tab layout、导航历史。
+- 共享 Zustand stores 只能放在 `packages/core/`。
+- React Context 只用于平台管道，例如 `WorkspaceIdProvider` 和 `NavigationProvider`。
+- 只有 auth/workspace stores 可以直接调用 `api.*`。其他服务端交互应放在 queries/mutations。
+- Workspace-scoped query keys 必须包含 `wsId`。
+- 只有结果本地可预测、失败罕见且回滚简单时才允许乐观更新。
+- 创建、删除、离开、确认类流程必须等待服务端成功后再导航或清理。
+- WebSocket 事件更新或 invalidates Query cache；不要把服务端 payload 数据镜像进 Zustand。
+- 不要持久化服务端数据或短暂 UI 状态，只持久化耐久偏好、草稿和布局。
+- Zustand selectors 不要返回新建对象/数组，除非使用 shallow comparison。
 
-Web and desktop share business logic, hooks, stores, components, and views through `packages/core/`, `packages/ui/`, and `packages/views/`.
+## 包边界规则
 
-If the same logic exists in both web and desktop, extract it unless it depends on platform APIs:
+- `packages/core/`：不允许 `react-dom`、UI 库、直接 `localStorage`、`process.env`、具体云盘实现。
+- `packages/ui/`：不允许导入 `@multica/core`，不允许业务逻辑、API 调用、路由或云盘概念。
+- `packages/views/`：不允许 `next/*`、`react-router-dom`、stores；共享导航使用 `NavigationAdapter`、`useNavigation()`、`<AppLink>`。
+- `apps/web/platform/`：Web 专属 Next.js API 所在位置。
+- `apps/desktop/src/renderer/src/platform/`：桌面路由接线位置。
+- `apps/extension/`：浏览器采集平台代码位置，不要把浏览器 API 放进 `packages/core/`。
+- `packages/adapters/`：具体外部集成位置。UI 不允许直接导入具体 adapter。
+- 每个 workspace 必须在自己的 `package.json` 声明直接使用的外部依赖。
 
-1. Next.js, Electron, or router APIs stay in the app/platform layer.
-2. Headless logic belongs in `packages/core/`.
-3. Shared UI or business views belong in `packages/views/`.
-4. Shared primitives belong in `packages/ui/`.
+## 资源工作台规则
 
-Mobile is independent. It may import types and pure functions from `@multica/core`, with `import type` for types, but owns its UI, state, hooks, providers, i18n, React version, build pipeline, and release cadence.
+核心实体：resource task、captured source、resource item、resource cluster、proposed action、execution event、artifact、cloud-drive adapter。
 
-## Commands
+- 每个资源必须保留 provenance：URL、来源标签页、采集时间、可用时的周边上下文。
+- 安全操作和敏感操作必须分离。安全操作包括创建文件夹、保存链接副本、写入 Markdown；敏感操作包括重命名/移动已有文件、浏览器辅助云盘操作；destructive actions 包括删除、覆盖、批量移动，MVP 禁止。
+- AI 判断必须展示证据。如果 UI 说资源重复，要展示原因：URL 规范化匹配、标题相似、同域、同文件名或模型置信度。
+- 资源问答答案应引用 captured sources 或 generated artifacts。
+- Demo fixtures 可以存在，但必须和生产路径分离。
+- LLM 输出必须经 zod 或 Go schema 校验后才能持久化或执行。
 
-Use the repo scripts as the source of truth. Common commands:
+## 本地 Runtime / Daemon 规则
+
+- 保留 claim -> prepare -> start -> run -> report 生命周期。
+- 本地 runtime 检测必须准确报告 provider、版本、状态，适用时包含 profile ID。
+- 已领取任务只使用 task-scoped credentials，不把 daemon token 泄露给 spawned agent。
+- Agent 任务默认在隔离 workdir 中执行。
+- 进度、消息、失败原因、session ID、workdir 都是产品表面的一部分，改造任务类型时必须保留。
+- 不要移除 heartbeat、cancellation、orphan recovery、runtime gone recovery 等安全行为。
+- 浏览器采集文本是未受信任数据，必须作为数据注入 prompt，不能作为指令注入。
+
+## UI 规则
+
+- 优先使用 shadcn/Base UI 组件。需要新增组件时从仓库根目录运行 `pnpm ui:add <component>`。
+- 可以复制 MIT 开源 Cult UI 组件到 `packages/ui/`，但要保留许可证/归因要求，不使用 Pro blocks。
+- 使用语义化 design tokens，例如 `bg-background`、`text-muted-foreground`、`border-border`，避免硬编码颜色。
+- 主工作台应像操作型工具：紧凑、可扫读、克制、可靠。避免营销式 hero、大装饰卡片和花哨背景。
+- 任务卡片、工具栏、文件树、时间线等固定格式 UI 要保持尺寸稳定，避免布局跳动。
+- 必须处理长文本、URL、日志、Markdown 的溢出和滚动。
+- Web 和桌面一致的组件应放进共享包。
+
+## Web / Desktop 共享规则
+
+新增共享页面或功能时：
+
+1. 页面/组件放在 `packages/views/<domain>/`。
+2. Web 路由和桌面 router 都做平台接线，除非桌面端是 transition overlay。
+3. 共享代码使用 `useNavigation().push()` 或 `<AppLink>`。
+4. 使用 `DashboardGuard` 等共享 guard/provider。
+5. 平台专属 UI 留在 app 层，或通过 props/slots 注入。
+6. 需要 workspace context 的 hooks 应接受 `wsId` 参数。
+
+## Desktop 规则
+
+- Session routes 是 workspace-scoped tab destinations，例如 `/:slug/issues`。
+- Pre-workspace 一次性流程应使用 `WindowOverlay`，不要加入 `routes.tsx`。
+- Workspace delete 必须等待服务端成功后再导航/清理。
+- 跨 workspace 导航必须走 navigation adapter。
+- Dashboard shell 外的全窗口 desktop view 必须挂载 `<DragStrip />`。
+
+## Mobile 规则
+
+修改 `apps/mobile/` 前必须阅读 `apps/mobile/CLAUDE.md`。
+
+- Mobile 只共享 `@multica/core` 类型和纯函数。
+- Mobile 必须匹配 Web/Desktop 产品语义：计数、权限、枚举/状态流转、数据身份。
+- Mobile UI/交互可以因手机场景不同而差异化。
+
+## API 兼容规则
+
+前端必须能承受后端响应漂移，尤其是已安装桌面端可能连接更新的后端。
+
+- API JSON 使用 `packages/core/api/schema.ts` 中的 `parseWithFallback` 和 zod schema 解析。
+- UI 逻辑消费的 endpoint 响应必须先过 schema。
+- 下游 UI 对字段使用 optional chaining 和默认值。
+- boolean 使用显式判断，例如 `=== true`。
+- Server-driven enum switch 必须有 `default` 分支。
+- 新增或修改 endpoint 时，同步更新 schema，并加入 malformed-response 测试。
+
+## 后端 UUID 规则
+
+在 `server/internal/handler/` 中，写查询前必须知道 UUID 来源。
+
+- 路径参数可能是 UUID 或人类可读 ID 时，必须通过 loader 解析，例如 `loadIssueForUser`、`loadSkillForUser`、`loadAgentForUser`、`requireDaemonRuntimeAccess`。
+- 请求边界传入的纯 UUID 使用 `parseUUIDOrBadRequest(w, s, fieldName)`，失败立即返回。
+- sqlc 结果或测试 fixture 的可信 UUID 可用 `parseUUID(s)`。
+- handler 外使用 `util.ParseUUID(s)`，必须检查 error。
+
+## 代码规则
+
+- TypeScript 使用 strict mode，类型保持明确。
+- Go 遵循标准约定：`gofmt`、`go vet`、检查 error。
+- 代码注释使用英文，产品/文档/规范可以使用中文。
+- 优先遵循现有模式和组件，不创建平行抽象。
+- 避免与任务无关的大重构。
+- 内部非边界代码不要添加兼容层、fallback、dual writes、临时 shim，除非明确要求。
+- API 边界不同：已安装客户端可能连接较新后端，因此响应解析必须遵守 API 兼容规则。
+- 如果某个流程/API 被替换且产品未上线，优先移除旧路径，而不是长期保留双路径。
+- 新增根级 pre-workspace route 必须是单词或 `/{noun}/{verb}`，不要添加带连字符的 root route。
+- 修改 CLI 命令/flags、API 字段或内置 skills 文档覆盖的产品行为时，同步更新相关 `SKILL.md` 和 source map。
+
+## 测试规则
+
+| 被测试内容 | 位置 |
+| --- | --- |
+| 共享业务逻辑、stores、queries、hooks | `packages/core/*.test.ts` |
+| 共享 UI 组件、页面、表单、modals | `packages/views/*.test.tsx` |
+| 平台接线，例如 cookies、redirects、search params | `apps/web/*.test.tsx` 或 `apps/desktop/` |
+| 端到端流程 | `e2e/*.spec.ts` |
+| 后端 | `server/` Go tests |
+
+规则：
+
+- 不要在 app test file 中测试共享组件行为。
+- `packages/views/` 测试不允许 mock `next/*` 或 `react-router-dom`。
+- Mock `@multica/core` stores 时使用 Zustand callable-store 形态。
+- Mock API 调用时 mock `@multica/core/api`。
+- E2E 使用 `TestApiClient` 做 setup/teardown。
+- 行为变更优先先写失败测试。
+
+## 验证命令
+
+常用命令：
 
 ```bash
-make dev              # auto-setup and start the app
-make start            # start backend + frontend
-make stop             # stop app processes for this checkout
-make server           # run Go server only
-make daemon           # run local daemon
-make test             # Go tests
-make sqlc             # regenerate sqlc code after SQL changes
+make dev
+make start
+make stop
+make server
+make daemon
+make test
+make sqlc
+make check
 pnpm install
 pnpm dev:web
 pnpm dev:desktop
 pnpm build
 pnpm typecheck
 pnpm lint
-pnpm test             # TS/Vitest tests through Turborepo
-pnpm exec playwright test
-pnpm ui:add badge     # shadcn/Base UI component into packages/ui
-```
-
-Worktrees share one PostgreSQL container and get isolated DB names/ports via `.env.worktree`. `make dev` auto-detects this. For manual setup use `make worktree-env`, `make setup-worktree`, and `make start-worktree`. `pnpm dev:desktop` additionally self-isolates per worktree (its own renderer port + app name) automatically, independent of `.env.worktree`.
-
-CI runs Node 22, Go 1.26.1, and a `pgvector/pgvector:pg17` PostgreSQL service.
-
-## Coding Rules
-
-- TypeScript strict mode is enabled; keep types explicit.
-- Go follows standard conventions: `gofmt`, `go vet`, checked errors.
-- Code comments must be English.
-- Prefer existing patterns/components over new parallel abstractions.
-- Avoid broad refactors unless required by the task.
-- For internal, non-boundary code, do not add compatibility layers, fallback paths, dual writes, legacy adapters, or temporary shims unless explicitly requested.
-- API boundaries are different: installed desktop clients can talk to newer backends, so response parsing must follow the API compatibility rules below.
-- If a flow or API is being replaced and the product is not live, prefer removing the old path instead of preserving both.
-- New global pre-workspace routes must be a single word (`/login`, `/inbox`) or `/{noun}/{verb}` (`/workspaces/new`). Do not add hyphenated root routes like `/new-workspace`.
-- Reserved slugs live in `server/internal/handler/reserved_slugs.json`. Edit it, run `pnpm generate:reserved-slugs`, and commit the generated `packages/core/paths/reserved-slugs.ts`.
-- When changing CLI commands/flags, API fields, or product behavior documented by built-in skills under `server/internal/service/builtin_skills/*`, update the relevant `SKILL.md` and `references/*-source-map.md` in the same PR.
-
-## API Compatibility
-
-Frontend code must survive backend response drift, especially in installed desktop builds.
-
-- Parse API JSON with `parseWithFallback` in `packages/core/api/schema.ts` and a zod schema. Do not cast network JSON to `T`.
-- Endpoint responses consumed by UI logic must pass through a schema before returning.
-- Downstream UI should optional-chain and default fields defensively.
-- Prefer explicit boolean checks (`=== true`) over truthy/falsy checks on server fields.
-- Do not pin critical affordances to one backend boolean; combine signals when possible.
-- Server-driven enum switches need a `default` branch.
-- When adding or changing an endpoint, add/update the schema and include a malformed-response test.
-
-## Backend UUID Rules
-
-In `server/internal/handler/`, always know where a UUID came from before using it in write queries.
-
-- Resource path params that may be UUIDs or human-readable IDs must be resolved through loaders such as `loadIssueForUser`, `loadSkillForUser`, `loadAgentForUser`, or `requireDaemonRuntimeAccess`; subsequent writes use the resolved `entity.ID`.
-- Pure UUID inputs from request boundaries use `parseUUIDOrBadRequest(w, s, fieldName)` and return immediately on `ok=false`.
-- Trusted UUID round-trips from sqlc results or test fixtures use `parseUUID(s)`, which panics on invalid input.
-- Outside handlers, `util.ParseUUID(s) (pgtype.UUID, error)` is the safe variant; always check the error.
-
-## Web/Desktop Features
-
-When adding a shared page or feature for web and desktop:
-
-1. Put the page/component in `packages/views/<domain>/`.
-2. Add platform wiring in both `apps/web/app/` and the desktop router, unless the desktop flow is a transition overlay.
-3. Use `useNavigation().push()` or `<AppLink>` in shared code.
-4. Use shared guards/providers such as `DashboardGuard` from `packages/views/layout/`.
-5. Keep platform-only UI in the app or inject it through props/slots.
-6. Hooks that need workspace context should accept `wsId`.
-
-CSS for web/desktop is shared from `packages/ui/styles/`. Use semantic tokens such as `bg-background` and `text-muted-foreground`; avoid hardcoded Tailwind colors and duplicated base styles.
-
-## Desktop Rules
-
-Desktop routing has three categories:
-
-- Session routes: workspace-scoped tab destinations such as `/:slug/issues`.
-- Transition flows: pre-workspace one-shot actions such as create workspace or accept invite. These are `WindowOverlay` state, not routes.
-- Error/stale states: stale workspace tabs should auto-heal by dropping stale tab groups, not render desktop error pages.
-
-More desktop constraints:
-
-- New pre-workspace desktop flows register a `WindowOverlay` type in `stores/window-overlay-store.ts`; do not add them to `routes.tsx`.
-- `setCurrentWorkspace(slug, uuid)` from `@multica/core/platform` mirrors the active route for headers, storage namespaces, and reconnects; workspace route layouts own setting it.
-- Code that leaves workspace context must call `setCurrentWorkspace(null, null)` explicitly.
-- Workspace delete must await the server before navigation/cleanup. Workspace leave currently clears/navigates before mutation only to avoid the `member:removed` realtime race; treat that as known debt, not a reusable pattern.
-- Cross-workspace navigation must go through the navigation adapter so it can call `switchWorkspace(slug, targetPath)`.
-- Full-window desktop views outside the dashboard shell must mount `<DragStrip />` from `@multica/views/platform` as the first flex child. Interactive controls in the top 48px need `WebkitAppRegion: "no-drag"`.
-
-## Mobile Rules
-
-Read `apps/mobile/CLAUDE.md` before touching `apps/mobile/`. It contains the mandatory pre-flight process, import limits, parity rules, tech stack, UI rules, data helpers, realtime strategy, and mobile release flow.
-
-Root-level reminders:
-
-- Mobile shares only `@multica/core` types and pure functions.
-- Mobile must match web/desktop product semantics: counts, permissions, enums/transitions, and data identity.
-- Mobile may differ in UI/interaction when the phone context requires it.
-
-## UI Rules
-
-- Prefer shadcn/Base UI components over custom implementations. Add them with `pnpm ui:add <component>` from the repo root.
-- Use design tokens and semantic classes; avoid hardcoded colors.
-- Do not introduce extra local state unless the design requires it.
-- Handle overflow, long text, scrolling, alignment, and spacing deliberately.
-- If a component is identical between web and desktop, it belongs in a shared package.
-
-## Testing
-
-Tests follow the code:
-
-| What is tested | Location |
-| --- | --- |
-| Shared business logic, stores, queries, hooks | `packages/core/*.test.ts` |
-| Shared UI components, pages, forms, modals | `packages/views/*.test.tsx` |
-| Platform wiring such as cookies, redirects, search params | `apps/web/*.test.tsx` or `apps/desktop/` |
-| End-to-end flows | `e2e/*.spec.ts` |
-| Backend | `server/` Go tests |
-
-Rules:
-
-- Never test shared component behavior in an app test file.
-- `packages/views/` tests must not mock `next/*` or `react-router-dom`.
-- Mock `@multica/core` stores with the Zustand callable-store shape (`selectorFn` plus `getState`).
-- Mock `@multica/core/api` for API calls.
-- E2E tests should use `TestApiClient` for setup/teardown.
-- Prefer writing the failing test in the correct package before implementation when the change is behavioral.
-
-## Verification
-
-For code changes, run the narrowest useful checks while iterating, then run broader verification when risk justifies it or when asked.
-
-Useful checks:
-
-```bash
-pnpm typecheck
 pnpm test
-make test
 pnpm exec playwright test
-make check
+pnpm ui:add badge
 ```
 
-Do not claim verification passed unless you ran it. If you skip checks because the change is docs-only or the user asked not to run them, say so.
+迭代时运行最小有用检查；风险较高或交付前运行更广验证。没有运行过的检查不要声称已通过。
 
-## Commits and Releases
+## 提交和发布
 
-- Commits should be atomic and use conventional prefixes: `feat(scope)`, `fix(scope)`, `refactor(scope)`, `docs`, `test(scope)`, `chore(scope)`.
-- A production deployment requires a CLI release tag on `main`: create `v0.x.x`, push it, and let `release.yml` publish binaries and the Homebrew tap.
-- Bump patch by default unless the user specifies a version.
+- 提交应原子化，使用 conventional prefixes：`feat(scope)`、`fix(scope)`、`refactor(scope)`、`docs`、`test(scope)`、`chore(scope)`。
+- 生产部署需要在 `main` 上创建 CLI release tag，例如 `v0.x.x`。
+- 未指定版本时默认 patch bump。
 
-## Domain Reminders
+## 领域提醒
 
-- All queries filter by `workspace_id`; membership gates access; `X-Workspace-ID` selects the workspace.
-- Issue assignees are polymorphic: `assignee_type` plus `assignee_id` can reference a member or an agent.
+- 所有查询都要按 `workspace_id` 过滤；membership gates 控制访问；`X-Workspace-ID` 选择 workspace。
+- 现有 issue assignee 是多态：`assignee_type` + `assignee_id` 可以引用 member 或 agent。
+- 迁移期把现有 issue/task 模型视为 legacy execution model，先包裹再替换。
