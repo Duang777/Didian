@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/util"
+	"github.com/didian-ai/didian/server/internal/util"
 )
 
 // createPermissionTestMember inserts a fresh workspace member and returns its

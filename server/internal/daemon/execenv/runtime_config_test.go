@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/runtimeapps"
+	"github.com/didian-ai/didian/server/internal/runtimeapps"
 )
 
 // Sub-issue Creation section — after MUL-2538 the platform posts the

@@ -5,15 +5,15 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/analytics"
+	"github.com/didian-ai/didian/server/internal/events"
+	"github.com/didian-ai/didian/server/internal/handler"
+	obsmetrics "github.com/didian-ai/didian/server/internal/metrics"
+	"github.com/didian-ai/didian/server/internal/service"
+	"github.com/didian-ai/didian/server/internal/util"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/analytics"
-	"github.com/multica-ai/multica/server/internal/events"
-	"github.com/multica-ai/multica/server/internal/handler"
-	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
-	"github.com/multica-ai/multica/server/internal/service"
-	"github.com/multica-ai/multica/server/internal/util"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 const (

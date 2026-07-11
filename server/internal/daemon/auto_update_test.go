@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/cli"
+	"github.com/didian-ai/didian/server/internal/cli"
 )
 
 // newAutoUpdateTestDaemon returns a Daemon stripped to just the pieces

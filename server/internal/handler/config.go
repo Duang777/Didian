@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/multica-ai/multica/server/internal/analytics"
-	"github.com/multica-ai/multica/server/internal/featureflags"
+	"github.com/didian-ai/didian/server/internal/analytics"
+	"github.com/didian-ai/didian/server/internal/featureflags"
 )
 
 type AppConfig struct {

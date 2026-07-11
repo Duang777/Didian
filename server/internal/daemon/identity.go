@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/didian-ai/didian/server/internal/cli"
 	"github.com/google/uuid"
-	"github.com/multica-ai/multica/server/internal/cli"
 )
 
 // daemonIDFileName is the file that stores this machine's stable daemon

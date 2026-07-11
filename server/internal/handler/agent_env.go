@@ -9,9 +9,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/multica-ai/multica/server/internal/logger"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
+	"github.com/didian-ai/didian/server/internal/logger"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 )
 
 // envSentinel is the masked marker the UI / clients see in place of a

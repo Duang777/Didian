@@ -8,9 +8,9 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/multica-ai/multica/server/internal/util"
-	"github.com/multica-ai/multica/server/internal/util/secretbox"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/internal/util"
+	"github.com/didian-ai/didian/server/internal/util/secretbox"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
 func testBox(t *testing.T) *secretbox.Box {

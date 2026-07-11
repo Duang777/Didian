@@ -19,8 +19,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/multica-ai/multica/server/internal/logger"
 )
 
 const rollupAdvisoryLockID = 4246

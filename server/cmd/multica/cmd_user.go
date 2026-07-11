@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/multica-ai/multica/server/internal/cli"
+	"github.com/didian-ai/didian/server/internal/cli"
 )
 
 // User namespace exists so the daemon-injected `## Requesting User` brief

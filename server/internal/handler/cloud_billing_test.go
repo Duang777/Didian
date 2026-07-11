@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/cloudruntime"
+	"github.com/didian-ai/didian/server/internal/cloudruntime"
 )
 
 // proxyExpectation captures the assertions every standard
@@ -399,7 +399,6 @@ func TestStripeWebhookDisabledReturnsUnavailable(t *testing.T) {
 		t.Fatalf("status = %d, body = %s", w.Code, w.Body.String())
 	}
 }
-
 
 // TestStripeWebhookRateLimited pins the per-IP rate-limit fast
 // path. With a denying limiter installed the handler must 429

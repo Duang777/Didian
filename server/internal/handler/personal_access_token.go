@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/auth"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/auth"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // PATRenewThreshold is the remaining-lifetime window at which a PAT becomes

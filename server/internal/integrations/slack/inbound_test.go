@@ -6,7 +6,7 @@ import (
 
 	"github.com/slack-go/slack/slackevents"
 
-	"github.com/multica-ai/multica/server/internal/integrations/channel"
+	"github.com/didian-ai/didian/server/internal/integrations/channel"
 )
 
 func eventsAPI(inner any) slackevents.EventsAPIEvent {

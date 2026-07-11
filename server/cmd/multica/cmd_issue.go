@@ -18,8 +18,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/multica-ai/multica/server/internal/cli"
-	"github.com/multica-ai/multica/server/internal/util"
+	"github.com/didian-ai/didian/server/internal/cli"
+	"github.com/didian-ai/didian/server/internal/util"
 )
 
 // resolveTextFlag picks between a `--<name>` inline value, a `--<name>-stdin`

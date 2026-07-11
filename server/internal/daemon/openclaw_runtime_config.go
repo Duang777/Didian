@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 
-	"github.com/multica-ai/multica/server/internal/daemon/execenv"
+	"github.com/didian-ai/didian/server/internal/daemon/execenv"
 )
 
 // openclawRuntimeConfig is the schema the daemon expects under an openclaw

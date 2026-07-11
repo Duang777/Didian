@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 )
 
 // setupDirectChatSession creates a runtime-guard agent (with its registered

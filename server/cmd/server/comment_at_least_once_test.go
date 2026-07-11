@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // coalescedCommentIDs returns the coalesced_comment_ids of the most recent

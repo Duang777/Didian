@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/multica-ai/multica/server/internal/runtimeapps"
+	"github.com/didian-ai/didian/server/internal/runtimeapps"
 )
 
 // This file holds the runtime brief assembler — the post-MUL-3560 path

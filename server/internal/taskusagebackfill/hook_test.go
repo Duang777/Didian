@@ -15,8 +15,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/multica-ai/multica/server/internal/migrations"
-	"github.com/multica-ai/multica/server/internal/taskusagebackfill"
+	"github.com/didian-ai/didian/server/internal/migrations"
+	"github.com/didian-ai/didian/server/internal/taskusagebackfill"
 )
 
 // TestHook_DirectV034Upgrade simulates the path described in

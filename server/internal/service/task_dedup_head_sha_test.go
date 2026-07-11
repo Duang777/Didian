@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/events"
+	"github.com/didian-ai/didian/server/internal/util"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/multica-ai/multica/server/internal/events"
-	"github.com/multica-ai/multica/server/internal/util"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // TEN-356 regression: the reviewer-loop dedup keyed only on (issue_id,

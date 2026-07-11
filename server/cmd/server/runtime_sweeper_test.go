@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/multica-ai/multica/server/internal/events"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/internal/events"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
 // setupSweeperTestFixture creates an issue and a task in the given status with

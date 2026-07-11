@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/multica-ai/multica/server/internal/cli"
+	"github.com/didian-ai/didian/server/internal/cli"
 )
 
 func TestPatternsFromEnv_DefaultsWhenUnset(t *testing.T) {

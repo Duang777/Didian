@@ -13,7 +13,7 @@ import (
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
 
-	"github.com/multica-ai/multica/server/internal/integrations/channel"
+	"github.com/didian-ai/didian/server/internal/integrations/channel"
 )
 
 // slackChannel is ONE installation's Socket Mode connection. Under the

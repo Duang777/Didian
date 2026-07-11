@@ -11,11 +11,11 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/slack-go/slack"
 
-	"github.com/multica-ai/multica/server/internal/events"
-	"github.com/multica-ai/multica/server/internal/integrations/channel"
-	"github.com/multica-ai/multica/server/internal/util"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
+	"github.com/didian-ai/didian/server/internal/events"
+	"github.com/didian-ai/didian/server/internal/integrations/channel"
+	"github.com/didian-ai/didian/server/internal/util"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 )
 
 // outboundQueries is the slice of generated queries the Slack outbound

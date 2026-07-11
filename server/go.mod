@@ -1,4 +1,4 @@
-module github.com/multica-ai/multica/server
+module github.com/didian-ai/didian/server
 
 go 1.26.1
 

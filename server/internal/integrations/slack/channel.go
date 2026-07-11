@@ -8,7 +8,7 @@ import (
 
 	"github.com/slack-go/slack"
 
-	"github.com/multica-ai/multica/server/internal/integrations/channel"
+	"github.com/didian-ai/didian/server/internal/integrations/channel"
 )
 
 // TypeSlack is the channel discriminator for the Slack adapter. It is defined

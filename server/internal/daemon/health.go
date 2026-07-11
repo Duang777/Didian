@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/multica-ai/multica/server/internal/daemon/repocache"
+	"github.com/didian-ai/didian/server/internal/daemon/repocache"
 )
 
 // HealthResponse is returned by the daemon's local health endpoint.

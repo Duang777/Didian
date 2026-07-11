@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/didian-ai/didian/server/pkg/protocol"
 	"github.com/gorilla/websocket"
-	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 const (

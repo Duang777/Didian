@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/auth"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
-	"github.com/multica-ai/multica/server/internal/auth"
 )
 
 const testWorkspaceID = "test-workspace"

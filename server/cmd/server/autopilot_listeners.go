@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/multica-ai/multica/server/internal/events"
-	"github.com/multica-ai/multica/server/internal/handler"
-	"github.com/multica-ai/multica/server/internal/service"
-	"github.com/multica-ai/multica/server/pkg/protocol"
+	"github.com/didian-ai/didian/server/internal/events"
+	"github.com/didian-ai/didian/server/internal/handler"
+	"github.com/didian-ai/didian/server/internal/service"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 )
 
 // registerAutopilotListeners hooks into issue and task events to keep

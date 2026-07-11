@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/multica-ai/multica/server/internal/events"
-	"github.com/multica-ai/multica/server/internal/handler"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
+	"github.com/didian-ai/didian/server/internal/events"
+	"github.com/didian-ai/didian/server/internal/handler"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 )
 
 // registerSubscriberListeners wires up event bus listeners that auto-subscribe

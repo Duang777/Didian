@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/slack-go/slack"
 
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
 // ---- fakes ----

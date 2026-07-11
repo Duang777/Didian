@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // All tests in this file require a working DB. testHandler / testWorkspaceID /
@@ -111,7 +111,7 @@ func TestWebhookHandler_FiltersUndeclaredEvent(t *testing.T) {
 	})
 
 	w := postWebhook(t, *trig.WebhookToken, map[string]any{
-		"action": "in_progress",
+		"action":       "in_progress",
 		"workflow_run": map[string]any{"id": 123},
 	}, map[string]string{"X-GitHub-Event": "workflow_run"})
 	if w.Code != http.StatusOK {
@@ -149,7 +149,7 @@ func TestWebhookHandler_AllowsDeclaredEvent(t *testing.T) {
 	})
 
 	w := postWebhook(t, *trig.WebhookToken, map[string]any{
-		"action": "completed",
+		"action":       "completed",
 		"workflow_run": map[string]any{"id": 123},
 	}, map[string]string{"X-GitHub-Event": "workflow_run"})
 	if w.Code != http.StatusOK {
@@ -170,7 +170,7 @@ func TestWebhookHandler_EmptyFiltersAllowsAll(t *testing.T) {
 	trig := createWebhookTriggerViaHandler(t, apID)
 
 	w := postWebhook(t, *trig.WebhookToken, map[string]any{
-		"action": "in_progress",
+		"action":       "in_progress",
 		"workflow_run": map[string]any{"id": 123},
 	}, map[string]string{"X-GitHub-Event": "workflow_run"})
 	if w.Code != http.StatusOK {

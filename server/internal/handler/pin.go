@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 	"github.com/go-chi/chi/v5"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 // PinnedItemResponse carries pin metadata only. Title / status / identifier /

@@ -14,12 +14,12 @@ import (
 	"strings"
 	"time"
 
+	skillpkg "github.com/didian-ai/didian/server/internal/skill"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	skillpkg "github.com/multica-ai/multica/server/internal/skill"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 // sanitizeNullBytes makes a string safe for a PostgreSQL TEXT column.

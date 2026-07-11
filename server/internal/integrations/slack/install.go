@@ -11,9 +11,9 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/multica-ai/multica/server/internal/integrations/channel/engine"
-	"github.com/multica-ai/multica/server/internal/util/secretbox"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/internal/integrations/channel/engine"
+	"github.com/didian-ai/didian/server/internal/util/secretbox"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
 // This file is the Slack install backend (MUL-3666). Slack uses the

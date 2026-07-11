@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/realtime"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 	"github.com/gorilla/websocket"
-	"github.com/multica-ai/multica/server/internal/realtime"
-	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 func TestNotifyTaskAvailable(t *testing.T) {

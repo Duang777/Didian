@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/didian-ai/didian/server/internal/events"
+	"github.com/didian-ai/didian/server/internal/service"
+	"github.com/didian-ai/didian/server/internal/util"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/events"
-	"github.com/multica-ai/multica/server/internal/service"
-	"github.com/multica-ai/multica/server/internal/util"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // TestQuickCreateCompletion_SubscribesRequester locks in the fix for the

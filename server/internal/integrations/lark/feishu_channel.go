@@ -12,9 +12,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/multica-ai/multica/server/internal/integrations/channel"
-	"github.com/multica-ai/multica/server/internal/integrations/channel/engine"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/internal/integrations/channel"
+	"github.com/didian-ai/didian/server/internal/integrations/channel/engine"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
 // feishuChannel is the Feishu implementation of channel.Channel — the first

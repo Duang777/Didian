@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/multica-ai/multica/server/internal/util"
+	"github.com/didian-ai/didian/server/internal/util"
 )
 
 func createCommentTriggerPreviewIssue(t *testing.T, title string, assigneeType, assigneeID string) string {

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/didian-ai/didian/server/internal/util"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/util"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // TestSquadOperatingProtocolWarnsAgainstDualTrigger locks in the rule

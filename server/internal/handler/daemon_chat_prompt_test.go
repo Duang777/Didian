@@ -3,7 +3,7 @@ package handler
 import (
 	"testing"
 
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
 func msg(role, content string) db.ChatMessage {

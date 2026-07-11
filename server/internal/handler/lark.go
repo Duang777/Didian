@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/integrations/lark"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 	"github.com/go-chi/chi/v5"
-	"github.com/multica-ai/multica/server/internal/integrations/lark"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 // LarkInstallationResponse is the wire shape for an installation row.

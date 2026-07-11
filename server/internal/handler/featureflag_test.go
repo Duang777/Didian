@@ -3,8 +3,8 @@ package handler
 import (
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/featureflags"
-	"github.com/multica-ai/multica/server/pkg/featureflag"
+	"github.com/didian-ai/didian/server/internal/featureflags"
+	"github.com/didian-ai/didian/server/pkg/featureflag"
 )
 
 func withComposioMCPAppsFlag(t *testing.T, h *Handler, enabled bool) {

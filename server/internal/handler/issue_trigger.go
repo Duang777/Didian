@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/didian-ai/didian/server/internal/service"
+	"github.com/didian-ai/didian/server/internal/util"
+	agentver "github.com/didian-ai/didian/server/pkg/agent"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/service"
-	"github.com/multica-ai/multica/server/internal/util"
-	agentver "github.com/multica-ai/multica/server/pkg/agent"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // maxPreviewTriggerIssues caps a single preview request so a pathological

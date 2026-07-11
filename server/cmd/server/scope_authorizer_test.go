@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/didian-ai/didian/server/internal/realtime"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/realtime"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // fakeScopeQuerier implements scopeAuthQuerier with in-memory maps.

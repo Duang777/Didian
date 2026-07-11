@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 func newTestHandler(cfg Config) *Handler {

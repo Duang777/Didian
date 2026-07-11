@@ -7,12 +7,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/didian-ai/didian/server/internal/analytics"
+	"github.com/didian-ai/didian/server/internal/logger"
+	obsmetrics "github.com/didian-ai/didian/server/internal/metrics"
+	"github.com/didian-ai/didian/server/internal/middleware"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/analytics"
-	"github.com/multica-ai/multica/server/internal/logger"
-	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
-	"github.com/multica-ai/multica/server/internal/middleware"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // feedbackImageRegex is a coarse check for markdown image syntax ![alt](url).

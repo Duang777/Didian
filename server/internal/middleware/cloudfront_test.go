@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/multica-ai/multica/server/internal/auth"
+	"github.com/didian-ai/didian/server/internal/auth"
 )
 
 // testSigner sets up env vars and creates a CloudFrontSigner with a throwaway RSA key.

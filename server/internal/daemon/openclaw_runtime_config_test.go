@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/daemon/execenv"
+	"github.com/didian-ai/didian/server/internal/daemon/execenv"
 )
 
 func quietLogger() *slog.Logger {

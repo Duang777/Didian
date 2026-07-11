@@ -5,8 +5,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/didian-ai/didian/server/internal/cloudruntime"
 	"github.com/go-chi/chi/v5"
-	"github.com/multica-ai/multica/server/internal/cloudruntime"
 )
 
 // Cloud billing endpoints proxy to the same multica-cloud HTTP service

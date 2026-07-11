@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/integrations/lark"
-	"github.com/multica-ai/multica/server/internal/util/secretbox"
+	"github.com/didian-ai/didian/server/internal/integrations/lark"
+	"github.com/didian-ai/didian/server/internal/util/secretbox"
 )
 
 // Lark-handler unit tests focus on the no-config short-circuits —

@@ -14,9 +14,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/auth"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
-	"github.com/multica-ai/multica/server/internal/auth"
 )
 
 // MembershipChecker verifies a user belongs to a workspace.

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/util"
+	"github.com/didian-ai/didian/server/internal/util"
 )
 
 // These tests cover the squad-cleanup step added to DeleteAgentRuntime:

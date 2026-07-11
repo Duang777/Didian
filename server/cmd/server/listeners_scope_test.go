@@ -4,8 +4,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/events"
-	"github.com/multica-ai/multica/server/pkg/protocol"
+	"github.com/didian-ai/didian/server/internal/events"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 )
 
 // fakeBroadcaster records every fanout call so tests can assert which scope a

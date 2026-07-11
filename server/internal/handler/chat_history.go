@@ -9,10 +9,10 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/multica-ai/multica/server/internal/integrations/channel"
-	"github.com/multica-ai/multica/server/internal/integrations/slack"
-	"github.com/multica-ai/multica/server/internal/logger"
-	"github.com/multica-ai/multica/server/internal/util"
+	"github.com/didian-ai/didian/server/internal/integrations/channel"
+	"github.com/didian-ai/didian/server/internal/integrations/slack"
+	"github.com/didian-ai/didian/server/internal/logger"
+	"github.com/didian-ai/didian/server/internal/util"
 )
 
 // ChatChannelHistoryReader reads a chat session's bound IM-channel history. The

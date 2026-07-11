@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/multica-ai/multica/server/internal/runtimeapps"
+	"github.com/didian-ai/didian/server/internal/runtimeapps"
 )
 
 // RepoContextForEnv describes a workspace repo available for checkout.

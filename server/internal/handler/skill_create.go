@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 
+	skillpkg "github.com/didian-ai/didian/server/internal/skill"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	skillpkg "github.com/multica-ai/multica/server/internal/skill"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 type skillCreateInput struct {

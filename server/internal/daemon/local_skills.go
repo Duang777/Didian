@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/multica-ai/multica/server/internal/skill"
+	"github.com/didian-ai/didian/server/internal/skill"
 )
 
 const (

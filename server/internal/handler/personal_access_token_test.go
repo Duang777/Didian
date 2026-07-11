@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/auth"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/auth"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // insertTestPAT creates a PAT row for the shared test user with the given

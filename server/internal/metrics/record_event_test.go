@@ -3,8 +3,8 @@ package metrics_test
 import (
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/analytics"
-	"github.com/multica-ai/multica/server/internal/metrics"
+	"github.com/didian-ai/didian/server/internal/analytics"
+	"github.com/didian-ai/didian/server/internal/metrics"
 )
 
 // captureSpy records the names of every event handed to Capture so tests can

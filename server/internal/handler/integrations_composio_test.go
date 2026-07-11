@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
+	composio "github.com/didian-ai/didian/server/internal/integrations/composio"
+	"github.com/didian-ai/didian/server/internal/util"
+	sdk "github.com/didian-ai/didian/server/pkg/composio"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	composio "github.com/multica-ai/multica/server/internal/integrations/composio"
-	"github.com/multica-ai/multica/server/internal/util"
-	sdk "github.com/multica-ai/multica/server/pkg/composio"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 const composioTestUserID = "22222222-2222-2222-2222-222222222222"

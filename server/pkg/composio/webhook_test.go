@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/multica-ai/multica/server/pkg/composio"
+	"github.com/didian-ai/didian/server/pkg/composio"
 )
 
 // helper: produce a valid signature for the given inputs.

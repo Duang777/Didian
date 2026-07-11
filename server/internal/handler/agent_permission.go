@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/didian-ai/didian/server/internal/util"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/util"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // AgentInvocationTargetDTO is the wire shape of one invocation allow-list
@@ -91,8 +91,8 @@ func (p resolvedPermission) legacyVisibility() string {
 //   - permissionMode == nil && visibility == nil  -> caller default (returns ok=false, nil)
 //   - permissionMode provided                     -> authoritative
 //   - only legacy visibility provided             -> mapped:
-//       "private"   -> private
-//       "workspace" -> public_to + workspace target
+//     "private"   -> private
+//     "workspace" -> public_to + workspace target
 //
 // workspaceID seeds workspace targets (stored as the workspace id). The
 // returned error is a client-facing 400 message.

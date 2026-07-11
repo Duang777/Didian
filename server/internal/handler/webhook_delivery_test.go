@@ -12,8 +12,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // ── Setup helpers ───────────────────────────────────────────────────────────

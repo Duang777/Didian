@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/didian-ai/didian/server/internal/runtimeapps"
+	"github.com/didian-ai/didian/server/internal/util"
+	sdk "github.com/didian-ai/didian/server/pkg/composio"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/runtimeapps"
-	"github.com/multica-ai/multica/server/internal/util"
-	sdk "github.com/multica-ai/multica/server/pkg/composio"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // mcpOverlayServerName is the deterministic key under `mcpServers` used to

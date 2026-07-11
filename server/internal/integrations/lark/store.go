@@ -31,7 +31,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
 // Installation is the flat, feishu-shaped view of a channel_installation row.

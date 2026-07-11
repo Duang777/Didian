@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
+	skillpkg "github.com/didian-ai/didian/server/internal/skill"
 	"github.com/jackc/pgx/v5/pgtype"
-	skillpkg "github.com/multica-ai/multica/server/internal/skill"
 )
 
 // maxImportArchiveUploadSize bounds the compressed upload accepted by the

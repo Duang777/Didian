@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/auth"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/multica-ai/multica/server/internal/auth"
 	"github.com/redis/go-redis/v9"
 )
 

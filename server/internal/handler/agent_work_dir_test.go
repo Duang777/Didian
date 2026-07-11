@@ -3,7 +3,7 @@ package handler
 import (
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/daemon/execenv"
+	"github.com/didian-ai/didian/server/internal/daemon/execenv"
 )
 
 // TestRelativeWorkDir covers the privacy-safe display derivation that

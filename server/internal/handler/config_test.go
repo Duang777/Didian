@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/auth"
+	"github.com/didian-ai/didian/server/internal/auth"
 )
 
 func TestGetConfigReportsCdnSignedMode(t *testing.T) {

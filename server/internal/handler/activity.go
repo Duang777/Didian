@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"sort"
 
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // TimelineEntry represents a single entry in the issue timeline, which can be

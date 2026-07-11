@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/multica-ai/multica/server/internal/daemonws"
-	"github.com/multica-ai/multica/server/internal/middleware"
+	"github.com/didian-ai/didian/server/internal/daemonws"
+	"github.com/didian-ai/didian/server/internal/middleware"
 )
 
 func (h *Handler) DaemonWebSocket(w http.ResponseWriter, r *http.Request) {

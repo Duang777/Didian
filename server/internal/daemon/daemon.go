@@ -18,12 +18,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/multica-ai/multica/server/internal/cli"
-	"github.com/multica-ai/multica/server/internal/daemon/execenv"
-	"github.com/multica-ai/multica/server/internal/daemon/repocache"
-	"github.com/multica-ai/multica/server/pkg/agent"
-	"github.com/multica-ai/multica/server/pkg/skillbundle"
-	"github.com/multica-ai/multica/server/pkg/taskfailure"
+	"github.com/didian-ai/didian/server/internal/cli"
+	"github.com/didian-ai/didian/server/internal/daemon/execenv"
+	"github.com/didian-ai/didian/server/internal/daemon/repocache"
+	"github.com/didian-ai/didian/server/pkg/agent"
+	"github.com/didian-ai/didian/server/pkg/skillbundle"
+	"github.com/didian-ai/didian/server/pkg/taskfailure"
 )
 
 // ErrRepoNotConfigured is returned by ensureRepoReady when the requested repo

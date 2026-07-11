@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/multica-ai/multica/server/pkg/protocol"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 )
 
 func TestClient_IdentityHeaders_PostJSON(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/multica-ai/multica/server/internal/integrations/channel"
-	"github.com/multica-ai/multica/server/internal/integrations/slack"
+	"github.com/didian-ai/didian/server/internal/integrations/channel"
+	"github.com/didian-ai/didian/server/internal/integrations/slack"
 )
 
 type fakeChatHistoryReader struct {

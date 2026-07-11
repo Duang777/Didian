@@ -13,15 +13,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/auth"
+	"github.com/didian-ai/didian/server/internal/daemonws"
+	"github.com/didian-ai/didian/server/internal/middleware"
+	"github.com/didian-ai/didian/server/internal/service"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/multica-ai/multica/server/internal/auth"
-	"github.com/multica-ai/multica/server/internal/daemonws"
-	"github.com/multica-ai/multica/server/internal/middleware"
-	"github.com/multica-ai/multica/server/internal/service"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 func TestLogClaimEndpointSlowIncludesPayloadFields(t *testing.T) {

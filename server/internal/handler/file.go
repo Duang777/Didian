@@ -13,11 +13,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/didian-ai/didian/server/internal/storage"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/multica-ai/multica/server/internal/storage"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
 
 // extContentTypes overrides http.DetectContentType for extensions it gets wrong.

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/integrations/channel/engine"
+	"github.com/didian-ai/didian/server/internal/integrations/channel/engine"
 )
 
 // enricherFakeClient is a programmable APIClient for enricher tests. It

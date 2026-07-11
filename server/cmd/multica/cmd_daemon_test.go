@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/daemon"
+	"github.com/didian-ai/didian/server/internal/daemon"
 )
 
 // TestDaemonAlive locks in the liveness predicate the lifecycle commands rely

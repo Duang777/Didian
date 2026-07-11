@@ -19,10 +19,10 @@ import (
 	"github.com/spf13/cobra"
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/multica-ai/multica/server/internal/cli"
-	"github.com/multica-ai/multica/server/internal/daemon"
-	logger_pkg "github.com/multica-ai/multica/server/internal/logger"
-	"github.com/multica-ai/multica/server/internal/util"
+	"github.com/didian-ai/didian/server/internal/cli"
+	"github.com/didian-ai/didian/server/internal/daemon"
+	logger_pkg "github.com/didian-ai/didian/server/internal/logger"
+	"github.com/didian-ai/didian/server/internal/util"
 )
 
 var daemonCmd = &cobra.Command{

@@ -5,10 +5,10 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/didian-ai/didian/server/internal/logger"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/pkg/protocol"
 	"github.com/go-chi/chi/v5"
-	"github.com/multica-ai/multica/server/internal/logger"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
-	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 type IssueReactionResponse struct {

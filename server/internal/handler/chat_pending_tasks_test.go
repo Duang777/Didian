@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/multica-ai/multica/server/internal/middleware"
-	"github.com/multica-ai/multica/server/internal/util"
-	db "github.com/multica-ai/multica/server/pkg/db/generated"
+	"github.com/didian-ai/didian/server/internal/middleware"
+	"github.com/didian-ai/didian/server/internal/util"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
 // chatPendingCtxAs injects the workspace + member context that the chi
@@ -235,7 +235,6 @@ func TestHasPendingChatTasks_IgnoresTerminalTasks(t *testing.T) {
 		t.Fatalf("has-any returned true for a terminal (completed) task")
 	}
 }
-
 
 // TestHasPendingChatTasks_HidesOtherCreatorsTask locks the cs.creator_id gate:
 // user A's in-flight task on a workspace-visible agent — one B can freely
