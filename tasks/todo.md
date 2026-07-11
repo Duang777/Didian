@@ -91,14 +91,14 @@
 **描述：** 用 mock 数据构建任务详情面板：动态计划、资源聚类、建议操作、执行时间线和 artifacts。
 
 **验收标准：**
-- [ ] 可以打开选中任务的详情。
-- [ ] 动态 plan/checkpoint UI 可见。
-- [ ] 建议操作和确认区域可见。
-- [ ] Artifact 预览能安全渲染 Markdown。
+- [x] 可以打开选中任务的详情。
+- [x] 动态 plan/checkpoint UI 可见。
+- [x] 建议操作和确认区域可见。
+- [x] Artifact 预览能安全渲染 Markdown。
 
 **验证：**
-- [ ] `pnpm typecheck`
-- [ ] needs-confirmation 和 completed 状态组件测试
+- [x] `pnpm --filter @multica/views typecheck`
+- [x] needs-confirmation 和 completed 状态组件测试
 
 **依赖：** Task 4
 
