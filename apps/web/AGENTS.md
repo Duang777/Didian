@@ -22,6 +22,12 @@
 - 不要绕过 `@didian/core` 的 API schema 直接消费后端数据。
 - 路由组件不要直接调用具体云盘 adapter。
 
+## 组件参考
+
+- `awesome-shadcn-ui`（https://github.com/birobirobiro/awesome-shadcn-ui）用于发现 shadcn 生态组件和 blocks；采纳前确认原项目许可证和依赖。
+- `cult-ui`（https://github.com/nolly-studio/cult-ui）用于参考开源动效和 AI UI elements；不要复制 Pro blocks。
+- Web route 不直接沉淀组件。通用 primitive 放 `packages/ui/`，业务组合放 `packages/views/`。
+
 ## 验证
 
 - 类型检查：`pnpm typecheck`

@@ -9,6 +9,8 @@
 - 任务卡片、工具栏、文件树、时间线等固定格式 UI 要保持尺寸稳定，避免布局跳动。
 - 常见操作优先使用 lucide icons。
 - 必须认真处理溢出和超长连续文本。
+- 可参考 `awesome-shadcn-ui`（https://github.com/birobirobiro/awesome-shadcn-ui）发现 shadcn 生态 primitives、blocks 和 pattern；迁入前确认原项目许可证、依赖体积和维护状态。
+- 可参考/迁入 `cult-ui`（https://github.com/nolly-studio/cult-ui）的开源 MIT 组件，尤其是 AI elements、动效 primitive、artifact/source/file tree 等通用 UI；必须保留必要许可证/归因，不使用 Pro blocks。
 
 ## AI 元素改造
 

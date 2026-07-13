@@ -16,6 +16,12 @@
 - 优先使用动态任务图和显式确认门，而不是固定多 Agent 角色表演。
 - 不复制付费 Cult UI Pro blocks；复制开源组件时保留必要许可证/归因要求。
 
+## 前端组件资源
+
+- shadcn 生态参考索引：`awesome-shadcn-ui`（https://github.com/birobirobiro/awesome-shadcn-ui）。用于发现可复用组件、blocks 和交互 pattern；真正采用前必须查看原始项目的许可证、依赖和维护状态。
+- Cult UI 开源组件：`cult-ui`（https://github.com/nolly-studio/cult-ui）。可作为动效、AI elements、展示型 primitives 的参考或迁入来源；只允许使用开源 MIT 组件，不复制 Pro blocks。
+- 复用归宿：无业务语义的通用组件进入 `packages/ui/`；知道 resource task、workspace、agent、runtime、cloud drive 等业务概念的组件进入 `packages/views/`。
+
 ## 快速架构索引
 
 - `server/`：Go 后端、Chi router、sqlc、gorilla/websocket、任务队列、daemon API。

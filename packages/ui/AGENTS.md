@@ -23,6 +23,11 @@
 - 复制代码时在项目文档中保留归因和许可证要求。
 - 视觉风格要适配操作型工作台：克制、信息密度高、清晰。
 
+## 外部组件索引
+
+- `awesome-shadcn-ui`（https://github.com/birobirobiro/awesome-shadcn-ui）：shadcn 生态组件/blocks/pattern 发现索引。它本身是目录，不代表所有条目都可直接复制；采用前逐项确认许可证、依赖、可访问性和维护状态。
+- `cult-ui`（https://github.com/nolly-studio/cult-ui）：开源动效和 AI UI 组件来源。只迁入开源 MIT 部分，不使用 Pro blocks；迁入后要改造成无业务语义、token 化、可组合的 `packages/ui` primitive。
+
 ## 验证
 
 - 组件 API 变更后运行类型检查。

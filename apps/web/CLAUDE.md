@@ -9,6 +9,7 @@
 - route 文件应该组合 provider 和共享 view，避免在 `page.tsx` 里写大型业务组件。
 - API 响应必须先经过 `@didian/core` schema 解析，再交给 UI 逻辑。
 - 使用 `packages/ui/styles/` 中的语义化设计 token。
+- 需要找前端组件参考时，可以查 `awesome-shadcn-ui`（https://github.com/birobirobiro/awesome-shadcn-ui）和 `cult-ui`（https://github.com/nolly-studio/cult-ui）。Web 层只负责接线；可复用实现应下沉到 `packages/ui/` 或 `packages/views/`。
 
 ## 迁移说明
 

@@ -94,6 +94,10 @@
 ## UI 规则
 
 - 优先使用 shadcn/Base UI 组件。需要新增组件时从仓库根目录运行 `pnpm ui:add <component>`。
+- 前端组件参考库：
+  - `awesome-shadcn-ui`（https://github.com/birobirobiro/awesome-shadcn-ui）作为 shadcn 生态组件、blocks、pattern 的发现索引。使用前要回到原始项目确认许可证、依赖和维护状态。
+  - `cult-ui`（https://github.com/nolly-studio/cult-ui）作为可借鉴/迁入的开源动效与 AI UI 组件来源；只使用开源 MIT 组件，不复制 Pro blocks。
+  - 从这些资源落地的通用组件应沉淀到 `packages/ui/`；带 resource task、workspace、agent、runtime 等业务语义的组合组件应放到 `packages/views/`。
 - 可以复制 MIT 开源 Cult UI 组件到 `packages/ui/`，但要保留许可证/归因要求，不使用 Pro blocks。
 - 使用语义化 design tokens，例如 `bg-background`、`text-muted-foreground`、`border-border`，避免硬编码颜色。
 - 主工作台应像操作型工具：紧凑、可扫读、克制、可靠。避免营销式 hero、大装饰卡片和花哨背景。
