@@ -12,7 +12,7 @@ export function DidianLanding() {
   return (
     <>
       <div className="relative">
-        <LandingHeader />
+        <LandingHeader variant="light" />
         <LandingHero />
       </div>
 

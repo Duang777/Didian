@@ -1058,7 +1058,7 @@ export function FeaturesSection() {
                 {/* Visual */}
                 <div className="mt-14 sm:mt-18">
                   {feature.visual ? (
-                    <div className="relative overflow-hidden rounded-sm">
+                    <div className="relative overflow-hidden rounded-sm border border-[#0a0d12]/10 bg-white shadow-[0_24px_80px_rgba(10,13,18,0.12)]">
                       <Image
                         src={feature.bgImage ?? "/images/feature-bg.jpg"}
                         alt=""
@@ -1067,6 +1067,7 @@ export function FeaturesSection() {
                         sizes="(max-width: 1320px) 100vw, 1320px"
                         quality={80}
                       />
+                      <div className="absolute inset-0 bg-white/8" />
                       <div className="relative px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
                         <feature.visual />
                       </div>
@@ -1076,7 +1077,7 @@ export function FeaturesSection() {
                       <div className="aspect-[16/9] w-full" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="flex flex-col items-center gap-4 text-center">
-                          <div className="grid size-14 place-items-center rounded-2xl border border-[#0a0d12]/8 bg-white shadow-sm">
+                          <div className="grid size-14 place-items-center rounded-[8px] border border-[#0a0d12]/8 bg-white shadow-sm">
                             <ImageIcon className="size-6 text-[#0a0d12]/30" />
                           </div>
                           <p className="text-[13px] text-[#0a0d12]/36">

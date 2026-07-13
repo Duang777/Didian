@@ -39,7 +39,7 @@ export function OpenSourceSection() {
 
           {/* Right column — highlight grid */}
           <div className="flex-1">
-            <div className="grid gap-px overflow-hidden rounded-2xl border border-[#0a0d12]/8 bg-[#0a0d12]/8 sm:grid-cols-2">
+            <div className="grid gap-px overflow-hidden rounded-[8px] border border-[#0a0d12]/8 bg-[#0a0d12]/8 shadow-[0_24px_80px_rgba(10,13,18,0.08)] sm:grid-cols-2">
               {t.openSource.highlights.map((item) => (
                 <div key={item.title} className="bg-white p-8 lg:p-10">
                   <h3 className="text-[17px] font-semibold leading-snug text-[#0a0d12] sm:text-[18px]">

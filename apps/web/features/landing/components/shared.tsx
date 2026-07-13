@@ -1,8 +1,39 @@
+import type React from "react";
 import { cn } from "@didian/ui/lib/utils";
 
 export const githubUrl = "https://github.com/didian-ai/didian";
 export const twitterUrl = "https://x.com/DidianAI";
 export const discordUrl = "https://discord.gg/W8gYBn226t";
+
+export function LandingSectionShell({
+  id,
+  children,
+  className,
+  grid = true,
+}: {
+  id?: string;
+  children: React.ReactNode;
+  className?: string;
+  grid?: boolean;
+}) {
+  return (
+    <section
+      id={id}
+      className={cn("relative overflow-hidden bg-[#050706] text-white", className)}
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(239,166,74,0.13),transparent_30%),linear-gradient(180deg,#050706_0%,#0b0f0d_48%,#050706_100%)]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#efaa52]/45 to-transparent" />
+        {grid ? (
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px] opacity-35 [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_82%,transparent)]" />
+        ) : null}
+        <div className="absolute left-0 top-[18%] h-px w-[46%] bg-gradient-to-r from-transparent via-[#73d8c5]/45 to-transparent" />
+        <div className="absolute right-0 top-[62%] h-px w-[38%] bg-gradient-to-r from-transparent via-[#efaa52]/42 to-transparent" />
+      </div>
+      <div className="relative z-10">{children}</div>
+    </section>
+  );
+}
 
 export function GitHubMark({ className }: { className?: string }) {
   return (
@@ -193,11 +224,18 @@ export function headerButtonClassName(
   );
 }
 
-export function heroButtonClassName(tone: "ghost" | "solid") {
+export function heroButtonClassName(
+  tone: "ghost" | "solid",
+  variant: "dark" | "light" = "dark",
+) {
   return cn(
     "inline-flex items-center justify-center gap-2 rounded-[12px] px-5 py-3 text-[14px] font-semibold transition-colors",
-    tone === "solid"
-      ? "bg-white text-[#0a0d12] hover:bg-white/92"
-      : "border border-white/18 bg-black/16 text-white backdrop-blur-sm hover:bg-black/24",
+    variant === "dark"
+      ? tone === "solid"
+        ? "bg-white text-[#0a0d12] hover:bg-white/92"
+        : "border border-white/18 bg-black/16 text-white backdrop-blur-sm hover:bg-black/24"
+      : tone === "solid"
+        ? "bg-[#0a0d12] text-white hover:bg-[#0a0d12]/88"
+        : "border border-[#0a0d12]/14 bg-white/70 text-[#0a0d12] backdrop-blur-sm hover:bg-white/90",
   );
 }
