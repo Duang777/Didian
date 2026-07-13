@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Download } from "lucide-react";
 import { useAuthStore } from "@didian/core/auth";
+import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 import { useLocale } from "../i18n";
 import {
   ClaudeCodeLogo,
@@ -101,12 +102,10 @@ export function LandingHero() {
 
 function LandingBackdrop() {
   return (
-    <div className="pointer-events-none absolute inset-0">
-      <Image
-        src="/images/landing-bg.jpg"
-        alt=""
-        fill
-        className="object-cover object-center"
+    <div className="pointer-events-none absolute inset-0 overflow-hidden bg-[#050706]">
+      <DidianIcon
+        className="absolute left-1/2 top-[32%] size-[min(58vw,36rem)] -translate-x-1/2 -translate-y-1/2 text-white/[0.055]"
+        noSpin
       />
     </div>
   );

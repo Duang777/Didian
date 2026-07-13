@@ -26,11 +26,23 @@ const borderedSizes = {
   lg: { wrapper: "p-2.5", icon: "size-5" },
 };
 
-/**
- * Pure CSS 8-pointed asterisk icon matching the Didian logo.
- * Uses currentColor so it adapts to light/dark themes automatically.
- * Clip-path polygon traced from the original SVG path coordinates.
- */
+const DIDIAN_PATH =
+  "M51 8c5 0 9 4 9 9v46c0 5-4 9-9 9H35C18.5 72 7 59 7 40S18.5 8 35 8h16Zm-16 17c-8.2 0-13.5 6-13.5 15S26.8 55 35 55h10V25H35Z";
+
+function DidianMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 80 80"
+      aria-hidden="true"
+      className={cn("block size-full", className)}
+      fill="currentColor"
+    >
+      <path d={DIDIAN_PATH} fillRule="evenodd" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+/** Single-color Didian mark. Uses currentColor for light/dark themes. */
 export function DidianIcon({
   className,
   animate = false,
@@ -46,15 +58,6 @@ export function DidianIcon({
     const timer = setTimeout(() => setEntranceDone(true), 600);
     return () => clearTimeout(timer);
   }, [animate]);
-
-  const clipPath = `polygon(
-    45% 62.1%, 45% 100%, 55% 100%, 55% 62.1%,
-    81.8% 88.9%, 88.9% 81.8%, 62.1% 55%, 100% 55%,
-    100% 45%, 62.1% 45%, 88.9% 18.2%, 81.8% 11.1%,
-    55% 37.9%, 55% 0%, 45% 0%, 45% 37.9%,
-    18.2% 11.1%, 11.1% 18.2%, 37.9% 45%, 0% 45%,
-    0% 55%, 37.9% 55%, 11.1% 81.8%, 18.2% 88.9%
-  )`;
 
   if (bordered) {
     const sizeConfig = borderedSizes[size];
@@ -76,10 +79,7 @@ export function DidianIcon({
             entranceDone && !noSpin && "hover:animate-spin"
           )}
         >
-          <span
-            className="block size-full bg-current"
-            style={{ clipPath }}
-          />
+          <DidianMark />
         </span>
       </span>
     );
@@ -96,10 +96,7 @@ export function DidianIcon({
       aria-hidden="true"
       {...props}
     >
-      <span
-        className="block size-full bg-current"
-        style={{ clipPath }}
-      />
+      <DidianMark />
     </span>
   );
 }
