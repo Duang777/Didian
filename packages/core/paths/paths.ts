@@ -18,6 +18,13 @@ function workspaceScoped(slug: string) {
   const ws = `/${encode(slug)}`;
   return {
     root: () => `${ws}/issues`,
+    aiInbox: () => `${ws}/ai-inbox`,
+    missions: () => `${ws}/missions`,
+    missionDetail: (id: string) => `${ws}/missions/${encode(id)}`,
+    atlas: () => `${ws}/atlas`,
+    aiStudio: () => `${ws}/ai-studio`,
+    autopilot: () => `${ws}/autopilot`,
+    system: () => `${ws}/system`,
     usage: () => `${ws}/usage`,
     resources: () => `${ws}/resources`,
     issues: () => `${ws}/issues`,

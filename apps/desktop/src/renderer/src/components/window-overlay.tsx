@@ -64,12 +64,12 @@ function WindowOverlayInner() {
         <OnboardingFlow
           onComplete={(ws, issueId) => {
             close();
-            // Runtime-connected onboarding lands on its single guide
-            // issue. Runtime-less exits still land on the issues list.
+            // Compatibility paths can still land on a guide issue. The
+            // default first-run path lands in AI Inbox.
             if (ws && issueId) {
               push(paths.workspace(ws.slug).issueDetail(issueId));
             } else if (ws) {
-              push(paths.workspace(ws.slug).issues());
+              push(paths.workspace(ws.slug).aiInbox());
             } else {
               push(paths.root());
             }

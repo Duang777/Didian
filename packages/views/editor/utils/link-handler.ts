@@ -19,8 +19,15 @@ import { isGlobalPath } from "@didian/core/paths";
  * as intentional. Only "/issues/..." style paths get auto-prefixed.
  */
 const WORKSPACE_ROUTE_SEGMENTS = new Set([
+  "ai-inbox",
+  "missions",
+  "atlas",
+  "ai-studio",
+  "autopilot",
+  "system",
   "usage",
   "issues",
+  "resources",
   "projects",
   "autopilots",
   "agents",
@@ -29,6 +36,7 @@ const WORKSPACE_ROUTE_SEGMENTS = new Set([
   "my-issues",
   "runtimes",
   "skills",
+  "squads",
   "settings",
 ]);
 

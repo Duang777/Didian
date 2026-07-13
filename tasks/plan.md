@@ -1,159 +1,180 @@
-# 实施计划：Didian
+# 实施计划：AI 资源工作台
 
 ## 概览
 
-Didian 是一个从浏览器到云盘的资源任务工作台。第一阶段的工程目标不是重写执行底座，而是在保留本地 daemon、runtime、任务队列能力的前提下，用 Cult UI/shadcn 做出资源工作台产品表面。资源领域后端变更应在本地 runtime 路径被验证后，以薄的、可验证的垂直切片逐步进入。
+本计划按 `docs/ai-resource-workbench/01-product-requirements.md` 重写，具体技术落地以 `docs/ai-resource-workbench/02-technical-plan.md` 为准，方案审核和开工顺序以 `docs/ai-resource-workbench/03-implementation-review.md` 为准。产品主线从旧的 Tasks / Resources / Projects / Nodes / Analytics 收敛为五个有独立 AI 行为的主板块：AI Inbox、Missions、Atlas、AI Studio、Autopilot。
+
+第一阶段不重构数据库表名，不删除已有可用 route，不重写 daemon/runtime 执行底座。我们先把用户可见的信息架构、onboarding、导航、核心页面和 demo fixture 切到新产品语义，让产品从模板感变成 AI 原生工作台。底层 `issue`、`agent`、`runtime`、`skill`、`squad` 暂时作为实现细节承载新概念。
 
 ## 架构决策
 
-- **优先保留现有 daemon/runtime。** 现有 daemon 已经能检测本地 Agent CLI、注册 runtime、领取任务、在隔离 workdir 中运行 agent 并流式回传结果。过早重写风险高、收益低。
-- **渐进式替换前端。** 使用 shadcn/Cult UI 组件构建资源工作台外壳，在资源 API contract 准备好之前保持现有后端契约。
-- **云盘使用 adapter 接缝。** MVP 使用 `MockDriveAdapter`；未来迅雷、本地文件夹、浏览器辅助 adapter 共用同一契约。
-- **使用动态任务图。** UX 展示 plan、checkpoint、tool、action 进度，而不是固定一组命名 Agent。
-- **写入前必须确认。** 任何资源操作在写入云盘前都必须被用户审核，即使是 mock 模式。
-- **品牌迁移分层执行。** 用户可见品牌先迁移为 Didian；`@didian/*` workspace scope、`didian` CLI/protocol、`~/.didian` 配置目录、metrics/env/API 等深层标识分成后续独立迁移，保留兼容路径后再替换。
+- **五模块优先。** 一级导航只保留 AI Inbox、Missions、Atlas、AI Studio、Autopilot；Nodes、Integrations、Settings、Providers 等放入 System。
+- **先改产品语义，再改数据模型。** Mission 先复用 issue；AI Role 先复用 agent；Capability 先复用 skill；Recipe 先复用 squad/workflow；Node 先复用 runtime。
+- **用 view model 隔离旧模型。** 在前端建立产品化 view model/fixture/terminology 层，避免到处直接把 issue 文案替换成 Mission 文案。
+- **AI 行为必须可见。** 每个主板块都要有明确 AI 行为：理解输入、生成计划、沉淀关系、调配能力、生成策略。
+- **MVP 允许 mock，但交互要真实。** AI Inbox 的理解结果、Atlas Collection、Autopilot 运行历史可以先用 fixture/mock，但用户路径必须完整。
+- **基础设施降级处理。** 没有本地 daemon、真实浏览器扩展或云盘 API 时，使用 fixture、mock node、mock artifacts 和清晰空状态。
+- **旧模块先折叠，不硬删。** Projects、Resources、Agents、Skills、Squads、Runtimes、Usage、Rules 先改归属和导航入口；后续验证稳定后再考虑删除或迁移路由。
+- **新增产品路由，兼容旧路由。** 第一版新增 `/ai-inbox`、`/missions`、`/atlas`、`/ai-studio`、`/autopilot`、`/system`，旧 `/issues`、`/inbox`、`/resources` 等路径短期保留，避免 pins、通知、历史链接失效。
 
 ## 依赖图
 
 ```text
-验证现有后端/daemon
-  -> 项目规则和模块上下文文件
-  -> 资源工作台 UI 外壳契约
-    -> 引入 Cult UI/shadcn 组件
-    -> 资源任务看板/详情视图
-  -> 浏览器采集契约
-    -> 扩展采集 MVP
-    -> 创建资源任务
-  -> Runtime 执行验证
-    -> 资源 prompt/任务上下文
-    -> Agent 输出 artifacts
-  -> Mock Drive 契约
-    -> 确认门
-    -> Artifact 持久化和预览
-  -> 资源问答
+PRD 和术语表
+  -> IA Reset / 导航收敛
+    -> Onboarding 切到 AI Inbox
+    -> AI Inbox 输入与理解 fixture
+      -> Mission 创建/队列/详情
+        -> Atlas Collection 和 Ask Atlas fixture
+        -> Autopilot 从 Mission/Atlas 生成策略
+    -> AI Studio 角色/能力/配方模板
+  -> System 收纳 Nodes/Integrations/Settings
+  -> 验证、文档和 demo 脚本
 ```
 
-## Phase 0：基线与安全
+## Phase 0：基线与术语收口
 
-- [x] 准备 Didian 工作区。
-- [x] 添加根级和模块级 Agent 指南文件。
-- [ ] 运行基线安装/构建检查，了解当前项目健康状态。
-- [ ] 在 `docs/setup-notes.md` 记录本地前置条件缺口。
+- [ ] 跑一次基线 typecheck/test，记录当前项目健康状态。
+- [ ] 建立产品术语表：AI Inbox、Mission、Atlas、AI Role、Capability、Recipe、Autopilot Strategy、System Node。
+- [ ] 盘点旧用户可见词：Issue、Agent、Runtime、Skill、Squad、Project、Resource、Usage、Autopilot、Didian Helper。
+- [ ] 明确哪些旧词允许作为内部实现名继续存在。
 
 ### Checkpoint：基线
 
-- [ ] `pnpm install` 成功。
-- [ ] 记录 `pnpm typecheck` 结果。
-- [ ] 记录 `make test` 或 daemon 聚焦 Go 测试结果。
+- [ ] `pnpm --filter @didian/views typecheck` 结果已记录。
+- [ ] 旧术语出现位置有审计清单。
+- [ ] 文档明确 Phase 1 不做数据库/后端表名迁移。
 
-## Phase 1：资源工作台前端外壳
+## Phase 1：IA Reset 和 Onboarding
 
-- [x] 创建资源工作台 route/shell，不删除现有 issue UI。
-- [x] 复用现有 shadcn primitives；当前切片未引入需额外归因的第三方源码。
-- [x] 在 `packages/views/resources/` 下用 mock 数据构建共享资源任务看板。
-- [x] 保持 `apps/web/` 路由接线轻薄。
-- [x] 用户可见品牌表层迁移为 Didian。
-- [ ] 抽出任务详情、runtime 面板、时间线、artifacts 面板。
+- [ ] 主导航改为 AI Inbox、Missions、Atlas、AI Studio、Autopilot。
+- [ ] Nodes、Integrations、Providers、Storage、Settings 收入 System。
+- [ ] Issues/My Issues 用户可见层改成 Missions 和筛选。
+- [ ] Agents/Skills/Squads/Runtimes 的一级入口从主导航移除，转入 AI Studio 或 System。
+- [ ] Onboarding 首屏改成 AI Inbox：引导用户丢链接、文本、文件、浏览器标签或一个想法。
+- [ ] 清理旧 Didian Helper / 创建 agent / 连接 runtime 才能开始的错位引导。
 
-### Checkpoint：外壳
+### Checkpoint：IA Reset
 
-- [x] 资源工作台 route 能用 mock 数据渲染。
-- [x] 任务看板布局能处理长标题。
-- [x] 共享 resources views 中没有 `next/*` imports。
-- [x] `pnpm --filter @didian/views typecheck` 通过。
+- [ ] 新用户第一屏是 AI Inbox 引导。
+- [ ] 一级导航只有五个主模块。
+- [ ] 基础设施不再抢占主导航。
+- [ ] 产品内页主要标题不再显示 Issue/Agent/Runtime 模板感。
 
-## Phase 1B：Didian 命名迁移
+## Phase 2：AI Inbox
 
-- [x] 用户可见品牌：README、主要 UI 文案、本地化产品名、desktop productName、reload 提示和 GitHub release metadata 使用 Didian。
-- [ ] Workspace package scope：`@didian/*` 迁移到 Didian scope，独立验证 imports、package exports、Turbo filters 和 TS references。
-- [ ] 深层技术标识：CLI、protocol、`~/.didian` 本地目录、release asset、metrics/env/API 采用兼容别名或 expand/contract 策略迁移。
+- [ ] 创建 AI Inbox 页面或视图。
+- [ ] 支持 URL 和文本输入，后续预留文件/浏览器 capture。
+- [ ] 为输入生成卡片：类型、标题、来源、置信度。
+- [ ] 增加 AI 理解面板：识别结果、用户意图、建议 Mission 标题、建议产物、缺失信息。
+- [ ] 支持从理解结果创建 Mission，短期复用 issue 创建路径或 fixture。
+- [ ] 支持重新理解、拆分 Mission、保存到 Atlas 的入口占位。
 
-### Checkpoint：命名迁移
+### Checkpoint：AI Inbox
 
-- [x] 表层品牌替换不触碰 CLI/protocol/config/DB/API 兼容面。
-- [ ] `rg '@didian/'` 只剩迁移文档或兼容 shim。
-- [ ] `rg 'didian'` 中剩余项均有保留理由或迁移任务。
+- [ ] 用户能输入一组链接或文本。
+- [ ] 创建 Mission 前能看到 AI 理解结果。
+- [ ] 创建后能进入 Missions 队列或 Mission 详情。
+- [ ] 空、加载、错误状态完整。
 
-## Phase 2：本地 Runtime 可见性
+## Phase 3：Missions
 
-- 尽量复用现有 runtime APIs/hooks。
-- 增加资源工作台 runtime 面板，展示本地机器、providers、版本、online/offline/busy 状态和当前任务。
-- Runtime 状态仍由服务端通过 React Query 管理。
+- [ ] 将 Issues 列表产品化为 Mission 队列。
+- [ ] 状态改为 Understanding、Planned、Running、Review、Completed、Needs Attention。
+- [ ] Mission 卡片展示目标、AI 理解、当前步骤、Review 数量、产物预览、风险/阻塞。
+- [ ] Mission 详情页重排为 Header、AI Plan、Review Queue、Artifacts、Activity、Related Atlas。
+- [ ] 失败和阻塞状态展示 AI 诊断卡片。
+- [ ] 保留评论、附件、实时更新等已有协作能力。
 
-### Checkpoint：Runtime 面板
+### Checkpoint：Missions
 
-- [ ] 现有 daemon 可以注册 runtime。
-- [ ] 资源工作台能展示 runtime 状态。
-- [ ] 没有 runtime 连接时，UI 有清晰降级状态。
+- [ ] Mission 队列不再像 issue tracker。
+- [ ] Mission 详情优先展示 AI Plan。
+- [ ] Review 和失败诊断有清晰用户动作。
+- [ ] 完成 Mission 能链接到 Atlas 产物。
 
-## Phase 3：浏览器采集契约
+## Phase 4：Atlas
 
-- 在 `packages/core/resources/` 定义 capture payload schema。
-- 在 `apps/extension/` 下添加 Chrome extension scaffold。
-- 实现当前标签页和当前窗口全部标签页的被动采集。
-- 添加 ingestion endpoint 或 mutation，用采集结果创建资源任务。
+- [ ] 创建 Atlas 页面或视图。
+- [ ] 基于 fixture 或 Mission artifacts 展示 Collection。
+- [ ] Resource 卡片展示 AI 标题、原始标题、类型、来源、摘要、证据。
+- [ ] 支持 Collection 详情：主题、资源列表、相关资源、Mission 来源。
+- [ ] 增加 Duplicates/相似资源建议视图或区块。
+- [ ] 增加 Ask Atlas fixture：基于 Collection 返回带引用答案。
 
-### Checkpoint：采集
+### Checkpoint：Atlas
 
-- [ ] Capture payload 能通过 zod 校验。
-- [ ] 示例 capture 可以创建资源任务。
-- [ ] 页面内容被视为数据，不被视为指令。
+- [ ] 完成 Mission 后有可见 Atlas Collection。
+- [ ] Resource 不是纯文件行，而有 AI 摘要和来源证据。
+- [ ] 用户能看到资源之间的关系或重复建议。
+- [ ] Ask Atlas 有可演示的引用式回答。
 
-## Phase 4：资源任务通过本地 Agent 执行
+## Phase 5：AI Studio
 
-- 创建 resource-task prompt 路径，打包目标、采集来源、约束和期望输出文件。
-- 将资源任务路由到现有本地 runtime provider，例如 Codex 或 Claude Code。
-- 将 messages/progress 流式回传到资源任务详情视图。
-- 将生成结果保存为任务附件或资源 artifacts。
+- [ ] 将 Agents 页面产品化为 AI Studio 的 Roles 区域。
+- [ ] 将 Skills 页面产品化为 Capabilities 区域。
+- [ ] 将 Squads/Workflows 产品化为 Recipes 区域。
+- [ ] 增加至少 5 个强模板：资源侦探、去重专家、整理助手、研究分析师、失败诊断师、自动化规划师可选其五。
+- [ ] 每个模板展示适用输入、使用能力、典型产物、可被哪些 Mission/Autopilot 调用。
 
-### Checkpoint：本地 Agent 执行
+### Checkpoint：AI Studio
 
-- [ ] 资源任务可以被本地 runtime 领取。
-- [ ] 执行日志出现在工作台中。
-- [ ] Agent 输出被捕获为结构化文件/artifacts。
-- [ ] failure/blocker 状态可见。
+- [ ] 用户看到的是 AI 角色、能力包、处理配方，而不是 agent/skill/squad 管理台。
+- [ ] 模板和 AI Inbox/Missions/Autopilot 语义一致。
+- [ ] 技术细节可见但不压过产品用途。
 
-## Phase 5：Mock Drive 和确认门
+## Phase 6：Autopilot
 
-- 定义 `CloudDriveAdapter` 并实现 `MockDriveAdapter`。
-- 添加 proposed action 模型：创建文件夹、保存 URL、写 Markdown、跳过。
-- 执行安全 mock-drive 写入前展示确认 UI。
-- 持久化操作日志，并在云盘工作区预览生成的 Markdown。
+- [ ] 创建 Autopilot 页面或改造旧 Autopilot/Rules 页面。
+- [ ] 自然语言输入目标，生成策略预览卡。
+- [ ] 策略卡包含目标、触发、条件、动作、确认要求、范围、最近运行、风险等级。
+- [ ] 支持启用/暂停策略。
+- [ ] 使用 mock 运行历史展示 Watch、Organize、Clean、Summarize、Diagnose、Recommend 等模式。
+- [ ] 从 Mission 完成页或 Atlas Collection 提供“设为 Autopilot”的入口。
 
-### Checkpoint：Mock Drive
+### Checkpoint：Autopilot
 
-- [ ] 用户在执行前能看到准确的 proposed operations。
-- [ ] 安全操作能写入 mock drive 的文件夹、文件、链接。
-- [ ] UI 和后端/adapter 都会拒绝 destructive actions。
+- [ ] 用户不需要写规则表单，也能得到策略卡。
+- [ ] 策略启用前可检查、可解释、可暂停。
+- [ ] Autopilot 与 Atlas/Missions 有明确连接。
 
-## Phase 6：Demo 打磨和资源问答
+## Phase 7：System、验证和 Demo 收口
 
-- 准备确定性的 AI Agent 调研 fixture。
-- 生成资源索引、项目对比表、复用清单和下一步行动。
-- 对采集资源和生成 artifacts 增加轻量问答。
-- 补齐 empty、loading、error、blocked 状态和 Demo 脚本。
+- [ ] System 收纳 Nodes、Integrations、Providers、Storage、Permissions、Workspace Settings。
+- [ ] 节点状态只在 System 和 Mission 执行记录中出现。
+- [ ] 准备一条端到端 Demo fixture：AI Inbox -> Mission -> Atlas -> Ask Atlas -> Autopilot。
+- [ ] 补齐空状态、加载状态、错误状态、权限/无节点降级状态。
+- [ ] 更新 README 或产品文档，说明五模块 IA 和旧模型映射。
 
-### Checkpoint：参赛 Demo
+### Checkpoint：完整 Demo
 
-- [ ] 完整 Demo 五分钟内完成。
-- [ ] Demo 不依赖私有云盘 API。
-- [ ] Runtime、任务图、确认门、mock drive、artifacts 和问答都可见。
+- [ ] 5 分钟内能演示完整闭环。
+- [ ] Demo 不依赖真实云盘 API 或真实浏览器扩展。
+- [ ] 没有 Didian Helper / Issue tracker / Agent workspace 模板残留第一印象。
+- [ ] 触及包 typecheck 通过，测试结果有记录。
 
 ## 风险和缓解
 
 | 风险 | 影响 | 缓解 |
 | --- | --- | --- |
-| 第三方组件许可证限制直接复用 | 高 | 只使用可授权组件；保留必要许可证声明；不要未经 review 把受限前端源码复制进产品 |
-| 前端重写触碰太多旧 UI | 高 | 先添加资源 shell；替代流程工作前不删除 issue UI |
-| Daemon/runtime 回归 | 高 | 避免早期重写 daemon；为 prompt/runtime 变更补聚焦测试 |
-| 没有真实云盘 API | 中 | 使用 MockDriveAdapter 和 LocalDriveAdapter 接缝；官方 API 作为未来 adapter |
-| 浏览器扩展范围膨胀 | 中 | 先做被动采集；宽权限或自动化前先确认 |
-| LLM 输出格式错误或不安全 | 中 | 使用 schema 校验；要求确认门；禁用 destructive actions |
+| 旧模型名和新产品名混用 | 高 | 建术语表和 view model；每个阶段用 `rg` 验收用户可见文案。 |
+| 导航收敛导致旧功能不可达 | 中 | 旧页面先挂在 AI Studio/System 二级入口，不立即删除。 |
+| AI Inbox 过于 mock，显得像静态 Demo | 中 | 输入、理解、创建 Mission 的交互必须真实；mock 只限 AI 结果。 |
+| Atlas 变成普通资源列表 | 高 | 首版就要展示 Collection、摘要、证据、关系/重复建议。 |
+| AI Studio 再次变成 Agent 管理台 | 中 | 模板以角色、能力、配方命名，技术字段放次级。 |
+| Autopilot 变成规则表单 | 中 | 自然语言目标优先，规则字段只作为 AI 生成策略卡展示。 |
+| 过早改数据库/后端造成回归 | 高 | Phase 1-7 保留 issue/agent/runtime/skill/squad 作为实现细节。 |
+
+## 并行机会
+
+- AI Studio 模板、Atlas fixture、Autopilot mock 策略可以并行准备。
+- IA Reset 和 Onboarding 必须先做，否则后续页面会继续沿用旧导航。
+- Mission 详情和 Atlas Collection 共享 artifacts/fixture contract，需先约定字段。
 
 ## 待确认问题
 
-- 产品名暂定 Didian，后续是否改成迅雷相关名称？
-- 第一个资源 route 是与现有 route 并存，还是成为默认 dashboard？
-- Demo 默认本地 Agent 用 Codex 还是 Claude Code？
-- 第一版是否必须做真实 Chrome extension，还是先支持 JSON fixture 导入？
-- 参赛前是否能拿到任何内部迅雷云盘 API？
+- 产品名继续叫 Didian，还是换成更贴近迅雷体系的新名称？
+- 登录后默认首页是否直接进入 AI Inbox？
+- Atlas 第一版只用 fixture，还是从现有 issue attachments/artifacts 推导？
+- Autopilot 是否进入 MVP 一级导航，还是作为预览模块？
+- App 是否中文优先，英文文案后续补齐？

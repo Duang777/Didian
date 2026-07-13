@@ -1,0 +1,149 @@
+export type MissionState =
+  | "understanding"
+  | "planned"
+  | "running"
+  | "review"
+  | "completed"
+  | "needs_attention";
+
+export type AiInboxInputKind = "url" | "text" | "file" | "browser_capture";
+
+export type AiInboxInput = {
+  id: string;
+  kind: AiInboxInputKind;
+  title: string;
+  preview: string;
+  source?: string;
+  confidence: number;
+};
+
+export type AiIntent =
+  | "research_pack"
+  | "learning_plan"
+  | "collect"
+  | "compare"
+  | "deduplicate"
+  | "summarize"
+  | "monitor"
+  | "diagnose"
+  | "archive_only";
+
+export type AiUnderstanding = {
+  intent: AiIntent;
+  suggestedMissionTitle: string;
+  summary: string;
+  suggestedOutputs: string[];
+  missingInfo: string[];
+  confidence: number;
+};
+
+export type MissionPlanStepState = "done" | "active" | "waiting" | "blocked" | "pending";
+
+export type MissionPlanStep = {
+  id: string;
+  title: string;
+  description: string;
+  state: MissionPlanStepState;
+  evidence?: string;
+};
+
+export type MissionReviewItem = {
+  id: string;
+  title: string;
+  description: string;
+  riskLevel: "low" | "medium" | "high";
+};
+
+export type MissionArtifact = {
+  id: string;
+  name: string;
+  description: string;
+  kind: "summary" | "table" | "index" | "report" | "markdown";
+};
+
+export type MissionView = {
+  id: string;
+  title: string;
+  goal: string;
+  state: MissionState;
+  inputs: AiInboxInput[];
+  understanding: AiUnderstanding;
+  plan: MissionPlanStep[];
+  reviewItems: MissionReviewItem[];
+  artifacts: MissionArtifact[];
+  relatedAtlasIds: string[];
+  updatedAt: string;
+};
+
+export type AtlasEvidence = {
+  id: string;
+  label: string;
+  source: string;
+  quote: string;
+};
+
+export type AtlasRelationship = {
+  id: string;
+  kind: "duplicate" | "similar" | "version" | "source" | "summary_of";
+  label: string;
+  targetTitle: string;
+};
+
+export type AtlasResource = {
+  id: string;
+  title: string;
+  originalTitle?: string;
+  kind: "link" | "file" | "note" | "repo" | "video" | "document" | "artifact";
+  sourceUrl?: string;
+  summary: string;
+  evidence: AtlasEvidence[];
+  relationships: AtlasRelationship[];
+};
+
+export type AtlasCollection = {
+  id: string;
+  title: string;
+  summary: string;
+  topic: string;
+  sourceMissionId: string;
+  updatedAt: string;
+  resources: AtlasResource[];
+};
+
+export type AutopilotMode = "watch" | "organize" | "clean" | "summarize" | "diagnose" | "recommend";
+
+export type AutopilotStrategy = {
+  id: string;
+  goal: string;
+  mode: AutopilotMode;
+  trigger: string;
+  conditions: string[];
+  actions: string[];
+  confirmationsRequired: string[];
+  riskLevel: "low" | "medium" | "high";
+  enabled: boolean;
+  recentOutcome: string;
+};
+
+export type AiStudioRole = {
+  id: string;
+  name: string;
+  description: string;
+  bestFor: string[];
+  outputs: string[];
+};
+
+export type AiStudioCapability = {
+  id: string;
+  name: string;
+  description: string;
+  appliesTo: string[];
+};
+
+export type AiStudioRecipe = {
+  id: string;
+  name: string;
+  description: string;
+  steps: string[];
+  outputs: string[];
+};

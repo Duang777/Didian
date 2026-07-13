@@ -83,24 +83,12 @@ function mergeQuestionnaire(
 /**
  * Shell's onComplete contract:
  *   onComplete(workspace?, issueId?) — if an issue id is present, navigate
- *   straight into that onboarding issue; otherwise navigate into the
- *   workspace issues list.
+ *   straight into that compatibility issue; otherwise navigate into the
+ *   workspace's first-run product surface.
  *
- * Three exit shapes feed onComplete:
- *   - Skip-existing (Welcome): completeOnboarding marks onboarded; navigate
- *     to the existing workspace's issue list.
- *   - Runtime-skipped (no runtime on Step 3): completeOnboarding marks
- *     onboarded; we push a {choice:"skip"} welcome signal and navigate
- *     to the workspace. The welcome hook in the workspace shell creates
- *     the install-runtime / create-agent guide issues on landing.
- *   - Runtime-connected (runtime picked on Step 3): completeOnboarding
- *     marks onboarded; we push a {choice:"runtime", runtimeId} welcome
- *     signal and navigate. The welcome hook creates the Didian Helper
- *     agent on the picked runtime and shows the starter-card Modal.
- *
- * V3 contract: this file never touches createAgent / createIssue. The
- * "what runs in the workspace shell after onboarding" decision is in
- * `packages/views/workspace/welcome-after-onboarding.tsx`.
+ * First-run now exits after workspace selection/creation and sends the user
+ * to AI Inbox. Runtime and agent setup remain available as compatibility
+ * components, but are not part of the default onboarding path.
  */
 export function OnboardingFlow({
   onComplete,
@@ -212,12 +200,20 @@ export function OnboardingFlow({
   }, [workspaces, onComplete]);
 
   const handleWorkspaceCreated = useCallback(
-    (ws: Workspace) => {
+    async (ws: Workspace) => {
       setWorkspace(ws);
       setCurrentWorkspace(ws.slug, ws.id);
-      advanceFrom("workspace");
+      try {
+        await completeOnboarding("runtime_skipped", ws.id);
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : t(($) => $.errors.skip_failed),
+        );
+        return;
+      }
+      onComplete(ws, undefined);
     },
-    [advanceFrom],
+    [onComplete, t],
   );
 
   const handleRuntimeNext = useCallback(

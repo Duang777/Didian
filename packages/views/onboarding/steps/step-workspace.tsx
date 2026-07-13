@@ -4,15 +4,13 @@ import { type ReactNode, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
-  BookOpenText,
   Bot,
-  FolderKanban,
   Inbox,
   ListTodo,
   Lock,
-  MoreHorizontal,
-  Monitor,
+  Network,
   Plus,
+  Settings,
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -54,9 +52,8 @@ import { isReservedSlug } from "@didian/core/paths";
  * The create-fields block doubles as a pedagogical preview: the URL is
  * rendered as a `<host>/[slug]` pill (host derived from the deployment's
  * app URL so self-hosted instances show their own domain), and a live
- * `Issues will look
- * like ACME-123` line shows the user what their issue IDs will read
- * like before they've created anything.
+ * `Mission IDs will look like ACME-123` line shows the user what their
+ * mission IDs will read like before they've created anything.
  *
  * Resume path ships two picker cards (existing + create-new) and the
  * user toggles between them. No-existing path just shows the create
@@ -606,14 +603,14 @@ function WorkspacePreviewCard({
           meta={t(($) => $.step_workspace.preview.issues_meta)}
         />
         <EntityRow
+          icon={<Network className="h-4 w-4" />}
+          label={t(($) => $.step_workspace.preview.projects_label)}
+          meta={t(($) => $.step_workspace.preview.projects_meta)}
+        />
+        <EntityRow
           icon={<Bot className="h-4 w-4" />}
           label={t(($) => $.step_workspace.preview.agents_label)}
           meta={t(($) => $.step_workspace.preview.agents_meta)}
-        />
-        <EntityRow
-          icon={<FolderKanban className="h-4 w-4" />}
-          label={t(($) => $.step_workspace.preview.projects_label)}
-          meta={t(($) => $.step_workspace.preview.projects_meta)}
         />
         <EntityRow
           icon={<Zap className="h-4 w-4" />}
@@ -621,20 +618,9 @@ function WorkspacePreviewCard({
           meta={t(($) => $.step_workspace.preview.autopilot_meta)}
         />
         <EntityRow
-          icon={<Monitor className="h-4 w-4" />}
+          icon={<Settings className="h-4 w-4" />}
           label={t(($) => $.step_workspace.preview.runtimes_label)}
           meta={t(($) => $.step_workspace.preview.runtimes_meta)}
-        />
-        <EntityRow
-          icon={<BookOpenText className="h-4 w-4" />}
-          label={t(($) => $.step_workspace.preview.skills_label)}
-          meta={t(($) => $.step_workspace.preview.skills_meta)}
-        />
-        <EntityRow
-          dim
-          icon={<MoreHorizontal className="h-4 w-4" />}
-          label={t(($) => $.step_workspace.preview.more_label)}
-          meta={t(($) => $.step_workspace.preview.more_meta)}
         />
       </div>
     </div>

@@ -1,414 +1,528 @@
-# 任务清单：Didian
+# 任务清单：AI 资源工作台
 
-## Task 1：基线项目验证
+## Task 1：基线验证和旧术语审计
 
-**描述：** 安装依赖，并在产品实现前记录当前项目的健康状态。
+**描述：** 在实施新 IA 前记录当前项目健康状态，并盘点用户可见的旧模板词，避免后续替换遗漏。
 
 **验收标准：**
-- [ ] 依赖安装成功，或已记录失败原因。
-- [ ] 已记录当前 typecheck、build、test 状态。
-- [ ] 本地前置条件缺口已写入 `docs/setup-notes.md`。
+- [x] 记录 `pnpm --filter @didian/views typecheck` 结果。
+- [x] 盘点 Issue、Agent、Runtime、Skill、Squad、Project、Resource、Usage、Rules、Didian Helper 的主要出现位置。
+- [x] 标出哪些旧词是内部实现名可保留，哪些是用户可见文案必须替换。
 
 **验证：**
-- [ ] `pnpm install`
-- [ ] `pnpm typecheck`
-- [ ] 聚焦 Go daemon 测试或 `make test`
+- [x] `pnpm --filter @didian/views typecheck`
+- [x] `rg "Issues|Issue|Agents|Agent|Runtimes|Runtime|Skills|Squads|Usage|Didian Helper" packages/views apps/web`
+
+**进度记录（2026-07-13）：**
+- `pnpm --filter @didian/views typecheck` 通过。
+- 旧术语审计已跑；用户可见高优先级残留集中在 `packages/views/onboarding/templates/*`、`packages/views/onboarding/steps/*`、旧 `issues/agents/skills/squads/runtimes` 模块页面和 locale。`packages/core/types`、旧 API/client、store、测试里的 `issue/agent/runtime/skill/squad` 暂作为内部实现名保留。
+- `Didian Helper`、创建第一个 Agent、连接 Runtime 才能开始等 onboarding 文案登记到 Task 6 处理。
 
 **依赖：** 无
 
 **可能触及文件：**
+- `docs/ai-resource-workbench/01-product-requirements.md`
+- `docs/product-overview.md`
 - `docs/setup-notes.md`
 
 **规模预估：** S
 
-## Task 2：资源工作台路由骨架
+## Task 2：确认技术方案和路由兼容策略
 
-**描述：** 添加一个资源工作台 route，渲染新 shell，同时不移除现有 issue routes。
+**描述：** 在写代码前确认 `docs/ai-resource-workbench/02-technical-plan.md` 中的关键技术决策，尤其是新增产品路由、兼容旧路由、Mission 复用 Issue、Atlas/Autopilot 先 fixture 的策略。
 
 **验收标准：**
-- [x] Web 中可以渲染资源工作台 route。
-- [x] Route 使用 `packages/views/` 中的共享 view component。
-- [x] 现有 routes 不受影响。
+- [x] 技术方案已被阅读并确认没有阻塞性问题。
+- [x] 新路由列表已确认：`/ai-inbox`、`/missions`、`/atlas`、`/ai-studio`、`/autopilot`、`/system`。
+- [x] 旧路由短期保留策略已确认。
+- [x] 明确第一阶段不做数据库 migration。
 
 **验证：**
-- [x] `pnpm typecheck`
-- [x] 手动检查 Web route
+- [x] `docs/ai-resource-workbench/02-technical-plan.md` 中验收闸门已对齐。
+- [x] `tasks/plan.md` 和 `tasks/todo.md` 都引用技术方案。
+
+**进度记录（2026-07-13）：**
+- 路由兼容策略按技术方案落地：新增产品路由，旧 `/inbox`、`/issues`、`/resources`、`/agents`、`/skills`、`/squads`、`/runtimes` 保留。
+- 本阶段未做数据库 migration，也未重命名后端 issue/agent/runtime/skill/squad 模型。
 
 **依赖：** Task 1
 
 **可能触及文件：**
-- `apps/web/app/[workspaceSlug]/(dashboard)/...`
-- `packages/views/resources/...`
+- `docs/ai-resource-workbench/02-technical-plan.md`
+- `tasks/plan.md`
+- `tasks/todo.md`
 
-**规模预估：** M
+**规模预估：** XS
 
-## Task 3：引入 Cult UI 组件
+## Task 3：建立产品术语和 view model 约定
 
-**描述：** 只复制工作台 shell 需要的开源 Cult UI/shadcn 组件到 `packages/ui/`，并适配现有 design tokens。
-
-**验收标准：**
-- [x] 需要的 primitives 可以从 `packages/ui/` 使用。
-- [x] 组件不包含业务逻辑。
-- [x] 当前切片复用已有 shadcn primitives，未引入需额外归因的第三方源码。
-
-**验证：**
-- [x] `pnpm typecheck`
-- [x] 从 `packages/views/` 做组件 import smoke check
-
-**依赖：** Task 1
-
-**可能触及文件：**
-- `packages/ui/components/...`
-- `packages/ui/styles/...`
-- `docs/third-party-notices.md`
-
-**规模预估：** M
-
-## Task 4：Mock 资源任务看板
-
-**描述：** 用 mock 数据构建第一个资源任务看板：列、卡片、状态、计数和当前步骤展示。
+**描述：** 为 AI Inbox、Mission、Atlas、AI Role、Capability、Recipe、Autopilot Strategy、System Node 建立统一术语和前端映射约定，减少散落替换。
 
 **验收标准：**
-- [x] 看板展示 resource-task columns。
-- [x] 卡片展示目标、状态、runtime、来源数、资源数、重复数、风险数和当前步骤。
-- [x] 长文本不会破坏布局。
-
-**验证：**
-- [x] `pnpm typecheck`
-- [x] 任务卡片状态渲染组件测试
-- [x] 手动响应式检查
-
-**依赖：** Task 2、Task 3
-
-**可能触及文件：**
-- `packages/views/resources/task-board/*`
-- `packages/views/resources/mock-data.ts`
-
-**规模预估：** M
-
-## Task 5：Mock 资源任务详情
-
-**描述：** 用 mock 数据构建任务详情面板：动态计划、资源聚类、建议操作、执行时间线和 artifacts。
-
-**验收标准：**
-- [x] 可以打开选中任务的详情。
-- [x] 动态 plan/checkpoint UI 可见。
-- [x] 建议操作和确认区域可见。
-- [x] Artifact 预览能安全渲染 Markdown。
+- [x] 文档中明确旧模型到新产品对象的映射。
+- [x] 前端有集中术语配置、locale namespace 或 view model 约定。
+- [x] Mission 状态、Atlas 对象、AI Studio 模板字段有初步字段定义。
 
 **验证：**
 - [x] `pnpm --filter @didian/views typecheck`
-- [x] needs-confirmation 和 completed 状态组件测试
+- [x] 文档能指导后续任务不直接暴露旧模型名。
+
+**进度记录（2026-07-13）：**
+- 新增 `packages/views/ai-workbench/types.ts`、`schemas.ts`、`fixtures.ts`，集中定义 AI Inbox、Mission、Atlas、AI Studio、Autopilot 的前端 view model、zod schema 和 demo fixture。
+- 新增 `packages/views/ai-workbench/fixtures.test.ts`，覆盖 AI 理解启发式与 schema 校验。
+- `@didian/views` 已导出 `./ai-workbench`，后续页面优先从产品层 view model 接入，不直接暴露旧模型名。
+
+**依赖：** Task 2
+
+**可能触及文件：**
+- `docs/ai-resource-workbench/01-product-requirements.md`
+- `packages/views/locales/*/*.json`
+- `packages/views/resources/*` 或新建产品 view model 文件
+
+**规模预估：** S-M
+
+## Task 4：新增产品路由和路径构建器
+
+**描述：** 先增加新产品路由和 `WorkspacePaths` 构建器，确保导航切换前每个目标页面都有可渲染骨架，旧路由继续保留。
+
+**验收标准：**
+- [x] `paths.workspace(slug)` 支持 `aiInbox`、`missions`、`missionDetail`、`atlas`、`aiStudio`、`autopilot`、`system`。
+- [x] Web app 存在对应 route 页面骨架。
+- [x] 旧 `/inbox`、`/issues`、`/resources`、`/agents`、`/skills`、`/squads`、`/runtimes` 不删除。
+- [x] 页面骨架能显示标题和基本空状态。
+
+**验证：**
+- [x] `pnpm --filter @didian/views typecheck`
+- [x] `pnpm --filter @didian/core test -- paths` 或运行现有 paths 测试。
+- [ ] 手动打开每个新 route 不 404。
+
+**进度记录（2026-07-13）：**
+- 新增 `paths.workspace(slug).aiInbox()`、`missions()`、`missionDetail(id)`、`atlas()`、`aiStudio()`、`autopilot()`、`system()`，并同步 `paths.test.ts` 与 `consistency.test.ts`。
+- 同步 `packages/views/editor/utils/link-handler.ts` 的 workspace route allowlist，保证 `/missions/...`、`/atlas` 等无 slug 内链可以继续补 workspace slug。
+- 新增 Web route 骨架：`ai-inbox`、`missions`、`missions/[id]`、`atlas`、`ai-studio`、`autopilot`、`system`。
+- 已通过 `pnpm --filter @didian/core test -- paths`、`pnpm --filter @didian/views test -- ai-workbench`、`pnpm --filter @didian/views typecheck`、`pnpm --filter @didian/web typecheck`。
+
+**依赖：** Task 3
+
+**可能触及文件：**
+- `packages/core/paths/paths.ts`
+- `packages/core/paths/paths.test.ts`
+- `apps/web/app/[workspaceSlug]/(dashboard)/ai-inbox/page.tsx`
+- `apps/web/app/[workspaceSlug]/(dashboard)/missions/page.tsx`
+- `apps/web/app/[workspaceSlug]/(dashboard)/missions/[id]/page.tsx`
+- `apps/web/app/[workspaceSlug]/(dashboard)/atlas/page.tsx`
+- `apps/web/app/[workspaceSlug]/(dashboard)/ai-studio/page.tsx`
+- `apps/web/app/[workspaceSlug]/(dashboard)/autopilot/page.tsx`
+- `apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx`
+
+**规模预估：** S-M
+
+## Task 5：主导航收敛为五模块
+
+**描述：** 将产品内页一级导航改为 AI Inbox、Missions、Atlas、AI Studio、Autopilot，并把 Nodes/Integrations/Settings 等基础设施入口收进 System。
+
+**验收标准：**
+- [x] 一级导航只显示五个主模块和 System 入口。
+- [x] Projects、Resources、Agents、Skills、Squads、Runtimes、Usage、Rules 不再作为一级主导航出现。
+- [x] 旧页面仍可通过二级入口或兼容路径访问。
+- [ ] 当前选中态、hover、移动端导航不因文案变更破坏布局。
+
+**验证：**
+- [x] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查桌面和移动导航。
+
+**进度记录（2026-07-13）：**
+- `packages/views/layout/app-sidebar.tsx` 已收敛为 AI Inbox、Missions、Atlas、AI Studio、Autopilot、System；Chat 作为协作入口保留在 personal nav。
+- `Resources`、`Issues`、`Projects`、`Agents`、`Skills`、`Squads`、`Runtimes`、`Usage` 不再作为一级 sidebar nav 出现，旧 route 文件未删除，pins 仍可进入 legacy issue/project 详情。
+- workspace switcher 的默认工作区入口从 `/issues` 改为 `/ai-inbox`，新建按钮文案改为 New Mission / 新建 Mission。
+- 已通过 `pnpm --filter @didian/views test -- app-sidebar`、`pnpm --filter @didian/views typecheck`、`pnpm --filter @didian/web typecheck`。
 
 **依赖：** Task 4
 
 **可能触及文件：**
-- `packages/views/resources/task-detail/*`
-- `packages/views/resources/artifacts/*`
+- `packages/views/layout/**/*`
+- `packages/views/navigation/**/*`
+- `packages/views/locales/*/*.json`
+- `apps/web/app/**/*`
 
 **规模预估：** M
 
-## Task 5A：Didian 用户可见品牌清理
+## Task 6：Onboarding 改成 AI Inbox 首次引导
 
-**描述：** 先把用户直接看到的 Didian 品牌表层迁移为 Didian，同时保留 `@didian/*` 包名、CLI binary、protocol scheme、本地配置目录和数据库/API 技术标识，避免在同一切片里破坏运行链路。
+**描述：** 把 Step 1 / Step 2 / Didian Helper / 创建 agent 的引导改为“把链接、文件、浏览器标签或一个想法丢进 AI Inbox”。
 
 **验收标准：**
-- [x] Web/desktop 可见文案使用 Didian。
-- [x] 主要本地化文案中的产品名使用 Didian。
-- [x] 桌面端 productName、reload 提示和 release metadata 使用 Didian。
-- [x] 深层技术标识保留为后续迁移任务。
+- [x] 新用户第一屏引导 AI Inbox 输入，而不是创建 agent 或连接 runtime。
+- [x] 引导步骤包含：丢入输入、AI 理解、创建 Mission、进入 Atlas/Autopilot。
+- [x] 无节点或无真实执行能力时，有 mock/体验模式说明。
+- [x] 中文文案优先，英文 locale 如存在需同步或标记待补。
 
 **验证：**
 - [x] `pnpm --filter @didian/views typecheck`
-- [x] `pnpm --filter @didian/desktop typecheck`
-- [x] Staged 文件不包含 `.env`、`.next`、`node_modules` 或真实密钥。
+- [x] `rg "Didian Helper|创建你的第一个 agent|Step 1|Step 2" packages/views/locales packages/views/onboarding` 剩余命中有保留理由。
+- [ ] 手动检查新 workspace onboarding。
 
-**依赖：** Task 2、Task 4
-
-**可能触及文件：**
-- `apps/web/app/not-found.tsx`
-- `apps/desktop/*`
-- `packages/views/locales/*/*.json`
-- `tasks/plan.md`
-- `tasks/todo.md`
-
-**规模预估：** M
-
-## Task 5B：Workspace package scope 迁移
-
-**描述：** 将内部 workspace package scope 从 `@didian/*` 迁移到 Didian scope，例如 `@didian/core`、`@didian/ui`、`@didian/views`。这是构建系统级迁移，必须独立于产品功能提交。
-
-**验收标准：**
-- [ ] package names、exports、imports、Turbo filters 和 TS references 全部一致。
-- [ ] 旧 `@didian/*` imports 不再出现在应用源码中。
-- [ ] 迁移后 views/web/desktop typecheck 通过。
-
-**验证：**
-- [ ] `pnpm typecheck`
-- [ ] `pnpm --filter @didian/views test`
-- [ ] `rg '@didian/'` 只剩迁移文档或兼容说明。
-
-**依赖：** Task 5A
-
-**可能触及文件：**
-- `package.json`
-- `pnpm-workspace.yaml`
-- `apps/*/package.json`
-- `packages/*/package.json`
-- `apps/**/*.{ts,tsx,mjs,json}`
-- `packages/**/*.{ts,tsx,mjs,json}`
-
-**规模预估：** L
-
-## Task 5C：CLI、daemon、protocol 和持久化标识迁移
-
-**描述：** 分阶段迁移 `didian` CLI、desktop protocol、`~/.didian` 本地目录、server command、release asset、metrics/env/API 等深层技术标识。需要保留兼容别名或迁移路径，不能和 UI 品牌替换混在一起。
-
-**验收标准：**
-- [ ] 旧 CLI/protocol/config 用户有明确兼容路径。
-- [ ] 新 Didian 命令和 release asset 可以安装/启动 daemon。
-- [ ] 本地配置目录迁移不会丢失现有登录态或 runtime 配置。
-- [ ] DB/API/metrics 改名采用 expand/contract 或兼容别名策略。
-
-**验证：**
-- [ ] CLI/daemon Go 聚焦测试
-- [ ] Desktop login/deep-link 手动检查
-- [ ] Release asset name resolver 测试
-- [ ] 配置迁移测试
-
-**依赖：** Task 5B
-
-**可能触及文件：**
-- `server/cmd/didian/*`
-- `apps/desktop/src/main/daemon-manager.ts`
-- `apps/desktop/src/main/cli-*`
-- `apps/desktop/electron-builder.yml`
-- `server/internal/metrics/*`
-- migrations/config docs
-
-**规模预估：** L
-
-## Task 6：使用现有 API 展示 Runtime 面板
-
-**描述：** 在不改 daemon 行为的前提下，把现有 runtime 状态展示到资源工作台中。
-
-**验收标准：**
-- [ ] Runtime 面板在有数据时展示 provider、version、status 和 last heartbeat。
-- [ ] 没有 daemon 连接时有清晰 empty/offline 状态。
-- [ ] Runtime 数据仍由 React Query 管理为服务端状态。
-
-**验证：**
-- [ ] `pnpm typecheck`
-- [ ] 手动检查 daemon 未连接状态
-- [ ] 如本地环境允许，手动检查 daemon 已连接状态
+**进度记录（2026-07-13）：**
+- 默认 onboarding 顺序已收束为 source、role、use_case、workspace；工作区创建/选择后直接 `completeOnboarding` 并进入 AI Inbox，不再默认进入 Runtime/Agent 步骤。
+- Web 和 Desktop 的 onboarding 完成跳转已从 `/issues` 改为 `/ai-inbox`。
+- Welcome 和 Workspace 文案已切到 AI Inbox -> Mission -> Atlas/Autopilot；工作区预览卡改为 AI Inbox、Missions、Atlas、AI Studio、Autopilot、System。
+- 剩余 `Didian Helper` / Step 1 / Step 2 命中集中在 legacy skip-path templates 和 helper instructions，默认 onboarding 不再触发；后续若删除 legacy seed，再清理这些兼容模板。
+- 已通过 `pnpm --filter @didian/views test -- onboarding`、`pnpm --filter @didian/views test -- locales`、`pnpm --filter @didian/views typecheck`、`pnpm --filter @didian/web typecheck`、`pnpm --filter @didian/desktop typecheck`。
 
 **依赖：** Task 5
 
 **可能触及文件：**
-- `packages/views/resources/runtime-panel/*`
-- 必要时少量修改 `packages/core/runtimes/` 现有 hooks
-
-**规模预估：** S-M
-
-## Task 7：资源领域类型和 Schemas
-
-**描述：** 增加 resource task、captured source、resource item、cluster、proposed action、execution event、artifact 类型和 zod schemas。
-
-**验收标准：**
-- [ ] 类型位于 `packages/core/resources/`。
-- [ ] Zod schemas 能校验 browser capture 和 proposed actions。
-- [ ] 测试覆盖合法 payload 和畸形 payload。
-
-**验证：**
-- [ ] `pnpm test -- --filter resources` 或聚焦 Vitest 命令
-- [ ] `pnpm typecheck`
-
-**依赖：** Task 1
-
-**可能触及文件：**
-- `packages/core/resources/types.ts`
-- `packages/core/resources/schemas.ts`
-- `packages/core/resources/*.test.ts`
-
-**规模预估：** S-M
-
-## Task 8：浏览器采集 Fixture 导入
-
-**描述：** 在完整扩展之前，先增加 fixture import 路径，用 JSON capture payload 创建资源任务。
-
-**验收标准：**
-- [ ] 用户/开发者可以导入示例 capture JSON。
-- [ ] Payload 经过 resource schemas 校验。
-- [ ] 导入任务出现在资源看板中。
-
-**验证：**
-- [ ] Fixture 校验单元测试
-- [ ] 手动导入检查
-
-**依赖：** Task 4、Task 7
-
-**可能触及文件：**
-- `packages/core/resources/fixtures/*`
-- `packages/views/resources/import/*`
+- `packages/views/onboarding/**/*`
+- `packages/views/locales/*/onboarding.json`
+- onboarding seed/template 相关文件
 
 **规模预估：** M
 
-## Task 9：Chrome Extension 被动采集 MVP
+## Task 7：AI Inbox 页面骨架
 
-**描述：** 搭建 Chrome extension，并采集当前标签页/全部标签页的标题、URL、选中文本、可读正文和链接。
+**描述：** 创建 AI Inbox 页面，提供万能输入区域、输入卡片列表和 AI 理解结果面板的静态/fixture 版本。
 
 **验收标准：**
-- [ ] Extension 可以本地构建。
-- [ ] 当前标签页采集返回结构化 payload。
-- [ ] 全部标签页采集返回结构化 payload。
-- [ ] Payload 可以发送或复制到工作台导入流程。
+- [ ] 用户能输入 URL 或文本。
+- [ ] 输入后生成输入卡片，展示类型、标题/预览、来源、置信度。
+- [ ] AI 理解面板展示识别结果、用户意图、建议 Mission 标题和建议产物。
+- [ ] 空状态、加载状态、错误状态完整。
 
 **验证：**
-- [ ] Extension build command
-- [ ] 手动 Chrome side-panel 测试
-- [ ] 能单测的纯 extraction helpers 添加单元测试
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动输入长 URL、中文文本、多行文本。
+- [ ] 文本不溢出、不遮挡操作按钮。
+
+**依赖：** Task 4
+
+**可能触及文件：**
+- `packages/views/ai-workbench/ai-inbox/**/*`
+- `packages/views/ai-workbench/**/*`
+- `apps/web/app/**/*`
+- `packages/views/locales/*/*.json`
+
+**规模预估：** M
+
+## Task 8：AI Inbox 创建 Mission 交接
+
+**描述：** 从 AI 理解结果创建 Mission。短期可以复用 issue 创建路径或使用 fixture，但交互要像真实产品闭环。
+
+**验收标准：**
+- [ ] 用户能编辑 AI 建议的 Mission 标题。
+- [ ] 点击创建后进入 Mission 队列或 Mission 详情。
+- [ ] Mission 保留原始输入、AI 理解、建议产物等上下文；第一版写入 description 或 demo fixture，不依赖 metadata。
+- [ ] 创建失败时有清晰错误提示和重试入口。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动从 AI Inbox 创建 Mission。
+- [ ] 如果走 mutation，相关 query cache 更新正确。
 
 **依赖：** Task 7
 
 **可能触及文件：**
-- `apps/extension/*`
+- `packages/views/ai-workbench/ai-inbox/**/*`
+- `packages/views/issues/**/*` 或 Missions 新视图
+- `packages/core/issues/mutations.ts`
+- `packages/core/types/api.ts` 如后续明确扩展 API
 
 **规模预估：** M
 
-## Task 10：Resource Task Prompt 路径
+## Task 9：Missions 队列视图
 
-**描述：** 增加 resource task prompt 构建路径，打包用户目标、采集来源、安全约束和期望 artifact 文件。
+**描述：** 将 Issues 列表产品化为 Missions 队列，状态和卡片字段围绕 AI 规划/执行，而不是 issue tracker。
 
 **验收标准：**
-- [ ] Prompt 明确分隔指令和采集数据。
-- [ ] Prompt 要求本地 Agent 产出结构化 artifacts。
-- [ ] Prompt 测试覆盖正常采集文本和恶意/指令型采集文本。
+- [ ] 页面标题、breadcrumb、按钮、筛选、空状态使用 Missions 语义。
+- [ ] 状态显示 Understanding、Planned、Running、Review、Completed、Needs Attention。
+- [ ] 卡片展示目标、AI 理解、当前步骤、Review 数、产物预览、风险/阻塞。
+- [ ] My Issues 变为 Missions 的筛选，不再作为一级概念。
 
 **验证：**
-- [ ] `server/internal/daemon/` 中的聚焦 Go 测试
-- [ ] 如果 daemon 改动较广，运行 `make test`
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查空列表、有列表、搜索无结果和长标题。
+- [ ] `rg "Issues|My Issues|New issue|Create issue" packages/views/issues packages/views/locales` 用户可见命中已处理或登记。
 
-**依赖：** Task 7
+**依赖：** Task 8
 
 **可能触及文件：**
-- `server/internal/daemon/prompt.go`
-- `server/internal/daemon/*prompt*_test.go`
+- `packages/views/issues/**/*`
+- `packages/views/my-issues/**/*`
+- `packages/views/locales/*/issues.json`
+- `packages/views/locales/*/my-issues.json`
 
 **规模预估：** M
 
-## Task 11：本地 Agent 资源任务执行验证
+## Task 10：Mission 详情 AI Plan 重排
 
-**描述：** 将一个资源任务通过现有本地 runtime 执行，并在资源详情视图展示流式执行日志。
-
-**验收标准：**
-- [ ] 任务可以被本地 Codex 或 Claude runtime 领取。
-- [ ] 执行 logs/messages 在资源任务详情中可见。
-- [ ] blocker/failure 状态可见。
-
-**验证：**
-- [ ] 手动本地 daemon 执行
-- [ ] 针对 task type/lifecycle 变更的聚焦后端测试
-
-**依赖：** Task 6、Task 10
-
-**可能触及文件：**
-- `server/internal/service/*`
-- `server/internal/handler/*`
-- `packages/views/resources/task-detail/*`
-
-**规模预估：** L，实现前需要继续拆小
-
-## Task 12：Mock Drive Adapter 契约
-
-**描述：** 定义云盘 adapter 类型，并实现支持文件夹、保存链接、Markdown artifacts 和操作日志的 mock adapter。
+**描述：** 将 issue 详情重排为 Mission 工作台，优先展示 AI Plan、Review Queue、Artifacts、Activity、Related Atlas。
 
 **验收标准：**
-- [ ] Adapter 支持 create folder、save URL、write Markdown、list folder 和 search。
-- [ ] Destructive operations 不可用或会被拒绝。
-- [ ] Contract tests 覆盖 adapter 行为。
+- [ ] 详情页顶部展示 Mission 目标、状态、置信度和来源输入。
+- [ ] AI Plan 步骤可见，并显示状态、证据、产物和阻塞点。
+- [ ] Review Queue 能展示待确认决策。
+- [ ] Artifacts 展示摘要、表格、资料包、索引等 fixture。
+- [ ] 保留评论、附件、实时更新等已有协作能力。
 
 **验证：**
-- [ ] 聚焦 adapter 单元测试
-- [ ] `pnpm typecheck`
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查 Planned、Running、Review、Completed 状态。
+- [ ] 长日志、长链接、长标题不破坏布局。
 
-**依赖：** Task 7
+**依赖：** Task 9
 
 **可能触及文件：**
-- `packages/adapters/*`
-- 可能新增 `packages/core/resources/adapter-types.ts`
+- `packages/views/issues/components/issue-detail.tsx`
+- `packages/views/issues/components/execution-log-section.tsx`
+- `packages/views/resources/task-detail/resource-task-detail.tsx`
+- `packages/views/locales/*/issues.json`
+
+**规模预估：** L，实施前可再拆为 Header/Plan/Artifacts 三个子任务
+
+## Task 11：Mission 失败诊断和 Review 动作
+
+**描述：** 为 Needs Attention 和 Review 状态增加 AI 诊断卡片和用户动作，例如重试、补充信息、重新分派、接受/拒绝建议。
+
+**验收标准：**
+- [ ] 失败卡片解释原因，不只显示 failed。
+- [ ] AI 给出下一步建议。
+- [ ] Review 决策包含接受、跳过、编辑、重新理解等动作入口。
+- [ ] 高风险动作文案明确需要确认。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查失败和待确认 fixture。
+
+**依赖：** Task 10
+
+**可能触及文件：**
+- `packages/views/issues/components/issue-detail.tsx`
+- `packages/views/resources/task-detail/resource-task-detail.tsx`
+- `packages/views/locales/*/*.json`
 
 **规模预估：** M
 
-## Task 13：确认门和 Mock Drive UI
+## Task 12：Atlas Collection 视图
 
-**描述：** 将 proposed actions 连接到确认面板，并把安全操作执行到 mock drive。
+**描述：** 创建 Atlas 页面，用 fixture 或 Mission artifact 展示 AI 生成的 Collection 和资源卡片。
 
 **验收标准：**
-- [ ] 用户执行前能看到准确 proposed actions。
-- [ ] 安全操作可以被批准并执行。
-- [ ] Mock drive 文件树在执行后更新。
-- [ ] Destructive actions 不能执行。
+- [ ] Atlas 首页展示 Collection 卡片。
+- [ ] Collection 展示主题、AI 摘要、资源数、来源 Mission、更新时间。
+- [ ] Resource 卡片展示 AI 标题、原始标题、类型、来源、摘要和证据。
+- [ ] 空状态引导用户从 AI Inbox 创建第一个 Mission。
 
 **验证：**
-- [ ] 确认状态组件/集成测试
-- [ ] 手动端到端 mock drive 检查
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查资源卡片长标题、缺摘要、缺来源。
 
-**依赖：** Task 5、Task 12
+**依赖：** Task 10
 
 **可能触及文件：**
-- `packages/views/resources/confirmation/*`
-- `packages/views/resources/library/*`
-- `packages/core/resources/mutations.ts`
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/resources/**/*`
+- `apps/web/app/**/*`
+- `packages/views/locales/*/*.json`
 
 **规模预估：** M
 
-## Task 14：Demo Fixture 和 Artifact 生成
+## Task 13：Atlas 关系、重复建议和 Ask Atlas fixture
 
-**描述：** 准备确定性的 AI Agent 调研 Demo fixture，并生成资源索引、项目对比表、复用清单和下一步行动。
+**描述：** 在 Atlas 中加入资源关系/重复建议区块，并提供基于 fixture 的 Ask Atlas 引用式问答。
 
 **验收标准：**
-- [ ] Demo fixture 包含真实感浏览器资源。
-- [ ] 生成 artifacts 包含来源链接。
-- [ ] Artifacts 可以在工作台和 mock drive 中渲染。
+- [ ] 用户能看到重复、相似、版本、来源等关系标签或区块。
+- [ ] 重复建议需要用户确认，不自动合并/删除。
+- [ ] Ask Atlas 能回答至少 3 个预设问题并展示引用来源。
+- [ ] 没有证据时能返回“暂无证据”的空答案。
 
 **验证：**
-- [ ] Artifact generation snapshot 或单元测试
-- [ ] 手动 Demo 检查
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查 Ask Atlas 引用显示和空答案。
 
-**依赖：** Task 8、Task 13
+**依赖：** Task 12
 
 **可能触及文件：**
-- `packages/core/resources/fixtures/*`
-- `packages/core/resources/artifacts/*`
-- `packages/views/resources/artifacts/*`
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/resources/**/*`
+- `packages/views/locales/*/*.json`
 
 **规模预估：** M
 
-## Task 15：资源问答 MVP
+## Task 14：AI Studio 三栏/三 Tab 骨架
 
-**描述：** 对采集资源和生成 artifacts 增加带来源引用的轻量问答。
+**描述：** 将 Agents、Skills、Squads/Workflows 产品化为 AI Studio 的 Roles、Capabilities、Recipes。
 
 **验收标准：**
-- [ ] 用户可以针对一个 resource task 提问。
-- [ ] 回答引用 source resources 或 artifacts。
-- [ ] 没有证据时能诚实返回空/无证据答案。
+- [ ] AI Studio 有 Roles、Capabilities、Recipes 三个区域或 tab。
+- [ ] Roles 不再展示为低层 agent 管理台，而是 AI 角色模板。
+- [ ] Capabilities 展示系统会什么，而不是 skill 文件细节优先。
+- [ ] Recipes 展示处理配方，而不是 squad 编队概念。
 
 **验证：**
-- [ ] Retrieval selection 单元测试
-- [ ] 使用 Demo fixture 手动检查问答
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查三个区域在桌面和移动端可用。
+
+**依赖：** Task 5
+
+**可能触及文件：**
+- `packages/views/agents/**/*`
+- `packages/views/skills/**/*`
+- `packages/views/squads/**/*`
+- `packages/views/locales/*/*.json`
+
+**规模预估：** M
+
+## Task 15：AI Studio 强模板内容
+
+**描述：** 增加资源侦探、去重专家、整理助手、研究分析师、失败诊断师、自动化规划师等模板内容。
+
+**验收标准：**
+- [ ] 至少 5 个 AI Role 模板。
+- [ ] 至少 8 个 Capability 模板。
+- [ ] 至少 5 个 Recipe 模板。
+- [ ] 每个模板说明适用输入、使用能力、典型产物和可关联模块。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 文案不使用 agent/skill/squad 作为首要用户概念。
 
 **依赖：** Task 14
 
 **可能触及文件：**
-- `packages/core/resources/qa/*`
-- `packages/views/resources/ask/*`
+- `packages/views/ai-workbench/ai-studio/**/*`
+- `packages/views/agents/**/*`
+- `packages/views/locales/*/*.json`
+- fixture/template 数据文件
+
+**规模预估：** S-M
+
+## Task 16：Autopilot 策略预览页
+
+**描述：** 将 Autopilot/Rules 产品化为自然语言目标到策略卡片的页面，第一版允许 mock 执行。
+
+**验收标准：**
+- [ ] 用户能输入自然语言目标。
+- [ ] 系统生成策略卡片：目标、触发、条件、动作、确认要求、范围、最近运行、风险等级。
+- [ ] 支持启用/暂停策略。
+- [ ] 页面展示 Watch、Organize、Clean、Summarize、Diagnose、Recommend 模式。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查策略预览、启用、暂停状态。
+
+**依赖：** Task 5、Task 12
+
+**可能触及文件：**
+- `packages/views/ai-workbench/autopilot/**/*`
+- `packages/views/autopilots/**/*` 如需复用旧 Autopilot 组件
+- `packages/views/locales/*/*.json`
+- strategy fixture 数据文件
 
 **规模预估：** M
 
+## Task 17：从 Mission/Atlas 生成 Autopilot 入口
+
+**描述：** 在 Mission 完成页或 Atlas Collection 中增加“设为 Autopilot”的入口，把已有成果转成自动策略预览。
+
+**验收标准：**
+- [ ] 完成 Mission 上可以发起 Autopilot 策略预览。
+- [ ] Atlas Collection 上可以发起“持续整理/周期摘要/监控更新”策略。
+- [ ] 生成的策略预览带入来源上下文。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动从 Mission 和 Atlas 两条路径进入 Autopilot。
+
+**依赖：** Task 13、Task 16
+
+**可能触及文件：**
+- `packages/views/issues/components/issue-detail.tsx`
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/ai-workbench/autopilot/**/*`
+
+**规模预估：** M
+
+## Task 18：System 收纳节点和配置
+
+**描述：** 把 Nodes/Runtimes、Integrations、Providers、Storage、Settings 等基础设施入口收纳进 System，主导航不再暴露基础设施模块。
+
+**验收标准：**
+- [ ] System 页面或菜单包含 Nodes、Integrations、Providers、Storage、Permissions、Workspace Settings。
+- [ ] 节点状态仍可查看，但不是一级主模块。
+- [ ] Mission 详情执行记录能展示相关 Node 信息。
+- [ ] 无节点时 AI Inbox/Missions 有可理解降级状态。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查 System 和 Mission 执行记录入口。
+
+**依赖：** Task 5、Task 10
+
+**可能触及文件：**
+- `packages/views/runtimes/**/*`
+- `packages/views/settings/**/*`
+- `packages/views/layout/**/*`
+- `packages/views/locales/*/*.json`
+
+**规模预估：** M
+
+## Task 19：端到端 Demo fixture
+
+**描述：** 准备一条确定性的 Demo 数据，从 AI Inbox 输入到 Mission、Atlas、Ask Atlas、Autopilot 全链路可演示。
+
+**验收标准：**
+- [ ] Fixture 包含一组真实感链接/资源输入。
+- [ ] AI Inbox 有理解结果。
+- [ ] Mission 有计划、Review、Artifacts、失败/诊断可选样例。
+- [ ] Atlas 有 Collection、Resource、关系、引用答案。
+- [ ] Autopilot 有由该 Collection 生成的策略预览和运行历史。
+
+**验证：**
+- [ ] 手动 5 分钟内走完整 Demo。
+- [ ] 不依赖真实云盘 API、真实浏览器扩展或真实 daemon。
+
+**依赖：** Task 8、Task 10、Task 13、Task 16
+
+**可能触及文件：**
+- `packages/views/**/fixtures*`
+- `packages/views/ai-workbench/ai-inbox/**/*`
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/ai-workbench/autopilot/**/*`
+
+**规模预估：** M
+
+## Task 20：文档同步和残留词清理
+
+**描述：** 同步 README/product overview/design 文档，并清理产品内页最影响第一印象的旧模板词。
+
+**验收标准：**
+- [ ] `docs/product-overview.md` 改为五模块方向。
+- [ ] README 或相关文档说明新 IA、MVP 范围和旧模型映射。
+- [ ] `tasks/plan.md`、`tasks/todo.md` 和 PRD 口径一致。
+- [ ] 用户可见残留旧词有清单或已替换。
+
+**验证：**
+- [ ] `rg "Tasks / Resources / Projects / Nodes / Analytics|Didian Helper|agent workspace|issue tracker" docs tasks packages/views apps/web`
+- [ ] 文档链接路径可打开。
+
+**依赖：** Task 1、Task 5
+
+**可能触及文件：**
+- `docs/product-overview.md`
+- `README.md`
+- `README.zh-CN.md`
+- `docs/design.md`
+- `tasks/plan.md`
+- `tasks/todo.md`
+
+**规模预估：** S-M
+
 ## 最终 Checkpoint
 
-- [ ] 完整 Demo 五分钟内完成。
-- [ ] 不依赖私有云盘 API。
-- [ ] 本地 runtime 路径可见，或有清晰模拟降级。
-- [ ] 浏览器采集/导入、任务图、确认门、mock drive、artifacts 和问答全部可见。
-- [ ] 已运行相关测试和类型检查，并记录结果。
+- [ ] 一级导航是 AI Inbox、Missions、Atlas、AI Studio、Autopilot。
+- [ ] 新用户第一屏是 AI Inbox，不是创建 agent 或 issue。
+- [ ] AI Inbox -> Mission -> Atlas -> Ask Atlas -> Autopilot Demo 闭环可走通。
+- [ ] Nodes/Runtime、Integrations、Settings 已收入 System。
+- [ ] 用户可见层基本不再出现旧模板第一印象。
+- [ ] 触及包 typecheck 通过，失败项有记录和原因。

@@ -21,21 +21,16 @@ import {
   MessageSquare,
   ListTodo,
   Bot,
-  Monitor,
   ChevronDown,
   ChevronRight,
   Settings,
   LogOut,
   Plus,
   Check,
-  BookOpenText,
   SquarePen,
-  CircleUser,
-  FolderKanban,
-  BarChart3,
   X,
   Zap,
-  Users,
+  Network,
 } from "lucide-react";
 import { WorkspaceAvatar } from "../workspace/workspace-avatar";
 import { ActorAvatar } from "@didian/ui/components/common/actor-avatar";
@@ -108,56 +103,38 @@ const EMPTY_INBOX_SUMMARY: Awaited<ReturnType<typeof api.getInboxUnreadSummary>>
 // against the current workspace slug at render time (see AppSidebar body).
 // Only parameterless paths are valid nav destinations.
 type NavKey =
-  | "inbox"
+  | "aiInbox"
   | "chat"
-  | "myIssues"
-  | "resources"
-  | "issues"
-  | "projects"
-  | "autopilots"
-  | "agents"
-  | "squads"
-  | "usage"
-  | "runtimes"
-  | "skills"
-  | "settings";
+  | "missions"
+  | "atlas"
+  | "aiStudio"
+  | "autopilot"
+  | "system";
 
 // Static schema (key + icon) — labels resolved at render via useT("layout").
 type NavLabelKey =
-  | "inbox"
+  | "ai_inbox"
   | "chat"
-  | "my_issues"
-  | "resources"
-  | "issues"
-  | "projects"
-  | "autopilots"
-  | "agents"
-  | "squads"
-  | "usage"
-  | "runtimes"
-  | "skills"
-  | "settings";
+  | "missions"
+  | "atlas"
+  | "ai_studio"
+  | "autopilot"
+  | "system";
 
 const personalNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
-  { key: "inbox", labelKey: "inbox", icon: Inbox },
+  { key: "aiInbox", labelKey: "ai_inbox", icon: Inbox },
   { key: "chat", labelKey: "chat", icon: MessageSquare },
-  { key: "myIssues", labelKey: "my_issues", icon: CircleUser },
 ];
 
 const workspaceNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
-  { key: "resources", labelKey: "resources", icon: FolderKanban },
-  { key: "issues", labelKey: "issues", icon: ListTodo },
-  { key: "projects", labelKey: "projects", icon: FolderKanban },
-  { key: "autopilots", labelKey: "autopilots", icon: Zap },
-  { key: "agents", labelKey: "agents", icon: Bot },
-  { key: "squads", labelKey: "squads", icon: Users },
-  { key: "usage", labelKey: "usage", icon: BarChart3 },
+  { key: "missions", labelKey: "missions", icon: ListTodo },
+  { key: "atlas", labelKey: "atlas", icon: Network },
+  { key: "aiStudio", labelKey: "ai_studio", icon: Bot },
+  { key: "autopilot", labelKey: "autopilot", icon: Zap },
 ];
 
 const configureNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
-  { key: "runtimes", labelKey: "runtimes", icon: Monitor },
-  { key: "skills", labelKey: "skills", icon: BookOpenText },
-  { key: "settings", labelKey: "settings", icon: Settings },
+  { key: "system", labelKey: "system", icon: Settings },
 ];
 
 function DraftDot() {
@@ -465,7 +442,7 @@ export function AppSidebar({ topSlot, searchSlot, headerClassName, headerStyle }
         ? list.find((w) => w.id === invitation.workspace_id)
         : null;
       if (joined) {
-        push(paths.workspace(joined.slug).issues());
+        push(paths.workspace(joined.slug).aiInbox());
       }
     },
   });
@@ -563,7 +540,7 @@ export function AppSidebar({ topSlot, searchSlot, headerClassName, headerStyle }
                       <DropdownMenuItem
                         key={ws.id}
                         render={
-                          <AppLink href={paths.workspace(ws.slug).issues()} />
+                          <AppLink href={paths.workspace(ws.slug).aiInbox()} />
                         }
                       >
                         <WorkspaceAvatar name={ws.name} avatarUrl={ws.avatar_url} size="sm" />
@@ -680,7 +657,7 @@ export function AppSidebar({ topSlot, searchSlot, headerClassName, headerStyle }
                       >
                         <item.icon />
                         <span>{t(($) => $.nav[item.labelKey])}</span>
-                        {item.key === "inbox" && unreadCount > 0 && (
+                        {item.key === "aiInbox" && unreadCount > 0 && (
                           <span className="ml-auto text-xs">
                             {unreadCount > 99 ? "99+" : unreadCount}
                           </span>

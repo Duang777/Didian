@@ -29,6 +29,7 @@
     "./inbox": "./inbox/index.ts",
     "./runtimes": "./runtimes/index.ts",
     "./resources": "./resources/index.ts",
+    "./ai-workbench": "./ai-workbench/index.ts",
     "./billing": "./billing/index.ts",
     "./dashboard": "./dashboard/index.ts",
     "./squads": "./squads/index.ts",

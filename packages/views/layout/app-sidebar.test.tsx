@@ -99,22 +99,16 @@ vi.mock("@didian/core/auth", () => ({
   useAuthStore: (selector: (state: { user: { id: string } }) => unknown) => selector({ user: { id: "user-1" } }),
 }));
 vi.mock("@didian/core/paths", () => ({
-  paths: { workspace: (slug: string) => ({ issues: () => `/${slug}/issues`, resources: () => `/${slug}/resources` }) },
+  paths: { workspace: (slug: string) => ({ aiInbox: () => `/${slug}/ai-inbox`, issues: () => `/${slug}/issues`, resources: () => `/${slug}/resources` }) },
   useCurrentWorkspace: () => ({ id: "ws-1", name: "Acme", slug: "acme" }),
   useWorkspacePaths: () => ({
-    inbox: () => "/acme/inbox",
+    aiInbox: () => "/acme/ai-inbox",
     chat: () => "/acme/chat",
-    myIssues: () => "/acme/my-issues",
-    resources: () => "/acme/resources",
-    issues: () => "/acme/issues",
-    projects: () => "/acme/projects",
-    autopilots: () => "/acme/autopilots",
-    agents: () => "/acme/agents",
-    squads: () => "/acme/squads",
-    usage: () => "/acme/usage",
-    runtimes: () => "/acme/runtimes",
-    skills: () => "/acme/skills",
-    settings: () => "/acme/settings",
+    missions: () => "/acme/missions",
+    atlas: () => "/acme/atlas",
+    aiStudio: () => "/acme/ai-studio",
+    autopilot: () => "/acme/autopilot",
+    system: () => "/acme/system",
     issueDetail: (id: string) => `/acme/issues/${id}`,
     projectDetail: (id: string) => `/acme/projects/${id}`,
   }),
@@ -197,7 +191,7 @@ describe("PinRow", () => {
     expect(screen.queryByText("MUL-123 Keep this pin")).not.toBeInTheDocument();
   });
 
-  it("does not also highlight the parent workspace nav for an active pin", async () => {
+  it("does not also highlight the Missions nav for an active legacy issue pin", async () => {
     navigation.current.pathname = "/acme/issues/issue-1";
     detail.current = {
       isPending: false,
@@ -212,7 +206,7 @@ describe("PinRow", () => {
       "data-active",
       "true",
     );
-    expect(container.querySelector('button[data-href="/acme/issues"]')).not.toHaveAttribute("data-active");
+    expect(container.querySelector('button[data-href="/acme/missions"]')).not.toHaveAttribute("data-active");
   });
 });
 
@@ -309,5 +303,31 @@ describe("personal nav — Chat", () => {
     chatSessions.current = [{ unread_count: 0 }, {}];
     const { container } = render(<AppSidebar />);
     expect(chatNav(container)?.textContent ?? "").not.toMatch(/\d/);
+  });
+});
+
+describe("workspace IA nav", () => {
+  it("shows the AI workbench modules as first-level navigation", () => {
+    const { container } = render(<AppSidebar />);
+
+    expect(container.querySelector('button[data-href="/acme/ai-inbox"]')).not.toBeNull();
+    expect(container.querySelector('button[data-href="/acme/missions"]')).not.toBeNull();
+    expect(container.querySelector('button[data-href="/acme/atlas"]')).not.toBeNull();
+    expect(container.querySelector('button[data-href="/acme/ai-studio"]')).not.toBeNull();
+    expect(container.querySelector('button[data-href="/acme/autopilot"]')).not.toBeNull();
+    expect(container.querySelector('button[data-href="/acme/system"]')).not.toBeNull();
+  });
+
+  it("does not expose legacy modules as first-level navigation", () => {
+    const { container } = render(<AppSidebar />);
+
+    expect(container.querySelector('button[data-href="/acme/resources"]')).toBeNull();
+    expect(container.querySelector('button[data-href="/acme/issues"]')).toBeNull();
+    expect(container.querySelector('button[data-href="/acme/projects"]')).toBeNull();
+    expect(container.querySelector('button[data-href="/acme/agents"]')).toBeNull();
+    expect(container.querySelector('button[data-href="/acme/skills"]')).toBeNull();
+    expect(container.querySelector('button[data-href="/acme/squads"]')).toBeNull();
+    expect(container.querySelector('button[data-href="/acme/runtimes"]')).toBeNull();
+    expect(container.querySelector('button[data-href="/acme/usage"]')).toBeNull();
   });
 });

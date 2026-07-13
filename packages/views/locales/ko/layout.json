@@ -1,18 +1,12 @@
 {
   "nav": {
-    "inbox": "인박스",
+    "ai_inbox": "AI Inbox",
     "chat": "채팅",
-    "my_issues": "내 이슈",
-    "resources": "리소스 작업",
-    "issues": "이슈",
-    "projects": "프로젝트",
-    "autopilots": "오토파일럿",
-    "agents": "에이전트",
-    "squads": "스쿼드",
-    "usage": "사용량",
-    "runtimes": "런타임",
-    "skills": "스킬",
-    "settings": "설정"
+    "missions": "Missions",
+    "atlas": "Atlas",
+    "ai_studio": "AI Studio",
+    "autopilot": "Autopilot",
+    "system": "System"
   },
   "help": {
     "trigger": "도움말",
@@ -34,11 +28,11 @@
     "invitation_join": "참가",
     "invitation_decline": "거절",
     "log_out": "로그아웃",
-    "new_issue": "새 이슈",
+    "new_issue": "새 Mission",
     "new_issue_shortcut": "C",
     "pinned_label": "고정됨",
-    "workspace_group": "워크스페이스",
-    "configure_group": "설정",
+    "workspace_group": "워크벤치",
+    "configure_group": "System",
     "unread_overflow": "99+",
     "discord_card": {
       "title": "Discord 참여하기",

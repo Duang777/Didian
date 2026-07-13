@@ -14,15 +14,13 @@ import type { OnboardingStep } from "./types";
  * for the same reason — users shouldn't think of reading the intro
  * as progress toward completing setup.
  *
- * Note: "teammate" (the old "Create your first agent" step) is no longer
- * part of the in-flow sequence. Helper agent creation now happens after
- * onboarding exits, via the workspace OnboardingHelperModal — see
- * `packages/views/workspace/onboarding-helper-modal.tsx`.
+ * Runtime and agent setup are no longer part of the default first-run
+ * sequence. New users land in AI Inbox first; execution infrastructure
+ * is configured later from System when a Mission needs it.
  */
 export const ONBOARDING_STEP_ORDER: readonly OnboardingStep[] = [
   "source",
   "role",
   "use_case",
   "workspace",
-  "runtime",
 ] as const;

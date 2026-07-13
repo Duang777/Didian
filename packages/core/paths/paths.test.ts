@@ -5,6 +5,13 @@ describe("paths.workspace(slug)", () => {
   const ws = paths.workspace("acme");
 
   it("builds workspace paths with slug prefix", () => {
+    expect(ws.aiInbox()).toBe("/acme/ai-inbox");
+    expect(ws.missions()).toBe("/acme/missions");
+    expect(ws.missionDetail("mission-1")).toBe("/acme/missions/mission-1");
+    expect(ws.atlas()).toBe("/acme/atlas");
+    expect(ws.aiStudio()).toBe("/acme/ai-studio");
+    expect(ws.autopilot()).toBe("/acme/autopilot");
+    expect(ws.system()).toBe("/acme/system");
     expect(ws.usage()).toBe("/acme/usage");
     expect(ws.issues()).toBe("/acme/issues");
     expect(ws.issueDetail("abc-123")).toBe("/acme/issues/abc-123");
@@ -27,6 +34,7 @@ describe("paths.workspace(slug)", () => {
 
   it("URL-encodes special characters in ids", () => {
     expect(ws.issueDetail("id with space")).toBe("/acme/issues/id%20with%20space");
+    expect(ws.missionDetail("id with space")).toBe("/acme/missions/id%20with%20space");
   });
 });
 

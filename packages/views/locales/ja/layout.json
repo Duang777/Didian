@@ -1,18 +1,12 @@
 {
   "nav": {
-    "inbox": "インボックス",
+    "ai_inbox": "AI Inbox",
     "chat": "チャット",
-    "my_issues": "マイイシュー",
-    "resources": "リソースタスク",
-    "issues": "イシュー",
-    "projects": "プロジェクト",
-    "autopilots": "オートパイロット",
-    "agents": "エージェント",
-    "squads": "スクワッド",
-    "usage": "使用量",
-    "runtimes": "ランタイム",
-    "skills": "スキル",
-    "settings": "設定"
+    "missions": "Missions",
+    "atlas": "Atlas",
+    "ai_studio": "AI Studio",
+    "autopilot": "Autopilot",
+    "system": "System"
   },
   "help": {
     "trigger": "ヘルプ",
@@ -34,11 +28,11 @@
     "invitation_join": "参加",
     "invitation_decline": "辞退",
     "log_out": "ログアウト",
-    "new_issue": "新規イシュー",
+    "new_issue": "新規 Mission",
     "new_issue_shortcut": "C",
     "pinned_label": "ピン留め済み",
-    "workspace_group": "ワークスペース",
-    "configure_group": "設定",
+    "workspace_group": "ワークベンチ",
+    "configure_group": "System",
     "unread_overflow": "99+",
     "discord_card": {
       "title": "Discord に参加",
