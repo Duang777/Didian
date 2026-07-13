@@ -150,6 +150,12 @@ AI Inbox -> Missions / Codex Run -> Atlas -> System
 - workspace switcher 的默认工作区入口从 `/issues` 改为 `/ai-inbox`，新建按钮文案改为 New Mission / 新建 Mission。
 - 已通过 `pnpm --filter @didian/views test -- app-sidebar`、`pnpm --filter @didian/views typecheck`、`pnpm --filter @didian/web typecheck`。
 
+**进度记录（2026-07-14）：**
+- 主导航已按 Runtime-first 收敛为 AI Inbox、Missions、Atlas、System；AI Studio 和 Autopilot 不再作为一级导航展示。
+- 旧 `/ai-studio`、`/autopilot` path builder 和 route 如存在，暂作为兼容保留，不作为 MVP 主入口。
+- 已提交 `405b91475 feat(views): hide advanced AI surfaces from main nav`。
+- 已通过 `pnpm --filter @didian/views test -- app-sidebar`、`pnpm --filter @didian/views typecheck`。
+
 **依赖：** Task 4
 
 **可能触及文件：**
@@ -469,6 +475,12 @@ AI Inbox -> Missions / Codex Run -> Atlas -> System
 **验证：**
 - [ ] `pnpm --filter @didian/views typecheck`
 - [ ] 手动检查 System 和 Mission 执行记录入口。
+
+**进度记录（2026-07-14）：**
+- System 页面已增加 Infrastructure 和 Advanced 两组入口卡。
+- Advanced 中提供 Agents、Skills、Squads、Autopilots 旧路由兼容入口；基础设施中提供 Nodes 和 Settings 入口。
+- 已提交 `54ca6f2be feat(views): add system advanced entry links`。
+- 已通过 `pnpm --filter @didian/views test -- system-page`、`pnpm --filter @didian/views typecheck`。
 
 **依赖：** Task 5、Task 10
 
