@@ -20,7 +20,6 @@ import {
   Inbox,
   MessageSquare,
   ListTodo,
-  Bot,
   ChevronDown,
   ChevronRight,
   Settings,
@@ -29,7 +28,6 @@ import {
   Check,
   SquarePen,
   X,
-  Zap,
   Network,
 } from "lucide-react";
 import { WorkspaceAvatar } from "../workspace/workspace-avatar";
@@ -107,8 +105,6 @@ type NavKey =
   | "chat"
   | "missions"
   | "atlas"
-  | "aiStudio"
-  | "autopilot"
   | "system";
 
 // Static schema (key + icon) — labels resolved at render via useT("layout").
@@ -117,8 +113,6 @@ type NavLabelKey =
   | "chat"
   | "missions"
   | "atlas"
-  | "ai_studio"
-  | "autopilot"
   | "system";
 
 const personalNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
@@ -129,8 +123,6 @@ const personalNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] 
 const workspaceNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
   { key: "missions", labelKey: "missions", icon: ListTodo },
   { key: "atlas", labelKey: "atlas", icon: Network },
-  { key: "aiStudio", labelKey: "ai_studio", icon: Bot },
-  { key: "autopilot", labelKey: "autopilot", icon: Zap },
 ];
 
 const configureNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [

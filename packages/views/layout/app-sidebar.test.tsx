@@ -313,9 +313,14 @@ describe("workspace IA nav", () => {
     expect(container.querySelector('button[data-href="/acme/ai-inbox"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/missions"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/atlas"]')).not.toBeNull();
-    expect(container.querySelector('button[data-href="/acme/ai-studio"]')).not.toBeNull();
-    expect(container.querySelector('button[data-href="/acme/autopilot"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/system"]')).not.toBeNull();
+  });
+
+  it("keeps AI Studio and Autopilot out of MVP first-level navigation", () => {
+    const { container } = render(<AppSidebar />);
+
+    expect(container.querySelector('button[data-href="/acme/ai-studio"]')).toBeNull();
+    expect(container.querySelector('button[data-href="/acme/autopilot"]')).toBeNull();
   });
 
   it("does not expose legacy modules as first-level navigation", () => {
