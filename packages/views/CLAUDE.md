@@ -10,10 +10,13 @@
 - 确认面板必须在执行前列出准确操作。
 - 长标题、URL、日志和 Markdown 不能撑坏布局。
 
-## 资源视图模式
+## AI Workbench 视图模式
 
-- 任务卡片：目标、状态、runtime、来源数、资源数、重复数、风险数、当前步骤。
-- 任务详情：目标标题、动态任务图、资源聚类、建议操作、执行时间线、artifacts。
+- 新产品页面优先放在 `packages/views/ai-workbench/`。
+- 第一版主入口是 AI Inbox、Missions、Atlas、System。
+- 不把 AI Studio / Autopilot 做成 MVP 主页面；相关旧页面只作为 System / Advanced 兼容入口。
+- Mission 卡片：目标、状态、runtime、输入数、Review 数、artifact 预览、当前步骤。
+- Mission 详情：Inputs、Plan、Activity、Evidence、Review、Outputs、Related Atlas。
 - Runtime 展示：provider、版本、状态、最后心跳、当前任务。
 - Artifact 预览：Markdown 内容和来源引用。
 

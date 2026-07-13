@@ -2,24 +2,24 @@
 
 ## 1. 审核结论
 
-整体方向合理，但必须按“先骨架、再闭环、再深化”的方式实现，不能直接从大页面改造开始。
+整体方向合理，但必须按“先 Runtime 主线、再闭环、再高级能力”的方式实现，不能直接从一堆管理页面改造开始。
 
 合理之处：
 
-- 五模块 IA 比旧后台式模块更清晰，能突出 AI 行为。
+- Runtime-first IA 比旧后台式模块更清晰，能突出 Codex 的真实执行能力。
 - 新增产品路由并保留旧路由是正确选择，可以避免通知、pin、历史链接和详情页回归。
 - Mission 复用 Issue 是现实可行的短期策略，因为现有 issue 已经有列表、详情、评论、附件、实时同步、执行日志等能力。
 - Atlas 先用 fixture/view model 合理，图谱/RAG/持久化都是后续大工程。
-- Autopilot 先做策略预览合理，真实调度、权限、确认、运行日志不能一口气做。
+- AI Studio / Autopilot 后置合理，否则产品会重新变成角色、能力、策略管理台。
 
 需要修正或警惕的点：
 
 - `CreateIssueRequest` 当前不能写 `metadata`，所以 AI Inbox -> Mission 第一版不能依赖 metadata 持久化。只能写结构化 description 或使用 demo fixture。
-- 不能先改导航再补 route。必须先新增 `/ai-inbox`、`/missions`、`/atlas`、`/ai-studio`、`/autopilot`、`/system` 页面骨架。
+- 不能先改导航再补 route。必须先新增 `/ai-inbox`、`/missions`、`/atlas`、`/system` 页面骨架。
 - Mission 详情改造风险较高，真实落点是 `packages/views/issues/components/issue-detail.tsx` 及相关组件，不是一个独立 `issues/detail` 目录。
-- AI Studio 不应急着深度改 Agents/Skills/Squads，第一版最好做聚合模板页，把旧管理能力放高级入口。
+- AI Studio 不应进入第一版主导航。Agents/Skills/Squads 应作为 System / Advanced 入口或 Mission 执行诊断信息。
 - Atlas 如果只做卡片列表会失去差异化，第一版必须至少有 Collection、Evidence、Relationship/duplicate suggestion、Ask Atlas fixture。
-- Autopilot 必须明确“策略预览/模拟运行历史”，否则用户会误以为后台真实自动执行。
+- Autopilot 不应做 mock 策略预览页；等真实 capture/run/memory 行为跑通后再做后台策略。
 
 ## 2. 总体实施策略
 
@@ -30,10 +30,10 @@
 实施顺序：
 
 1. 跑基线 typecheck，记录当前状态。
-2. 新增 `WorkspacePaths`：`aiInbox`、`missions`、`missionDetail`、`atlas`、`aiStudio`、`autopilot`、`system`。
+2. 新增 `WorkspacePaths`：`aiInbox`、`missions`、`missionDetail`、`atlas`、`system`。
 3. 新增 Next route 页面骨架。
 4. 建立 `packages/views/ai-workbench` 产品层目录，放 `types.ts`、`schemas.ts`、`fixtures.ts`、`terminology.ts`。
-5. 导航切换到五模块。
+5. 导航切换到 AI Inbox、Missions、Atlas、System。
 
 停止条件：
 
@@ -43,20 +43,21 @@
 
 ### 阶段 2：最小闭环
 
-目标：AI Inbox 可以创建 Mission，Mission 可以关联 Atlas，Atlas 可以生成 Autopilot 策略预览。
+目标：AI Inbox 可以创建 Mission，Mission 展示 Codex Run 执行现场，Mission 结果可以关联 Atlas。
 
 实施顺序：
 
 1. AI Inbox 支持 URL/text 输入和启发式理解。
 2. 创建 Mission：优先写 issue description；如果接口或状态复杂，降级为 demo Mission fixture。
 3. Missions 队列：先做轻量队列，不急着完全改造所有 IssueSurface 视图。
-4. Mission 详情：先新增 AI Plan/Artifacts/Review 区块，不删除旧评论和执行日志。
+4. Mission 详情：先新增 Inputs、Plan、Activity、Evidence、Review、Outputs 区块，不删除旧评论和执行日志。
 5. Atlas：基于 fixture 展示 Collection/Resource/Evidence。
-6. Autopilot：从 Atlas/Mission 上下文生成策略卡。
+6. System：聚合 Runtime、Settings、Advanced 入口，并在 Runtime 离线时给 Mission 提供诊断跳转。
 
 停止条件：
 
-- 可以手动走通 AI Inbox -> Mission -> Atlas -> Autopilot。
+- 可以手动走通 AI Inbox -> Mission -> Atlas。
+- Mission 详情能讲清楚 Codex Runtime 正在做什么、做到了哪一步、产出了什么。
 - 不依赖真实浏览器扩展、真实云盘 API、真实 runtime。
 
 ### 阶段 3：模块深化
@@ -68,8 +69,8 @@
 1. AI Inbox 增加多输入卡片、重新理解、拆分 Mission。
 2. Mission 增加失败诊断卡和 Review 动作。
 3. Atlas 增加 Ask Atlas fixture、重复建议和来源引用。
-4. AI Studio 增加 Roles、Capabilities、Recipes 模板。
-5. System 收纳 Nodes/Integrations/Providers/Settings。
+4. System 收纳 Nodes/Integrations/Providers/Settings/Advanced。
+5. Mission 详情展示当前 Codex Run 使用的 runtime/agent/profile/skill bundle。
 6. Onboarding 改成 AI Inbox 首次引导。
 
 停止条件：
@@ -175,18 +176,18 @@
 - Ask Atlas 限定 fixture 问题。
 - 必须从 Mission 链接进入 Atlas，证明它是产物不是孤立页。
 
-## 3.4 AI Studio
+## 3.4 Advanced AI Configuration
 
 ### 从哪里开始
 
-先做聚合模板页，不直接重构 Agents/Skills/Squads。
+第一版不做独立 AI Studio 页面。先从 System / Advanced 提供旧 Agents/Skills/Squads 入口，并在 Mission 详情展示当前 Codex Run 实际使用的配置。
 
 ### 第一版实现
 
-- Roles tab：资源侦探、去重专家、整理助手、研究分析师、失败诊断师。
-- Capabilities tab：网页提取、链接分类、摘要、去重、主题聚类、引用生成等。
-- Recipes tab：研究资料包、学习路线、开源项目对比、失败资源诊断等。
-- 每个卡片提供“高级配置”入口跳到旧 Agents/Skills/Squads。
+- System / Advanced 入口卡：Agents、Skills、Squads。
+- Mission 详情只读展示 runtime、agent/profile、skill bundle。
+- 保留旧 `/agents`、`/skills`、`/squads` 路由兼容，不进一级导航。
+- 后续再根据真实自定义需求做 Roles、Capabilities、Recipes 页面。
 
 ### 借鉴项目
 
@@ -197,26 +198,25 @@
 ### 技术风险
 
 - 直接复用旧页面会看起来还是 agent 管理台。
-- 模板内容如果太泛，会没有产品记忆点。
+- 过早做模板会稀释 Codex Runtime 主线。
 
 ### 风险控制
 
-- 首页模板优先，旧管理入口降级为高级配置。
-- 模板必须绑定 AI Inbox/Missions/Atlas/Autopilot 的使用场景。
+- 旧管理入口只放 System / Advanced。
+- 普通用户默认只在 Mission 的执行现场看到 AI 能力如何被使用。
 
-## 3.5 Autopilot
+## 3.5 Later Autopilot
 
 ### 从哪里开始
 
-先做 `packages/views/ai-workbench/autopilot/autopilot-page.tsx` 策略预览，不急着写后端。
+第一版不做 `packages/views/ai-workbench/autopilot/autopilot-page.tsx`。先记录 AI Inbox、Mission、Atlas 中真实发生的动作和确认点。
 
 ### 第一版实现
 
-- 自然语言目标输入。
-- 启发式生成 strategy card。
-- 卡片显示 trigger、conditions、actions、confirmation、risk。
-- 本地启用/暂停状态。
-- 从 Mission/Atlas 带上下文进入。
+- 不新增 mock Autopilot 页面。
+- 保留旧 `/autopilots` 路由作为高级兼容入口。
+- 在数据设计中保留后续 strategy 所需字段，但不作为 MVP UI。
+- 后续从真实重复行为生成策略建议，再做 dry-run 和确认门。
 
 ### 借鉴项目
 
@@ -225,13 +225,13 @@
 
 ### 技术风险
 
-- 用户误解为真实自动运行。
+- Mock 策略页抢走 Runtime 执行主线。
 - 现有 autopilot API 字段和策略卡不匹配。
 
 ### 风险控制
 
-- 明确标注“策略预览/模拟运行历史”。
-- 保存到后端作为后续任务，不阻塞 MVP。
+- 不做策略预览页。
+- 后续只基于真实 capture/run/memory 行为生成策略建议。
 
 ## 3.6 System
 
@@ -287,7 +287,7 @@
    建 `packages/views/ai-workbench/types.ts`、`schemas.ts`、`fixtures.ts`、`terminology.ts`。
 
 4. **Task 4：新增产品路由和路径构建器**
-   先让 `/ai-inbox`、`/missions`、`/atlas`、`/ai-studio`、`/autopilot`、`/system` 可打开。
+   先让 `/ai-inbox`、`/missions`、`/atlas`、`/system` 可打开。
 
 5. **Task 7：AI Inbox 页面骨架**
    做产品第一屏和理解面板。
@@ -301,14 +301,14 @@
 8. **Task 12：Atlas Collection 视图**
    让 Mission 有沉淀结果。
 
-9. **Task 16：Autopilot 策略预览页**
-   让 Atlas/Mission 能生成持续策略。
+9. **Task 16：System / Advanced 入口**
+   收纳 Runtime、Settings、Agents、Skills、Squads，并提供 Mission 诊断跳转。
 
 10. **Task 5 和 Task 6：导航与 Onboarding**
     等目标页面可用后，再把导航和新用户引导切过去。
 
 11. **Task 10、11、13、14、15、17、18**
-    深化 Mission 详情、Ask Atlas、AI Studio、System 和跨模块入口。
+    深化 Mission 详情、Ask Atlas、System、Runtime 状态和跨模块入口。
 
 ## 6. 每阶段验收闸门
 
@@ -323,13 +323,13 @@
 
 - AI Inbox 可以产生 Mission。
 - Mission 可以展示计划。
+- Mission 可以展示 Codex Run 的日志、证据和产物。
 - Mission 完成态能链接 Atlas。
-- Atlas 可以生成 Autopilot 预览。
 
 ### 产品感闸门
 
 - 第一屏不再像 issue/agent workspace。
-- 每个模块都有独特 AI 行为。
+- AI 能力主要体现在 Codex Run 的理解、计划、执行、证据和产物上。
 - 没有把 Nodes/Skills/Squads/Usage 重新做成一级模块。
 
 ### 质量闸门
@@ -347,7 +347,7 @@
 2. AI Inbox -> Mission 不依赖 metadata。
 3. Missions 队列先轻量实现，详情页增量加区块，不大拆旧 issue 详情。
 4. Atlas 先做有证据和关系的 fixture，不做图数据库。
-5. Autopilot 先策略预览，不承诺真实运行。
-6. AI Studio 先模板聚合，不深改 Agents/Skills/Squads。
+5. Autopilot 后置，不做 mock 策略页。
+6. AI Studio 后置，Agents/Skills/Squads 只作为 System / Advanced 兼容入口。
 
 只要守住这些边界，方案是可实施的；如果一开始就做后端模型迁移、真实 RAG、真实自动化或大改 issue detail，就很容易在中途卡住。

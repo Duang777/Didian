@@ -6,37 +6,38 @@
 2. 第一版优先做出有记忆点的 AI 产品闭环，不追求完整下载器、完整云盘或完整知识库。
 3. 现有 `issue`、`agent`、`runtime`、`skill`、`squad` 等底层模型短期保留，先作为实现细节承载新产品语义。
 4. 目标用户不是基础设施管理员，而是希望把混乱资源丢进产品后，得到结构化成果、可追问知识和可持续自动化的人。
-5. AI 必须成为产品的组织能力：理解输入、规划任务、解释过程、沉淀关系、生成策略，而不是只放在聊天框里。
+5. AI 必须成为产品的组织能力：理解输入、规划任务、执行处理、解释过程、沉淀关系，而不是只放在聊天框或配置面板里。
 
 ## 1. 产品愿景
 
-做一个 AI 原生的资源工作台：用户可以把链接、文件、浏览器标签、笔记、下载线索、研究问题、截图或模糊意图丢进来，系统理解用户想做什么，把它变成 AI Mission，执行后沉淀为可复用的 Atlas，并能把重复工作变成 Autopilot。
+做一个 AI 原生的资源工作台：用户可以把链接、文件、浏览器标签、笔记、下载线索、研究问题、截图或模糊意图丢进来，Codex Runtime 理解用户想做什么，把它变成 AI Mission，在本地执行、留下证据和产物，并沉淀为可复用的 Atlas。
 
-产品不应该像“下载管理器 + AI”，也不应该像“Agent 平台 + 资源插件”。它应该像一个会理解资源、组织资源、执行资源任务、长期记忆和持续工作的 AI 操作台。
+产品不应该像“下载管理器 + AI”，也不应该像“Agent 平台 + 资源插件”。它应该像一个会理解资源、组织资源、执行资源任务并长期记忆的 AI 操作台。
 
 一句话定位：
 
-> 一个能理解混乱资源、规划 AI 任务、沉淀资源图谱、持续自动工作的 AI 资源工作台。
+> 一个能理解混乱资源、调用 Codex Runtime 执行任务、沉淀资源记忆的 AI 资源工作台。
 
-## 2. 为什么要重构成五大板块
+## 2. 为什么要收敛成 Runtime-first 主线
 
 上一版模块设计偏企业后台：Tasks、Resources、Projects、Nodes、AI Assistants、Capabilities、Workflows、Rules、Analytics、Settings。它完整，但不锐利，容易变成“什么都有，但每个模块都像管理页”。
 
-新方向把产品收敛成五个有明确 AI 行为的主板块：
+新方向把产品收敛成一条有明确 AI 行为的主线：
 
 ```text
-AI Inbox  ->  Missions  ->  Atlas  ->  AI Studio  ->  Autopilot
-  输入          执行        记忆        能力调配       持续自动化
+Capture / AI Inbox  ->  Codex Run / Mission  ->  Memory / Atlas  ->  System
+       输入                    执行现场                    记忆沉淀          运行状态/高级配置
 ```
 
 这条主线更容易被用户理解：
 
 1. 我把东西丢进 AI Inbox。
 2. AI 理解后创建 Mission。
-3. Mission 按计划执行并产出结果。
+3. Mission 调用 Codex Runtime 按计划执行，并持续展示日志、证据和产物。
 4. 结果进入 Atlas，变成可查、可追问、有关联的资源记忆。
-5. AI Studio 定义 AI 怎么工作。
-6. Autopilot 把反复发生的事变成可控自动化。
+5. System 只在需要时解释 Runtime、Provider、权限和高级配置。
+
+Agents、Skills、Squads、Autopilot 等能力仍然重要，但第一版不把它们做成用户默认面对的主板块。它们是 Codex Run 的执行配置、诊断入口和后续自动化能力，而不是产品故事本身。
 
 ## 3. 目标用户
 
@@ -63,7 +64,7 @@ AI Inbox  ->  Missions  ->  Atlas  ->  AI Studio  ->  Autopilot
 2. **AI 先解释理解，再开始行动。** 系统要展示“我认为你想做什么”。
 3. **每个 Mission 都有计划。** AI 工作不能只是一个转圈 loading，而要有阶段、证据、产物和阻塞点。
 4. **完成不是结束，而是进入 Atlas。** Mission 结果必须成为可复用的资源、合集、摘要、关系或策略。
-5. **自动化必须可解释、可暂停、可确认。** Autopilot 不是黑盒后台任务。
+5. **自动化必须来自真实重复行为。** Autopilot 不在第一版主导航里抢故事，等 capture/run/memory 路径跑通后再出现。
 6. **基础设施不抢主线。** 节点、模型、集成、存储、权限都放到 System，只有在解释 Mission 时才露出。
 
 ## 5. 信息架构
@@ -74,8 +75,7 @@ AI Inbox  ->  Missions  ->  Atlas  ->  AI Studio  ->  Autopilot
 AI Inbox       智能收件箱
 Missions       AI 任务
 Atlas          资源图谱
-AI Studio      AI 工坊
-Autopilot      自动驾驶
+System         系统
 ```
 
 ### 5.2 二级/系统导航
@@ -98,12 +98,12 @@ System         系统
 | My Issues | Missions 筛选 | “我的”是过滤条件，不应成为一级模块。 |
 | Resources | Atlas | 普通资源列表没有差异化，AI 图谱更有产品记忆点。 |
 | Projects | Atlas Collections | 项目、分类、合集概念重叠，先统一为 Collection。 |
-| Agents | AI Studio Roles | 用户配置的是 AI 角色，不是底层 agent 实体。 |
-| Skills | AI Studio Capabilities | Skill 是实现细节，用户关心系统会什么。 |
-| Squads | AI Studio Recipes | 用户价值是可复用处理配方，不是 agent 编队。 |
+| Agents | System / Advanced Roles | 第一版不做主板块；只在诊断或高级配置时露出。 |
+| Skills | System / Advanced Capabilities | Skill 是实现细节，普通用户先看 Codex Run 用了什么能力。 |
+| Squads | System / Later Recipes | 用户价值是可复用处理配方，但第一版不做独立配方管理。 |
 | Runtimes | System Nodes | 节点是基础设施，不是主业务目标。 |
-| Usage | 内嵌洞察 / System | 成功率、耗时、成本等应嵌入 Mission/Autopilot。 |
-| Rules | Autopilot Strategies | 用户表达目标，AI 生成策略，不手写复杂规则。 |
+| Usage | 内嵌洞察 / System | 成功率、耗时、成本等应嵌入 Mission/System。 |
+| Rules | Later Autopilot Strategies | 等真实重复行为足够后再把规则升级为后台策略。 |
 
 ## 6. 核心产品闭环
 
@@ -111,10 +111,10 @@ System         系统
 用户把混乱输入丢进 AI Inbox
   -> AI 解释输入意图并建议 Mission
   -> 用户确认或微调 Mission
-  -> Mission 按 AI 计划执行
+  -> Mission 通过 Codex Runtime 按 AI 计划执行
   -> 需要决策时进入 Review
   -> 结果沉淀为 Atlas 的资源、合集、摘要、关系和证据
-  -> 用户可以追问 Atlas，或把重复模式设为 Autopilot
+  -> 用户可以追问 Atlas；重复模式后续可升级为 Autopilot
 ```
 
 ## 7. 模块需求
@@ -267,13 +267,13 @@ Atlas 不是文件列表，而是资源、主题、合集、关系、摘要和�
 - 用户能向 Collection 提问并得到带引用回答。
 - 重复资源建议需要用户确认后才能合并、隐藏或删除。
 
-## 7.4 AI Studio / AI 工坊
+## 7.4 Advanced AI Configuration / 高级 AI 配置
 
 ### 定位
 
-AI Studio 是用户调配 AI 工作方式的地方，合并 Agents、Skills、Squads、Workflows。
+Advanced AI Configuration 是 Codex Runtime 的高级配置和诊断入口，合并 Agents、Skills、Squads、Workflows，但不进入第一版主导航。
 
-用户不是管理底层 agent，而是在选择 AI 角色、能力包和处理配方。
+普通用户不是管理底层 agent，而是在 Mission 里看到 Codex Run 实际使用了哪些角色、能力包和处理配方。只有当用户需要诊断或深度自定义时，才从 System / Advanced 进入这些配置。
 
 ### 结构
 
@@ -310,19 +310,18 @@ AI Studio 是用户调配 AI 工作方式的地方，合并 Agents、Skills、Sq
 
 ### 验收标准
 
-- AI Studio 至少包含 Roles、Capabilities、Recipes 三个区域或 tab。
-- 现有 Agents 可以映射为 Roles。
-- 现有 Skills 可以映射为 Capabilities。
-- 现有 Squads/Workflows 可以映射为 Recipes。
-- 第一版至少内置 5 个强模板。
+- 第一版不新增独立 AI Studio 一级导航。
+- Mission 详情能展示当前 Codex Run 实际使用的 runtime/agent/profile/skill bundle。
+- System / Advanced 可链接到现有 Agents、Skills、Squads 兼容页面。
+- 后续有真实自定义需求时，再把 Roles、Capabilities、Recipes 做成独立高级页面。
 
-## 7.5 Autopilot / 自动驾驶
+## 7.5 Later Autopilot / 后续自动驾驶
 
 ### 定位
 
-Autopilot 是持续自动工作的模式，替代 Rules/Automation。
+Autopilot 是后续的持续自动工作模式，替代 Rules/Automation，但不进入第一版主导航。
 
-用户不写复杂规则，而是表达“以后遇到这种情况，帮我怎么处理”。AI 把自然语言目标转成可检查、可暂停、可确认的策略卡片。
+第一版先把 capture、Codex Run、Atlas memory 的真实路径跑通，并记录用户反复执行的动作。等真实重复行为足够后，AI 再把它们转成可检查、可暂停、可确认的策略建议。
 
 ### 用户任务
 
@@ -366,16 +365,16 @@ Autopilot 是持续自动工作的模式，替代 Rules/Automation。
 
 ### 验收标准
 
-- 用户能用自然语言创建 Autopilot 策略预览。
-- 启用前能看到 AI 生成的策略卡片。
-- 用户能暂停/恢复策略。
-- 第一版允许使用 mock 运行历史。
+- 第一版不新增 mock Autopilot 页面。
+- AI Inbox、Mission、Atlas 能记录可用于后续策略建议的真实动作和确认点。
+- 旧 Autopilot 页面如果保留，只作为高级兼容入口。
+- 后续启用策略前必须有 dry-run、确认门和运行历史。
 
 ## 7.6 System / 系统
 
 ### 定位
 
-System 放基础设施和高级配置，不和五个主板块争夺注意力。
+System 放基础设施和高级配置，不和 AI Inbox / Missions / Atlas 主线争夺注意力。
 
 ### 内容
 
@@ -424,14 +423,12 @@ System 放基础设施和高级配置，不和五个主板块争夺注意力。
 
 ### Must Have
 
-- 一级导航：AI Inbox、Missions、Atlas、AI Studio、Autopilot。
+- 一级导航：AI Inbox、Missions、Atlas、System。
 - AI Inbox 万能输入和 mock/启发式理解结果。
 - 从 AI Inbox 创建 Mission。
-- Mission 队列和 Mission 详情，详情包含 AI Plan。
+- Mission 队列和 Mission 详情，详情包含 Codex Run 执行现场：Inputs、Plan、Activity、Evidence、Review、Outputs。
 - Atlas Collection 视图，能展示 Mission fixture 生成的资源。
-- AI Studio 展示 Roles、Capabilities、Recipes 模板。
-- Autopilot 自然语言策略预览。
-- System 入口承载 Nodes、Integrations、Settings。
+- System 入口承载 Runtime、Nodes、Integrations、Settings、Advanced。
 
 ### Should Have
 
@@ -440,6 +437,7 @@ System 放基础设施和高级配置，不和五个主板块争夺注意力。
 - Atlas 重复资源建议。
 - 失败 Mission 的 AI 诊断卡片。
 - 浏览器 capture fixture 导入。
+- Mission 详情展示 Runtime 在线/离线状态和诊断入口。
 
 ### Could Have
 
@@ -447,7 +445,7 @@ System 放基础设施和高级配置，不和五个主板块争夺注意力。
 - Mock Drive 写入预览。
 - 本地文件夹导出。
 - 真实 daemon/runtime 执行。
-- 基于真实事件的 Autopilot 运行历史。
+- 基于真实事件的 Autopilot 策略建议。
 
 ### MVP 不做
 
@@ -457,6 +455,8 @@ System 放基础设施和高级配置，不和五个主板块争夺注意力。
 - 图数据库。
 - 把数据库表从 issue/agent/runtime/skill 重命名为新产品对象。
 - Nodes 作为一级模块。
+- AI Studio 作为一级模块。
+- Autopilot 作为一级模块或 mock 策略页。
 - 传统 Usage 大报表。
 - 复杂规则编辑器。
 
@@ -466,18 +466,18 @@ System 放基础设施和高级配置，不和五个主板块争夺注意力。
 
 - 新用户 60 秒内理解产品主循环。
 - 第一屏鼓励输入，而不是配置。
-- AI 输出以理解、计划、摘要、关系、策略形式可见。
+- AI 输出以理解、计划、执行日志、证据、摘要、关系和产物形式可见。
 - 完成的工作能在 Atlas 中继续复用。
-- 一级导航只有五个产品模块，而不是十几个管理模块。
+- 一级导航只有 AI Inbox、Missions、Atlas、System，而不是十几个管理模块。
 
 ### Demo 成功
 
 - 用户把一组链接或 fixture 丢进 AI Inbox。
 - AI 给出 Mission 标题、理解和计划。
 - Mission 详情展示进度、产物和 Review 决策。
+- Mission 详情展示 Codex Run 的计划、日志、证据和产物。
 - 完成 Mission 后生成 Atlas Collection。
 - 用户向 Atlas 提问并得到带引用回答。
-- 用户用自然语言创建 Autopilot 策略预览。
 
 ### 工程成功
 
@@ -491,18 +491,18 @@ System 放基础设施和高级配置，不和五个主板块争夺注意力。
 | 产品对象 | 第一版实现方式 |
 | --- | --- |
 | Mission | 复用现有 Issue，增加产品化 view model。 |
-| AI Role | 复用现有 Agent。 |
-| Capability | 复用现有 Skill。 |
-| Recipe | 复用现有 Squad/Workflow 概念或静态模板。 |
+| AI Role | 复用现有 Agent，第一版作为 System / Advanced 兼容入口。 |
+| Capability | 复用现有 Skill，第一版只在 Codex Run 详情或高级配置中露出。 |
+| Recipe | 复用现有 Squad/Workflow 概念，后续再产品化。 |
 | Node | 复用现有 Runtime。 |
 | Atlas Resource | 先用前端 fixture/view model，后续再建 schema。 |
-| Autopilot Strategy | 复用现有 Autopilot/rule 概念或静态模板。 |
+| Autopilot Strategy | 后续基于真实 capture/run/memory 行为生成，不进入第一版核心模型。 |
 
 ## 12. 阶段交付
 
 ### Phase 1：IA Reset
 
-- 一级导航改成五个主模块。
+- 一级导航改成 AI Inbox、Missions、Atlas、System。
 - Nodes、Settings、Integrations 收进 System。
 - Issues 用户可见层改成 Missions。
 - Onboarding 改成 AI Inbox 首次引导。
@@ -517,7 +517,7 @@ System 放基础设施和高级配置，不和五个主板块争夺注意力。
 ### Phase 3：Missions
 
 - Mission 队列。
-- 带 AI Plan 的详情页。
+- 带 Codex Run 执行现场的详情页。
 - Review 卡片。
 - 失败诊断卡片。
 
@@ -528,44 +528,44 @@ System 放基础设施和高级配置，不和五个主板块争夺注意力。
 - 关联资源和重复建议。
 - Ask Atlas fixture 引用回答。
 
-### Phase 5：AI Studio
+### Phase 5：System / Advanced
 
-- Roles 区域。
-- Capabilities 区域。
-- Recipes 区域。
-- 强默认模板。
+- Runtime/Nodes 状态。
+- Provider、Integrations、Settings 入口。
+- Agents、Skills、Squads 高级兼容入口。
+- Mission 详情到 System 的诊断跳转。
 
-### Phase 6：Autopilot
+### Phase 6：Later Autopilot
 
-- 自然语言策略创建。
-- 策略预览卡。
-- 启用/暂停状态。
-- Mock 运行历史。
+- 基于真实 capture/run/memory 行为识别重复模式。
+- 从重复模式生成策略建议。
+- Dry-run、确认门和运行历史。
+- 旧 Autopilot API 的映射和迁移。
 
 ## 13. 待确认问题
 
 1. 产品名继续叫 Didian，还是换成更贴近迅雷体系的名称？
 2. 登录后默认首页是否直接进入 AI Inbox？
 3. Atlas 第一版只用 fixture，还是从现有 issue attachments/artifacts 推导？
-4. Autopilot 是否放进 MVP 一级导航，还是作为预览入口？
+4. Autopilot 后续从哪些真实用户动作中生成策略建议？
 5. App 文案是否中文优先，英文作为后续补齐？
 
 ## 14. 推荐决策
 
-采用以下五模块结构作为新产品方向：
+采用以下 Runtime-first 结构作为第一版产品方向：
 
 ```text
 AI Inbox
 Missions
 Atlas
-AI Studio
-Autopilot
+System
 ```
 
 不要继续扩展旧的后台式模块地图。每个主模块都必须有独特 AI 行为：
 
 - AI Inbox 理解混乱输入。
-- Missions 规划和执行工作。
+- Missions 通过 Codex Runtime 规划、执行并展示证据。
 - Atlas 记忆并连接产物。
-- AI Studio 调配 AI 角色、能力和配方。
-- Autopilot 把重复意图转成持续策略。
+- System 承载 Runtime 状态、Provider、Settings 和高级配置。
+
+AI Studio 和 Autopilot 是后续/高级能力，不进入第一版主导航。

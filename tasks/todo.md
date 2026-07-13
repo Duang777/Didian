@@ -1,5 +1,21 @@
 # 任务清单：AI 资源工作台
 
+## 2026-07-14 Runtime-first 更新
+
+最新产品和技术方案以 `docs/ai-resource-workbench/01-product-requirements.md`、`02-technical-plan.md`、`03-implementation-review.md`、`04-browser-memory-bookmarks.md` 为准。第一版主线收敛为：
+
+```text
+AI Inbox -> Missions / Codex Run -> Atlas -> System
+```
+
+执行规则：
+
+- 后续开发优先做 `/ai-inbox`、`/missions`、`/atlas`、`/system`。
+- `AI Studio`、`Autopilot` 不进入 MVP 主导航；历史任务中相关条目视为后续/高级入口，不作为当前开发阻塞。
+- Mission 详情必须优先体现 Codex Runtime 能力：Inputs、Plan、Activity、Evidence、Review、Outputs。
+- Karakeep 借鉴只作为功能和流程参考：https://github.com/karakeep-app/karakeep 。不要复制 AGPL-3.0 源码。
+- 每次功能改进后做原子提交，提交前只 stage 本次相关文件，方便回滚。
+
 ## Task 1：基线验证和旧术语审计
 
 **描述：** 在实施新 IA 前记录当前项目健康状态，并盘点用户可见的旧模板词，避免后续替换遗漏。
@@ -27,11 +43,12 @@
 
 ## Task 2：确认技术方案和路由兼容策略
 
-**描述：** 在写代码前确认 `docs/ai-resource-workbench/02-technical-plan.md` 中的关键技术决策，尤其是新增产品路由、兼容旧路由、Mission 复用 Issue、Atlas/Autopilot 先 fixture 的策略。
+**描述：** 在写代码前确认 `docs/ai-resource-workbench/02-technical-plan.md` 中的关键技术决策，尤其是新增产品路由、兼容旧路由、Mission 复用 Issue、Atlas fixture、Autopilot 后置的策略。
 
 **验收标准：**
 - [x] 技术方案已被阅读并确认没有阻塞性问题。
-- [x] 新路由列表已确认：`/ai-inbox`、`/missions`、`/atlas`、`/ai-studio`、`/autopilot`、`/system`。
+- [x] MVP 主路由列表已确认：`/ai-inbox`、`/missions`、`/atlas`、`/system`。
+- [x] 旧/兼容路由 `/ai-studio`、`/autopilot` 如已存在，不进入第一版主导航。
 - [x] 旧路由短期保留策略已确认。
 - [x] 明确第一阶段不做数据库 migration。
 
@@ -54,19 +71,19 @@
 
 ## Task 3：建立产品术语和 view model 约定
 
-**描述：** 为 AI Inbox、Mission、Atlas、AI Role、Capability、Recipe、Autopilot Strategy、System Node 建立统一术语和前端映射约定，减少散落替换。
+**描述：** 为 AI Inbox、Mission、Codex Run、Atlas、System、Advanced、Later Autopilot 建立统一术语和前端映射约定，减少散落替换。
 
 **验收标准：**
 - [x] 文档中明确旧模型到新产品对象的映射。
 - [x] 前端有集中术语配置、locale namespace 或 view model 约定。
-- [x] Mission 状态、Atlas 对象、AI Studio 模板字段有初步字段定义。
+- [x] Mission 状态、Codex Run 执行现场、Atlas 对象、System / Advanced 字段有初步字段定义。
 
 **验证：**
 - [x] `pnpm --filter @didian/views typecheck`
 - [x] 文档能指导后续任务不直接暴露旧模型名。
 
 **进度记录（2026-07-13）：**
-- 新增 `packages/views/ai-workbench/types.ts`、`schemas.ts`、`fixtures.ts`，集中定义 AI Inbox、Mission、Atlas、AI Studio、Autopilot 的前端 view model、zod schema 和 demo fixture。
+- 新增 `packages/views/ai-workbench/types.ts`、`schemas.ts`、`fixtures.ts`，集中定义 AI Inbox、Mission、Atlas、System/Advanced 的前端 view model、zod schema 和 demo fixture；历史 AI Studio/Autopilot 字段后续降级处理。
 - 新增 `packages/views/ai-workbench/fixtures.test.ts`，覆盖 AI 理解启发式与 schema 校验。
 - `@didian/views` 已导出 `./ai-workbench`，后续页面优先从产品层 view model 接入，不直接暴露旧模型名。
 
@@ -84,7 +101,7 @@
 **描述：** 先增加新产品路由和 `WorkspacePaths` 构建器，确保导航切换前每个目标页面都有可渲染骨架，旧路由继续保留。
 
 **验收标准：**
-- [x] `paths.workspace(slug)` 支持 `aiInbox`、`missions`、`missionDetail`、`atlas`、`aiStudio`、`autopilot`、`system`。
+- [x] `paths.workspace(slug)` 支持 MVP 主入口 `aiInbox`、`missions`、`missionDetail`、`atlas`、`system`；历史 `aiStudio`、`autopilot` 如已存在只作兼容。
 - [x] Web app 存在对应 route 页面骨架。
 - [x] 旧 `/inbox`、`/issues`、`/resources`、`/agents`、`/skills`、`/squads`、`/runtimes` 不删除。
 - [x] 页面骨架能显示标题和基本空状态。
@@ -95,9 +112,9 @@
 - [ ] 手动打开每个新 route 不 404。
 
 **进度记录（2026-07-13）：**
-- 新增 `paths.workspace(slug).aiInbox()`、`missions()`、`missionDetail(id)`、`atlas()`、`aiStudio()`、`autopilot()`、`system()`，并同步 `paths.test.ts` 与 `consistency.test.ts`。
+- 新增 `paths.workspace(slug).aiInbox()`、`missions()`、`missionDetail(id)`、`atlas()`、`system()`，历史 `aiStudio()`、`autopilot()` 如已存在只作兼容；同步 `paths.test.ts` 与 `consistency.test.ts`。
 - 同步 `packages/views/editor/utils/link-handler.ts` 的 workspace route allowlist，保证 `/missions/...`、`/atlas` 等无 slug 内链可以继续补 workspace slug。
-- 新增 Web route 骨架：`ai-inbox`、`missions`、`missions/[id]`、`atlas`、`ai-studio`、`autopilot`、`system`。
+- 新增 Web route 骨架：`ai-inbox`、`missions`、`missions/[id]`、`atlas`、`system`；历史 `ai-studio`、`autopilot` 若保留，不进入 MVP 主导航。
 - 已通过 `pnpm --filter @didian/core test -- paths`、`pnpm --filter @didian/views test -- ai-workbench`、`pnpm --filter @didian/views typecheck`、`pnpm --filter @didian/web typecheck`。
 
 **依赖：** Task 3
@@ -109,18 +126,16 @@
 - `apps/web/app/[workspaceSlug]/(dashboard)/missions/page.tsx`
 - `apps/web/app/[workspaceSlug]/(dashboard)/missions/[id]/page.tsx`
 - `apps/web/app/[workspaceSlug]/(dashboard)/atlas/page.tsx`
-- `apps/web/app/[workspaceSlug]/(dashboard)/ai-studio/page.tsx`
-- `apps/web/app/[workspaceSlug]/(dashboard)/autopilot/page.tsx`
 - `apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx`
 
 **规模预估：** S-M
 
-## Task 5：主导航收敛为五模块
+## Task 5：主导航收敛为 Runtime-first 四入口
 
-**描述：** 将产品内页一级导航改为 AI Inbox、Missions、Atlas、AI Studio、Autopilot，并把 Nodes/Integrations/Settings 等基础设施入口收进 System。
+**描述：** 将产品内页一级导航改为 AI Inbox、Missions、Atlas、System，并把 Nodes/Integrations/Settings/Advanced 等基础设施和高级入口收进 System。
 
 **验收标准：**
-- [x] 一级导航只显示五个主模块和 System 入口。
+- [x] 一级导航只显示 AI Inbox、Missions、Atlas、System。
 - [x] Projects、Resources、Agents、Skills、Squads、Runtimes、Usage、Rules 不再作为一级主导航出现。
 - [x] 旧页面仍可通过二级入口或兼容路径访问。
 - [ ] 当前选中态、hover、移动端导航不因文案变更破坏布局。
@@ -130,7 +145,7 @@
 - [ ] 手动检查桌面和移动导航。
 
 **进度记录（2026-07-13）：**
-- `packages/views/layout/app-sidebar.tsx` 已收敛为 AI Inbox、Missions、Atlas、AI Studio、Autopilot、System；Chat 作为协作入口保留在 personal nav。
+- `packages/views/layout/app-sidebar.tsx` 需收敛为 AI Inbox、Missions、Atlas、System；Chat 作为协作入口可保留在 personal nav。
 - `Resources`、`Issues`、`Projects`、`Agents`、`Skills`、`Squads`、`Runtimes`、`Usage` 不再作为一级 sidebar nav 出现，旧 route 文件未删除，pins 仍可进入 legacy issue/project 详情。
 - workspace switcher 的默认工作区入口从 `/issues` 改为 `/ai-inbox`，新建按钮文案改为 New Mission / 新建 Mission。
 - 已通过 `pnpm --filter @didian/views test -- app-sidebar`、`pnpm --filter @didian/views typecheck`、`pnpm --filter @didian/web typecheck`。
@@ -371,15 +386,15 @@
 
 **规模预估：** M
 
-## Task 15：AI Studio 强模板内容
+## Task 15：System / Advanced 入口内容
 
-**描述：** 增加资源侦探、去重专家、整理助手、研究分析师、失败诊断师、自动化规划师等模板内容。
+**描述：** 不做独立 AI Studio 模板页。先在 System / Advanced 中提供 Agents、Skills、Squads 兼容入口，并在 Mission 详情展示当前 Codex Run 使用的 runtime/agent/profile/skill bundle。
 
 **验收标准：**
-- [ ] 至少 5 个 AI Role 模板。
-- [ ] 至少 8 个 Capability 模板。
-- [ ] 至少 5 个 Recipe 模板。
-- [ ] 每个模板说明适用输入、使用能力、典型产物和可关联模块。
+- [ ] System / Advanced 可进入 Agents、Skills、Squads 旧页面。
+- [ ] Mission 详情展示当前 Codex Run 使用的 runtime/agent/profile/skill bundle。
+- [ ] 普通用户主线不出现独立 AI Studio 主页面。
+- [ ] 如保留模板内容，只作为高级说明，不作为 MVP 骨架依赖。
 
 **验证：**
 - [ ] `pnpm --filter @didian/views typecheck`
@@ -388,56 +403,56 @@
 **依赖：** Task 14
 
 **可能触及文件：**
-- `packages/views/ai-workbench/ai-studio/**/*`
+- `packages/views/ai-workbench/system/**/*`
 - `packages/views/agents/**/*`
 - `packages/views/locales/*/*.json`
 - fixture/template 数据文件
 
 **规模预估：** S-M
 
-## Task 16：Autopilot 策略预览页
+## Task 16：Later Autopilot 策略建议
 
-**描述：** 将 Autopilot/Rules 产品化为自然语言目标到策略卡片的页面，第一版允许 mock 执行。
+**描述：** 第一版不做 mock Autopilot 页面。后续基于真实 capture/run/memory 行为识别重复模式，再生成 dry-run 策略建议。
 
 **验收标准：**
-- [ ] 用户能输入自然语言目标。
-- [ ] 系统生成策略卡片：目标、触发、条件、动作、确认要求、范围、最近运行、风险等级。
-- [ ] 支持启用/暂停策略。
-- [ ] 页面展示 Watch、Organize、Clean、Summarize、Diagnose、Recommend 模式。
+- [ ] 不新增 MVP Autopilot 主页面。
+- [ ] 真实用户动作和确认点能被记录为后续策略建议输入。
+- [ ] 策略启用前必须有 dry-run、确认门和运行历史。
+- [ ] 旧 `/autopilots` 如保留，只作为高级兼容入口。
 
 **验证：**
 - [ ] `pnpm --filter @didian/views typecheck`
-- [ ] 手动检查策略预览、启用、暂停状态。
+- [ ] 手动检查旧兼容入口不进入主导航。
 
 **依赖：** Task 5、Task 12
 
 **可能触及文件：**
-- `packages/views/ai-workbench/autopilot/**/*`
+- 后续再新增 `packages/views/ai-workbench/autopilot/**/*`
 - `packages/views/autopilots/**/*` 如需复用旧 Autopilot 组件
 - `packages/views/locales/*/*.json`
 - strategy fixture 数据文件
 
 **规模预估：** M
 
-## Task 17：从 Mission/Atlas 生成 Autopilot 入口
+## Task 17：记录可转 Autopilot 的重复行为
 
-**描述：** 在 Mission 完成页或 Atlas Collection 中增加“设为 Autopilot”的入口，把已有成果转成自动策略预览。
+**描述：** 在 Mission 完成页或 Atlas Collection 中先记录用户重复动作和确认点，为后续 Autopilot 策略建议提供真实上下文；不在 MVP 中跳转到 mock 策略预览页。
 
 **验收标准：**
-- [ ] 完成 Mission 上可以发起 Autopilot 策略预览。
-- [ ] Atlas Collection 上可以发起“持续整理/周期摘要/监控更新”策略。
-- [ ] 生成的策略预览带入来源上下文。
+- [ ] 完成 Mission 能记录可复用动作，例如摘要、归档、加入 Atlas、写入 artifact。
+- [ ] Atlas Collection 能记录重复整理/周期摘要/监控更新等意图。
+- [ ] 后续策略建议能带入来源上下文。
 
 **验证：**
 - [ ] `pnpm --filter @didian/views typecheck`
-- [ ] 手动从 Mission 和 Atlas 两条路径进入 Autopilot。
+- [ ] 手动从 Mission 和 Atlas 两条路径记录后续策略上下文。
 
 **依赖：** Task 13、Task 16
 
 **可能触及文件：**
 - `packages/views/issues/components/issue-detail.tsx`
 - `packages/views/ai-workbench/atlas/**/*`
-- `packages/views/ai-workbench/autopilot/**/*`
+- 后续再新增 `packages/views/ai-workbench/autopilot/**/*`
 
 **规模预估：** M
 
@@ -467,14 +482,14 @@
 
 ## Task 19：端到端 Demo fixture
 
-**描述：** 准备一条确定性的 Demo 数据，从 AI Inbox 输入到 Mission、Atlas、Ask Atlas、Autopilot 全链路可演示。
+**描述：** 准备一条确定性的 Demo 数据，从 AI Inbox 输入到 Mission / Codex Run、Atlas、Ask Atlas 全链路可演示。
 
 **验收标准：**
 - [ ] Fixture 包含一组真实感链接/资源输入。
 - [ ] AI Inbox 有理解结果。
 - [ ] Mission 有计划、Review、Artifacts、失败/诊断可选样例。
 - [ ] Atlas 有 Collection、Resource、关系、引用答案。
-- [ ] Autopilot 有由该 Collection 生成的策略预览和运行历史。
+- [ ] 后续 Autopilot 可从该 Collection 的真实重复行为生成策略建议，但不作为 MVP 演示必需项。
 
 **验证：**
 - [ ] 手动 5 分钟内走完整 Demo。
@@ -486,7 +501,7 @@
 - `packages/views/**/fixtures*`
 - `packages/views/ai-workbench/ai-inbox/**/*`
 - `packages/views/ai-workbench/atlas/**/*`
-- `packages/views/ai-workbench/autopilot/**/*`
+- 后续再新增 `packages/views/ai-workbench/autopilot/**/*`
 
 **规模预估：** M
 
@@ -518,9 +533,9 @@
 
 ## 最终 Checkpoint
 
-- [ ] 一级导航是 AI Inbox、Missions、Atlas、AI Studio、Autopilot。
+- [ ] 一级导航是 AI Inbox、Missions、Atlas、System。
 - [ ] 新用户第一屏是 AI Inbox，不是创建 agent 或 issue。
-- [ ] AI Inbox -> Mission -> Atlas -> Ask Atlas -> Autopilot Demo 闭环可走通。
+- [ ] AI Inbox -> Mission / Codex Run -> Atlas -> Ask Atlas Demo 闭环可走通。
 - [ ] Nodes/Runtime、Integrations、Settings 已收入 System。
 - [ ] 用户可见层基本不再出现旧模板第一印象。
 - [ ] 触及包 typecheck 通过，失败项有记录和原因。

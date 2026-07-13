@@ -4,12 +4,10 @@
 
 ## 审查顺序
 
-1. [01-product-requirements.md](./01-product-requirements.md)  
-   产品方向、目标用户、五模块 IA、核心闭环和验收标准。
-2. [02-technical-plan.md](./02-technical-plan.md)  
-   技术落地策略、旧模型复用、新路由兼容、view model 和分模块方案。
-3. [03-implementation-review.md](./03-implementation-review.md)  
-   方案审核结论、实施顺序、风险提醒和第一阶段任务拆分。
+1. [01-product-requirements.md](./01-product-requirements.md)：产品方向、目标用户、Runtime-first IA、核心闭环和验收标准。
+2. [02-technical-plan.md](./02-technical-plan.md)：技术落地策略、旧模型复用、新路由兼容、view model 和分模块方案。
+3. [03-implementation-review.md](./03-implementation-review.md)：方案审核结论、实施顺序、风险提醒和第一阶段任务拆分。
+4. [04-browser-memory-bookmarks.md](./04-browser-memory-bookmarks.md)：浏览器收藏记忆、页面摘要、搜索召回提示的功能可行性和实施方案。
 
 ## 当前实施状态
 

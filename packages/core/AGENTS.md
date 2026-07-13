@@ -9,17 +9,19 @@
 - Web/桌面共享的客户端/视图 store。
 - 创建后存放资源领域纯逻辑。
 
-## 资源工作台方向
+## AI Workbench 方向
 
-开始实现时，在 `packages/core/resources/` 下创建资源领域代码。
+第一版优先用前端 view model / adapter 包住旧 issue/runtime 模型。只有当 UI contract 稳定并需要跨页面复用时，才在 `packages/core/ai-workbench/` 或现有领域目录下沉纯逻辑。
 
 建议模块：
 
-- `types.ts`：resource task、resource item、cluster、action、artifact。
-- `schemas.ts`：API 和 LLM 生成数据的 zod 校验。
+- `types.ts`：AI Inbox input、Mission view、Codex Run、Atlas resource、evidence、artifact。
+- `schemas.ts`：API、fixture、LLM 生成数据的 zod 校验。
 - `normalize.ts`：URL、标题、来源规范化。
-- `classify.ts`：确定性资源类型提示。
+- `classify.ts`：确定性输入类型和 intent 提示。
 - `queries.ts` 和 `mutations.ts`：服务端交互。
+
+Autopilot strategy 不进入第一版 core model；后续基于真实 capture/run/memory 行为再沉淀。
 
 ## 边界
 

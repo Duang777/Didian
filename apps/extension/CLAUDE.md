@@ -9,6 +9,8 @@
 - 向工作台发送结构化 payload；不要在扩展里让 LLM 解释原始 DOM。
 - UI 要适合紧凑 side panel。
 - 除非后续 browser-assisted adapter 明确需要并经过确认，否则不要执行会修改用户页面的脚本。
+- 借鉴 Karakeep（https://github.com/karakeep-app/karakeep）的 capture/enrichment/recall 分层，但不要复制 AGPL-3.0 源码。
+- 第一版目标是把 capture 送入 AI Inbox / Mission / Atlas；Autopilot 只作为后续基于真实重复行为的策略建议。
 
 ## 采集 Payload 形状
 

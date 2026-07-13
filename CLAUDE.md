@@ -6,14 +6,22 @@
 
 本仓库的产品名称是 **Didian**，中文定位是 **Didian 资源工作台**。
 
-新的产品方向是：从浏览器到云盘的 AI 资源任务工作台。用户可以采集浏览器标签页、链接、下载记录、收藏夹和云盘类资源；任务分发给用户本地的 Codex、Claude Code、Cursor Agent、OpenCode 等 runtime 执行；最终结果整理成结构化、去重、可追问的资源库。
+新的产品方向是：**Codex Runtime 驱动的浏览器资料工作流**。用户可以采集浏览器标签页、链接、搜索结果、下载记录、收藏夹和文件；任务优先分发给用户本地 Codex Runtime 执行；最终结果整理成结构化、去重、可追问、可召回的 Atlas 记忆。
+
+第一版用户可见主线：
+
+```text
+AI Inbox -> Missions / Codex Run -> Atlas -> System
+```
+
+不要把第一版做成一组 AI 管理面板。`Agents`、`Skills`、`Squads`、`Autopilots`、`Runtimes` 可以复用，但默认作为 System / Advanced、执行诊断或后续能力。AI Studio 和 Autopilot 不进入 MVP 主导航。
 
 核心约束：
 
 - 第一阶段保留现有本地 daemon、runtime、任务队列架构，不重写执行底座。
 - 使用 shadcn/Cult UI 开源组件逐步替换产品 UI，构建资源工作台体验。
 - 云盘能力必须通过 adapter 接口接入；MVP 使用 `MockDriveAdapter`，不依赖私有云盘 API。
-- 交互上使用动态任务图：`扫描 -> 提取 -> 匹配 -> 合并 -> 规划 -> 确认 -> 执行 -> 入库`。
+- 交互上优先展示 Codex Run 执行现场：`输入 -> 理解 -> 计划 -> 执行日志 -> 证据 -> Review -> 产物 -> 记忆`。
 - 所有云盘写入前必须经过显式确认。
 - MVP 禁止删除、覆盖、批量移动等 destructive actions。
 - 不直接复制付费 Cult UI Pro blocks；复制开源 Cult UI 组件时保留许可证/归因要求。
@@ -34,6 +42,17 @@
 - `packages/adapters/`：Mock Drive、Local Drive、未来官方云盘等 adapter。
 
 依赖方向保持：`views -> core + ui`。`core` 和 `ui` 必须相互独立。
+
+## 方案和进度入口
+
+- `docs/ai-resource-workbench/README.md`：当前 AI 资源工作台方案入口。
+- `docs/ai-resource-workbench/01-product-requirements.md`：Runtime-first PRD。
+- `docs/ai-resource-workbench/02-technical-plan.md`：技术方案、路由、复用策略和验收闸门。
+- `docs/ai-resource-workbench/03-implementation-review.md`：推荐开工顺序和风险边界。
+- `docs/ai-resource-workbench/04-browser-memory-bookmarks.md`：浏览器收藏记忆、Karakeep 借鉴和搜索召回。
+- `tasks/plan.md` / `tasks/todo.md`：实施计划和任务进度。若旧任务仍写 AI Studio / Autopilot MVP，以 `docs/ai-resource-workbench/*` 的 Runtime-first 决策为准。
+
+借鉴项目：Karakeep https://github.com/karakeep-app/karakeep 。可借鉴 bookmark-everything、浏览器扩展采集、后台 enrichment、AI tag/summary、全文搜索、归档、notes/highlights、重复检测、规则引擎和 importers 的功能分层。不要复制、改写、内嵌或随项目分发 Karakeep 源码；Karakeep 是 AGPL-3.0，除非项目明确接受 AGPL 义务或取得授权。
 
 ## 迁移策略
 
@@ -72,9 +91,10 @@
 
 ## 资源工作台规则
 
-核心实体：resource task、captured source、resource item、resource cluster、proposed action、execution event、artifact、cloud-drive adapter。
+核心实体：AI Inbox input、Mission、Codex Run、captured source、page memory、Atlas resource、Atlas collection、evidence、proposed action、execution event、artifact、cloud-drive adapter。
 
 - 每个资源必须保留 provenance：URL、来源标签页、采集时间、可用时的周边上下文。
+- Mission 详情必须优先体现 Codex Runtime 的强能力：输入、计划、日志、证据、Review、产物和后续召回。
 - 安全操作和敏感操作必须分离。安全操作包括创建文件夹、保存链接副本、写入 Markdown；敏感操作包括重命名/移动已有文件、浏览器辅助云盘操作；destructive actions 包括删除、覆盖、批量移动，MVP 禁止。
 - AI 判断必须展示证据。如果 UI 说资源重复，要展示原因：URL 规范化匹配、标题相似、同域、同文件名或模型置信度。
 - 资源问答答案应引用 captured sources 或 generated artifacts。
@@ -213,6 +233,8 @@ pnpm ui:add badge
 ## 提交和发布
 
 - 提交应原子化，使用 conventional prefixes：`feat(scope)`、`fix(scope)`、`refactor(scope)`、`docs`、`test(scope)`、`chore(scope)`。
+- 每次功能改进后提交，作为可回滚检查点。提交前只 stage 本次相关文件，不混入用户或其他 Agent 已有未提交改动。
+- 提交前运行最小有用验证；若无法运行，提交说明或最终回复必须明确原因。
 - 生产部署需要在 `main` 上创建 CLI release tag，例如 `v0.x.x`。
 - 未指定版本时默认 patch bump。
 

@@ -13,6 +13,8 @@
 
 ## 迁移说明
 
-- 第一里程碑：在保留现有后端/daemon 流程的同时，挂载资源工作台 dashboard。
+- 第一里程碑：在保留现有后端/daemon 流程的同时，挂载 AI Inbox、Missions、Atlas、System。
+- 新产品页面下沉到 `packages/views/ai-workbench/`；route 文件只做 provider、workspace 和共享 view 接线。
+- AI Studio / Autopilot 不进入 MVP 主导航；不要为了演示新增 mock 主页面。
 - 在新流程验证前，优先添加新路由和 feature flag 外壳，不要大规模删除旧 issue UI。
 - 浏览器采集入口要放在明确 API contract 后面，方便 Chrome extension 独立演进。

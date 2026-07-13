@@ -6,15 +6,33 @@
 
 ## 当前产品方向
 
-这个工作区的产品名称是 **Didian**，中文定位是 **Didian 资源工作台**：一个从浏览器到云盘的资源任务平台。它使用本地 daemon/runtime 模型，同时用 shadcn/Cult UI 组件构建资源工作流产品体验。
+这个工作区的产品名称是 **Didian**，中文定位是 **Didian 资源工作台**。当前第一版主线是 **Codex Runtime 驱动的浏览器资料工作流**：用户把网页、链接、搜索结果、文件或笔记丢进 Didian，本地 Codex Runtime 理解、规划、执行、留下证据和产物，最后沉淀为可召回的 Atlas 记忆。
+
+第一版用户可见主入口收敛为：
+
+```text
+AI Inbox -> Missions / Codex Run -> Atlas -> System
+```
+
+`Agents`、`Skills`、`Squads`、`Autopilots`、`Runtimes` 仍然复用，但它们是 System / Advanced、执行诊断或后续能力，不是 MVP 主导航。
 
 默认实现原则：
 
 - 在没有明确替代方案前，保留本地 runtime、daemon 和任务队列架构。
-- 逐步把 coding issue UI 替换为 resource task UI。
+- 逐步把 coding issue UI 包装成 Mission / Codex Run 体验。
 - 云盘操作必须走 adapter 接口；MVP 使用模拟云盘，不依赖私有云盘 API。
-- 优先使用动态任务图和显式确认门，而不是固定多 Agent 角色表演。
+- 优先展示 Codex Run 的输入、计划、日志、证据、Review 和产物，而不是固定多 Agent 角色表演或策略管理台。
+- AI Studio / Autopilot 不进入第一版主导航；Autopilot 等 capture/run/memory 真实路径跑通后再基于重复行为生成策略建议。
 - 不复制付费 Cult UI Pro blocks；复制开源组件时保留必要许可证/归因要求。
+
+## 关键方案文档
+
+- `docs/ai-resource-workbench/README.md`：AI 资源工作台方案入口。
+- `docs/ai-resource-workbench/01-product-requirements.md`：Runtime-first PRD。
+- `docs/ai-resource-workbench/02-technical-plan.md`：技术方案和模块复用策略。
+- `docs/ai-resource-workbench/03-implementation-review.md`：实施顺序和风险边界。
+- `docs/ai-resource-workbench/04-browser-memory-bookmarks.md`：浏览器收藏记忆、Karakeep 借鉴和搜索召回方案。
+- 借鉴项目：Karakeep https://github.com/karakeep-app/karakeep 。只借鉴功能分层、字段语义、流程和体验，不复制源码；Karakeep 是 AGPL-3.0，除非项目明确接受 AGPL 或获得授权，否则不要内嵌、改写或分发其代码。
 
 ## 前端组件资源
 
@@ -75,7 +93,9 @@ pnpm ui:add badge     # 添加 shadcn/Base UI 组件
 ## 工作方式
 
 - 先读 PRD 和 `tasks/plan.md` / `tasks/todo.md`，再实现。
+- 开始功能前先确认当前任务是否仍符合 Runtime-first IA；旧任务中提到 AI Studio / Autopilot MVP 时，以最新 `docs/ai-resource-workbench/*` 为准。
 - 采用垂直切片：每次完成一条可验证路径，不做大而全改造。
 - 优先保留现有 runtime 能力，先替换前端体验，再逐步替换领域模型。
 - 任何云盘写入都必须有确认门；MVP 禁止 destructive actions。
 - 修改代码后运行最小有用验证；不要声称没跑过的检查已通过。
+- 每次功能改进后做原子提交，方便回滚；提交前只 stage 本次相关文件，不混入用户或其他 Agent 的未提交改动。

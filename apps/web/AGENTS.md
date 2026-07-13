@@ -9,10 +9,12 @@
 - 处理 Web 专属 provider、runtime URL 配置、cookie、redirect、search params。
 - 挂载 `packages/views/` 中的共享页面。
 
-## 资源工作台方向
+## AI Workbench 方向
 
-- Web 应用负责暴露新的资源工作台外壳，同时在迁移期保持现有后端兼容。
-- 业务页面创建后应放在 `packages/views/resources/`，本应用主要负责路由挂载。
+- Web 应用负责暴露 Runtime-first 外壳，同时在迁移期保持现有后端兼容。
+- 第一版主路由是 `/ai-inbox`、`/missions`、`/atlas`、`/system`。
+- 不新增 MVP 主路由 `/ai-studio` 或 `/autopilot`；旧 agents/skills/squads/autopilots 路由如存在，只作为 System / Advanced 兼容入口。
+- 业务页面创建后应放在 `packages/views/ai-workbench/`，本应用主要负责路由挂载。
 - 只有在依赖 Next.js 能力时，浏览器扩展回调/API 胶水代码才放在这里。
 
 ## 边界

@@ -4,11 +4,17 @@
 
 这份文档把 `docs/ai-resource-workbench/01-product-requirements.md` 落成可实施技术方案，明确每个板块借鉴哪些开源项目、复用当前代码库哪些能力、第一版怎么做、风险在哪里、失败时如何降级。
 
-核心目标不是一次性重构后端，而是在不打碎现有 issue/agent/runtime/skill/squad 能力的前提下，把产品表层改造成：
+核心目标不是一次性重构后端，也不是把所有旧模块都包装成新的管理面板。Didian 的第一叙事应该是 **Codex Runtime 驱动的浏览器资料工作流**：用户把页面、搜索结果、链接和文件交给工作台，本地 Codex Runtime 在用户机器上阅读、比较、整理、生成产物，并把结果沉淀成可再次召回的资料记忆。
+
+第一版产品表层应收敛成：
 
 ```text
-AI Inbox -> Missions -> Atlas -> AI Studio -> Autopilot
+Capture / AI Inbox -> Codex Run / Mission -> Memory / Atlas -> System
 ```
+
+`Agents`、`Skills`、`Squads`、`Autopilot`、`Runtimes` 仍然复用，但它们不是主故事本身。它们应作为 Codex Run 的执行配置、运行状态和高级设置存在。用户要感知的是“资料正在被 Codex 处理、处理到哪一步、产出了什么、以后怎么被召回”，而不是“我在管理多少个 agent/skill/squad”。
+
+一句话故事：**Didian 不是一个更会分类的收藏夹，而是把浏览器收藏变成 Codex 可以持续处理、追问、更新和召回的个人资料工作流。**
 
 ## 1. 当前代码库可复用基础
 
@@ -21,12 +27,14 @@ AI Inbox -> Missions -> Atlas -> AI Studio -> Autopilot
 | Inbox | `packages/views/inbox` | AI Inbox 的历史通知/收件箱基础 | 复用双栏结构、列表选择、URL query 同步；新建 AI Inbox capture 视图，不直接破坏旧通知 inbox。 |
 | Issues | `packages/views/issues` | Missions | 复用 issue 列表、详情、评论、附件、实时同步；用户可见层改为 Mission。 |
 | Resources | `packages/views/resources` | Atlas / Mission fixture | 已有资源工作台 mock、task board、task detail、artifact preview，可迁移为 Mission/Atlas demo fixture。 |
-| Agents | `packages/views/agents` | AI Studio Roles | 复用 agent 查询和详情能力，表层展示为 AI 角色。 |
-| Skills | `packages/views/skills` | AI Studio Capabilities | 复用 skill 列表/导入能力，表层展示为能力包。 |
-| Squads | `packages/views/squads` | AI Studio Recipes | 复用 squad/team 编排基础，表层展示为处理配方。 |
-| Autopilots | `packages/views/autopilots` | Autopilot Strategies | 复用 autopilot/runs/triggers 基础，第一版改造为策略卡。 |
-| Runtimes | `packages/views/runtimes` | System Nodes | 复用节点状态、runtime 查询和健康展示，移入 System。 |
+| Agents | `packages/views/agents` | Advanced / System | 不做 MVP 主页面；作为 Runtime 可调用角色、所有权和诊断入口。 |
+| Skills | `packages/views/skills` | Advanced / System | 不做 MVP 主页面；作为 Codex Runtime 上下文/能力包配置入口。 |
+| Squads | `packages/views/squads` | Advanced / Later Recipes | 不做 MVP 主页面；后续用于多角色处理配方，第一版隐藏在高级入口。 |
+| Autopilots | `packages/views/autopilots` | Later Background Runs | 不做 MVP 主页面；等 capture/run/memory 路径跑通后再做后台策略。 |
+| Runtimes | `packages/views/runtimes` | System / Run Status | 复用节点状态、runtime 查询和健康展示；主流程中只露出当前 Codex Runtime 状态。 |
 | Settings | `packages/views/settings` | System | 复用工作区、集成、通知、provider 配置。 |
+
+第一版优先复用底层能力，而不是把每个旧模块做成一个新的定制化面板。Agents/Skills/Squads/Autopilots 可以继续保留旧路由和高级入口，但不要抢占“浏览器资料 -> Codex 执行 -> 记忆召回”的主线。
 
 ### 1.2 已有路由模块
 
@@ -48,13 +56,13 @@ Web app 当前已有：
 新方案建议采用“新增产品路由 + 保留旧路由”的兼容策略：
 
 ```text
-/:workspace/ai-inbox      -> 新 AI Inbox
-/:workspace/missions      -> 新 Missions
-/:workspace/atlas         -> 新 Atlas
-/:workspace/ai-studio     -> 新 AI Studio
-/:workspace/autopilot     -> 新 Autopilot
-/:workspace/system        -> 新 System
+/:workspace/ai-inbox      -> Capture / AI Inbox
+/:workspace/missions      -> Codex Runs / Missions
+/:workspace/atlas         -> Memory / Atlas
+/:workspace/system        -> Runtime / Settings / Advanced
 ```
+
+`/:workspace/ai-studio` 和 `/:workspace/autopilot` 可以保留技术预留或旧骨架，但不进入第一版主导航。若页面已经存在，也应作为高级入口或后续阶段，不作为当前产品故事的核心板块。
 
 旧路由短期保留，不做硬删除：
 
@@ -96,13 +104,25 @@ Web app 当前已有：
 
 ### 2.2 第一版要做的事
 
-- 建立新产品路由和导航。
+- 建立收敛后的产品路由和导航：AI Inbox、Missions、Atlas、System。
 - 建立统一 view model 和 fixture schema。
 - 用现有 issue 创建/列表/详情承载 Mission。
 - 用 fixture/artifacts 承载 Atlas。
-- 用现有 agents/skills/squads 聚合成 AI Studio。
-- 用现有 autopilots 或 mock strategy 承载 Autopilot。
-- 把 runtime/settings/integrations 收进 System。
+- 在 Mission 详情里突出 Codex Runtime 的执行现场：计划、日志、证据、产物、确认门。
+- 把 agents/skills/squads/autopilots/runtimes/settings 收进 System / Advanced，不作为 MVP 主导航。
+
+### 2.2A AI 能力如何被看见
+
+AI 能力不应该主要体现在“有一个 AI Studio 面板”。第一版应该把 Codex Runtime 的强能力体现在用户路径上：
+
+1. **理解输入**：收藏页面后自动生成摘要、主题、实体、价值判断和后续可执行建议。
+2. **生成计划**：用户把一组页面交给 Didian，Codex Runtime 生成可检查的处理计划，例如“阅读 -> 去重 -> 对比 -> 生成索引 -> 写入云盘”。
+3. **真实执行**：复用现有本地 daemon/runtime/task queue，让 Codex 在用户机器上执行任务，而不是只显示 mock 卡片。
+4. **展示证据**：每个结论都能回到页面、摘录、高亮、附件或生成 artifact。
+5. **产出结果**：生成 Markdown、对比表、资源索引、下一步计划、云盘写入建议。
+6. **后续召回**：用户下次搜索相似内容时，浏览器插件提示旧收藏，并可一键让 Codex 更新、比较或加入新 Mission。
+
+这条路径比“配置 Role / Capability / Recipe”更能讲清楚 Codex Runtime 的强大：**用户不是在管理 AI，而是在把浏览器资料交给一个可执行的本地 AI 工作流。**
 
 ### 2.3 推荐目录结构
 
@@ -117,9 +137,8 @@ packages/views/ai-workbench/
   ai-inbox/
   missions/
   atlas/
-  ai-studio/
-  autopilot/
   system/
+  advanced/
 ```
 
 也可以按现有模块拆目录，但必须有一个集中 `types/schemas/fixtures`，否则新旧术语会散落。
@@ -188,20 +207,9 @@ export type AtlasResource = {
   relationships: AtlasRelationship[];
 };
 
-export type AutopilotStrategy = {
-  id: string;
-  goal: string;
-  mode: "watch" | "organize" | "clean" | "summarize" | "diagnose" | "recommend";
-  trigger: string;
-  conditions: string[];
-  actions: string[];
-  confirmationsRequired: string[];
-  riskLevel: "low" | "medium" | "high";
-  enabled: boolean;
-};
 ```
 
-这些类型第一版可放 `packages/views/ai-workbench/types.ts`。如果后续需要 API 化，再迁到 `packages/core/ai-workbench` 并补 zod schema。
+这些类型第一版可放 `packages/views/ai-workbench/types.ts`。如果后续需要 API 化，再迁到 `packages/core/ai-workbench` 并补 zod schema。Autopilot strategy 属于后续阶段类型，不进入第一版核心 view model。
 
 ## 3. 开源项目借鉴到技术实现
 
@@ -213,8 +221,8 @@ export type AutopilotStrategy = {
 | Missions | CodeMachine、OpenSail | 长任务、agent 执行和状态流。 | 复用 issue/agent task/runtime 日志能力；无 runtime 时展示 mock execution。 |
 | Atlas | RAGFlow、AnythingLLM | 文档解析、引用式问答、知识库。 | Atlas first 版用 Collection/Resource/Evidence/Ask fixture；后续接 RAG。 |
 | Atlas | claude-obsidian、swarmvault | 自组织知识图谱、local-first memory。 | 先做分组和关系标签，不做图数据库；保留 provenance。 |
-| AI Studio | Dify、Flowise | 角色、能力、流程可配置。 | 聚合 Agents/Skills/Squads 为 Roles/Capabilities/Recipes；默认展示模板而不是底层配置。 |
-| Autopilot | n8n、Dify | 自动化策略、触发条件、运行历史。 | 自然语言生成策略卡；第一版 mock run history，后续接现有 autopilot triggers/runs。 |
+| Advanced / System | Dify、Flowise | 角色、能力、流程可配置。 | 第一版不做主板块；Agents/Skills/Squads 作为高级配置，必要时从 Mission 详情进入。 |
+| Later Autopilot | n8n、Dify | 自动化策略、触发条件、运行历史。 | 后续基于真实 capture/run/memory 行为做后台策略，不用 mock run history 抢 MVP 主线。 |
 | System | Open WebUI、AnythingLLM | Provider、模型、local-first 设置。 | Runtime、provider、integration、settings 收进 System，不作为主业务导航。 |
 
 ## 4. 分板块技术方案
@@ -265,6 +273,8 @@ export type AutopilotStrategy = {
 
 ## 4.2 Missions
 
+Missions 是第一版展示 AI 能力的主舞台，不只是 issue 的换皮。用户在这里看到 Codex Runtime 如何把浏览器资料变成可检查、可确认、可落地的工作流。
+
 ### 借鉴来源
 
 - Dify：workflow/app 分离和可视化运行过程。
@@ -300,8 +310,15 @@ export type AutopilotStrategy = {
 | Done | Completed |
 | Blocked/failed reason | Needs Attention |
 
-4. Mission 详情优先渲染 `AI Plan`。如果没有真实 plan，从 fixture 或 metadata 生成默认 plan。
-5. Review Queue 第一版使用 `proposedActions` fixture，后续接真实 proposed action schema。
+4. Mission 详情优先渲染 `Codex Run` 执行现场：
+   - Inputs：浏览器收藏、搜索结果、文件、用户目标。
+   - Plan：Codex 生成的步骤。
+   - Activity：daemon/runtime 日志、task messages、状态变化。
+   - Evidence：页面摘录、来源 URL、附件、生成 artifact 引用。
+   - Review：云盘写入、归档、合并等需要确认的动作。
+   - Outputs：资源索引、对比表、下一步计划、可追问资料包。
+5. 如果没有真实 plan，从 fixture 或 metadata 生成默认 plan；但只作为空状态/演示降级，真实路径优先接现有 runtime/task queue。
+6. Review Queue 第一版使用 `proposedActions` fixture，后续接真实 proposed action schema。
 
 ### 技术风险
 
@@ -317,6 +334,8 @@ export type AutopilotStrategy = {
 如果 `IssueSurface` 过于难改，先保留现有 issue 列表作为数据源，新增一个轻量 Mission queue view 用 `useQuery(issueListOptions)` 渲染独立卡片。
 
 ## 4.3 Atlas
+
+Atlas 第一版不需要做成复杂知识库或图谱面板。它应该是 Codex Run 的结果沉淀：用户看见哪些页面被读过、哪些结论有证据、哪些资源下次搜索会被召回。
 
 ### 借鉴来源
 
@@ -335,8 +354,8 @@ export type AutopilotStrategy = {
 
 ### 实施方式
 
-1. 第一版 Atlas 不建后端表，使用 `AtlasCollection`、`AtlasResource` fixture。
-2. 从已有 `resourceTaskDetails.artifacts/clusters` 迁移出第一批 Atlas fixture。
+1. 第一版 Atlas 可以不建完整图数据库，但应优先消费 browser memory / Mission artifacts；fixture 只做无数据降级。
+2. 从已有 `resourceTaskDetails.artifacts/clusters` 迁移出第一批 Atlas fixture，并逐步接入 `captured_source` / `page_memory`。
 3. Atlas 首页展示 Collection cards。
 4. Collection 详情展示 Resource cards、Evidence、Relationships。
 5. Ask Atlas 第一版使用固定问题匹配：
@@ -359,7 +378,9 @@ export type AutopilotStrategy = {
 
 如果 Atlas route 来不及做完整详情，先在 `packages/views/resources` 上改造成 Atlas 首页，保留已有 artifact preview 和 task detail mock。
 
-## 4.4 AI Studio
+## 4.4 Advanced AI Configuration（原 AI Studio，后续）
+
+该板块不进入第一版主导航。当前代码库里的 Agents / Skills / Squads 能力很有价值，但第一版不需要把它们包装成单独的 AI Studio 面板。它们应作为 Codex Runtime 的高级配置存在，在用户需要诊断“谁在执行、带了哪些能力、为什么没跑起来”时再出现。
 
 ### 借鉴来源
 
@@ -372,29 +393,31 @@ export type AutopilotStrategy = {
 - Roles：`packages/views/agents`
 - Capabilities：`packages/views/skills`
 - Recipes：`packages/views/squads`
-- 新路由建议：`/:workspace/ai-studio`
+- 旧路由可保留：`/:workspace/agents`、`/:workspace/skills`、`/:workspace/squads`
+- 新入口建议：System / Advanced 下的配置卡，不进入第一版主导航。
 
 ### 实施方式
 
-1. 新增 `AIStudioPage`，用 tabs 或 segmented control 展示 Roles / Capabilities / Recipes。
-2. Roles tab 可以复用 `AgentsPage` 的数据，但默认显示模板卡，不直接显示底层表格。
-3. Capabilities tab 复用 skills 数据，加入能力用途、适用输入、被哪些 Role 使用。
-4. Recipes tab 复用 squads/workflows 数据，展示处理配方步骤和典型产物。
-5. 第一版至少静态模板：资源侦探、去重专家、整理助手、研究分析师、失败诊断师、自动化规划师。
+1. 第一版不新建主导航 `AIStudioPage`。
+2. System / Advanced 中提供 Agents、Skills、Squads 的入口卡。
+3. Mission 详情只展示当前 Codex Run 实际使用的 runtime/agent/profile/skill bundle，不展示完整配置台。
+4. 后续如果用户需要自定义角色和配方，再新增 AI Studio 或 Advanced 页面。
 
 ### 技术风险
 
 | 风险 | 影响 | 缓解 |
 | --- | --- | --- |
-| 直接复用 AgentsPage 仍像 agent 管理台 | 中 | AI Studio 首页先展示模板/说明，旧管理视图放“高级配置”。 |
-| Skills/Squads 数据模型不适合能力/配方 | 中 | 第一版用静态模板 + optional existing data；不强依赖后端。 |
-| 三个旧模块聚合后页面太复杂 | 中 | Tabs 分离，默认进入 Roles，Capabilities/Recipes 简洁卡片化。 |
+| 做成主页面稀释 Codex Runtime 故事 | 高 | 第一版降级为 System / Advanced，不进入主导航。 |
+| 直接复用 AgentsPage 仍像 agent 管理台 | 中 | 只在高级入口中保留，不作为普通用户默认体验。 |
+| Skills/Squads 数据模型不适合能力/配方 | 中 | 后续有真实用户需求再包装，不为 MVP 做静态模板。 |
 
 ### 降级方案
 
-如果聚合真实数据成本高，AI Studio MVP 先做纯模板页，保留 Agents/Skills/Squads 旧路由作为高级入口。
+保留 Agents/Skills/Squads 旧路由作为高级入口。MVP 不做纯模板 AI Studio 页。
 
-## 4.5 Autopilot
+## 4.5 Later Autopilot
+
+Autopilot 不进入第一版主导航。它应该在 capture/run/memory 真实路径跑通后再出现：当用户已经有足够多的收藏、Mission 和 Atlas 结果时，再把重复行为固化成后台策略。
 
 ### 借鉴来源
 
@@ -406,31 +429,31 @@ export type AutopilotStrategy = {
 - `packages/views/autopilots/components/autopilots-page.tsx`
 - `packages/views/autopilots/components/autopilot-detail-page.tsx`
 - API/query：`packages/core/autopilots/*`
-- 新路由建议：`/:workspace/autopilot`
+- 旧路由可保留：`/:workspace/autopilots`
+- 新入口建议：后续从 AI Inbox、Mission、Atlas 的真实操作中生成“设为后台策略”。
 
 ### 实施方式
 
-1. 新增或改造 Autopilot 页面为“自然语言目标 -> 策略卡”。
-2. 策略卡字段：goal、mode、trigger、conditions、actions、confirmationsRequired、scope、riskLevel、enabled。
-3. 第一版策略生成走启发式/fixture：
-   - 包含“每周/每天” -> Summarize。
-   - 包含“监控/有新资源” -> Watch。
-   - 包含“失败/坏链” -> Diagnose。
-   - 包含“重复/清理” -> Clean。
-4. 启用/暂停第一版可本地状态或 mock mutation；后续接 `CreateAutopilotRequest`。
-5. Mission/Atlas 提供“设为 Autopilot”入口，把上下文带到策略创建页。
+1. 第一版不做 mock Autopilot 页面。
+2. 先记录真实用户动作：收藏、摘要、搜索召回、创建 Mission、确认产物、写入 Atlas。
+3. 后续从这些动作中生成策略建议，例如：
+   - “每次收藏 GitHub repo 后自动摘要并加入 AI Agent collection”。
+   - “每周汇总本周收藏的论文/项目”。
+   - “搜索时命中旧收藏后自动提示更新摘要”。
+4. 策略卡字段仍可保留：goal、trigger、conditions、actions、confirmationsRequired、scope、riskLevel、enabled。
+5. 启用真实策略前必须有 dry-run 和确认门。
 
 ### 技术风险
 
 | 风险 | 影响 | 缓解 |
 | --- | --- | --- |
+| Mock Autopilot 抢主线 | 高 | 第一版不做 mock run history，等真实行为足够后再推出。 |
 | 真实 autopilot API 和策略卡字段不一致 | 中 | Strategy view model 独立；API 只在保存时映射。 |
-| 用户以为 Autopilot 已真实运行 | 中 | MVP 显示“预览/模拟运行历史”；真实启用需明确状态。 |
-| 规则复杂度膨胀 | 高 | 不做规则编辑器，优先自然语言和策略卡。 |
+| 规则复杂度膨胀 | 高 | 不做规则编辑器，优先从真实行为生成策略建议。 |
 
 ### 降级方案
 
-如果现有 autopilot API 改造成本高，先做 mock strategy 页面，不写后端，仅支持预览和本地启停。
+如果现有 autopilot API 改造成本高，保持旧 Autopilot 页面为高级入口；MVP 不新增策略页。
 
 ## 4.6 System
 
@@ -475,12 +498,10 @@ aiInbox: () => `${ws}/ai-inbox`,
 missions: () => `${ws}/missions`,
 missionDetail: (id: string) => `${ws}/missions/${encode(id)}`,
 atlas: () => `${ws}/atlas`,
-aiStudio: () => `${ws}/ai-studio`,
-autopilot: () => `${ws}/autopilot`,
 system: () => `${ws}/system`,
 ```
 
-保留旧路径。`root()` 后续可以从 `issues` 改到 `aiInbox`，但建议作为单独任务，先确认登录后默认页。
+保留旧路径。`root()` 后续可以从 `issues` 改到 `aiInbox`，但建议作为单独任务，先确认登录后默认页。`aiStudio` / `autopilot` 不作为第一版 path builder；如果需要兼容现有页面，继续使用旧 `agents` / `skills` / `squads` / `autopilots` 路径并藏在 System / Advanced。
 
 ### 5.2 Next routes 新增
 
@@ -489,18 +510,18 @@ apps/web/app/[workspaceSlug]/(dashboard)/ai-inbox/page.tsx
 apps/web/app/[workspaceSlug]/(dashboard)/missions/page.tsx
 apps/web/app/[workspaceSlug]/(dashboard)/missions/[id]/page.tsx
 apps/web/app/[workspaceSlug]/(dashboard)/atlas/page.tsx
-apps/web/app/[workspaceSlug]/(dashboard)/ai-studio/page.tsx
-apps/web/app/[workspaceSlug]/(dashboard)/autopilot/page.tsx
 apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 ```
+
+如果需要一个高级配置页，可以后续放在 `/:workspace/system/advanced`，不要在第一版新增独立 AI Studio / Autopilot 一级页面。
 
 ### 5.3 导航重构
 
 修改 `packages/views/layout/app-sidebar.tsx`：
 
 - `personalNav` 改为 AI Inbox 或去掉 personal/workspace 的旧分组感。
-- `workspaceNav` 改为 Missions、Atlas、AI Studio、Autopilot。
-- `configureNav` 改为 System。
+- `workspaceNav` 改为 AI Inbox、Missions、Atlas。
+- `configureNav` 改为 System，并在 System 内承载 Runtime、Settings、Advanced。
 - 旧 routes 不在一级导航展示。
 
 建议先保留旧 `NavKey`，新增新 key，逐步删除旧 key，避免一次性改爆类型。
@@ -509,10 +530,13 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 
 ### 6.1 第一阶段数据来源优先级
 
-1. 已有 API 数据：issues、agents、skills、squads、autopilots、runtimes。
-2. 前端 view model adapter：把旧对象转换成新产品对象。
-3. Fixture：AI 理解、Atlas 关系、Ask Atlas 答案、Autopilot 运行历史。
-4. 新后端接口：等 UI contract 稳定后再补。
+1. 已有 API 数据：issues、runtimes、settings，以及 Mission 能关联到的 task/activity/artifact 数据。
+2. 前端 view model adapter：把旧对象转换成新产品对象，重点映射 Mission、Codex Run、Atlas Resource。
+3. Runtime 执行数据：优先接本地 daemon/runtime/task queue 能提供的 plan、log、status、artifact；没有真实数据时才用 fixture 降级。
+4. Fixture：AI 理解、Atlas 关系、Ask Atlas 答案，以及少量 Mission demo execution。
+5. 新后端接口：等 UI contract 稳定后再补。
+
+Agents、Skills、Squads、Autopilots 的已有 API 可以被 System / Advanced 使用，但不作为第一阶段主路径的数据依赖。
 
 ### 6.2 Zod 校验边界
 
@@ -523,7 +547,6 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 - `MissionViewSchema`
 - `AtlasCollectionSchema`
 - `AtlasResourceSchema`
-- `AutopilotStrategySchema`
 
 第一版 schema 可放 `packages/views/ai-workbench/schemas.ts`。如果后续被 API 复用，再迁到 `packages/core/ai-workbench/schemas.ts`。
 
@@ -533,7 +556,8 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 
 - Mission metadata 已经被 UI 稳定使用，且 description/metadata 塞不下。
 - Atlas fixture 已经证明用户价值，需要真实持久化。
-- Autopilot strategy 需要真实运行，而不只是预览。
+- Codex Run 的 plan/log/artifact 需要跨设备、跨会话稳定追踪。
+- Autopilot strategy 在真实 capture/run/memory 行为基础上需要启用后台运行。
 - Ask Atlas 需要真实检索而不是 fixture。
 
 ## 7. 测试策略
@@ -542,17 +566,18 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 | --- | --- | --- |
 | Typecheck | 新路由、view model、组件 props、locale key | `pnpm --filter @didian/views typecheck` |
 | 单元测试 | schema、adapter、启发式 intent 分类、Ask Atlas fixture | `pnpm --filter @didian/views test` |
-| 组件测试 | AI Inbox 输入、Mission 卡片、Atlas Collection、Autopilot 策略卡 | 现有 Vitest/Testing Library 模式 |
-| 手动检查 | 导航、响应式、长文本、空状态、完整 demo | 本地 dev server |
+| 组件测试 | AI Inbox 输入、Mission 卡片、Codex Run 执行现场、Atlas Collection、System 入口 | 现有 Vitest/Testing Library 模式 |
+| 手动检查 | 导航、响应式、长文本、空状态、Runtime 在线/离线状态、完整 demo | 本地 dev server |
 
 关键测试用例：
 
 - 长 URL 不撑破 AI Inbox 卡片。
 - 输入中文自然语言能得到合理 intent。
 - 缺少 Mission plan 时用 fallback plan。
+- Runtime 离线时 Mission 详情解释清楚当前无法真实执行，并引导到 System。
+- Codex Run 的 plan/log/evidence/artifacts 长文本不撑破布局。
 - Atlas 资源缺 source/evidence 时不崩。
 - Ask Atlas 无证据时返回空答案。
-- Autopilot 高风险策略显示确认要求。
 
 ## 8. 实施顺序和不可并行项
 
@@ -564,14 +589,13 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 4. Mission 创建交接。
 5. Missions 队列/详情。
 6. Atlas 从 Mission fixture 读取。
-7. Autopilot 从 Mission/Atlas 上下文生成策略。
+7. System 聚合 Runtime、Settings、Advanced 入口。
 
 ### 可并行
 
-- AI Studio 模板内容。
 - Atlas fixture 内容。
-- Autopilot 策略 fixture。
-- System 聚合页。
+- Runtime 执行现场 fixture / adapter。
+- System / Advanced 入口卡。
 - 文档和 demo 脚本。
 
 ## 9. 高风险决策审查
@@ -600,13 +624,21 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 
 **缓解：** 必须从 Mission 完成页可达，fixture 绑定 Mission id，后续再持久化。
 
-### 决策 D：Autopilot 先策略卡 mock
+### 决策 D：Autopilot 后置，不做策略卡 mock
 
-**理由：** 真实自动化涉及调度、权限、确认、运行日志。先验证自然语言策略体验。
+**理由：** 真实自动化涉及调度、权限、确认、运行日志。第一版如果先做策略卡 mock，会把用户注意力从 Codex Runtime 的真实执行能力拉回“配置自动化面板”。
 
-**风险：** 用户误解为真实运行。
+**风险：** 短期少一个看起来完整的自动化板块。
 
-**缓解：** 明确“预览/模拟运行历史”；真实启用另做 API 接入任务。
+**缓解：** 在 AI Inbox / Mission / Atlas 中记录真实用户动作和确认点。等 capture/run/memory 路径跑通后，再从真实行为生成后台策略建议。
+
+### 决策 E：AI 能力通过 Codex Run 现场体现
+
+**理由：** Codex Runtime 的价值在于能阅读上下文、生成计划、执行任务、留下证据和产物，而不是让用户管理一组 AI 角色配置。
+
+**风险：** 如果第一版 runtime 接入不足，执行现场会退化成静态 demo。
+
+**缓解：** Mission 详情必须优先消费现有 runtime/task queue 数据；fixture 只作为离线、空状态和 demo 降级。System 中提供清楚的 runtime 健康和连接状态。
 
 ## 10. 失败预案
 
@@ -616,8 +648,9 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 | IssueSurface 难以产品化 | 新建轻量 MissionQueue，直接消费 issue query，不复用复杂 surface。 |
 | Issue 创建接口无法承载 AI Inbox 上下文 | AI Inbox 创建 demo Mission fixture，后续再接 API。 |
 | Atlas 来不及持久化 | 使用 fixture + artifacts preview，明确 MVP 不做真实 schema。 |
-| AI Studio 聚合复杂 | 先做静态模板页，旧 Agents/Skills/Squads 放高级入口。 |
-| Autopilot API 不匹配 | 只做 strategy preview，不保存到后端。 |
+| Runtime 数据接不完整 | Mission 详情展示离线/降级执行现场，保留 plan/evidence/artifact UI contract，同时在 System 引导用户检查节点。 |
+| Advanced 聚合复杂 | 不新建聚合页，直接从 System 放旧 Agents/Skills/Squads/Runtimes/Settings 入口卡。 |
+| Autopilot API 不匹配 | 不做新 Autopilot 页面，保留旧路由为高级兼容入口。 |
 | 多语言 locale 工作量过大 | 中文优先，英文保留 key 或简短 fallback；记录待补。 |
 
 ## 11. 验收闸门
@@ -627,12 +660,14 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 - [ ] 新路由策略采用“新增 + 兼容旧路由”。
 - [ ] Mission 第一版复用 issue，不做 DB migration。
 - [ ] Atlas 第一版使用 fixture/view model，不做图数据库。
-- [ ] Autopilot 第一版允许 mock 策略和运行历史。
-- [ ] 用户可见一级导航只展示五个主模块。
+- [ ] Codex Runtime 的 plan/log/evidence/artifact 数据来源和降级方式已确认。
+- [ ] AI Studio / Autopilot 不进入第一版主导航。
+- [ ] 用户可见一级导航只展示 AI Inbox、Missions、Atlas、System。
 
 第一轮实现完成后必须满足：
 
-- [ ] AI Inbox -> Mission -> Atlas -> Autopilot 至少 fixture 闭环可演示。
+- [ ] AI Inbox -> Mission -> Atlas 至少 fixture 闭环可演示。
+- [ ] Mission 详情能看见 Codex Run 的 Inputs、Plan、Activity、Evidence、Review、Outputs。
 - [ ] 旧 `/issues`、`/inbox`、`/agents` 等兼容路由不 404。
 - [ ] `pnpm --filter @didian/views typecheck` 通过或失败原因已记录。
 - [ ] 长文本、中文文案、空状态在桌面/移动端不明显溢出。
@@ -642,8 +677,9 @@ apps/web/app/[workspaceSlug]/(dashboard)/system/page.tsx
 这个方案的关键不是一次做完所有智能能力，而是把技术风险分层：
 
 1. **产品 IA 和路由先稳定。**
-2. **AI 行为先用 fixture/adapter 表达。**
-3. **旧后端模型继续托底。**
-4. **确认用户路径成立后，再逐步持久化 Atlas、真实化 Autopilot、接入浏览器 capture 和 runtime 执行。**
+2. **Codex Runtime 的执行现场先讲清楚。**
+3. **AI 理解、Atlas 和降级路径用 fixture/adapter 托底。**
+4. **旧后端模型继续托底。**
+5. **确认用户路径成立后，再逐步持久化 Atlas、接入浏览器 capture，并把真实重复行为升级成 Autopilot。**
 
 这样即使某个能力暂时无法真实实现，也不会卡死整体产品改造。
