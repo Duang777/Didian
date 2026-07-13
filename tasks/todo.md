@@ -22,8 +22,6 @@
 
 **可能触及文件：**
 - `docs/ai-resource-workbench/01-product-requirements.md`
-- `docs/product-overview.md`
-- `docs/setup-notes.md`
 
 **规模预估：** S
 
@@ -497,7 +495,8 @@
 **描述：** 同步 README/product overview/design 文档，并清理产品内页最影响第一印象的旧模板词。
 
 **验收标准：**
-- [ ] `docs/product-overview.md` 改为五模块方向。
+- [x] 旧 Multica/历史方案文档已从 `docs/` 根目录移除。
+- [x] 新方案文档集中在 `docs/ai-resource-workbench/` 并按 `01`、`02`、`03` 编号。
 - [ ] README 或相关文档说明新 IA、MVP 范围和旧模型映射。
 - [ ] `tasks/plan.md`、`tasks/todo.md` 和 PRD 口径一致。
 - [ ] 用户可见残留旧词有清单或已替换。
@@ -509,10 +508,9 @@
 **依赖：** Task 1、Task 5
 
 **可能触及文件：**
-- `docs/product-overview.md`
 - `README.md`
 - `README.zh-CN.md`
-- `docs/design.md`
+- `docs/ai-resource-workbench/**/*`
 - `tasks/plan.md`
 - `tasks/todo.md`
 
