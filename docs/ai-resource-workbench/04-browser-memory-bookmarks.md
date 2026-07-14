@@ -157,12 +157,80 @@ Karakeep 的中心是 bookmark library。Didian 的中心应该是 AI workflow�
 - Karakeep 计划 semantic search。
 - Didian 应优先做“搜索页主动召回旧收藏”，这是更强的浏览器场景差异化。
 
+### 4.6 参考项目借鉴矩阵
+
+这些项目可以帮助校准边界，但 Didian 不应把自己做成其中任何一个的复刻版。借鉴重点是能力分层和用户预期，具体实现仍按 Didian 的 Go API、PostgreSQL、扩展、daemon/runtime 架构重写。
+
+| 参考项目 | 值得借鉴 | Didian 应该怎么吸收 | 不吸收什么 |
+| --- | --- | --- | --- |
+| Karakeep | 多入口收藏、后台 enrichment、AI tag/summary、重复检测、规则、归档。 | 作为浏览器记忆主参考：`captured_source` 保存事实，`page_memory` 保存 AI 派生记忆，enrichment 子任务独立状态。 | 不复制 AGPL 源码；不把产品中心停留在 bookmark library。 |
+| Linkwarden | 链接长期保存、collection、协作和网页保全。 | Atlas 可以借鉴 collection/resource 的稳定信息架构，卡片要有标题、描述、预览图、来源域名、保存时间。 | 不以手动文件夹管理作为第一体验；分类应由 AI 建议、用户确认。 |
+| ArchiveBox | URL ingestion、归档 provenance、离线保全意识。 | 对每次 capture 记录采集时间、入口、原 URL、normalized URL、hash、附件；后续 SingleFile/MHTML/screenshot 都作为附件补强。 | MVP 不做重型归档器，不把所有抓取失败视为收藏失败。 |
+| SingleFile | 浏览器侧完整 HTML 归档，能保存动态页面渲染后的状态。 | 作为 Phase 3 的可选归档能力，由扩展侧生成 `singlefile_html` 附件，用户开启后再申请更重权限。 | 第一版不默认开启，不阻塞可搜索文本层和摘要层。 |
+| Readwise / Omnivore / Pocket 类阅读工具 | 高亮、备注、稍后读、阅读进度让“为什么保存”更清楚。 | 先做 note/highlight 数据模型和召回权重；选区文字、用户备注应比普通正文有更高搜索权重。 | 不先做完整阅读器和跨设备阅读体验。 |
+| Raindrop / Memex 类收藏工具 | 视觉卡片、预览图、标签、快速找回。 | AI Inbox 卡片应显示预览图、favicon/domain、one-line takeaway、摘要状态和匹配原因。 | 不把标签墙和手工整理当作主线。 |
+| nanobrowser | 浏览器侧 AI 自动化入口和网页上下文采集。 | 只借鉴“浏览器是输入现场”：当前页、搜索结果、选区、链接上下文进入 Didian；复杂网页自动操作交给后续 Mission/Codex Run。 | MVP 不承诺 agent 自动控制浏览器完成复杂任务。 |
+| RAGFlow / AnythingLLM | 文档解析、引用式问答、workspace knowledge base。 | Atlas 和 Ask Atlas 必须保留 source citation，答案引用 `captured_source`、highlights 或 artifacts。 | 第一版不引入完整 RAG 平台复杂度，也不做普通 chat-over-docs。 |
+
+### 4.7 两层 AI：轻摘要与 Codex 深处理
+
+页面收藏需要 AI 总结，但不应该每次普通收藏都同步启动本地 Codex。推荐分两层：
+
+1. **收藏后轻量 enrichment**：服务端异步生成 `one_line_takeaway`、`summary`、`key_points`、`topics`、`entities`、`keywords` 和 `search_text`。这一步目标是让卡片可读、搜索更准、召回能解释；可以先由 Go 规则摘要或服务端 LLM provider 实现，失败也不影响收藏成功。
+2. **用户触发 Codex 深处理**：当用户点击“用 Codex 整理”“创建 Mission”“整理成 Atlas”时，才把 capture 或一组 captures 交给现有 daemon/runtime/task queue。Codex 负责阅读上下文、生成计划、对比/去重/提取行动项、产出 artifacts、写入 Mission/Atlas。
+
+这层边界很重要：`page_memory` 是可搜索记忆，不是完整任务执行结果；Codex Run 是可见执行现场，不是每张收藏卡背后的隐藏同步调用。
+
+推荐状态流：
+
+```text
+extension capture
+  -> captured_source(status=captured, summary_status=pending)
+  -> page_memory(status=pending, search_text=raw fallback)
+  -> enrichment worker
+  -> page_memory(status=ready, summary/topics/entities/keywords/search_text enriched)
+  -> AI Inbox card shows preview + one-line takeaway
+  -> user clicks Create Mission / Organize with Codex
+  -> existing issue/task queue creates Mission with captureIds
+  -> local daemon claims task on Codex runtime
+  -> Codex produces plan/log/evidence/artifacts
+  -> Atlas resources link back to captured_source IDs
+```
+
+本地 Codex 接入不要另起一套“浏览器 worker”。它应该走仓库已有的 runtime/daemon 生命周期：runtime 检测、任务领取、隔离 workdir、执行日志、结果回传、失败原因、取消和 heartbeat。浏览器记忆只需要提供一个新的任务输入类型，例如：
+
+```json
+{
+  "kind": "browser_memory_mission",
+  "captureIds": ["019f..."],
+  "goal": "把这些页面整理成 AI Agent 学习路线，并沉淀 Atlas 资源卡",
+  "requestedOutputs": ["summary", "comparison", "atlas_collection", "next_actions"]
+}
+```
+
+### 4.8 卡片信息架构
+
+AI Inbox / Atlas 中的浏览器收藏卡不应直接展示长正文截断。最终卡片建议按这个优先级显示：
+
+```text
+preview_image_url 或 favicon/domain fallback
+title
+one_line_takeaway 或 description 或 readable_text fallback
+domain + captured_at
+summary_status / matched_reason
+actions: 打开、用 Codex 整理、保存到 Atlas、静音召回
+```
+
+预览图片应该优先来自扩展侧采集的 `og:image` / `twitter:image`，因为它不需要服务端抓取用户提供 URL，可以避开第一版 SSRF 风险。后端只做 URL 校验和长度限制，卡片渲染时使用普通 `<img>` 或受控 image proxy。
+
+卡片默认不为图片预留大块媒体位。很多网页只提供 logo 或 favicon，把它们放进 16:9 预览区会显得空且打断扫读。MVP 卡片应以标题、摘要和来源为主体；`preview_image_url` / `favicon_url` 只作为右上角半透明装饰水印。后续如果能判断图片是真实文章/产品预览，而不是站点 logo，再考虑启用较大的媒体区域。
+
 ### 第一版做
 
 - Didian 扩展按钮收藏当前页。
-- 采集 URL、title、domain、favicon、selected text、readable text、links、capturedAt。
+- 采集 URL、title、domain、favicon、description、preview image、selected text、readable text、links、capturedAt。
 - 后端保存 captured source。
-- 后台生成摘要、关键词、主题、实体和召回用文本。
+- 后台生成一句话 takeaway、摘要、关键词、主题、实体和召回用文本。
 - 搜索页显示“你曾经收藏过相关页面”。
 - 用户可从提示卡打开收藏、加入 AI Inbox、创建 Mission。
 
@@ -195,6 +263,8 @@ CREATE TABLE captured_source (
   title TEXT NOT NULL,
   domain TEXT NOT NULL,
   favicon_url TEXT,
+  description TEXT,
+  preview_image_url TEXT,
   selected_text TEXT,
   readable_text TEXT,
   links JSONB NOT NULL DEFAULT '[]',
@@ -239,6 +309,7 @@ CREATE INDEX idx_captured_source_title_trgm
 - `source` 表示入口：`web`、`extension`、`api`、`cli`、`rss`、`import`、`singlefile`。
 - `memory_state` 表示召回策略：`active`、`muted`、`pinned`、`archived`。
 - `*_status` 使用 `pending`、`success`、`failure`，便于独立重试 enrichment 子任务。
+- `description` / `preview_image_url` 优先由扩展侧从 OpenGraph/Twitter meta 标签采集；服务端后续 enrichment 可以补齐或修正，但不应在创建 capture 的同步路径里抓取用户 URL。
 
 ### 5.2 page_memory
 
@@ -357,6 +428,25 @@ MVP 先把摘要、关键词、实体和 `search_text` 存好，后续可以无�
 
 ## 6. API 设计
 
+### 6.0 当前实现状态
+
+第一条真实纵切已开始落地，不再停留在 demo fixture：
+
+- 已新增 `server/migrations/161_browser_captures.up.sql` / `.down.sql`。
+- 已新增 `captured_source` 与 `page_memory` 表。
+- 已新增 `server/pkg/db/queries/browser_capture.sql` 并生成 sqlc 代码。
+- 已新增 `server/internal/handler/browser_capture.go`。
+- 已挂载 workspace-scoped API：
+  - `POST /api/browser-captures`
+  - `GET /api/browser-captures`
+  - `GET /api/browser-captures/{id}`
+- 已有后端测试覆盖创建、列表、重复检测、危险 URL/超长正文/未知字段拒绝。
+- 已新增 `@didian/core/browser-memory` 类型、React Query options 和 `ApiClient` 方法。
+- AI Inbox 已改为读取真实 `GET /api/browser-captures`，没有真实收藏时显示空态，不再用本地 demo capture 伪装。
+- 已新增 `apps/extension` Chrome MV3 最小工程：popup 配置 API/workspace，一键采集当前页，content script 提取页面数据，background POST 到 `/api/browser-captures`。
+
+仍未完成的部分：后台摘要 enrichment、搜索召回 `POST /api/browser-memory/search-matches`、原生书签导入、notes/highlights、完整页面归档、Atlas/Mission 持久化关联。
+
 ### 6.1 创建采集
 
 ```http
@@ -367,12 +457,16 @@ POST /api/browser-captures
 
 ```json
 {
-  "captureScope": "current_tab",
+  "source": "extension",
+  "sourceType": "link",
+  "captureScope": "page",
   "sourceTabId": "123",
   "url": "https://github.com/browser-use/browser-use",
   "title": "browser-use/browser-use",
   "domain": "github.com",
   "faviconUrl": "https://github.com/favicon.ico",
+  "description": "Make websites accessible for AI agents.",
+  "previewImageUrl": "https://opengraph.githubassets.com/.../browser-use/browser-use",
   "selectedText": "",
   "readableText": "...",
   "links": [
@@ -388,7 +482,7 @@ POST /api/browser-captures
 {
   "captureId": "019f...",
   "status": "captured",
-  "memoryStatus": "summarizing",
+  "memoryStatus": "pending",
   "dedupe": {
     "isDuplicate": false,
     "existingCaptureId": null
@@ -402,6 +496,14 @@ POST /api/browser-captures
 - `readableText` 和 `links` 要限制大小，超限截断并标记 `isTruncated`。
 - 页面内容是未受信任数据，只能作为数据进入 prompt，不能作为指令。
 - 归一化 URL 时去掉常见 tracking 参数，例如 `utm_*`、`spm`、`fbclid`。
+
+当前实现的边界：
+
+- 请求体使用 `json.Decoder.DisallowUnknownFields()`，未知字段直接 400。
+- 只接受 `http` / `https` URL；不做服务端 fetch，避免第一版引入 SSRF 面。
+- `selectedText` 最大 10,000 字符，`readableText` 最大 60,000 字符，`links` 最大 200 条。
+- 以 `(workspace_id, normalized_url, text_hash)` 做重复检测；命中时返回既有 capture，状态码 200。
+- 创建 capture 同步写入 pending `page_memory`，`search_text` 先由 title/domain/url/selection/readableText/links 拼成，后续 enrichment 再覆盖。
 
 ### 6.2 查询搜索关联
 
@@ -536,37 +638,38 @@ score =
 
 ## 8. 扩展架构
 
-建议新增真实扩展工程：
+当前已新增最小真实扩展工程：
 
 ```text
 apps/extension/
   package.json
-  manifest.json
+  src/manifest.json
   src/background.ts
   src/content/capture-page.ts
-  src/content/search-overlay.ts
-  src/search/extractors/google.ts
-  src/search/extractors/bing.ts
-  src/search/extractors/baidu.ts
-  src/sidepanel/sidepanel.tsx
-  src/shared/schema.ts
+  src/content/index.ts
+  src/popup/index.html
+  src/popup/popup.ts
+  src/shared/types.ts
 ```
+
+这条纵切只做当前页采集和提交，不包含 side panel、搜索结果 overlay、原生书签导入和 search extractors。
 
 ### 权限策略
 
-MVP manifest 建议最小化：
+当前 MVP manifest 最小化：
 
 ```json
 {
-  "permissions": ["activeTab", "scripting", "storage", "sidePanel"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
-    "https://www.google.com/search*",
-    "https://www.bing.com/search*",
-    "https://www.baidu.com/s*",
-    "https://github.com/search*"
+    "http://localhost/*",
+    "http://localhost:*/*",
+    "https://*/*"
   ]
 }
 ```
+
+扩展不存储 token。POST 使用 `credentials: "include"` 复用 Didian Web/API origin 的登录 cookie，并通过 `X-Workspace-Slug` 进入现有 workspace membership gate。
 
 后续按功能增量申请：
 
@@ -691,6 +794,8 @@ MVP 可以先把 enrichment job 做成服务端 goroutine/cron 风格，后续�
 - AI Inbox 展示最近收藏。
 - 摘要任务先用后台 Go enrichment job；LLM 失败不影响收藏成功。
 - 增加 `memory_state`：`active`、`muted`、`pinned`、`archived`。
+
+当前进度：schema、sqlc、`POST/GET /api/browser-captures`、AI Inbox 真实读取和扩展当前页采集已完成第一版；后台 enrichment 仍在后续阶段实现。
 
 ### Phase 2：搜索召回
 

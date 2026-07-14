@@ -7,3 +7,5 @@ export { AutopilotPage } from "./autopilot/autopilot-page";
 export { SystemPage } from "./system/system-page";
 
 export type * from "./types";
+export { BrowserCapturePayloadSchema } from "./schemas";
+export { browserCaptureToInboxInput, inferAiUnderstanding, parseBrowserCaptureInboxInput } from "./fixtures";

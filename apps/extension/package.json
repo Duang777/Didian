@@ -1,0 +1,17 @@
+{
+  "name": "@didian/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@didian/tsconfig": "workspace:*",
+    "esbuild": "^0.25.12",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

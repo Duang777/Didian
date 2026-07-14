@@ -1,3 +1,5 @@
+import type { BrowserCapture as CoreBrowserCapture } from "@didian/core/browser-memory";
+
 export type MissionState =
   | "understanding"
   | "planned"
@@ -14,8 +16,42 @@ export type AiInboxInput = {
   title: string;
   preview: string;
   source?: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
+  previewImageUrl?: string;
+  faviconUrl?: string;
   confidence: number;
 };
+
+export type BrowserCaptureSource = "extension" | "import" | "api";
+
+export type BrowserCaptureSourceType = "link" | "text" | "asset" | "selection" | "rss_item" | "imported_bookmark";
+
+export type BrowserCaptureScope = "page" | "selection" | "tab_group" | "bookmark";
+
+export type BrowserCaptureLink = {
+  url: string;
+  title?: string;
+};
+
+export type BrowserCapturePayload = {
+  source: BrowserCaptureSource;
+  sourceType?: BrowserCaptureSourceType;
+  captureScope: BrowserCaptureScope;
+  sourceTabId?: string;
+  url: string;
+  title: string;
+  domain?: string;
+  faviconUrl?: string;
+  description?: string;
+  previewImageUrl?: string;
+  selectedText?: string;
+  readableText?: string;
+  links?: BrowserCaptureLink[];
+  capturedAt: string;
+};
+
+export type BrowserCapture = CoreBrowserCapture;
 
 export type AiIntent =
   | "research_pack"

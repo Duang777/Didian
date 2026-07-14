@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Didian Browser Capture",
+  "description": "Capture the current page into Didian browser memory.",
+  "version": "0.1.0",
+  "action": {
+    "default_title": "Didian Capture",
+    "default_popup": "popup/index.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["activeTab", "scripting", "storage", "cookies"],
+  "host_permissions": ["http://localhost/*", "https://*/*"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

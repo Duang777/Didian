@@ -1,0 +1,10 @@
+{
+  "extends": "@didian/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["vitest/globals"],
+    "noEmit": true
+  },
+  "include": ["src", "scripts", "vitest.config.ts"],
+  "exclude": ["dist", "node_modules"]
+}

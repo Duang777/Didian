@@ -1,4 +1,5 @@
 import type {
+  BrowserCapture,
   AiInboxInput,
   AiIntent,
   AiStudioCapability,
@@ -7,8 +8,10 @@ import type {
   AiUnderstanding,
   AtlasCollection,
   AutopilotStrategy,
+  BrowserCapturePayload,
   MissionView,
 } from "./types";
+import { BrowserCapturePayloadSchema } from "./schemas";
 
 export function inferAiUnderstanding(rawInput: string): AiUnderstanding {
   const normalized = rawInput.toLowerCase();
@@ -46,7 +49,100 @@ export function inferAiUnderstanding(rawInput: string): AiUnderstanding {
   };
 }
 
+function truncateText(value: string | undefined, maxLength: number): string {
+  const text = value?.replace(/\s+/g, " ").trim() ?? "";
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
+function displaySource(payload: BrowserCapturePayload): string {
+  if (payload.domain) return payload.domain;
+  try {
+    const url = new URL(payload.url);
+    return url.host + url.pathname.replace(/\/$/, "");
+  } catch {
+    return payload.url;
+  }
+}
+
+function browserCaptureLabel(capture: BrowserCapture): string {
+  if (capture.capture_scope === "selection") return "选区收藏";
+  if (capture.capture_scope === "bookmark") return "浏览器书签";
+  if (capture.source === "extension") return "网页收藏";
+  return "收藏";
+}
+
+export function browserCaptureToInboxInput(payload: BrowserCapturePayload): AiInboxInput {
+  const preview = truncateText(payload.selectedText, 240)
+    || truncateText(payload.description, 240)
+    || truncateText(payload.readableText, 240)
+    || displaySource(payload);
+
+  return {
+    id: `capture-${payload.capturedAt}-${payload.url}`,
+    kind: "browser_capture",
+    title: payload.title,
+    preview,
+    source: displaySource(payload),
+    sourceUrl: payload.url,
+    sourceLabel: payload.captureScope === "selection" ? "选区收藏" : "网页收藏",
+    previewImageUrl: payload.previewImageUrl,
+    faviconUrl: payload.faviconUrl,
+    confidence: payload.selectedText || payload.readableText ? 0.9 : 0.72,
+  };
+}
+
+export function browserCaptureRecordToInboxInput(capture: BrowserCapture): AiInboxInput {
+  const preview = truncateText(capture.selected_text ?? undefined, 240)
+    || truncateText(capture.description ?? undefined, 240)
+    || truncateText(capture.readable_text ?? undefined, 240)
+    || capture.domain
+    || capture.normalized_url
+    || capture.url;
+
+  return {
+    id: `capture-${capture.id}`,
+    kind: "browser_capture",
+    title: capture.title || capture.normalized_url || capture.url,
+    preview,
+    source: capture.domain || displaySource({
+      source: "extension",
+      captureScope: "page",
+      url: capture.url,
+      title: capture.title || capture.url,
+      capturedAt: capture.captured_at || capture.created_at || new Date(0).toISOString(),
+    }),
+    sourceUrl: capture.url,
+    sourceLabel: browserCaptureLabel(capture),
+    previewImageUrl: capture.preview_image_url ?? undefined,
+    faviconUrl: capture.favicon_url ?? undefined,
+    confidence: capture.selected_text || capture.readable_text ? 0.9 : 0.72,
+  };
+}
+
+export function parseBrowserCaptureInboxInput(rawPayload: unknown): AiInboxInput {
+  return browserCaptureToInboxInput(BrowserCapturePayloadSchema.parse(rawPayload));
+}
+
+export const demoBrowserCapturePayload: BrowserCapturePayload = {
+  source: "extension",
+  captureScope: "page",
+  url: "https://github.com/karakeep-app/karakeep",
+  title: "Karakeep GitHub",
+  domain: "github.com/karakeep-app/karakeep",
+  faviconUrl: "https://github.com/favicon.ico",
+  description: "A self-hostable bookmark-everything app with AI-powered tagging and full-text search.",
+  previewImageUrl: "https://opengraph.githubassets.com/example/karakeep-app/karakeep",
+  selectedText: "A self-hostable bookmark-everything app with AI-powered tagging and full-text search.",
+  readableText: "Karakeep is a bookmark manager that can save links, text and assets, then enrich them with summaries and tags.",
+  links: [
+    { url: "https://github.com/karakeep-app/karakeep", title: "Repository" },
+  ],
+  capturedAt: "2026-07-14T02:40:00.000Z",
+};
+
 export const demoInboxInputs: AiInboxInput[] = [
+  browserCaptureToInboxInput(demoBrowserCapturePayload),
   {
     id: "input-browser-use",
     kind: "url",

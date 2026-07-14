@@ -135,6 +135,13 @@ import type {
   BillingCheckoutSessionStatus,
   CreateBillingPortalSessionResponse,
 } from "../types";
+import type {
+  BrowserCapture,
+  CreateBrowserCaptureRequest,
+  CreateBrowserCaptureResponse,
+  ListBrowserCapturesParams,
+  ListBrowserCapturesResponse,
+} from "../browser-memory/types";
 import type { OnboardingCompletionPath } from "../onboarding/types";
 import type { CreateFeedbackResponse, FeedbackKind } from "../feedback/types";
 import type {
@@ -222,6 +229,12 @@ import {
   EMPTY_CREATE_FEEDBACK_RESPONSE,
   InboxUnreadSummarySchema,
   EMPTY_INBOX_UNREAD_SUMMARY,
+  BrowserCaptureSchema,
+  CreateBrowserCaptureResponseSchema,
+  EMPTY_BROWSER_CAPTURE,
+  EMPTY_CREATE_BROWSER_CAPTURE_RESPONSE,
+  EMPTY_LIST_BROWSER_CAPTURES_RESPONSE,
+  ListBrowserCapturesResponseSchema,
 } from "./schemas";
 
 /** Identifies the calling client to the server.
@@ -1523,6 +1536,36 @@ export class ApiClient {
 
   async markAllInboxRead(): Promise<{ count: number }> {
     return this.fetch("/api/inbox/mark-all-read", { method: "POST" });
+  }
+
+  // Browser memory captures
+  async listBrowserCaptures(params: ListBrowserCapturesParams = {}): Promise<ListBrowserCapturesResponse> {
+    const search = new URLSearchParams();
+    if (params.limit !== undefined) search.set("limit", String(params.limit));
+    if (params.offset !== undefined) search.set("offset", String(params.offset));
+    if (params.state) search.set("state", params.state);
+    const suffix = search.toString() ? `?${search.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/browser-captures${suffix}`);
+    return parseWithFallback(raw, ListBrowserCapturesResponseSchema, EMPTY_LIST_BROWSER_CAPTURES_RESPONSE, {
+      endpoint: "GET /api/browser-captures",
+    });
+  }
+
+  async createBrowserCapture(data: CreateBrowserCaptureRequest): Promise<CreateBrowserCaptureResponse> {
+    const raw = await this.fetch<unknown>("/api/browser-captures", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return parseWithFallback(raw, CreateBrowserCaptureResponseSchema, EMPTY_CREATE_BROWSER_CAPTURE_RESPONSE, {
+      endpoint: "POST /api/browser-captures",
+    });
+  }
+
+  async getBrowserCapture(id: string): Promise<BrowserCapture> {
+    const raw = await this.fetch<unknown>(`/api/browser-captures/${id}`);
+    return parseWithFallback(raw, BrowserCaptureSchema, EMPTY_BROWSER_CAPTURE, {
+      endpoint: "GET /api/browser-captures/:id",
+    });
   }
 
   async archiveAllInbox(): Promise<{ count: number }> {

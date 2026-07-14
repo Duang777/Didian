@@ -979,6 +979,15 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 			// Assignee frequency
 			r.Get("/api/assignee-frequency", h.GetAssigneeFrequency)
 
+			// Browser memory captures. The extension/web clients provide workspace
+			// context through the existing X-Workspace-ID / X-Workspace-Slug headers;
+			// membership is enforced by the workspace-scoped group middleware.
+			r.Route("/api/browser-captures", func(r chi.Router) {
+				r.Get("/", h.ListBrowserCaptures)
+				r.Post("/", h.CreateBrowserCapture)
+				r.Get("/{id}", h.GetBrowserCapture)
+			})
+
 			// Issues
 			r.Route("/api/issues", func(r chi.Router) {
 				r.Get("/search", h.SearchIssues)

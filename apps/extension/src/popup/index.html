@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Didian Capture</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div>
+          <h1>Didian</h1>
+          <p>Browser Capture</p>
+        </div>
+        <span id="status-pill" class="pill">Ready</span>
+      </header>
+
+      <form id="settings-form" class="form">
+        <label>
+          <span>API URL</span>
+          <input id="api-base-url" name="apiBaseUrl" type="url" required />
+        </label>
+        <label>
+          <span>Workspace</span>
+          <input id="workspace-slug" name="workspaceSlug" type="text" required />
+        </label>
+        <button id="save-settings" type="submit" class="secondary">Save</button>
+      </form>
+
+      <button id="capture-current-tab" type="button" class="primary">Capture Current Page</button>
+      <p id="message" class="message" role="status"></p>
+    </main>
+    <script type="module" src="./popup.js"></script>
+  </body>
+</html>

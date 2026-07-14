@@ -1,11 +1,42 @@
 import { z } from "zod";
 
+const httpUrlSchema = z.string().url().refine((value) => {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}, "Expected an http(s) URL");
+
+export const BrowserCapturePayloadSchema = z.object({
+  source: z.enum(["extension", "import", "api"]),
+  sourceType: z.enum(["link", "text", "asset", "selection", "rss_item", "imported_bookmark"]).optional(),
+  captureScope: z.enum(["page", "selection", "tab_group", "bookmark"]),
+  sourceTabId: z.string().max(128).optional(),
+  url: httpUrlSchema,
+  title: z.string().min(1).max(500),
+  domain: z.string().max(255).optional(),
+  faviconUrl: httpUrlSchema.optional(),
+  description: z.string().max(2000).optional(),
+  previewImageUrl: httpUrlSchema.optional(),
+  selectedText: z.string().max(10_000).optional(),
+  readableText: z.string().max(60_000).optional(),
+  links: z.array(z.object({
+    url: httpUrlSchema,
+    title: z.string().max(300).optional(),
+  })).max(200).optional(),
+  capturedAt: z.string().datetime(),
+}).strict();
+
 export const AiInboxInputSchema = z.object({
   id: z.string().min(1),
   kind: z.enum(["url", "text", "file", "browser_capture"]),
   title: z.string().min(1),
   preview: z.string(),
   source: z.string().optional(),
+  previewImageUrl: z.string().optional(),
+  faviconUrl: z.string().optional(),
   confidence: z.number().min(0).max(1),
 });
 

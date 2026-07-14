@@ -27,6 +27,11 @@ import type {
 } from "../types";
 import type { CloudRuntimeNode } from "../runtimes/cloud-runtime";
 import type { CreateFeedbackResponse } from "../feedback/types";
+import type {
+  BrowserCapture,
+  CreateBrowserCaptureResponse,
+  ListBrowserCapturesResponse,
+} from "../browser-memory/types";
 
 export interface AppConfigResponse {
   cdn_domain: string;
@@ -214,6 +219,104 @@ export const CreateFeedbackResponseSchema = z.object({
 export const EMPTY_CREATE_FEEDBACK_RESPONSE: CreateFeedbackResponse = {
   id: "",
   created_at: "",
+};
+
+const BrowserCaptureLinkSchema = z.object({
+  url: z.string().default(""),
+  title: z.string().optional(),
+}).loose();
+
+export const BrowserCaptureSchema = z.object({
+  id: z.string().default(""),
+  workspace_id: z.string().default(""),
+  creator_id: z.string().default(""),
+  source_type: z.string().default("link"),
+  source: z.string().default("extension"),
+  capture_scope: z.string().default("page"),
+  source_tab_id: z.string().nullable().optional(),
+  url: z.string().default(""),
+  normalized_url: z.string().default(""),
+  title: z.string().default(""),
+  domain: z.string().default(""),
+  favicon_url: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  preview_image_url: z.string().nullable().optional(),
+  selected_text: z.string().nullable().optional(),
+  readable_text: z.string().nullable().optional(),
+  links: z.array(BrowserCaptureLinkSchema).optional().default([]),
+  status: z.string().default("captured"),
+  metadata_status: z.string().default("pending"),
+  archive_status: z.string().default("skipped"),
+  summary_status: z.string().default("pending"),
+  embedding_status: z.string().default("skipped"),
+  memory_state: z.string().default("active"),
+  failure_reason: z.string().nullable().optional(),
+  captured_at: z.string().default(""),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const EMPTY_BROWSER_CAPTURE: BrowserCapture = {
+  id: "",
+  workspace_id: "",
+  creator_id: "",
+  source_type: "link",
+  source: "extension",
+  capture_scope: "page",
+  source_tab_id: null,
+  url: "",
+  normalized_url: "",
+  title: "",
+  domain: "",
+  favicon_url: null,
+  description: null,
+  preview_image_url: null,
+  selected_text: null,
+  readable_text: null,
+  links: [],
+  status: "captured",
+  metadata_status: "pending",
+  archive_status: "skipped",
+  summary_status: "pending",
+  embedding_status: "skipped",
+  memory_state: "active",
+  failure_reason: null,
+  captured_at: "",
+  created_at: "",
+  updated_at: "",
+};
+
+const EMPTY_BROWSER_CAPTURE_SCHEMA_VALUE = EMPTY_BROWSER_CAPTURE as z.output<typeof BrowserCaptureSchema>;
+
+const BrowserCaptureDedupeSchema = z.object({
+  isDuplicate: z.boolean().default(false),
+  existingCaptureId: z.string().nullable().optional(),
+}).loose();
+
+export const CreateBrowserCaptureResponseSchema = z.object({
+  capture: BrowserCaptureSchema.optional().catch(EMPTY_BROWSER_CAPTURE_SCHEMA_VALUE),
+  captureId: z.string().default(""),
+  status: z.string().default("captured"),
+  memoryStatus: z.string().default("pending"),
+  dedupe: BrowserCaptureDedupeSchema.default({ isDuplicate: false, existingCaptureId: null }),
+}).loose();
+
+export const EMPTY_CREATE_BROWSER_CAPTURE_RESPONSE: CreateBrowserCaptureResponse = {
+  capture: EMPTY_BROWSER_CAPTURE,
+  captureId: "",
+  status: "captured",
+  memoryStatus: "pending",
+  dedupe: { isDuplicate: false, existingCaptureId: null },
+};
+
+export const ListBrowserCapturesResponseSchema = z.object({
+  captures: z.array(BrowserCaptureSchema).optional().default([]),
+  total: z.number().optional().default(0),
+}).loose();
+
+export const EMPTY_LIST_BROWSER_CAPTURES_RESPONSE: ListBrowserCapturesResponse = {
+  captures: [],
+  total: 0,
 };
 
 export const CommentSchema = z.object({

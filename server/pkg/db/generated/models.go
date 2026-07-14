@@ -215,6 +215,38 @@ type AutopilotTrigger struct {
 	EventFilters   []byte             `json:"event_filters"`
 }
 
+type CapturedSource struct {
+	ID              pgtype.UUID        `json:"id"`
+	WorkspaceID     pgtype.UUID        `json:"workspace_id"`
+	CreatorID       pgtype.UUID        `json:"creator_id"`
+	SourceType      string             `json:"source_type"`
+	Source          string             `json:"source"`
+	CaptureScope    string             `json:"capture_scope"`
+	SourceTabID     pgtype.Text        `json:"source_tab_id"`
+	Url             string             `json:"url"`
+	NormalizedUrl   string             `json:"normalized_url"`
+	Title           string             `json:"title"`
+	Domain          string             `json:"domain"`
+	FaviconUrl      pgtype.Text        `json:"favicon_url"`
+	Description     pgtype.Text        `json:"description"`
+	PreviewImageUrl pgtype.Text        `json:"preview_image_url"`
+	SelectedText    pgtype.Text        `json:"selected_text"`
+	ReadableText    pgtype.Text        `json:"readable_text"`
+	Links           []byte             `json:"links"`
+	TextHash        pgtype.Text        `json:"text_hash"`
+	PageHash        pgtype.Text        `json:"page_hash"`
+	Status          string             `json:"status"`
+	MetadataStatus  string             `json:"metadata_status"`
+	ArchiveStatus   string             `json:"archive_status"`
+	SummaryStatus   string             `json:"summary_status"`
+	EmbeddingStatus string             `json:"embedding_status"`
+	MemoryState     string             `json:"memory_state"`
+	FailureReason   pgtype.Text        `json:"failure_reason"`
+	CapturedAt      pgtype.Timestamptz `json:"captured_at"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
 type ChannelBindingToken struct {
 	TokenHash      string             `json:"token_hash"`
 	WorkspaceID    pgtype.UUID        `json:"workspace_id"`
@@ -670,6 +702,24 @@ type NotificationPreference struct {
 	UserID      pgtype.UUID        `json:"user_id"`
 	Preferences []byte             `json:"preferences"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PageMemory struct {
+	CapturedSourceID pgtype.UUID        `json:"captured_source_id"`
+	WorkspaceID      pgtype.UUID        `json:"workspace_id"`
+	Summary          string             `json:"summary"`
+	OneLineTakeaway  string             `json:"one_line_takeaway"`
+	KeyPoints        []byte             `json:"key_points"`
+	Topics           []byte             `json:"topics"`
+	Entities         []byte             `json:"entities"`
+	Keywords         []byte             `json:"keywords"`
+	SearchText       string             `json:"search_text"`
+	ModelProvider    pgtype.Text        `json:"model_provider"`
+	ModelName        pgtype.Text        `json:"model_name"`
+	Status           string             `json:"status"`
+	GeneratedAt      pgtype.Timestamptz `json:"generated_at"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 }
 
 type PersonalAccessToken struct {
