@@ -93,7 +93,9 @@ export function browserCaptureToInboxInput(payload: BrowserCapturePayload): AiIn
 }
 
 export function browserCaptureRecordToInboxInput(capture: BrowserCapture): AiInboxInput {
-  const preview = truncateText(capture.selected_text ?? undefined, 240)
+  const preview = truncateText(capture.memory?.one_line_takeaway, 240)
+    || truncateText(capture.memory?.summary, 240)
+    || truncateText(capture.selected_text ?? undefined, 240)
     || truncateText(capture.description ?? undefined, 240)
     || truncateText(capture.readable_text ?? undefined, 240)
     || capture.domain

@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestBrowserCaptureLifecycle(t *testing.T) {
@@ -61,21 +62,22 @@ func TestBrowserCaptureLifecycle(t *testing.T) {
 		t.Fatalf("preview_image_url = %v", created.Capture.PreviewImageURL)
 	}
 
-	w = httptest.NewRecorder()
-	req = newRequest(http.MethodGet, "/api/browser-captures?limit=5", nil)
-	testHandler.ListBrowserCaptures(w, req)
-	if w.Code != http.StatusOK {
-		t.Fatalf("ListBrowserCaptures: expected 200, got %d: %s", w.Code, w.Body.String())
-	}
-	var listed ListBrowserCapturesResponse
-	if err := json.NewDecoder(w.Body).Decode(&listed); err != nil {
-		t.Fatalf("decode list response: %v", err)
-	}
+	listed := waitForBrowserCaptureMemory(t, created.CaptureID)
 	if listed.Total < 1 || len(listed.Captures) < 1 {
 		t.Fatalf("list returned total=%d len=%d, want capture", listed.Total, len(listed.Captures))
 	}
-	if listed.Captures[0].ID != created.CaptureID {
-		t.Errorf("latest capture id = %q, want %q", listed.Captures[0].ID, created.CaptureID)
+	createdListCapture := findBrowserCaptureResponse(listed.Captures, created.CaptureID)
+	if createdListCapture == nil {
+		t.Fatalf("created capture %s not found in list", created.CaptureID)
+	}
+	if createdListCapture.SummaryStatus != "success" {
+		t.Fatalf("summary_status = %q, want success", createdListCapture.SummaryStatus)
+	}
+	if createdListCapture.Memory == nil || createdListCapture.Memory.Status != "ready" {
+		t.Fatalf("memory = %+v, want ready memory", createdListCapture.Memory)
+	}
+	if createdListCapture.Memory.OneLineTakeaway != "This quote is why I saved it" {
+		t.Fatalf("one_line_takeaway = %q", createdListCapture.Memory.OneLineTakeaway)
 	}
 
 	w = httptest.NewRecorder()
@@ -108,6 +110,42 @@ func cloneMap(input map[string]any) map[string]any {
 		out[key] = value
 	}
 	return out
+}
+
+func findBrowserCaptureResponse(captures []BrowserCaptureResponse, id string) *BrowserCaptureResponse {
+	for i := range captures {
+		if captures[i].ID == id {
+			return &captures[i]
+		}
+	}
+	return nil
+}
+
+func waitForBrowserCaptureMemory(t *testing.T, captureID string) ListBrowserCapturesResponse {
+	t.Helper()
+	deadline := time.Now().Add(2 * time.Second)
+	var last ListBrowserCapturesResponse
+	for {
+		w := httptest.NewRecorder()
+		req := newRequest(http.MethodGet, "/api/browser-captures?limit=5", nil)
+		testHandler.ListBrowserCaptures(w, req)
+		if w.Code != http.StatusOK {
+			t.Fatalf("ListBrowserCaptures: expected 200, got %d: %s", w.Code, w.Body.String())
+		}
+		last = ListBrowserCapturesResponse{}
+		if err := json.NewDecoder(w.Body).Decode(&last); err != nil {
+			t.Fatalf("decode list response: %v", err)
+		}
+		for _, capture := range last.Captures {
+			if capture.ID == captureID && capture.Memory != nil && capture.Memory.Status == "ready" {
+				return last
+			}
+		}
+		if time.Now().After(deadline) {
+			return last
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
 }
 
 func TestBrowserCaptureRejectsUnsafePayloads(t *testing.T) {

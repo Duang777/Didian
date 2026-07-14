@@ -11,6 +11,18 @@ export interface BrowserCaptureLink {
   title?: string;
 }
 
+export interface PageMemory {
+  summary: string;
+  one_line_takeaway: string;
+  key_points: string[];
+  topics: string[];
+  entities: string[];
+  keywords: string[];
+  status: string;
+  generated_at?: string | null;
+  updated_at: string;
+}
+
 export interface CreateBrowserCaptureRequest {
   source?: BrowserCaptureSource;
   sourceType?: BrowserCaptureSourceType;
@@ -53,6 +65,7 @@ export interface BrowserCapture {
   embedding_status: string;
   memory_state: BrowserCaptureMemoryState;
   failure_reason?: string | null;
+  memory?: PageMemory | null;
   captured_at: string;
   created_at: string;
   updated_at: string;

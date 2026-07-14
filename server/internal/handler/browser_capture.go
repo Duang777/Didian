@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -91,9 +92,22 @@ type BrowserCaptureResponse struct {
 	EmbeddingStatus string                      `json:"embedding_status"`
 	MemoryState     string                      `json:"memory_state"`
 	FailureReason   *string                     `json:"failure_reason"`
+	Memory          *PageMemoryResponse         `json:"memory,omitempty"`
 	CapturedAt      string                      `json:"captured_at"`
 	CreatedAt       string                      `json:"created_at"`
 	UpdatedAt       string                      `json:"updated_at"`
+}
+
+type PageMemoryResponse struct {
+	Summary         string   `json:"summary"`
+	OneLineTakeaway string   `json:"one_line_takeaway"`
+	KeyPoints       []string `json:"key_points"`
+	Topics          []string `json:"topics"`
+	Entities        []string `json:"entities"`
+	Keywords        []string `json:"keywords"`
+	Status          string   `json:"status"`
+	GeneratedAt     *string  `json:"generated_at"`
+	UpdatedAt       string   `json:"updated_at"`
 }
 
 type CreateBrowserCaptureResponse struct {
@@ -225,6 +239,8 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		slog.Warn("CreatePendingPageMemory failed", append(logger.RequestAttrs(r), "error", err, "capture_id", uuidToString(capture.ID))...)
+	} else {
+		h.enrichBrowserCaptureAsync(capture)
 	}
 
 	id := uuidToString(capture.ID)
@@ -274,7 +290,7 @@ func (h *Handler) ListBrowserCaptures(w http.ResponseWriter, r *http.Request) {
 
 	resp := make([]BrowserCaptureResponse, len(rows))
 	for i, row := range rows {
-		resp[i] = browserCaptureToResponse(row)
+		resp[i] = h.browserCaptureToResponseWithMemory(r.Context(), row)
 	}
 	writeJSON(w, http.StatusOK, ListBrowserCapturesResponse{Captures: resp, Total: total})
 }
@@ -315,7 +331,18 @@ func (h *Handler) GetBrowserCapture(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "browser capture not found")
 		return
 	}
-	writeJSON(w, http.StatusOK, browserCaptureToResponse(capture))
+	writeJSON(w, http.StatusOK, h.browserCaptureToResponseWithMemory(r.Context(), capture))
+}
+
+func (h *Handler) enrichBrowserCaptureAsync(capture db.CapturedSource) {
+	if h.MemoryEnrichment == nil {
+		return
+	}
+	go func() {
+		if _, err := h.MemoryEnrichment.EnrichCapture(context.Background(), capture); err != nil {
+			slog.Warn("EnrichCapture failed", "error", err, "capture_id", uuidToString(capture.ID), "workspace_id", uuidToString(capture.WorkspaceID))
+		}
+	}()
 }
 
 func normalizeBrowserCaptureRequest(req CreateBrowserCaptureRequest) (normalizedBrowserCapture, error) {
@@ -533,6 +560,46 @@ func browserCaptureToResponse(c db.CapturedSource) BrowserCaptureResponse {
 		CreatedAt:       timestampToString(c.CreatedAt),
 		UpdatedAt:       timestampToString(c.UpdatedAt),
 	}
+}
+
+func (h *Handler) browserCaptureToResponseWithMemory(ctx context.Context, c db.CapturedSource) BrowserCaptureResponse {
+	resp := browserCaptureToResponse(c)
+	if h == nil || h.Queries == nil {
+		return resp
+	}
+	memory, err := h.Queries.GetPageMemory(ctx, db.GetPageMemoryParams{
+		CapturedSourceID: c.ID,
+		WorkspaceID:      c.WorkspaceID,
+	})
+	if err == nil {
+		resp.Memory = pageMemoryToResponse(memory)
+	}
+	return resp
+}
+
+func pageMemoryToResponse(memory db.PageMemory) *PageMemoryResponse {
+	return &PageMemoryResponse{
+		Summary:         memory.Summary,
+		OneLineTakeaway: memory.OneLineTakeaway,
+		KeyPoints:       stringArrayFromJSON(memory.KeyPoints),
+		Topics:          stringArrayFromJSON(memory.Topics),
+		Entities:        stringArrayFromJSON(memory.Entities),
+		Keywords:        stringArrayFromJSON(memory.Keywords),
+		Status:          memory.Status,
+		GeneratedAt:     timestampToPtr(memory.GeneratedAt),
+		UpdatedAt:       timestampToString(memory.UpdatedAt),
+	}
+}
+
+func stringArrayFromJSON(raw []byte) []string {
+	values := []string{}
+	if len(raw) == 0 {
+		return values
+	}
+	if err := json.Unmarshal(raw, &values); err != nil {
+		return []string{}
+	}
+	return values
 }
 
 func buildCaptureSearchText(req CreateBrowserCaptureRequest) string {

@@ -59,6 +59,17 @@ describe("AiInboxPage browser captures", () => {
           embedding_status: "skipped",
           memory_state: "active",
           failure_reason: null,
+          memory: {
+            summary: "AI-derived summary for the saved research note.",
+            one_line_takeaway: "AI takeaway explains why this page matters.",
+            key_points: ["AI-derived summary for the saved research note."],
+            topics: ["research"],
+            entities: ["example.com"],
+            keywords: ["research"],
+            status: "ready",
+            generated_at: "2026-07-14T02:41:00.000Z",
+            updated_at: "2026-07-14T02:41:00.000Z",
+          },
           captured_at: "2026-07-14T02:40:00.000Z",
           created_at: "2026-07-14T02:40:00.000Z",
           updated_at: "2026-07-14T02:40:00.000Z",
@@ -70,7 +81,8 @@ describe("AiInboxPage browser captures", () => {
     const { container } = renderPage();
 
     await waitFor(() => expect(screen.getByText("Research notes")).toBeInTheDocument());
-    expect(screen.getByText("The selected quote explains why this page was saved.")).toBeInTheDocument();
+    expect(screen.getByText("AI takeaway explains why this page matters.")).toBeInTheDocument();
+    expect(screen.queryByText("The selected quote explains why this page was saved.")).not.toBeInTheDocument();
     expect(screen.getByText("example.com")).toBeInTheDocument();
     expect(screen.getByText("网页收藏")).toBeInTheDocument();
     expect(screen.queryByText("browser_capture")).not.toBeInTheDocument();

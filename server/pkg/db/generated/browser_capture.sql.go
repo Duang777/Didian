@@ -408,6 +408,164 @@ func (q *Queries) ListCapturedSources(ctx context.Context, arg ListCapturedSourc
 	return items, nil
 }
 
+const listPendingPageMemoryCaptures = `-- name: ListPendingPageMemoryCaptures :many
+SELECT captured_source.id, captured_source.workspace_id, captured_source.creator_id, captured_source.source_type, captured_source.source, captured_source.capture_scope, captured_source.source_tab_id, captured_source.url, captured_source.normalized_url, captured_source.title, captured_source.domain, captured_source.favicon_url, captured_source.description, captured_source.preview_image_url, captured_source.selected_text, captured_source.readable_text, captured_source.links, captured_source.text_hash, captured_source.page_hash, captured_source.status, captured_source.metadata_status, captured_source.archive_status, captured_source.summary_status, captured_source.embedding_status, captured_source.memory_state, captured_source.failure_reason, captured_source.captured_at, captured_source.created_at, captured_source.updated_at FROM captured_source
+JOIN page_memory ON page_memory.captured_source_id = captured_source.id
+WHERE page_memory.status = 'pending'
+  AND captured_source.summary_status = 'pending'
+ORDER BY page_memory.created_at ASC
+LIMIT $1
+`
+
+func (q *Queries) ListPendingPageMemoryCaptures(ctx context.Context, limit int32) ([]CapturedSource, error) {
+	rows, err := q.db.Query(ctx, listPendingPageMemoryCaptures, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CapturedSource{}
+	for rows.Next() {
+		var i CapturedSource
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.CreatorID,
+			&i.SourceType,
+			&i.Source,
+			&i.CaptureScope,
+			&i.SourceTabID,
+			&i.Url,
+			&i.NormalizedUrl,
+			&i.Title,
+			&i.Domain,
+			&i.FaviconUrl,
+			&i.Description,
+			&i.PreviewImageUrl,
+			&i.SelectedText,
+			&i.ReadableText,
+			&i.Links,
+			&i.TextHash,
+			&i.PageHash,
+			&i.Status,
+			&i.MetadataStatus,
+			&i.ArchiveStatus,
+			&i.SummaryStatus,
+			&i.EmbeddingStatus,
+			&i.MemoryState,
+			&i.FailureReason,
+			&i.CapturedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const markPageMemoryEnrichmentFailed = `-- name: MarkPageMemoryEnrichmentFailed :one
+UPDATE page_memory
+SET status = 'failed',
+    updated_at = now()
+WHERE captured_source_id = $1 AND workspace_id = $2
+RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at
+`
+
+type MarkPageMemoryEnrichmentFailedParams struct {
+	CapturedSourceID pgtype.UUID `json:"captured_source_id"`
+	WorkspaceID      pgtype.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) MarkPageMemoryEnrichmentFailed(ctx context.Context, arg MarkPageMemoryEnrichmentFailedParams) (PageMemory, error) {
+	row := q.db.QueryRow(ctx, markPageMemoryEnrichmentFailed, arg.CapturedSourceID, arg.WorkspaceID)
+	var i PageMemory
+	err := row.Scan(
+		&i.CapturedSourceID,
+		&i.WorkspaceID,
+		&i.Summary,
+		&i.OneLineTakeaway,
+		&i.KeyPoints,
+		&i.Topics,
+		&i.Entities,
+		&i.Keywords,
+		&i.SearchText,
+		&i.ModelProvider,
+		&i.ModelName,
+		&i.Status,
+		&i.GeneratedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateCapturedSourceEnrichmentStatus = `-- name: UpdateCapturedSourceEnrichmentStatus :one
+UPDATE captured_source
+SET summary_status = $3,
+    status = CASE
+        WHEN $3 = 'success' THEN 'ready'
+        WHEN $3 = 'failure' THEN 'failed'
+        ELSE status
+    END,
+    failure_reason = $4,
+    updated_at = now()
+WHERE id = $1 AND workspace_id = $2
+RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at
+`
+
+type UpdateCapturedSourceEnrichmentStatusParams struct {
+	ID            pgtype.UUID `json:"id"`
+	WorkspaceID   pgtype.UUID `json:"workspace_id"`
+	SummaryStatus string      `json:"summary_status"`
+	FailureReason pgtype.Text `json:"failure_reason"`
+}
+
+func (q *Queries) UpdateCapturedSourceEnrichmentStatus(ctx context.Context, arg UpdateCapturedSourceEnrichmentStatusParams) (CapturedSource, error) {
+	row := q.db.QueryRow(ctx, updateCapturedSourceEnrichmentStatus,
+		arg.ID,
+		arg.WorkspaceID,
+		arg.SummaryStatus,
+		arg.FailureReason,
+	)
+	var i CapturedSource
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.CreatorID,
+		&i.SourceType,
+		&i.Source,
+		&i.CaptureScope,
+		&i.SourceTabID,
+		&i.Url,
+		&i.NormalizedUrl,
+		&i.Title,
+		&i.Domain,
+		&i.FaviconUrl,
+		&i.Description,
+		&i.PreviewImageUrl,
+		&i.SelectedText,
+		&i.ReadableText,
+		&i.Links,
+		&i.TextHash,
+		&i.PageHash,
+		&i.Status,
+		&i.MetadataStatus,
+		&i.ArchiveStatus,
+		&i.SummaryStatus,
+		&i.EmbeddingStatus,
+		&i.MemoryState,
+		&i.FailureReason,
+		&i.CapturedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateCapturedSourcePreviewMetadata = `-- name: UpdateCapturedSourcePreviewMetadata :one
 UPDATE captured_source
 SET favicon_url = COALESCE($3, favicon_url),
@@ -463,6 +621,73 @@ func (q *Queries) UpdateCapturedSourcePreviewMetadata(ctx context.Context, arg U
 		&i.MemoryState,
 		&i.FailureReason,
 		&i.CapturedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updatePageMemoryEnrichment = `-- name: UpdatePageMemoryEnrichment :one
+UPDATE page_memory
+SET summary = $3,
+    one_line_takeaway = $4,
+    key_points = $5,
+    topics = $6,
+    entities = $7,
+    keywords = $8,
+    search_text = $9,
+    model_provider = $10,
+    model_name = $11,
+    status = 'ready',
+    generated_at = now(),
+    updated_at = now()
+WHERE captured_source_id = $1 AND workspace_id = $2
+RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at
+`
+
+type UpdatePageMemoryEnrichmentParams struct {
+	CapturedSourceID pgtype.UUID `json:"captured_source_id"`
+	WorkspaceID      pgtype.UUID `json:"workspace_id"`
+	Summary          string      `json:"summary"`
+	OneLineTakeaway  string      `json:"one_line_takeaway"`
+	KeyPoints        []byte      `json:"key_points"`
+	Topics           []byte      `json:"topics"`
+	Entities         []byte      `json:"entities"`
+	Keywords         []byte      `json:"keywords"`
+	SearchText       string      `json:"search_text"`
+	ModelProvider    pgtype.Text `json:"model_provider"`
+	ModelName        pgtype.Text `json:"model_name"`
+}
+
+func (q *Queries) UpdatePageMemoryEnrichment(ctx context.Context, arg UpdatePageMemoryEnrichmentParams) (PageMemory, error) {
+	row := q.db.QueryRow(ctx, updatePageMemoryEnrichment,
+		arg.CapturedSourceID,
+		arg.WorkspaceID,
+		arg.Summary,
+		arg.OneLineTakeaway,
+		arg.KeyPoints,
+		arg.Topics,
+		arg.Entities,
+		arg.Keywords,
+		arg.SearchText,
+		arg.ModelProvider,
+		arg.ModelName,
+	)
+	var i PageMemory
+	err := row.Scan(
+		&i.CapturedSourceID,
+		&i.WorkspaceID,
+		&i.Summary,
+		&i.OneLineTakeaway,
+		&i.KeyPoints,
+		&i.Topics,
+		&i.Entities,
+		&i.Keywords,
+		&i.SearchText,
+		&i.ModelProvider,
+		&i.ModelName,
+		&i.Status,
+		&i.GeneratedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

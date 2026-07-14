@@ -226,6 +226,18 @@ const BrowserCaptureLinkSchema = z.object({
   title: z.string().optional(),
 }).loose();
 
+const PageMemorySchema = z.object({
+  summary: z.string().default(""),
+  one_line_takeaway: z.string().default(""),
+  key_points: z.array(z.string()).optional().default([]),
+  topics: z.array(z.string()).optional().default([]),
+  entities: z.array(z.string()).optional().default([]),
+  keywords: z.array(z.string()).optional().default([]),
+  status: z.string().default("pending"),
+  generated_at: z.string().nullable().optional(),
+  updated_at: z.string().default(""),
+}).loose();
+
 export const BrowserCaptureSchema = z.object({
   id: z.string().default(""),
   workspace_id: z.string().default(""),
@@ -251,6 +263,7 @@ export const BrowserCaptureSchema = z.object({
   embedding_status: z.string().default("skipped"),
   memory_state: z.string().default("active"),
   failure_reason: z.string().nullable().optional(),
+  memory: PageMemorySchema.nullable().optional(),
   captured_at: z.string().default(""),
   created_at: z.string().default(""),
   updated_at: z.string().default(""),
@@ -281,6 +294,7 @@ export const EMPTY_BROWSER_CAPTURE: BrowserCapture = {
   embedding_status: "skipped",
   memory_state: "active",
   failure_reason: null,
+  memory: null,
   captured_at: "",
   created_at: "",
   updated_at: "",

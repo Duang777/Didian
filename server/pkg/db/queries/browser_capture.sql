@@ -83,3 +83,48 @@ RETURNING *;
 -- name: GetPageMemory :one
 SELECT * FROM page_memory
 WHERE captured_source_id = $1 AND workspace_id = $2;
+
+-- name: ListPendingPageMemoryCaptures :many
+SELECT captured_source.* FROM captured_source
+JOIN page_memory ON page_memory.captured_source_id = captured_source.id
+WHERE page_memory.status = 'pending'
+  AND captured_source.summary_status = 'pending'
+ORDER BY page_memory.created_at ASC
+LIMIT $1;
+
+-- name: UpdatePageMemoryEnrichment :one
+UPDATE page_memory
+SET summary = $3,
+    one_line_takeaway = $4,
+    key_points = $5,
+    topics = $6,
+    entities = $7,
+    keywords = $8,
+    search_text = $9,
+    model_provider = sqlc.narg('model_provider'),
+    model_name = sqlc.narg('model_name'),
+    status = 'ready',
+    generated_at = now(),
+    updated_at = now()
+WHERE captured_source_id = $1 AND workspace_id = $2
+RETURNING *;
+
+-- name: MarkPageMemoryEnrichmentFailed :one
+UPDATE page_memory
+SET status = 'failed',
+    updated_at = now()
+WHERE captured_source_id = $1 AND workspace_id = $2
+RETURNING *;
+
+-- name: UpdateCapturedSourceEnrichmentStatus :one
+UPDATE captured_source
+SET summary_status = $3,
+    status = CASE
+        WHEN $3 = 'success' THEN 'ready'
+        WHEN $3 = 'failure' THEN 'failed'
+        ELSE status
+    END,
+    failure_reason = sqlc.narg('failure_reason'),
+    updated_at = now()
+WHERE id = $1 AND workspace_id = $2
+RETURNING *;
