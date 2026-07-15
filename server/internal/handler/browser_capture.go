@@ -591,6 +591,26 @@ func pageMemoryToResponse(memory db.PageMemory) *PageMemoryResponse {
 	}
 }
 
+func browserMemoryToClaimData(capture db.CapturedSource) *BrowserMemoryData {
+	return &BrowserMemoryData{
+		CaptureID:    uuidToString(capture.ID),
+		URL:          capture.Url,
+		Title:        capture.Title,
+		Domain:       capture.Domain,
+		Description:  textOrEmpty(capture.Description),
+		SelectedText: textOrEmpty(capture.SelectedText),
+		ReadableText: textOrEmpty(capture.ReadableText),
+		Links:        linksFromJSON(capture.Links),
+	}
+}
+
+func textOrEmpty(value pgtype.Text) string {
+	if !value.Valid {
+		return ""
+	}
+	return value.String
+}
+
 func stringArrayFromJSON(raw []byte) []string {
 	values := []string{}
 	if len(raw) == 0 {
@@ -600,6 +620,17 @@ func stringArrayFromJSON(raw []byte) []string {
 		return []string{}
 	}
 	return values
+}
+
+func linksFromJSON(raw []byte) []BrowserCaptureLinkRequest {
+	links := []BrowserCaptureLinkRequest{}
+	if len(raw) == 0 {
+		return links
+	}
+	if err := json.Unmarshal(raw, &links); err != nil {
+		return []BrowserCaptureLinkRequest{}
+	}
+	return links
 }
 
 func buildCaptureSearchText(req CreateBrowserCaptureRequest) string {

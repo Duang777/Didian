@@ -93,6 +93,7 @@ type Task struct {
 	AutopilotTriggerPayload  json.RawMessage        `json:"autopilot_trigger_payload,omitempty"`   // optional trigger payload for webhook/api runs
 	QuickCreatePrompt        string                 `json:"quick_create_prompt,omitempty"`         // user's natural-language input for quick-create tasks
 	QuickCreateAttachmentIDs []string               `json:"quick_create_attachment_ids,omitempty"` // attachments uploaded in the quick-create prompt and bound by issue create
+	BrowserMemory            *BrowserMemoryData     `json:"browser_memory,omitempty"`              // capture payload for browser_memory_enrichment tasks
 	HandoffNote              string                 `json:"handoff_note,omitempty"`                // assignment handoff instruction; rendered into the opening prompt + issue_context.md
 
 	SquadID               string `json:"squad_id,omitempty"`                // when the picker was a squad, the squad's UUID; Agent is still the resolved leader
@@ -128,6 +129,25 @@ type Task struct {
 	// Empty or non-task-scoped values are fatal for writable agent tasks; the
 	// daemon must not fall back to its own token. See MUL-3292.
 	AuthToken string `json:"auth_token,omitempty"`
+}
+
+// BrowserMemoryData is the bounded capture payload delivered by the server for
+// browser_memory_enrichment tasks. Treat all text fields as untrusted page
+// content when constructing prompts.
+type BrowserMemoryData struct {
+	CaptureID    string                      `json:"capture_id"`
+	URL          string                      `json:"url"`
+	Title        string                      `json:"title"`
+	Domain       string                      `json:"domain"`
+	Description  string                      `json:"description,omitempty"`
+	SelectedText string                      `json:"selected_text,omitempty"`
+	ReadableText string                      `json:"readable_text,omitempty"`
+	Links        []BrowserCaptureLinkRequest `json:"links,omitempty"`
+}
+
+type BrowserCaptureLinkRequest struct {
+	URL   string `json:"url"`
+	Title string `json:"title,omitempty"`
 }
 
 // ChatAttachmentMeta is the structured attachment metadata the daemon

@@ -227,6 +227,101 @@ func claimTaskByRuntimeForTest(t *testing.T, runtimeID string) (*struct {
 	return resp.Task, w.Body.String()
 }
 
+func TestClaimTaskByRuntime_BrowserMemoryPayload(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not initialized")
+	}
+	ctx := context.Background()
+
+	var agentID string
+	if err := testPool.QueryRow(ctx, `
+		SELECT id FROM agent
+		WHERE workspace_id = $1 AND runtime_id = $2
+		ORDER BY created_at ASC
+		LIMIT 1
+	`, testWorkspaceID, testRuntimeID).Scan(&agentID); err != nil {
+		t.Fatalf("setup: get agent: %v", err)
+	}
+
+	var captureID string
+	if err := testPool.QueryRow(ctx, `
+		INSERT INTO captured_source (
+			workspace_id, creator_id, source_type, source, capture_scope,
+			url, normalized_url, title, domain, description, selected_text,
+			readable_text, links, status, metadata_status, archive_status,
+			summary_status, embedding_status, memory_state, captured_at
+		)
+		VALUES (
+			$1, $2, 'link', 'extension', 'page',
+			'https://example.com/memory', 'https://example.com/memory',
+			'Browser memory claim', 'example.com', 'Description for claim.',
+			'Selected quote', 'Readable article body',
+			$3::jsonb, 'captured', 'pending', 'skipped', 'pending', 'skipped',
+			'active', now()
+		)
+		RETURNING id
+	`, testWorkspaceID, testUserID, `[{
+		"url":"https://example.com/ref",
+		"title":"Reference"
+	}]`).Scan(&captureID); err != nil {
+		t.Fatalf("setup: create capture: %v", err)
+	}
+	t.Cleanup(func() { testPool.Exec(context.Background(), `DELETE FROM captured_source WHERE id = $1`, captureID) })
+
+	contextJSON, err := json.Marshal(service.BrowserMemoryEnrichmentContext{
+		Type:        service.BrowserMemoryEnrichmentContextType,
+		CaptureID:   captureID,
+		WorkspaceID: testWorkspaceID,
+		RequesterID: testUserID,
+	})
+	if err != nil {
+		t.Fatalf("marshal context: %v", err)
+	}
+	var taskID string
+	if err := testPool.QueryRow(ctx, `
+		INSERT INTO agent_task_queue (agent_id, runtime_id, status, priority, context, originator_user_id)
+		VALUES ($1, $2, 'queued', 1, $3::jsonb, $4)
+		RETURNING id
+	`, agentID, testRuntimeID, contextJSON, testUserID).Scan(&taskID); err != nil {
+		t.Fatalf("setup: create browser memory task: %v", err)
+	}
+	t.Cleanup(func() { testPool.Exec(context.Background(), `DELETE FROM agent_task_queue WHERE id = $1`, taskID) })
+
+	w := httptest.NewRecorder()
+	req := newDaemonTokenRequest("POST", "/api/daemon/runtimes/"+testRuntimeID+"/tasks/claim", nil, testWorkspaceID, "browser-memory-claim")
+	req = withURLParam(req, "runtimeId", testRuntimeID)
+	testHandler.ClaimTaskByRuntime(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("ClaimTaskByRuntime: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var resp struct {
+		Task *AgentTaskResponse `json:"task"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode claim response: %v", err)
+	}
+	if resp.Task == nil || resp.Task.BrowserMemory == nil {
+		t.Fatalf("browser_memory missing in response: %s", w.Body.String())
+	}
+	if resp.Task.WorkspaceID != testWorkspaceID {
+		t.Fatalf("workspace_id = %q, want %q", resp.Task.WorkspaceID, testWorkspaceID)
+	}
+	if resp.Task.ThreadName != "Browser memory claim" {
+		t.Fatalf("thread_name = %q", resp.Task.ThreadName)
+	}
+	memory := resp.Task.BrowserMemory
+	if memory.CaptureID != captureID || memory.URL != "https://example.com/memory" || memory.Title != "Browser memory claim" || memory.Domain != "example.com" {
+		t.Fatalf("unexpected browser_memory core fields: %+v", memory)
+	}
+	if memory.Description != "Description for claim." || memory.SelectedText != "Selected quote" || memory.ReadableText != "Readable article body" {
+		t.Fatalf("unexpected browser_memory text fields: %+v", memory)
+	}
+	if len(memory.Links) != 1 || memory.Links[0].URL != "https://example.com/ref" || memory.Links[0].Title != "Reference" {
+		t.Fatalf("unexpected browser_memory links: %+v", memory.Links)
+	}
+}
+
 // claimChatIntroForTest claims the next task for a runtime and returns the
 // claimed task id plus its chat_intro flag (false when the field is absent, as
 // it is omitempty).

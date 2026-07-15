@@ -2015,10 +2015,12 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 	// resp came from above), so the daemon's prompt + issue_context.md render the
 	// assignment-handoff branch. Empty for all other task kinds.
 
-	// Quick-create task: no issue / chat / autopilot link — workspace and
-	// prompt come from the task's context JSONB. Resolve workspace from
-	// there so the isolation check below has something to compare.
+	// Quick-create / browser-memory context tasks: no issue / chat /
+	// autopilot link — workspace and task-specific input come from the task's
+	// context JSONB. Resolve workspace here so the isolation check below has
+	// something to compare.
 	hasQuickCreate := false
+	hasBrowserMemory := false
 	if task.Context != nil && !task.IssueID.Valid && !task.ChatSessionID.Valid && !task.AutopilotRunID.Valid {
 		var qc service.QuickCreateContext
 		if json.Unmarshal(task.Context, &qc) == nil && qc.Type == service.QuickCreateContextType {
@@ -2143,6 +2145,30 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+
+		var bm service.BrowserMemoryEnrichmentContext
+		if json.Unmarshal(task.Context, &bm) == nil && bm.Type == service.BrowserMemoryEnrichmentContextType {
+			hasBrowserMemory = true
+			workspaceUUID, wsErr := util.ParseUUID(bm.WorkspaceID)
+			captureUUID, capErr := util.ParseUUID(bm.CaptureID)
+			if wsErr != nil || capErr != nil {
+				outcome = "error_browser_memory_context"
+				writeError(w, http.StatusInternalServerError, "invalid browser memory task context")
+				return
+			}
+			capture, err := h.Queries.GetCapturedSourceInWorkspace(r.Context(), db.GetCapturedSourceInWorkspaceParams{
+				ID:          captureUUID,
+				WorkspaceID: workspaceUUID,
+			})
+			if err != nil {
+				outcome = "error_browser_memory_capture"
+				writeError(w, http.StatusInternalServerError, "failed to load browser memory capture")
+				return
+			}
+			resp.WorkspaceID = bm.WorkspaceID
+			resp.ThreadName = capture.Title
+			resp.BrowserMemory = browserMemoryToClaimData(capture)
+		}
 	}
 
 	// Workspace isolation check: the daemon uses this response's workspace_id
@@ -2164,6 +2190,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 			"has_chat", task.ChatSessionID.Valid,
 			"has_autopilot_run", task.AutopilotRunID.Valid,
 			"has_quick_create", hasQuickCreate,
+			"has_browser_memory", hasBrowserMemory,
 		)
 		if _, cerr := h.TaskService.CancelTask(r.Context(), task.ID); cerr != nil {
 			slog.Error("task claim: cancel after workspace check failed",
