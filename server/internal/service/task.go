@@ -941,6 +941,21 @@ type QuickCreateContext struct {
 // QuickCreateContextType marks a task as a quick-create job.
 const QuickCreateContextType = "quick_create"
 
+// BrowserMemoryEnrichmentContext is the JSON payload stored on a browser
+// memory enrichment task. It deliberately carries only identifiers; the claim
+// path resolves the capture from the database so page content never becomes an
+// authority for routing or workspace isolation.
+type BrowserMemoryEnrichmentContext struct {
+	Type        string `json:"type"`
+	CaptureID   string `json:"capture_id"`
+	WorkspaceID string `json:"workspace_id"`
+	RequesterID string `json:"requester_id,omitempty"`
+}
+
+// BrowserMemoryEnrichmentContextType marks a task as a Codex-backed browser
+// memory enrichment job.
+const BrowserMemoryEnrichmentContextType = "browser_memory_enrichment"
+
 // EnqueueQuickCreateTask creates a queued task that has no issue / chat /
 // autopilot link — the user's natural-language prompt is stored in the
 // task's context JSONB and the agent is expected to translate it into a
@@ -1028,6 +1043,94 @@ func (s *TaskService) EnqueueQuickCreateTask(ctx context.Context, workspaceID, r
 	// cycle. Without this the user perceives "quick create never
 	// triggered" because the modal closes immediately and the task
 	// sits in 'queued' until the next sleepWithContextOrWakeup tick.
+	s.NotifyTaskEnqueued(ctx, task)
+	return task, nil
+}
+
+// EnqueueBrowserMemoryEnrichmentTask creates a low-priority runtime task that
+// asks the local agent runtime to derive structured memory for one browser
+// capture. The capture and requester must already belong to workspaceID.
+func (s *TaskService) EnqueueBrowserMemoryEnrichmentTask(ctx context.Context, workspaceID, requesterID, captureID, agentID pgtype.UUID) (db.AgentTaskQueue, error) {
+	if s == nil || s.Queries == nil {
+		return db.AgentTaskQueue{}, errors.New("task service is not configured")
+	}
+	agent, err := s.Queries.GetAgent(ctx, agentID)
+	if err != nil {
+		return db.AgentTaskQueue{}, fmt.Errorf("load agent: %w", err)
+	}
+	if agent.ArchivedAt.Valid {
+		return db.AgentTaskQueue{}, fmt.Errorf("agent is archived")
+	}
+	if !agent.RuntimeID.Valid {
+		return db.AgentTaskQueue{}, fmt.Errorf("agent has no runtime")
+	}
+	if agent.WorkspaceID != workspaceID {
+		return db.AgentTaskQueue{}, fmt.Errorf("agent belongs to a different workspace")
+	}
+	runtime, err := s.Queries.GetAgentRuntime(ctx, agent.RuntimeID)
+	if err != nil {
+		return db.AgentTaskQueue{}, fmt.Errorf("load runtime: %w", err)
+	}
+	if runtime.WorkspaceID != workspaceID {
+		return db.AgentTaskQueue{}, fmt.Errorf("runtime belongs to a different workspace")
+	}
+	if runtime.Status != "online" {
+		return db.AgentTaskQueue{}, fmt.Errorf("agent runtime is offline")
+	}
+	if runtime.Provider != "codex" {
+		return db.AgentTaskQueue{}, fmt.Errorf("browser memory enrichment requires a Codex runtime")
+	}
+
+	if _, err := s.Queries.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{
+		ID:          captureID,
+		WorkspaceID: workspaceID,
+	}); err != nil {
+		return db.AgentTaskQueue{}, fmt.Errorf("load capture: %w", err)
+	}
+
+	payload := BrowserMemoryEnrichmentContext{
+		Type:        BrowserMemoryEnrichmentContextType,
+		CaptureID:   util.UUIDToString(captureID),
+		WorkspaceID: util.UUIDToString(workspaceID),
+		RequesterID: util.UUIDToString(requesterID),
+	}
+	contextJSON, err := json.Marshal(payload)
+	if err != nil {
+		return db.AgentTaskQueue{}, fmt.Errorf("marshal browser memory context: %w", err)
+	}
+
+	var task db.AgentTaskQueue
+	if err := s.runInTx(ctx, func(qtx *db.Queries) error {
+		created, err := qtx.CreateQuickCreateTask(ctx, db.CreateQuickCreateTaskParams{
+			AgentID:          agentID,
+			RuntimeID:        agent.RuntimeID,
+			Priority:         priorityToInt("low"),
+			Context:          contextJSON,
+			OriginatorUserID: requesterID,
+		})
+		if err != nil {
+			return fmt.Errorf("create browser memory task: %w", err)
+		}
+		if _, err := qtx.MarkPageMemoryEnrichmentProcessing(ctx, db.MarkPageMemoryEnrichmentProcessingParams{
+			CapturedSourceID: captureID,
+			WorkspaceID:      workspaceID,
+			EnrichmentTaskID: created.ID,
+		}); err != nil {
+			return fmt.Errorf("mark page memory processing: %w", err)
+		}
+		task = created
+		return nil
+	}); err != nil {
+		return db.AgentTaskQueue{}, err
+	}
+
+	slog.Info("browser memory enrichment task enqueued",
+		"task_id", util.UUIDToString(task.ID),
+		"agent_id", util.UUIDToString(agentID),
+		"requester_id", util.UUIDToString(requesterID),
+		"workspace_id", util.UUIDToString(workspaceID),
+		"capture_id", util.UUIDToString(captureID),
+	)
 	s.NotifyTaskEnqueued(ctx, task)
 	return task, nil
 }
@@ -2900,7 +3003,9 @@ func (s *TaskService) notifyTaskAvailable(task db.AgentTaskQueue) {
 	// just-queued task until the TTL expires. The cache itself bounds
 	// every Redis call with a short timeout so a wedged Redis cannot
 	// block enqueue.
-	s.EmptyClaim.Bump(context.Background(), runtimeKey)
+	if s.EmptyClaim != nil {
+		s.EmptyClaim.Bump(context.Background(), runtimeKey)
+	}
 	if s.Wakeup == nil {
 		return
 	}
@@ -2991,6 +3096,9 @@ func (s *TaskService) ResolveTaskWorkspaceID(ctx context.Context, task db.AgentT
 	// broadcasts, which is why quick-create tasks appeared stuck queued.
 	if qc, ok := s.parseQuickCreateContext(task); ok {
 		return qc.WorkspaceID
+	}
+	if bm, ok := s.parseBrowserMemoryEnrichmentContext(task); ok {
+		return bm.WorkspaceID
 	}
 	return ""
 }
@@ -3203,6 +3311,25 @@ func (s *TaskService) parseQuickCreateContext(task db.AgentTaskQueue) (QuickCrea
 		return QuickCreateContext{}, false
 	}
 	return qc, true
+}
+
+// parseBrowserMemoryEnrichmentContext returns the browser memory payload when
+// the task is a linkless context task with type == "browser_memory_enrichment".
+func (s *TaskService) parseBrowserMemoryEnrichmentContext(task db.AgentTaskQueue) (BrowserMemoryEnrichmentContext, bool) {
+	if task.IssueID.Valid || task.ChatSessionID.Valid || task.AutopilotRunID.Valid {
+		return BrowserMemoryEnrichmentContext{}, false
+	}
+	if len(task.Context) == 0 {
+		return BrowserMemoryEnrichmentContext{}, false
+	}
+	var bm BrowserMemoryEnrichmentContext
+	if err := json.Unmarshal(task.Context, &bm); err != nil {
+		return BrowserMemoryEnrichmentContext{}, false
+	}
+	if bm.Type != BrowserMemoryEnrichmentContextType {
+		return BrowserMemoryEnrichmentContext{}, false
+	}
+	return bm, true
 }
 
 // notifyQuickCreateCompleted writes a success inbox notification to the
