@@ -986,6 +986,8 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 				r.Get("/", h.ListBrowserCaptures)
 				r.Post("/", h.CreateBrowserCapture)
 				r.Get("/{id}", h.GetBrowserCapture)
+				r.Post("/{id}/archive", h.ArchiveBrowserCapture)
+				r.Post("/{id}/restore", h.RestoreBrowserCapture)
 			})
 
 			// Issues

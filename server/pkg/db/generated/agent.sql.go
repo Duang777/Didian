@@ -1937,6 +1937,58 @@ func (q *Queries) FailStaleTasks(ctx context.Context, arg FailStaleTasksParams) 
 	return items, nil
 }
 
+const findOwnedOnlineCodexAgent = `-- name: FindOwnedOnlineCodexAgent :one
+SELECT agent.id, agent.workspace_id, agent.name, agent.avatar_url, agent.runtime_mode, agent.runtime_config, agent.visibility, agent.status, agent.max_concurrent_tasks, agent.owner_id, agent.created_at, agent.updated_at, agent.description, agent.runtime_id, agent.instructions, agent.archived_at, agent.archived_by, agent.custom_env, agent.custom_args, agent.mcp_config, agent.model, agent.thinking_level, agent.composio_toolkit_allowlist, agent.permission_mode FROM agent
+JOIN agent_runtime ON agent.runtime_id = agent_runtime.id
+WHERE agent.workspace_id = $1
+  AND agent.owner_id = $2
+  AND agent.archived_at IS NULL
+  AND agent.runtime_id IS NOT NULL
+  AND agent_runtime.workspace_id = $1
+  AND agent_runtime.owner_id = $2
+  AND agent_runtime.provider = 'codex'
+  AND agent_runtime.status = 'online'
+ORDER BY agent.created_at ASC
+LIMIT 1
+`
+
+type FindOwnedOnlineCodexAgentParams struct {
+	WorkspaceID pgtype.UUID `json:"workspace_id"`
+	OwnerID     pgtype.UUID `json:"owner_id"`
+}
+
+func (q *Queries) FindOwnedOnlineCodexAgent(ctx context.Context, arg FindOwnedOnlineCodexAgentParams) (Agent, error) {
+	row := q.db.QueryRow(ctx, findOwnedOnlineCodexAgent, arg.WorkspaceID, arg.OwnerID)
+	var i Agent
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.RuntimeMode,
+		&i.RuntimeConfig,
+		&i.Visibility,
+		&i.Status,
+		&i.MaxConcurrentTasks,
+		&i.OwnerID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Description,
+		&i.RuntimeID,
+		&i.Instructions,
+		&i.ArchivedAt,
+		&i.ArchivedBy,
+		&i.CustomEnv,
+		&i.CustomArgs,
+		&i.McpConfig,
+		&i.Model,
+		&i.ThinkingLevel,
+		&i.ComposioToolkitAllowlist,
+		&i.PermissionMode,
+	)
+	return i, err
+}
+
 const getAgent = `-- name: GetAgent :one
 SELECT id, workspace_id, name, avatar_url, runtime_mode, runtime_config, visibility, status, max_concurrent_tasks, owner_id, created_at, updated_at, description, runtime_id, instructions, archived_at, archived_by, custom_env, custom_args, mcp_config, model, thinking_level, composio_toolkit_allowlist, permission_mode FROM agent
 WHERE id = $1

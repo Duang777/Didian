@@ -60,6 +60,8 @@ async function postCapture(payload: BrowserCapturePayload, settings: ExtensionSe
 
   const body = await response.json().catch(() => ({})) as {
     captureId?: string;
+    memoryStatus?: string;
+    capture?: { memory?: { status?: string }; failure_reason?: string | null };
     dedupe?: { isDuplicate?: boolean };
     error?: string;
   };
@@ -72,6 +74,8 @@ async function postCapture(payload: BrowserCapturePayload, settings: ExtensionSe
     ok: true,
     captureId: body.captureId,
     duplicate: body.dedupe?.isDuplicate === true,
+    memoryStatus: body.capture?.memory?.status || body.memoryStatus,
+    failureReason: body.capture?.failure_reason ?? null,
   };
 }
 

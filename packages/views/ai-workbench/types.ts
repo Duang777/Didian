@@ -12,6 +12,7 @@ export type AiInboxInputKind = "url" | "text" | "file" | "browser_capture";
 
 export type AiInboxInput = {
   id: string;
+  captureId?: string;
   kind: AiInboxInputKind;
   title: string;
   preview: string;
@@ -20,6 +21,10 @@ export type AiInboxInput = {
   sourceLabel?: string;
   previewImageUrl?: string;
   faviconUrl?: string;
+  enrichmentStatus?: "pending" | "processing" | "failed" | "ready";
+  enrichmentLabel?: string;
+  enrichmentDescription?: string;
+  failureReason?: string | null;
   confidence: number;
 };
 

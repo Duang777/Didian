@@ -1544,6 +1544,7 @@ export class ApiClient {
     if (params.limit !== undefined) search.set("limit", String(params.limit));
     if (params.offset !== undefined) search.set("offset", String(params.offset));
     if (params.state) search.set("state", params.state);
+    if (params.q) search.set("q", params.q);
     const suffix = search.toString() ? `?${search.toString()}` : "";
     const raw = await this.fetch<unknown>(`/api/browser-captures${suffix}`);
     return parseWithFallback(raw, ListBrowserCapturesResponseSchema, EMPTY_LIST_BROWSER_CAPTURES_RESPONSE, {
@@ -1565,6 +1566,20 @@ export class ApiClient {
     const raw = await this.fetch<unknown>(`/api/browser-captures/${id}`);
     return parseWithFallback(raw, BrowserCaptureSchema, EMPTY_BROWSER_CAPTURE, {
       endpoint: "GET /api/browser-captures/:id",
+    });
+  }
+
+  async archiveBrowserCapture(id: string): Promise<BrowserCapture> {
+    const raw = await this.fetch<unknown>(`/api/browser-captures/${id}/archive`, { method: "POST" });
+    return parseWithFallback(raw, BrowserCaptureSchema, EMPTY_BROWSER_CAPTURE, {
+      endpoint: "POST /api/browser-captures/:id/archive",
+    });
+  }
+
+  async restoreBrowserCapture(id: string): Promise<BrowserCapture> {
+    const raw = await this.fetch<unknown>(`/api/browser-captures/${id}/restore`, { method: "POST" });
+    return parseWithFallback(raw, BrowserCaptureSchema, EMPTY_BROWSER_CAPTURE, {
+      endpoint: "POST /api/browser-captures/:id/restore",
     });
   }
 

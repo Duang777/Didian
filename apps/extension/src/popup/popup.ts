@@ -21,10 +21,36 @@ const ui = {
   statusPill: requireElement(statusPill, "status pill"),
 };
 
-function setMessage(text: string, tone: "neutral" | "success" | "error" = "neutral") {
+type MessageTone = "neutral" | "success" | "error" | "pending" | "processing";
+
+function setMessage(text: string, tone: MessageTone = "neutral") {
   ui.message.textContent = text;
   ui.message.dataset.tone = tone;
-  ui.statusPill.textContent = tone === "error" ? "Error" : tone === "success" ? "Saved" : "Ready";
+  ui.statusPill.textContent = statusPillLabel(tone);
+}
+
+function statusPillLabel(tone: MessageTone): string {
+  if (tone === "error") return "Error";
+  if (tone === "success") return "Ready";
+  if (tone === "processing") return "Processing";
+  if (tone === "pending") return "Pending";
+  return "Ready";
+}
+
+function describeCaptureResult(result: CaptureResult): { text: string; tone: MessageTone } {
+  const prefix = result.duplicate ? "Already saved." : "Captured.";
+  switch (result.memoryStatus) {
+    case "ready":
+      return { text: `${prefix} AI enrichment is ready.`, tone: "success" };
+    case "processing":
+      return { text: `${prefix} AI is organizing it now.`, tone: "processing" };
+    case "failed":
+      return { text: result.failureReason ? `${prefix} AI enrichment failed: ${result.failureReason}` : `${prefix} AI enrichment failed.`, tone: "error" };
+    case "pending":
+      return { text: `${prefix} Waiting for AI enrichment.`, tone: "pending" };
+    default:
+      return { text: result.duplicate ? "Already saved in Didian." : "Captured in Didian.", tone: "success" };
+  }
 }
 
 function readSettings(): ExtensionSettings {
@@ -63,7 +89,8 @@ ui.captureButton.addEventListener("click", () => {
   void (async () => {
     const result = await sendMessage<CaptureResult>({ type: "capture-current-tab" });
     if (!result.ok) throw new Error(result.error || "Capture failed");
-    setMessage(result.duplicate ? "Already saved in Didian." : "Captured in Didian.", "success");
+    const next = describeCaptureResult(result);
+    setMessage(next.text, next.tone);
   })()
     .catch((error) => setMessage(error instanceof Error ? error.message : "Capture failed", "error"))
     .finally(() => {

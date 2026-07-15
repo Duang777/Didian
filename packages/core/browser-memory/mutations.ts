@@ -26,3 +26,36 @@ export function useCreateBrowserCapture() {
     },
   });
 }
+
+export function useArchiveBrowserCapture() {
+  return useSetBrowserCaptureMemoryState("archived");
+}
+
+export function useRestoreBrowserCapture() {
+  return useSetBrowserCaptureMemoryState("active");
+}
+
+function useSetBrowserCaptureMemoryState(state: "active" | "archived") {
+  const qc = useQueryClient();
+  const wsId = useWorkspaceId();
+
+  return useMutation({
+    mutationFn: (id: string) => state === "archived" ? api.archiveBrowserCapture(id) : api.restoreBrowserCapture(id),
+    onSuccess: (updated) => {
+      qc.setQueriesData<ListBrowserCapturesResponse>({ queryKey: browserMemoryKeys.all(wsId) }, (old) => {
+        if (!old) return old;
+        const states = new Set(old.captures.map((capture) => capture.memory_state));
+        const singleState = states.size === 1 ? old.captures[0]?.memory_state : null;
+        const nextCaptures = old.captures.flatMap((capture) => {
+          if (capture.id !== updated.id) return [capture];
+          if (singleState && singleState !== updated.memory_state) return [];
+          return [updated];
+        });
+        return { ...old, captures: nextCaptures };
+      });
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: browserMemoryKeys.all(wsId) });
+    },
+  });
+}

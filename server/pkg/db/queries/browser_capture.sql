@@ -56,15 +56,46 @@ RETURNING *;
 
 -- name: ListCapturedSources :many
 SELECT * FROM captured_source
-WHERE workspace_id = $1
-  AND (sqlc.narg('memory_state')::text IS NULL OR memory_state = sqlc.narg('memory_state')::text)
+WHERE captured_source.workspace_id = $1
+  AND (sqlc.narg('memory_state')::text IS NULL OR captured_source.memory_state = sqlc.narg('memory_state')::text)
+  AND (
+    COALESCE(sqlc.narg('query')::text, '') = ''
+    OR LOWER(captured_source.title) LIKE '%' || LOWER(sqlc.narg('query')::text) || '%'
+    OR LOWER(captured_source.url) LIKE '%' || LOWER(sqlc.narg('query')::text) || '%'
+    OR LOWER(captured_source.domain) LIKE '%' || LOWER(sqlc.narg('query')::text) || '%'
+    OR EXISTS (
+      SELECT 1 FROM page_memory
+      WHERE page_memory.captured_source_id = captured_source.id
+        AND page_memory.workspace_id = captured_source.workspace_id
+        AND LOWER(page_memory.search_text) LIKE '%' || LOWER(sqlc.narg('query')::text) || '%'
+    )
+  )
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: CountCapturedSources :one
 SELECT count(*)::bigint FROM captured_source
-WHERE workspace_id = $1
-  AND (sqlc.narg('memory_state')::text IS NULL OR memory_state = sqlc.narg('memory_state')::text);
+WHERE captured_source.workspace_id = $1
+  AND (sqlc.narg('memory_state')::text IS NULL OR captured_source.memory_state = sqlc.narg('memory_state')::text)
+  AND (
+    COALESCE(sqlc.narg('query')::text, '') = ''
+    OR LOWER(captured_source.title) LIKE '%' || LOWER(sqlc.narg('query')::text) || '%'
+    OR LOWER(captured_source.url) LIKE '%' || LOWER(sqlc.narg('query')::text) || '%'
+    OR LOWER(captured_source.domain) LIKE '%' || LOWER(sqlc.narg('query')::text) || '%'
+    OR EXISTS (
+      SELECT 1 FROM page_memory
+      WHERE page_memory.captured_source_id = captured_source.id
+        AND page_memory.workspace_id = captured_source.workspace_id
+        AND LOWER(page_memory.search_text) LIKE '%' || LOWER(sqlc.narg('query')::text) || '%'
+    )
+  );
+
+-- name: UpdateCapturedSourceMemoryState :one
+UPDATE captured_source
+SET memory_state = $3,
+    updated_at = now()
+WHERE id = $1 AND workspace_id = $2
+RETURNING *;
 
 -- name: CreatePendingPageMemory :one
 INSERT INTO page_memory (

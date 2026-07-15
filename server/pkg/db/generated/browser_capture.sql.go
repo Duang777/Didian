@@ -13,17 +13,30 @@ import (
 
 const countCapturedSources = `-- name: CountCapturedSources :one
 SELECT count(*)::bigint FROM captured_source
-WHERE workspace_id = $1
-  AND ($2::text IS NULL OR memory_state = $2::text)
+WHERE captured_source.workspace_id = $1
+  AND ($2::text IS NULL OR captured_source.memory_state = $2::text)
+  AND (
+    COALESCE($3::text, '') = ''
+    OR LOWER(captured_source.title) LIKE '%' || LOWER($3::text) || '%'
+    OR LOWER(captured_source.url) LIKE '%' || LOWER($3::text) || '%'
+    OR LOWER(captured_source.domain) LIKE '%' || LOWER($3::text) || '%'
+    OR EXISTS (
+      SELECT 1 FROM page_memory
+      WHERE page_memory.captured_source_id = captured_source.id
+        AND page_memory.workspace_id = captured_source.workspace_id
+        AND LOWER(page_memory.search_text) LIKE '%' || LOWER($3::text) || '%'
+    )
+  )
 `
 
 type CountCapturedSourcesParams struct {
 	WorkspaceID pgtype.UUID `json:"workspace_id"`
 	MemoryState pgtype.Text `json:"memory_state"`
+	Query       pgtype.Text `json:"query"`
 }
 
 func (q *Queries) CountCapturedSources(ctx context.Context, arg CountCapturedSourcesParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countCapturedSources, arg.WorkspaceID, arg.MemoryState)
+	row := q.db.QueryRow(ctx, countCapturedSources, arg.WorkspaceID, arg.MemoryState, arg.Query)
 	var column_1 int64
 	err := row.Scan(&column_1)
 	return column_1, err
@@ -374,8 +387,20 @@ func (q *Queries) GetPageMemoryByEnrichmentTask(ctx context.Context, enrichmentT
 
 const listCapturedSources = `-- name: ListCapturedSources :many
 SELECT id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at FROM captured_source
-WHERE workspace_id = $1
-  AND ($4::text IS NULL OR memory_state = $4::text)
+WHERE captured_source.workspace_id = $1
+  AND ($4::text IS NULL OR captured_source.memory_state = $4::text)
+  AND (
+    COALESCE($5::text, '') = ''
+    OR LOWER(captured_source.title) LIKE '%' || LOWER($5::text) || '%'
+    OR LOWER(captured_source.url) LIKE '%' || LOWER($5::text) || '%'
+    OR LOWER(captured_source.domain) LIKE '%' || LOWER($5::text) || '%'
+    OR EXISTS (
+      SELECT 1 FROM page_memory
+      WHERE page_memory.captured_source_id = captured_source.id
+        AND page_memory.workspace_id = captured_source.workspace_id
+        AND LOWER(page_memory.search_text) LIKE '%' || LOWER($5::text) || '%'
+    )
+  )
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -385,6 +410,7 @@ type ListCapturedSourcesParams struct {
 	Limit       int32       `json:"limit"`
 	Offset      int32       `json:"offset"`
 	MemoryState pgtype.Text `json:"memory_state"`
+	Query       pgtype.Text `json:"query"`
 }
 
 func (q *Queries) ListCapturedSources(ctx context.Context, arg ListCapturedSourcesParams) ([]CapturedSource, error) {
@@ -393,6 +419,7 @@ func (q *Queries) ListCapturedSources(ctx context.Context, arg ListCapturedSourc
 		arg.Limit,
 		arg.Offset,
 		arg.MemoryState,
+		arg.Query,
 	)
 	if err != nil {
 		return nil, err
@@ -612,6 +639,57 @@ func (q *Queries) UpdateCapturedSourceEnrichmentStatus(ctx context.Context, arg 
 		arg.SummaryStatus,
 		arg.FailureReason,
 	)
+	var i CapturedSource
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.CreatorID,
+		&i.SourceType,
+		&i.Source,
+		&i.CaptureScope,
+		&i.SourceTabID,
+		&i.Url,
+		&i.NormalizedUrl,
+		&i.Title,
+		&i.Domain,
+		&i.FaviconUrl,
+		&i.Description,
+		&i.PreviewImageUrl,
+		&i.SelectedText,
+		&i.ReadableText,
+		&i.Links,
+		&i.TextHash,
+		&i.PageHash,
+		&i.Status,
+		&i.MetadataStatus,
+		&i.ArchiveStatus,
+		&i.SummaryStatus,
+		&i.EmbeddingStatus,
+		&i.MemoryState,
+		&i.FailureReason,
+		&i.CapturedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateCapturedSourceMemoryState = `-- name: UpdateCapturedSourceMemoryState :one
+UPDATE captured_source
+SET memory_state = $3,
+    updated_at = now()
+WHERE id = $1 AND workspace_id = $2
+RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at
+`
+
+type UpdateCapturedSourceMemoryStateParams struct {
+	ID          pgtype.UUID `json:"id"`
+	WorkspaceID pgtype.UUID `json:"workspace_id"`
+	MemoryState string      `json:"memory_state"`
+}
+
+func (q *Queries) UpdateCapturedSourceMemoryState(ctx context.Context, arg UpdateCapturedSourceMemoryStateParams) (CapturedSource, error) {
+	row := q.db.QueryRow(ctx, updateCapturedSourceMemoryState, arg.ID, arg.WorkspaceID, arg.MemoryState)
 	var i CapturedSource
 	err := row.Scan(
 		&i.ID,

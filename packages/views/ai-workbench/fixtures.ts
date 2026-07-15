@@ -72,6 +72,40 @@ function browserCaptureLabel(capture: BrowserCapture): string {
   return "收藏";
 }
 
+function browserMemoryStatus(capture: BrowserCapture): Pick<AiInboxInput, "enrichmentStatus" | "enrichmentLabel" | "enrichmentDescription" | "failureReason"> {
+  const status = capture.memory?.status;
+  if (status === "ready") {
+    return {
+      enrichmentStatus: "ready",
+      enrichmentLabel: "AI ready",
+      enrichmentDescription: "已整理",
+      failureReason: null,
+    };
+  }
+  if (status === "processing") {
+    return {
+      enrichmentStatus: "processing",
+      enrichmentLabel: "AI processing",
+      enrichmentDescription: "AI 正在整理",
+      failureReason: null,
+    };
+  }
+  if (status === "failed" || capture.summary_status === "failure" || capture.status === "failed") {
+    return {
+      enrichmentStatus: "failed",
+      enrichmentLabel: "AI failed",
+      enrichmentDescription: "整理失败",
+      failureReason: capture.failure_reason ?? null,
+    };
+  }
+  return {
+    enrichmentStatus: "pending",
+    enrichmentLabel: "AI pending",
+    enrichmentDescription: "等待整理",
+    failureReason: null,
+  };
+}
+
 export function browserCaptureToInboxInput(payload: BrowserCapturePayload): AiInboxInput {
   const preview = truncateText(payload.selectedText, 240)
     || truncateText(payload.description, 240)
@@ -93,6 +127,7 @@ export function browserCaptureToInboxInput(payload: BrowserCapturePayload): AiIn
 }
 
 export function browserCaptureRecordToInboxInput(capture: BrowserCapture): AiInboxInput {
+  const memoryStatus = browserMemoryStatus(capture);
   const preview = truncateText(capture.memory?.one_line_takeaway, 240)
     || truncateText(capture.memory?.summary, 240)
     || truncateText(capture.selected_text ?? undefined, 240)
@@ -104,6 +139,7 @@ export function browserCaptureRecordToInboxInput(capture: BrowserCapture): AiInb
 
   return {
     id: `capture-${capture.id}`,
+    captureId: capture.id,
     kind: "browser_capture",
     title: capture.title || capture.normalized_url || capture.url,
     preview,
@@ -118,6 +154,7 @@ export function browserCaptureRecordToInboxInput(capture: BrowserCapture): AiInb
     sourceLabel: browserCaptureLabel(capture),
     previewImageUrl: capture.preview_image_url ?? undefined,
     faviconUrl: capture.favicon_url ?? undefined,
+    ...memoryStatus,
     confidence: capture.selected_text || capture.readable_text ? 0.9 : 0.72,
   };
 }

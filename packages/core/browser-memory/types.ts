@@ -93,4 +93,5 @@ export interface ListBrowserCapturesParams {
   limit?: number;
   offset?: number;
   state?: BrowserCaptureMemoryState;
+  q?: string;
 }

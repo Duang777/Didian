@@ -31,6 +31,8 @@ export interface CaptureResult {
   ok: boolean;
   captureId?: string;
   duplicate?: boolean;
+  memoryStatus?: "pending" | "processing" | "failed" | "ready" | string;
+  failureReason?: string | null;
   error?: string;
 }
 

@@ -3,6 +3,20 @@ SELECT * FROM agent
 WHERE workspace_id = $1 AND archived_at IS NULL
 ORDER BY created_at ASC;
 
+-- name: FindOwnedOnlineCodexAgent :one
+SELECT agent.* FROM agent
+JOIN agent_runtime ON agent.runtime_id = agent_runtime.id
+WHERE agent.workspace_id = $1
+  AND agent.owner_id = $2
+  AND agent.archived_at IS NULL
+  AND agent.runtime_id IS NOT NULL
+  AND agent_runtime.workspace_id = $1
+  AND agent_runtime.owner_id = $2
+  AND agent_runtime.provider = 'codex'
+  AND agent_runtime.status = 'online'
+ORDER BY agent.created_at ASC
+LIMIT 1;
+
 -- name: ListAllAgents :many
 SELECT * FROM agent
 WHERE workspace_id = $1

@@ -181,12 +181,17 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 				slog.Warn("UpdateCapturedSourcePreviewMetadata failed", append(logger.RequestAttrs(r), "error", updateErr, "capture_id", uuidToString(existing.ID))...)
 			}
 			id := uuidToString(existing.ID)
+			resp := h.browserCaptureToResponseWithMemory(r.Context(), capture)
+			memoryStatus := capture.SummaryStatus
+			if resp.Memory != nil {
+				memoryStatus = resp.Memory.Status
+			}
 			dedupe = BrowserCaptureDedupeResponse{IsDuplicate: true, ExistingCaptureID: &id}
 			writeJSON(w, http.StatusOK, CreateBrowserCaptureResponse{
-				Capture:      browserCaptureToResponse(capture),
+				Capture:      resp,
 				CaptureID:    id,
 				Status:       capture.Status,
-				MemoryStatus: capture.SummaryStatus,
+				MemoryStatus: memoryStatus,
 				Dedupe:       dedupe,
 			})
 			return
@@ -231,7 +236,9 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.Queries.CreatePendingPageMemory(r.Context(), db.CreatePendingPageMemoryParams{
+	memoryStatus := capture.SummaryStatus
+	resp := browserCaptureToResponse(capture)
+	memory, err := h.Queries.CreatePendingPageMemory(r.Context(), db.CreatePendingPageMemoryParams{
 		CapturedSourceID: capture.ID,
 		WorkspaceID:      workspaceID,
 		SearchText:       buildCaptureSearchText(normalized.req),
@@ -240,15 +247,21 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Warn("CreatePendingPageMemory failed", append(logger.RequestAttrs(r), "error", err, "capture_id", uuidToString(capture.ID))...)
 	} else {
-		h.enrichBrowserCaptureAsync(capture)
+		if _, queued := h.tryEnqueueBrowserMemoryEnrichment(r.Context(), workspaceID, userUUID, capture.ID); queued {
+			memory.Status = "processing"
+		} else {
+			h.enrichBrowserCaptureAsync(capture)
+		}
+		memoryStatus = memory.Status
+		resp.Memory = pageMemoryToResponse(memory)
 	}
 
 	id := uuidToString(capture.ID)
 	writeJSON(w, http.StatusCreated, CreateBrowserCaptureResponse{
-		Capture:      browserCaptureToResponse(capture),
+		Capture:      resp,
 		CaptureID:    id,
 		Status:       capture.Status,
-		MemoryStatus: capture.SummaryStatus,
+		MemoryStatus: memoryStatus,
 		Dedupe:       dedupe,
 	})
 }
@@ -264,9 +277,18 @@ func (h *Handler) ListBrowserCaptures(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid memory state")
 		return
 	}
+	query := normalizeSpace(r.URL.Query().Get("q"))
+	if len([]rune(query)) > 200 {
+		writeError(w, http.StatusBadRequest, "query is too long")
+		return
+	}
 	stateParam := pgtype.Text{}
 	if memoryState != "" {
 		stateParam = strToText(memoryState)
+	}
+	queryParam := pgtype.Text{}
+	if query != "" {
+		queryParam = strToText(query)
 	}
 
 	rows, err := h.Queries.ListCapturedSources(r.Context(), db.ListCapturedSourcesParams{
@@ -274,6 +296,7 @@ func (h *Handler) ListBrowserCaptures(w http.ResponseWriter, r *http.Request) {
 		Limit:       int32(limit),
 		Offset:      int32(offset),
 		MemoryState: stateParam,
+		Query:       queryParam,
 	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to list browser captures")
@@ -282,6 +305,7 @@ func (h *Handler) ListBrowserCaptures(w http.ResponseWriter, r *http.Request) {
 	total, err := h.Queries.CountCapturedSources(r.Context(), db.CountCapturedSourcesParams{
 		WorkspaceID: workspaceID,
 		MemoryState: stateParam,
+		Query:       queryParam,
 	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to count browser captures")
@@ -293,6 +317,35 @@ func (h *Handler) ListBrowserCaptures(w http.ResponseWriter, r *http.Request) {
 		resp[i] = h.browserCaptureToResponseWithMemory(r.Context(), row)
 	}
 	writeJSON(w, http.StatusOK, ListBrowserCapturesResponse{Captures: resp, Total: total})
+}
+
+func (h *Handler) ArchiveBrowserCapture(w http.ResponseWriter, r *http.Request) {
+	h.setBrowserCaptureMemoryState(w, r, "archived")
+}
+
+func (h *Handler) RestoreBrowserCapture(w http.ResponseWriter, r *http.Request) {
+	h.setBrowserCaptureMemoryState(w, r, "active")
+}
+
+func (h *Handler) setBrowserCaptureMemoryState(w http.ResponseWriter, r *http.Request, state string) {
+	workspaceID, ok := parseUUIDOrBadRequest(w, h.resolveWorkspaceID(r), "workspace id")
+	if !ok {
+		return
+	}
+	captureID, ok := parseUUIDOrBadRequest(w, chi.URLParam(r, "id"), "capture id")
+	if !ok {
+		return
+	}
+	capture, err := h.Queries.UpdateCapturedSourceMemoryState(r.Context(), db.UpdateCapturedSourceMemoryStateParams{
+		ID:          captureID,
+		WorkspaceID: workspaceID,
+		MemoryState: state,
+	})
+	if err != nil {
+		writeError(w, http.StatusNotFound, "browser capture not found")
+		return
+	}
+	writeJSON(w, http.StatusOK, h.browserCaptureToResponseWithMemory(r.Context(), capture))
 }
 
 func parseCaptureLimitOffset(r *http.Request) (int, int) {
@@ -343,6 +396,28 @@ func (h *Handler) enrichBrowserCaptureAsync(capture db.CapturedSource) {
 			slog.Warn("EnrichCapture failed", "error", err, "capture_id", uuidToString(capture.ID), "workspace_id", uuidToString(capture.WorkspaceID))
 		}
 	}()
+}
+
+func (h *Handler) tryEnqueueBrowserMemoryEnrichment(ctx context.Context, workspaceID, userID, captureID pgtype.UUID) (db.AgentTaskQueue, bool) {
+	if h == nil || h.Queries == nil || h.TaskService == nil {
+		return db.AgentTaskQueue{}, false
+	}
+	agent, err := h.Queries.FindOwnedOnlineCodexAgent(ctx, db.FindOwnedOnlineCodexAgentParams{
+		WorkspaceID: workspaceID,
+		OwnerID:     userID,
+	})
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			slog.Warn("FindOwnedOnlineCodexAgent failed", "error", err, "workspace_id", uuidToString(workspaceID), "user_id", uuidToString(userID), "capture_id", uuidToString(captureID))
+		}
+		return db.AgentTaskQueue{}, false
+	}
+	task, err := h.TaskService.EnqueueBrowserMemoryEnrichmentTask(ctx, workspaceID, userID, captureID, agent.ID)
+	if err != nil {
+		slog.Warn("EnqueueBrowserMemoryEnrichmentTask failed", "error", err, "workspace_id", uuidToString(workspaceID), "user_id", uuidToString(userID), "capture_id", uuidToString(captureID), "agent_id", uuidToString(agent.ID))
+		return db.AgentTaskQueue{}, false
+	}
+	return task, true
 }
 
 func normalizeBrowserCaptureRequest(req CreateBrowserCaptureRequest) (normalizedBrowserCapture, error) {

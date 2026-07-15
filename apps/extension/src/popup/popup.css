@@ -111,3 +111,11 @@ button:disabled {
 .message[data-tone="success"] {
   color: #17623a;
 }
+
+.message[data-tone="pending"] {
+  color: #6f5c13;
+}
+
+.message[data-tone="processing"] {
+  color: #175b8f;
+}
