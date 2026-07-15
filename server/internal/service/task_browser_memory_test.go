@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -63,6 +64,143 @@ func TestEnqueueBrowserMemoryEnrichmentTaskMarksMemoryProcessing(t *testing.T) {
 	}
 }
 
+func TestCompleteTaskWritesBrowserMemoryEnrichment(t *testing.T) {
+	pool := newHeadShaDedupPool(t)
+	ctx := context.Background()
+	q := db.New(pool)
+	fixture := createBrowserMemoryTaskFixture(t, ctx, pool, q, "codex", "online")
+	svc := NewTaskService(q, pool, nil, events.New(), &stubWakeup{})
+
+	task, err := svc.EnqueueBrowserMemoryEnrichmentTask(ctx, fixture.workspaceID, fixture.userID, fixture.capture.ID, fixture.agentID)
+	if err != nil {
+		t.Fatalf("EnqueueBrowserMemoryEnrichmentTask: %v", err)
+	}
+	markTaskRunning(t, ctx, pool, task.ID)
+
+	result, err := json.Marshal(map[string]any{
+		"task_id": util.UUIDToString(task.ID),
+		"output": `{
+			"one_line_takeaway":"Capture explains browser memory.",
+			"summary":"Browser memory helps recall saved pages and selected text.",
+			"key_points":["Saves page context","Supports later search"],
+			"topics":["browser memory","recall"],
+			"entities":["Didian"],
+			"keywords":["capture","memory","search"]
+		}`,
+	})
+	if err != nil {
+		t.Fatalf("marshal result: %v", err)
+	}
+
+	if _, err := svc.CompleteTask(ctx, task.ID, result, "", ""); err != nil {
+		t.Fatalf("CompleteTask: %v", err)
+	}
+
+	memory, err := q.GetPageMemory(ctx, db.GetPageMemoryParams{
+		CapturedSourceID: fixture.capture.ID,
+		WorkspaceID:      fixture.workspaceID,
+	})
+	if err != nil {
+		t.Fatalf("GetPageMemory: %v", err)
+	}
+	if memory.Status != "ready" {
+		t.Fatalf("page_memory.status = %q, want ready", memory.Status)
+	}
+	if memory.OneLineTakeaway != "Capture explains browser memory." || !strings.Contains(memory.SearchText, "Supports later search") {
+		t.Fatalf("unexpected memory fields: %+v", memory)
+	}
+	if !memory.ModelProvider.Valid || memory.ModelProvider.String != "codex" {
+		t.Fatalf("model_provider = %+v, want codex", memory.ModelProvider)
+	}
+	if memory.FailureReason.Valid {
+		t.Fatalf("failure_reason = %+v, want null", memory.FailureReason)
+	}
+
+	capture, err := q.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{
+		ID:          fixture.capture.ID,
+		WorkspaceID: fixture.workspaceID,
+	})
+	if err != nil {
+		t.Fatalf("GetCapturedSourceInWorkspace: %v", err)
+	}
+	if capture.SummaryStatus != "success" || capture.Status != "ready" || capture.FailureReason.Valid {
+		t.Fatalf("unexpected capture enrichment status: status=%q summary=%q failure=%+v", capture.Status, capture.SummaryStatus, capture.FailureReason)
+	}
+}
+
+func TestCompleteTaskMarksBrowserMemoryFailedOnInvalidOutput(t *testing.T) {
+	pool := newHeadShaDedupPool(t)
+	ctx := context.Background()
+	q := db.New(pool)
+	fixture := createBrowserMemoryTaskFixture(t, ctx, pool, q, "codex", "online")
+	svc := NewTaskService(q, pool, nil, events.New(), &stubWakeup{})
+
+	task, err := svc.EnqueueBrowserMemoryEnrichmentTask(ctx, fixture.workspaceID, fixture.userID, fixture.capture.ID, fixture.agentID)
+	if err != nil {
+		t.Fatalf("EnqueueBrowserMemoryEnrichmentTask: %v", err)
+	}
+	markTaskRunning(t, ctx, pool, task.ID)
+
+	result, err := json.Marshal(map[string]any{
+		"task_id": util.UUIDToString(task.ID),
+		"output":  "not json",
+	})
+	if err != nil {
+		t.Fatalf("marshal result: %v", err)
+	}
+
+	if _, err := svc.CompleteTask(ctx, task.ID, result, "", ""); err != nil {
+		t.Fatalf("CompleteTask: %v", err)
+	}
+
+	taskAfter, err := q.GetAgentTask(ctx, task.ID)
+	if err != nil {
+		t.Fatalf("GetAgentTask: %v", err)
+	}
+	if taskAfter.Status != "completed" {
+		t.Fatalf("task status = %q, want completed", taskAfter.Status)
+	}
+	memory, err := q.GetPageMemory(ctx, db.GetPageMemoryParams{CapturedSourceID: fixture.capture.ID, WorkspaceID: fixture.workspaceID})
+	if err != nil {
+		t.Fatalf("GetPageMemory: %v", err)
+	}
+	if memory.Status != "failed" || !memory.FailureReason.Valid || !strings.Contains(memory.FailureReason.String, "browser memory invalid output") {
+		t.Fatalf("unexpected page_memory failure state: status=%q reason=%+v", memory.Status, memory.FailureReason)
+	}
+}
+
+func TestFailTaskMarksBrowserMemoryEnrichmentFailed(t *testing.T) {
+	pool := newHeadShaDedupPool(t)
+	ctx := context.Background()
+	q := db.New(pool)
+	fixture := createBrowserMemoryTaskFixture(t, ctx, pool, q, "codex", "online")
+	svc := NewTaskService(q, pool, nil, events.New(), &stubWakeup{})
+
+	task, err := svc.EnqueueBrowserMemoryEnrichmentTask(ctx, fixture.workspaceID, fixture.userID, fixture.capture.ID, fixture.agentID)
+	if err != nil {
+		t.Fatalf("EnqueueBrowserMemoryEnrichmentTask: %v", err)
+	}
+	markTaskRunning(t, ctx, pool, task.ID)
+
+	if _, err := svc.FailTask(ctx, task.ID, "model refused output", "", "", "agent_error"); err != nil {
+		t.Fatalf("FailTask: %v", err)
+	}
+	memory, err := q.GetPageMemory(ctx, db.GetPageMemoryParams{CapturedSourceID: fixture.capture.ID, WorkspaceID: fixture.workspaceID})
+	if err != nil {
+		t.Fatalf("GetPageMemory: %v", err)
+	}
+	if memory.Status != "failed" || !memory.FailureReason.Valid || memory.FailureReason.String != "model refused output" {
+		t.Fatalf("unexpected page_memory failure state: status=%q reason=%+v", memory.Status, memory.FailureReason)
+	}
+	capture, err := q.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{ID: fixture.capture.ID, WorkspaceID: fixture.workspaceID})
+	if err != nil {
+		t.Fatalf("GetCapturedSourceInWorkspace: %v", err)
+	}
+	if capture.SummaryStatus != "failure" || capture.Status != "failed" {
+		t.Fatalf("unexpected capture state: status=%q summary=%q", capture.Status, capture.SummaryStatus)
+	}
+}
+
 func TestEnqueueBrowserMemoryEnrichmentTaskRequiresOnlineCodexRuntime(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -85,6 +223,75 @@ func TestEnqueueBrowserMemoryEnrichmentTaskRequiresOnlineCodexRuntime(t *testing
 			_, err := svc.EnqueueBrowserMemoryEnrichmentTask(ctx, fixture.workspaceID, fixture.userID, fixture.capture.ID, fixture.agentID)
 			if err == nil || !strings.Contains(err.Error(), tc.want) {
 				t.Fatalf("error = %v, want containing %q", err, tc.want)
+			}
+		})
+	}
+}
+
+func TestParseBrowserMemoryCompletionNormalizesOutput(t *testing.T) {
+	long := strings.Repeat("x", browserMemoryTakeawayMaxRunes+20)
+	result, err := json.Marshal(map[string]any{
+		"task_id": "task-1",
+		"output": map[string]any{
+			"one_line_takeaway": long,
+			"summary":           "  Browser memory summary.  ",
+			"key_points":        []string{"First", "first", "", "Second"},
+			"topics":            []string{"Recall"},
+			"entities":          []string{"Didian"},
+			"keywords":          []string{"memory", "Memory"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("marshal result: %v", err)
+	}
+	var envelope struct {
+		TaskID string          `json:"task_id"`
+		Output json.RawMessage `json:"output"`
+	}
+	if err := json.Unmarshal(result, &envelope); err != nil {
+		t.Fatalf("unmarshal envelope: %v", err)
+	}
+	result, err = json.Marshal(map[string]any{
+		"task_id": envelope.TaskID,
+		"output":  string(envelope.Output),
+	})
+	if err != nil {
+		t.Fatalf("marshal daemon-style result: %v", err)
+	}
+
+	got, err := parseBrowserMemoryCompletion(result)
+	if err != nil {
+		t.Fatalf("parseBrowserMemoryCompletion: %v", err)
+	}
+	if len([]rune(got.OneLineTakeaway)) > browserMemoryTakeawayMaxRunes {
+		t.Fatalf("one_line_takeaway length = %d, want <= %d", len([]rune(got.OneLineTakeaway)), browserMemoryTakeawayMaxRunes)
+	}
+	if got.Summary != "Browser memory summary." {
+		t.Fatalf("summary = %q, want trimmed summary", got.Summary)
+	}
+	if len(got.KeyPoints) != 2 || got.KeyPoints[0] != "First" || got.KeyPoints[1] != "Second" {
+		t.Fatalf("key_points = %#v, want deduped non-empty items", got.KeyPoints)
+	}
+	if len(got.Keywords) != 1 || got.Keywords[0] != "memory" {
+		t.Fatalf("keywords = %#v, want case-insensitive dedupe", got.Keywords)
+	}
+}
+
+func TestParseBrowserMemoryCompletionRejectsInvalidOutput(t *testing.T) {
+	tests := []struct {
+		name   string
+		result string
+		want   string
+	}{
+		{name: "empty output", result: `{"task_id":"t","output":""}`, want: "empty output"},
+		{name: "invalid json", result: `{"task_id":"t","output":"not json"}`, want: "parse output JSON"},
+		{name: "missing summary", result: `{"task_id":"t","output":"{\"one_line_takeaway\":\"one\"}"}`, want: "summary is required"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := parseBrowserMemoryCompletion([]byte(tc.result))
+			if err == nil || !errors.Is(err, errBrowserMemoryInvalidOutput) || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("error = %v, want sentinel and containing %q", err, tc.want)
 			}
 		})
 	}
@@ -195,4 +402,15 @@ func createBrowserMemoryTaskFixture(t *testing.T, ctx context.Context, pool *pgx
 	})
 
 	return browserMemoryTaskFixture{workspaceID: workspaceID, userID: userID, runtimeID: runtimeID, agentID: agentID, capture: capture}
+}
+
+func markTaskRunning(t *testing.T, ctx context.Context, pool *pgxpool.Pool, taskID pgtype.UUID) {
+	t.Helper()
+	if _, err := pool.Exec(ctx, `
+		UPDATE agent_task_queue
+		SET status = 'running', dispatched_at = now(), started_at = now()
+		WHERE id = $1
+	`, taskID); err != nil {
+		t.Fatalf("mark task running: %v", err)
+	}
 }
