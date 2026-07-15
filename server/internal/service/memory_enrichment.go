@@ -58,6 +58,7 @@ func (s *MemoryEnrichmentService) EnrichCapture(ctx context.Context, capture db.
 		_, markErr := s.Queries.MarkPageMemoryEnrichmentFailed(ctx, db.MarkPageMemoryEnrichmentFailedParams{
 			CapturedSourceID: capture.ID,
 			WorkspaceID:      capture.WorkspaceID,
+			FailureReason:    strToText(err.Error()),
 		})
 		_, statusErr := s.Queries.UpdateCapturedSourceEnrichmentStatus(ctx, db.UpdateCapturedSourceEnrichmentStatusParams{
 			ID:            capture.ID,

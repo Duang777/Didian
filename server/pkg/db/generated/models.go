@@ -720,6 +720,8 @@ type PageMemory struct {
 	GeneratedAt      pgtype.Timestamptz `json:"generated_at"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	EnrichmentTaskID pgtype.UUID        `json:"enrichment_task_id"`
+	FailureReason    pgtype.Text        `json:"failure_reason"`
 }
 
 type PersonalAccessToken struct {

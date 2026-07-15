@@ -167,7 +167,7 @@ ON CONFLICT (captured_source_id) DO UPDATE
 SET search_text = EXCLUDED.search_text,
     keywords = EXCLUDED.keywords,
     updated_at = now()
-RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at
+RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at, enrichment_task_id, failure_reason
 `
 
 type CreatePendingPageMemoryParams struct {
@@ -201,6 +201,8 @@ func (q *Queries) CreatePendingPageMemory(ctx context.Context, arg CreatePending
 		&i.GeneratedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EnrichmentTaskID,
+		&i.FailureReason,
 	)
 	return i, err
 }
@@ -306,7 +308,7 @@ func (q *Queries) GetCapturedSourceInWorkspace(ctx context.Context, arg GetCaptu
 }
 
 const getPageMemory = `-- name: GetPageMemory :one
-SELECT captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at FROM page_memory
+SELECT captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at, enrichment_task_id, failure_reason FROM page_memory
 WHERE captured_source_id = $1 AND workspace_id = $2
 `
 
@@ -334,6 +336,38 @@ func (q *Queries) GetPageMemory(ctx context.Context, arg GetPageMemoryParams) (P
 		&i.GeneratedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EnrichmentTaskID,
+		&i.FailureReason,
+	)
+	return i, err
+}
+
+const getPageMemoryByEnrichmentTask = `-- name: GetPageMemoryByEnrichmentTask :one
+SELECT captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at, enrichment_task_id, failure_reason FROM page_memory
+WHERE enrichment_task_id = $1
+`
+
+func (q *Queries) GetPageMemoryByEnrichmentTask(ctx context.Context, enrichmentTaskID pgtype.UUID) (PageMemory, error) {
+	row := q.db.QueryRow(ctx, getPageMemoryByEnrichmentTask, enrichmentTaskID)
+	var i PageMemory
+	err := row.Scan(
+		&i.CapturedSourceID,
+		&i.WorkspaceID,
+		&i.Summary,
+		&i.OneLineTakeaway,
+		&i.KeyPoints,
+		&i.Topics,
+		&i.Entities,
+		&i.Keywords,
+		&i.SearchText,
+		&i.ModelProvider,
+		&i.ModelName,
+		&i.Status,
+		&i.GeneratedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.EnrichmentTaskID,
+		&i.FailureReason,
 	)
 	return i, err
 }
@@ -470,18 +504,20 @@ func (q *Queries) ListPendingPageMemoryCaptures(ctx context.Context, limit int32
 const markPageMemoryEnrichmentFailed = `-- name: MarkPageMemoryEnrichmentFailed :one
 UPDATE page_memory
 SET status = 'failed',
+    failure_reason = $3,
     updated_at = now()
 WHERE captured_source_id = $1 AND workspace_id = $2
-RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at
+RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at, enrichment_task_id, failure_reason
 `
 
 type MarkPageMemoryEnrichmentFailedParams struct {
 	CapturedSourceID pgtype.UUID `json:"captured_source_id"`
 	WorkspaceID      pgtype.UUID `json:"workspace_id"`
+	FailureReason    pgtype.Text `json:"failure_reason"`
 }
 
 func (q *Queries) MarkPageMemoryEnrichmentFailed(ctx context.Context, arg MarkPageMemoryEnrichmentFailedParams) (PageMemory, error) {
-	row := q.db.QueryRow(ctx, markPageMemoryEnrichmentFailed, arg.CapturedSourceID, arg.WorkspaceID)
+	row := q.db.QueryRow(ctx, markPageMemoryEnrichmentFailed, arg.CapturedSourceID, arg.WorkspaceID, arg.FailureReason)
 	var i PageMemory
 	err := row.Scan(
 		&i.CapturedSourceID,
@@ -499,6 +535,51 @@ func (q *Queries) MarkPageMemoryEnrichmentFailed(ctx context.Context, arg MarkPa
 		&i.GeneratedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EnrichmentTaskID,
+		&i.FailureReason,
+	)
+	return i, err
+}
+
+const markPageMemoryEnrichmentProcessing = `-- name: MarkPageMemoryEnrichmentProcessing :one
+UPDATE page_memory
+SET status = 'processing',
+    enrichment_task_id = $3,
+    failure_reason = NULL,
+    updated_at = now()
+WHERE captured_source_id = $1 AND workspace_id = $2
+  AND status IN ('pending', 'failed')
+  AND (enrichment_task_id IS NULL OR enrichment_task_id = $3)
+RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at, enrichment_task_id, failure_reason
+`
+
+type MarkPageMemoryEnrichmentProcessingParams struct {
+	CapturedSourceID pgtype.UUID `json:"captured_source_id"`
+	WorkspaceID      pgtype.UUID `json:"workspace_id"`
+	EnrichmentTaskID pgtype.UUID `json:"enrichment_task_id"`
+}
+
+func (q *Queries) MarkPageMemoryEnrichmentProcessing(ctx context.Context, arg MarkPageMemoryEnrichmentProcessingParams) (PageMemory, error) {
+	row := q.db.QueryRow(ctx, markPageMemoryEnrichmentProcessing, arg.CapturedSourceID, arg.WorkspaceID, arg.EnrichmentTaskID)
+	var i PageMemory
+	err := row.Scan(
+		&i.CapturedSourceID,
+		&i.WorkspaceID,
+		&i.Summary,
+		&i.OneLineTakeaway,
+		&i.KeyPoints,
+		&i.Topics,
+		&i.Entities,
+		&i.Keywords,
+		&i.SearchText,
+		&i.ModelProvider,
+		&i.ModelName,
+		&i.Status,
+		&i.GeneratedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.EnrichmentTaskID,
+		&i.FailureReason,
 	)
 	return i, err
 }
@@ -639,10 +720,11 @@ SET summary = $3,
     model_provider = $10,
     model_name = $11,
     status = 'ready',
+    failure_reason = NULL,
     generated_at = now(),
     updated_at = now()
 WHERE captured_source_id = $1 AND workspace_id = $2
-RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at
+RETURNING captured_source_id, workspace_id, summary, one_line_takeaway, key_points, topics, entities, keywords, search_text, model_provider, model_name, status, generated_at, created_at, updated_at, enrichment_task_id, failure_reason
 `
 
 type UpdatePageMemoryEnrichmentParams struct {
@@ -690,6 +772,8 @@ func (q *Queries) UpdatePageMemoryEnrichment(ctx context.Context, arg UpdatePage
 		&i.GeneratedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EnrichmentTaskID,
+		&i.FailureReason,
 	)
 	return i, err
 }

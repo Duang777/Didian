@@ -81,6 +81,9 @@ func TestMemoryEnrichmentServiceMarksFailedWhenSummarizerFails(t *testing.T) {
 	if memory.Status != "failed" {
 		t.Fatalf("page_memory.status = %q, want failed", memory.Status)
 	}
+	if !memory.FailureReason.Valid || memory.FailureReason.String != "summary unavailable" {
+		t.Fatalf("page_memory.failure_reason = %+v, want summary unavailable", memory.FailureReason)
+	}
 
 	updated, err := q.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{
 		ID:          fixture.capture.ID,
