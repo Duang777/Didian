@@ -3221,6 +3221,9 @@ func gcMetaForTask(task Task) (execenv.GCMeta, bool) {
 		// state via the task gc-check endpoint.
 		meta.Kind = execenv.GCKindQuickCreate
 		meta.TaskID = task.ID
+	case task.BrowserMemory != nil:
+		meta.Kind = execenv.GCKindBrowserMemory
+		meta.TaskID = task.ID
 	default:
 		return execenv.GCMeta{}, false
 	}
@@ -3544,6 +3547,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		AutopilotSource:                  task.AutopilotSource,
 		AutopilotTriggerPayload:          strings.TrimSpace(string(task.AutopilotTriggerPayload)),
 		QuickCreatePrompt:                task.QuickCreatePrompt,
+		BrowserMemory:                    convertBrowserMemoryForEnv(task.BrowserMemory),
 		HandoffNote:                      task.HandoffNote,
 		IsSquadLeader:                    strings.Contains(instructions, "## Squad Operating Protocol"),
 		RequestingUserName:               task.RequestingUserName,
@@ -3760,6 +3764,10 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 				taskLog.Warn("quick-create attachment ids: marshal failed; skipping env injection", "error", err)
 			}
 		}
+	}
+	if task.BrowserMemory != nil {
+		agentEnv["DIDIAN_BROWSER_MEMORY_TASK_ID"] = task.ID
+		agentEnv["DIDIAN_BROWSER_MEMORY_CAPTURE_ID"] = task.BrowserMemory.CaptureID
 	}
 	// Ensure the didian CLI is on PATH inside the agent's environment.
 	// Some runtimes (e.g. Codex) run in an isolated sandbox that may not
@@ -4144,6 +4152,26 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 			Usage:         usageEntries,
 			FailureReason: failureReason,
 		}, nil
+	}
+}
+
+func convertBrowserMemoryForEnv(memory *BrowserMemoryData) *execenv.BrowserMemoryForEnv {
+	if memory == nil {
+		return nil
+	}
+	links := make([]execenv.BrowserMemoryLinkForEnv, 0, len(memory.Links))
+	for _, link := range memory.Links {
+		links = append(links, execenv.BrowserMemoryLinkForEnv{URL: link.URL, Title: link.Title})
+	}
+	return &execenv.BrowserMemoryForEnv{
+		CaptureID:    memory.CaptureID,
+		URL:          memory.URL,
+		Title:        memory.Title,
+		Domain:       memory.Domain,
+		Description:  memory.Description,
+		SelectedText: memory.SelectedText,
+		ReadableText: memory.ReadableText,
+		Links:        links,
 	}
 }
 

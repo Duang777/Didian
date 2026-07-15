@@ -33,6 +33,24 @@ type ProjectResourceForEnv struct {
 	Label        string          // optional user-supplied label
 }
 
+// BrowserMemoryForEnv is the browser capture payload written for
+// browser_memory_enrichment tasks. Text fields are untrusted page content.
+type BrowserMemoryForEnv struct {
+	CaptureID    string
+	URL          string
+	Title        string
+	Domain       string
+	Description  string
+	SelectedText string
+	ReadableText string
+	Links        []BrowserMemoryLinkForEnv
+}
+
+type BrowserMemoryLinkForEnv struct {
+	URL   string `json:"url"`
+	Title string `json:"title,omitempty"`
+}
+
 // PrepareParams holds all inputs needed to set up an execution environment.
 type PrepareParams struct {
 	WorkspacesRoot string // base path for all envs (e.g., ~/didian_workspaces)
@@ -101,6 +119,7 @@ type TaskContextForEnv struct {
 	AutopilotSource         string
 	AutopilotTriggerPayload string
 	QuickCreatePrompt       string // non-empty for quick-create tasks
+	BrowserMemory           *BrowserMemoryForEnv
 	HandoffNote             string // assignment handoff instruction; rendered into issue_context.md (MUL-3375)
 	IsSquadLeader           bool   // true when the agent is acting as a squad leader (may exit silently on no_action)
 	// WorkspaceContext is the workspace-level system prompt (workspace.context
@@ -534,10 +553,11 @@ func hydrateCodexSkills(codexHome string, workspaceSkills []SkillContextForEnv, 
 type GCMetaKind string
 
 const (
-	GCKindIssue        GCMetaKind = "issue"
-	GCKindChat         GCMetaKind = "chat"
-	GCKindAutopilotRun GCMetaKind = "autopilot_run"
-	GCKindQuickCreate  GCMetaKind = "quick_create"
+	GCKindIssue         GCMetaKind = "issue"
+	GCKindChat          GCMetaKind = "chat"
+	GCKindAutopilotRun  GCMetaKind = "autopilot_run"
+	GCKindQuickCreate   GCMetaKind = "quick_create"
+	GCKindBrowserMemory GCMetaKind = "browser_memory"
 )
 
 // GCMeta is persisted to .gc_meta.json inside the env root so the GC loop

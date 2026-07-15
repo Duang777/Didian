@@ -1291,6 +1291,12 @@ func TestGCMetaForTask(t *testing.T) {
 			idOK: func(m execenv.GCMeta) bool { return m.TaskID == "t4" },
 		},
 		{
+			name: "browser-memory task",
+			task: Task{ID: "t6", WorkspaceID: "ws", BrowserMemory: &BrowserMemoryData{CaptureID: "capture-1"}},
+			want: execenv.GCKindBrowserMemory,
+			idOK: func(m execenv.GCMeta) bool { return m.TaskID == "t6" },
+		},
+		{
 			name: "chat wins over issue when both set (defensive ordering)",
 			task: Task{ID: "t5", WorkspaceID: "ws", IssueID: "i1", ChatSessionID: "c1"},
 			want: execenv.GCKindChat,
