@@ -224,8 +224,10 @@ const findCapturedSourceDuplicate = `-- name: FindCapturedSourceDuplicate :one
 SELECT id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at FROM captured_source
 WHERE workspace_id = $1
   AND normalized_url = $2
-  AND text_hash = $3
-  AND text_hash IS NOT NULL
+  AND (
+    ($3::text IS NOT NULL AND text_hash = $3::text)
+    OR ($3::text IS NULL AND text_hash IS NULL)
+  )
 ORDER BY created_at DESC
 LIMIT 1
 `

@@ -40,8 +40,10 @@ WHERE id = $1 AND workspace_id = $2;
 SELECT * FROM captured_source
 WHERE workspace_id = $1
   AND normalized_url = $2
-  AND text_hash = $3
-  AND text_hash IS NOT NULL
+  AND (
+    (sqlc.narg('text_hash')::text IS NOT NULL AND text_hash = sqlc.narg('text_hash')::text)
+    OR (sqlc.narg('text_hash')::text IS NULL AND text_hash IS NULL)
+  )
 ORDER BY created_at DESC
 LIMIT 1;
 

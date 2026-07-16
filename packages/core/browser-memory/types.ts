@@ -1,3 +1,5 @@
+import type { Issue } from "../types/issue";
+
 export type BrowserCaptureSource = "web" | "extension" | "api" | "cli" | "rss" | "import" | "singlefile";
 
 export type BrowserCaptureSourceType = "link" | "text" | "asset" | "selection" | "rss_item" | "imported_bookmark";
@@ -94,4 +96,36 @@ export interface ListBrowserCapturesParams {
   offset?: number;
   state?: BrowserCaptureMemoryState;
   q?: string;
+}
+
+export interface AnalyzeAiInboxRequest {
+  input: string;
+  captureIds?: string[];
+}
+
+export interface AiInboxUnderstanding {
+  intent: string;
+  suggestedMissionTitle: string;
+  summary: string;
+  suggestedOutputs: string[];
+  missingInfo: string[];
+  confidence: number;
+}
+
+export interface AnalyzeAiInboxResponse {
+  understanding: AiInboxUnderstanding;
+  provider: "local" | "llm" | string;
+  model?: string;
+}
+
+export interface CreateAiInboxMissionRequest {
+  title: string;
+  description: string;
+  understanding?: AiInboxUnderstanding;
+}
+
+export interface CreateAiInboxMissionResponse {
+  issue: Issue;
+  planningStatus: "queued" | "no_codex_agent" | string;
+  planningAgentId?: string;
 }

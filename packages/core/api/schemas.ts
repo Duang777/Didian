@@ -28,7 +28,9 @@ import type {
 import type { CloudRuntimeNode } from "../runtimes/cloud-runtime";
 import type { CreateFeedbackResponse } from "../feedback/types";
 import type {
+  AnalyzeAiInboxResponse,
   BrowserCapture,
+  CreateAiInboxMissionResponse,
   CreateBrowserCaptureResponse,
   ListBrowserCapturesResponse,
 } from "../browser-memory/types";
@@ -333,6 +335,35 @@ export const EMPTY_LIST_BROWSER_CAPTURES_RESPONSE: ListBrowserCapturesResponse =
   total: 0,
 };
 
+const AiInboxUnderstandingSchema = z.object({
+  intent: z.string().default("collect"),
+  suggestedMissionTitle: z.string().default("整理输入线索"),
+  summary: z.string().default("AI Inbox 已理解这批输入，可以继续创建 Mission。"),
+  suggestedOutputs: z.array(z.string()).optional().default([]),
+  missingInfo: z.array(z.string()).optional().default([]),
+  confidence: z.number().optional().default(0),
+}).loose();
+
+const EMPTY_AI_INBOX_UNDERSTANDING = {
+  intent: "collect",
+  suggestedMissionTitle: "整理输入线索",
+  summary: "AI Inbox 已理解这批输入，可以继续创建 Mission。",
+  suggestedOutputs: [],
+  missingInfo: [],
+  confidence: 0,
+};
+
+export const AnalyzeAiInboxResponseSchema = z.object({
+  understanding: AiInboxUnderstandingSchema.default(EMPTY_AI_INBOX_UNDERSTANDING),
+  provider: z.string().default("local"),
+  model: z.string().optional(),
+}).loose();
+
+export const EMPTY_ANALYZE_AI_INBOX_RESPONSE: AnalyzeAiInboxResponse = {
+  understanding: EMPTY_AI_INBOX_UNDERSTANDING,
+  provider: "local",
+};
+
 export const CommentSchema = z.object({
   id: z.string(),
   issue_id: z.string(),
@@ -432,6 +463,39 @@ export const SearchIssuesResponseSchema = z.object({
 export const EMPTY_SEARCH_ISSUES_RESPONSE: SearchIssuesResponse = {
   issues: [],
   total: 0,
+};
+
+export const CreateAiInboxMissionResponseSchema = z.object({
+  issue: IssueSchema,
+  planningStatus: z.string().default("no_codex_agent"),
+  planningAgentId: z.string().optional(),
+}).loose();
+
+export const EMPTY_CREATE_AI_INBOX_MISSION_RESPONSE: CreateAiInboxMissionResponse = {
+  issue: {
+    id: "",
+    workspace_id: "",
+    number: 0,
+    identifier: "",
+    title: "",
+    description: null,
+    status: "todo",
+    priority: "none",
+    assignee_type: null,
+    assignee_id: null,
+    creator_type: "member",
+    creator_id: "",
+    parent_issue_id: null,
+    project_id: null,
+    position: 0,
+    stage: null,
+    start_date: null,
+    due_date: null,
+    metadata: {},
+    created_at: "",
+    updated_at: "",
+  },
+  planningStatus: "no_codex_agent",
 };
 
 const ProjectSchema = z.object({

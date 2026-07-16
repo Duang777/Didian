@@ -160,47 +160,60 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var dedupe BrowserCaptureDedupeResponse
-	if normalized.textHash != "" {
-		existing, err := h.Queries.FindCapturedSourceDuplicate(r.Context(), db.FindCapturedSourceDuplicateParams{
-			WorkspaceID:   workspaceID,
-			NormalizedUrl: normalized.normalizedURL,
-			TextHash:      strToText(normalized.textHash),
+	existing, err := h.Queries.FindCapturedSourceDuplicate(r.Context(), db.FindCapturedSourceDuplicateParams{
+		WorkspaceID:   workspaceID,
+		NormalizedUrl: normalized.normalizedURL,
+		TextHash:      optionalText(normalized.textHash),
+	})
+	if err == nil {
+		capture := existing
+		updated, updateErr := h.Queries.UpdateCapturedSourcePreviewMetadata(r.Context(), db.UpdateCapturedSourcePreviewMetadataParams{
+			ID:              existing.ID,
+			WorkspaceID:     workspaceID,
+			FaviconUrl:      optionalText(normalized.req.FaviconURL),
+			Description:     optionalText(normalized.req.Description),
+			PreviewImageUrl: optionalText(normalized.req.PreviewImageURL),
 		})
-		if err == nil {
-			capture := existing
-			updated, updateErr := h.Queries.UpdateCapturedSourcePreviewMetadata(r.Context(), db.UpdateCapturedSourcePreviewMetadataParams{
-				ID:              existing.ID,
-				WorkspaceID:     workspaceID,
-				FaviconUrl:      optionalText(normalized.req.FaviconURL),
-				Description:     optionalText(normalized.req.Description),
-				PreviewImageUrl: optionalText(normalized.req.PreviewImageURL),
+		if updateErr == nil {
+			capture = updated
+		} else {
+			slog.Warn("UpdateCapturedSourcePreviewMetadata failed", append(logger.RequestAttrs(r), "error", updateErr, "capture_id", uuidToString(existing.ID))...)
+		}
+		if capture.MemoryState == "archived" {
+			restored, restoreErr := h.Queries.UpdateCapturedSourceMemoryState(r.Context(), db.UpdateCapturedSourceMemoryStateParams{
+				ID:          capture.ID,
+				WorkspaceID: workspaceID,
+				MemoryState: "active",
 			})
-			if updateErr == nil {
-				capture = updated
+			if restoreErr == nil {
+				capture = restored
 			} else {
-				slog.Warn("UpdateCapturedSourcePreviewMetadata failed", append(logger.RequestAttrs(r), "error", updateErr, "capture_id", uuidToString(existing.ID))...)
+				slog.Warn("UpdateCapturedSourceMemoryState restore duplicate failed", append(logger.RequestAttrs(r), "error", restoreErr, "capture_id", uuidToString(capture.ID))...)
 			}
-			id := uuidToString(existing.ID)
-			resp := h.browserCaptureToResponseWithMemory(r.Context(), capture)
-			memoryStatus := capture.SummaryStatus
-			if resp.Memory != nil {
-				memoryStatus = resp.Memory.Status
-			}
-			dedupe = BrowserCaptureDedupeResponse{IsDuplicate: true, ExistingCaptureID: &id}
-			writeJSON(w, http.StatusOK, CreateBrowserCaptureResponse{
-				Capture:      resp,
-				CaptureID:    id,
-				Status:       capture.Status,
-				MemoryStatus: memoryStatus,
-				Dedupe:       dedupe,
-			})
-			return
 		}
-		if !errors.Is(err, pgx.ErrNoRows) {
-			slog.Warn("FindCapturedSourceDuplicate failed", append(logger.RequestAttrs(r), "error", err)...)
-			writeError(w, http.StatusInternalServerError, "failed to save browser capture")
-			return
+		if isURLOnlyCapture(normalized.req) {
+			h.enrichBrowserCaptureAsync(capture)
 		}
+		id := uuidToString(existing.ID)
+		resp := h.browserCaptureToResponseWithMemory(r.Context(), capture)
+		memoryStatus := capture.SummaryStatus
+		if resp.Memory != nil {
+			memoryStatus = resp.Memory.Status
+		}
+		dedupe = BrowserCaptureDedupeResponse{IsDuplicate: true, ExistingCaptureID: &id}
+		writeJSON(w, http.StatusOK, CreateBrowserCaptureResponse{
+			Capture:      resp,
+			CaptureID:    id,
+			Status:       capture.Status,
+			MemoryStatus: memoryStatus,
+			Dedupe:       dedupe,
+		})
+		return
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		slog.Warn("FindCapturedSourceDuplicate failed", append(logger.RequestAttrs(r), "error", err)...)
+		writeError(w, http.StatusInternalServerError, "failed to save browser capture")
+		return
 	}
 
 	capture, err := h.Queries.CreateCapturedSource(r.Context(), db.CreateCapturedSourceParams{
@@ -247,8 +260,12 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Warn("CreatePendingPageMemory failed", append(logger.RequestAttrs(r), "error", err, "capture_id", uuidToString(capture.ID))...)
 	} else {
-		if _, queued := h.tryEnqueueBrowserMemoryEnrichment(r.Context(), workspaceID, userUUID, capture.ID); queued {
-			memory.Status = "processing"
+		if !isURLOnlyCapture(normalized.req) {
+			if _, queued := h.tryEnqueueBrowserMemoryEnrichment(r.Context(), workspaceID, userUUID, capture.ID); queued {
+				memory.Status = "processing"
+			} else {
+				h.enrichBrowserCaptureAsync(capture)
+			}
 		} else {
 			h.enrichBrowserCaptureAsync(capture)
 		}
@@ -418,6 +435,13 @@ func (h *Handler) tryEnqueueBrowserMemoryEnrichment(ctx context.Context, workspa
 		return db.AgentTaskQueue{}, false
 	}
 	return task, true
+}
+
+func isURLOnlyCapture(req CreateBrowserCaptureRequest) bool {
+	return normalizeSpace(req.Description) == "" &&
+		normalizeSpace(req.SelectedText) == "" &&
+		normalizeSpace(req.ReadableText) == "" &&
+		len(req.Links) == 0
 }
 
 func normalizeBrowserCaptureRequest(req CreateBrowserCaptureRequest) (normalizedBrowserCapture, error) {

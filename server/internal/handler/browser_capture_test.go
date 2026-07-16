@@ -109,6 +109,121 @@ func TestBrowserCaptureLifecycle(t *testing.T) {
 	}
 }
 
+func TestCreateBrowserCaptureDedupesURLOnlyAndRestoresArchived(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not available")
+	}
+
+	suffix := time.Now().UnixNano()
+	url := fmt.Sprintf("https://example.com/url-only-bookmark-%d?utm_source=mail&keep=1", suffix)
+	body := map[string]any{
+		"source":       "web",
+		"sourceType":   "link",
+		"captureScope": "page",
+		"url":          url,
+		"title":        "example.com/url-only-bookmark",
+		"domain":       "example.com",
+		"capturedAt":   "2026-07-14T10:00:00Z",
+	}
+
+	w := httptest.NewRecorder()
+	testHandler.CreateBrowserCapture(w, newRequest(http.MethodPost, "/api/browser-captures", body))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCapture: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var created CreateBrowserCaptureResponse
+	if err := json.NewDecoder(w.Body).Decode(&created); err != nil {
+		t.Fatalf("decode create response: %v", err)
+	}
+	t.Cleanup(func() {
+		testPool.Exec(context.Background(), `DELETE FROM captured_source WHERE id = $1`, created.CaptureID)
+	})
+
+	w = httptest.NewRecorder()
+	testHandler.ArchiveBrowserCapture(w, withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/archive", nil), "id", created.CaptureID))
+	if w.Code != http.StatusOK {
+		t.Fatalf("ArchiveBrowserCapture: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	duplicateBody := cloneMap(body)
+	duplicateBody["url"] = strings.Replace(url, "utm_source=mail&keep=1", "keep=1&utm_source=ignored", 1)
+	duplicateBody["faviconUrl"] = "https://example.com/favicon.ico"
+	w = httptest.NewRecorder()
+	testHandler.CreateBrowserCapture(w, newRequest(http.MethodPost, "/api/browser-captures", duplicateBody))
+	if w.Code != http.StatusOK {
+		t.Fatalf("duplicate CreateBrowserCapture: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var duplicate CreateBrowserCaptureResponse
+	if err := json.NewDecoder(w.Body).Decode(&duplicate); err != nil {
+		t.Fatalf("decode duplicate response: %v", err)
+	}
+	if !duplicate.Dedupe.IsDuplicate || duplicate.Dedupe.ExistingCaptureID == nil || *duplicate.Dedupe.ExistingCaptureID != created.CaptureID {
+		t.Fatalf("duplicate response = %+v, want existing capture %s", duplicate.Dedupe, created.CaptureID)
+	}
+	if duplicate.Capture.MemoryState != "active" {
+		t.Fatalf("duplicate memory_state = %q, want active", duplicate.Capture.MemoryState)
+	}
+	if duplicate.Capture.FaviconURL == nil || *duplicate.Capture.FaviconURL != "https://example.com/favicon.ico" {
+		t.Fatalf("duplicate favicon_url = %v", duplicate.Capture.FaviconURL)
+	}
+}
+
+func TestCreateBrowserCaptureURLOnlyUsesLocalMemoryWhenCodexAvailable(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not available")
+	}
+
+	ctx := context.Background()
+	runtimeID, agentID := seedOwnedCodexBrowserMemoryAgent(t)
+	suffix := time.Now().UnixNano()
+	url := fmt.Sprintf("https://example.com/url-only-local-memory-%d", suffix)
+	body := map[string]any{
+		"source":       "web",
+		"sourceType":   "link",
+		"captureScope": "page",
+		"url":          url,
+		"title":        "URL only local memory capture",
+		"domain":       "example.com",
+		"capturedAt":   "2026-07-14T10:00:00Z",
+	}
+
+	w := httptest.NewRecorder()
+	testHandler.CreateBrowserCapture(w, newRequest(http.MethodPost, "/api/browser-captures", body))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCapture: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var created CreateBrowserCaptureResponse
+	if err := json.NewDecoder(w.Body).Decode(&created); err != nil {
+		t.Fatalf("decode create response: %v", err)
+	}
+	t.Cleanup(func() {
+		testPool.Exec(context.Background(), `DELETE FROM captured_source WHERE id = $1`, created.CaptureID)
+	})
+
+	listed := waitForBrowserCaptureMemory(t, created.CaptureID)
+	listedCapture := findBrowserCaptureResponse(listed.Captures, created.CaptureID)
+	if listedCapture == nil || listedCapture.Memory == nil || listedCapture.Memory.Status != "ready" {
+		t.Fatalf("listed capture = %+v, want ready local memory", listedCapture)
+	}
+	if !strings.Contains(listedCapture.Memory.OneLineTakeaway, "URL only local memory capture") {
+		t.Fatalf("one_line_takeaway = %q, want title-based local memory", listedCapture.Memory.OneLineTakeaway)
+	}
+
+	var queued int
+	if err := testPool.QueryRow(ctx, `
+		SELECT count(*) FROM agent_task_queue
+		WHERE agent_id = $1
+		  AND runtime_id = $2
+		  AND context->>'type' = $3
+		  AND context->>'capture_id' = $4
+	`, agentID, runtimeID, service.BrowserMemoryEnrichmentContextType, created.CaptureID).Scan(&queued); err != nil {
+		t.Fatalf("count queued browser memory tasks: %v", err)
+	}
+	if queued != 0 {
+		t.Fatalf("queued browser memory tasks = %d, want 0 for URL-only capture", queued)
+	}
+}
+
 func TestCreateBrowserCaptureQueuesCodexEnrichmentWhenAvailable(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("handler test fixture not available")

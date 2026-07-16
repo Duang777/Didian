@@ -982,6 +982,9 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 			// Browser memory captures. The extension/web clients provide workspace
 			// context through the existing X-Workspace-ID / X-Workspace-Slug headers;
 			// membership is enforced by the workspace-scoped group middleware.
+			r.Post("/api/ai-inbox/analyze", h.AnalyzeAIInbox)
+			r.Post("/api/ai-inbox/missions", h.CreateAIInboxMission)
+
 			r.Route("/api/browser-captures", func(r chi.Router) {
 				r.Get("/", h.ListBrowserCaptures)
 				r.Post("/", h.CreateBrowserCapture)

@@ -136,7 +136,11 @@ import type {
   CreateBillingPortalSessionResponse,
 } from "../types";
 import type {
+  AnalyzeAiInboxRequest,
+  AnalyzeAiInboxResponse,
   BrowserCapture,
+  CreateAiInboxMissionRequest,
+  CreateAiInboxMissionResponse,
   CreateBrowserCaptureRequest,
   CreateBrowserCaptureResponse,
   ListBrowserCapturesParams,
@@ -235,6 +239,10 @@ import {
   EMPTY_CREATE_BROWSER_CAPTURE_RESPONSE,
   EMPTY_LIST_BROWSER_CAPTURES_RESPONSE,
   ListBrowserCapturesResponseSchema,
+  AnalyzeAiInboxResponseSchema,
+  EMPTY_ANALYZE_AI_INBOX_RESPONSE,
+  CreateAiInboxMissionResponseSchema,
+  EMPTY_CREATE_AI_INBOX_MISSION_RESPONSE,
 } from "./schemas";
 
 /** Identifies the calling client to the server.
@@ -1580,6 +1588,26 @@ export class ApiClient {
     const raw = await this.fetch<unknown>(`/api/browser-captures/${id}/restore`, { method: "POST" });
     return parseWithFallback(raw, BrowserCaptureSchema, EMPTY_BROWSER_CAPTURE, {
       endpoint: "POST /api/browser-captures/:id/restore",
+    });
+  }
+
+  async analyzeAiInbox(data: AnalyzeAiInboxRequest): Promise<AnalyzeAiInboxResponse> {
+    const raw = await this.fetch<unknown>("/api/ai-inbox/analyze", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return parseWithFallback(raw, AnalyzeAiInboxResponseSchema, EMPTY_ANALYZE_AI_INBOX_RESPONSE, {
+      endpoint: "POST /api/ai-inbox/analyze",
+    });
+  }
+
+  async createAiInboxMission(data: CreateAiInboxMissionRequest): Promise<CreateAiInboxMissionResponse> {
+    const raw = await this.fetch<unknown>("/api/ai-inbox/missions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return parseWithFallback(raw, CreateAiInboxMissionResponseSchema, EMPTY_CREATE_AI_INBOX_MISSION_RESPONSE, {
+      endpoint: "POST /api/ai-inbox/missions",
     });
   }
 
