@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { cn } from "@didian/ui/lib/utils";
 import { LandingHeader } from "@/features/landing/components/landing-header";
 import { LandingFooter } from "@/features/landing/components/landing-footer";
+import { LandingSectionShell } from "@/features/landing/components/shared";
 import { Screenshot } from "@/features/landing/components/mdx/screenshot";
 import { getUseCasePageForLocale } from "@/lib/use-cases-source";
 import {
@@ -53,8 +54,8 @@ function PlaceholderImage({ label }: { label: string }) {
       <div
         className={cn(
           "flex aspect-[16/9] items-center justify-center rounded-lg",
-          "border-2 border-dashed border-[#0a0d12]/15 bg-[#fafafa]",
-          "px-6 text-center text-[13px] italic leading-relaxed text-[#0a0d12]/55",
+          "border-2 border-dashed border-white/15 bg-white/[0.035]",
+          "px-6 text-center text-[13px] italic leading-relaxed text-white/55",
         )}
       >
         {label}
@@ -78,8 +79,8 @@ function MDXCTA({
       className={cn(
         "inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-[14px] font-semibold not-italic transition-colors",
         variant === "primary"
-          ? "bg-[#0a0d12] text-white hover:bg-[#0a0d12]/88"
-          : "border border-[#0a0d12]/15 text-[#0a0d12] hover:bg-[#0a0d12]/[0.04]",
+          ? "bg-white text-[#0a0d12] hover:bg-white/90"
+          : "border border-white/15 text-white hover:bg-white/[0.06]",
       )}
     >
       {label}
@@ -141,38 +142,38 @@ function createMdxComponents(locale: SupportedLocale) {
     Screenshot,
     h2: (props: ComponentPropsWithoutRef<"h2">) => (
       <h2
-        className="mt-16 mb-4 scroll-mt-[100px] text-[1.5rem] font-semibold tracking-tight text-[#0a0d12] sm:text-[1.75rem]"
+        className="mt-16 mb-4 scroll-mt-[100px] text-[1.5rem] font-semibold tracking-tight text-white sm:text-[1.75rem]"
         {...props}
       />
     ),
     h3: (props: ComponentPropsWithoutRef<"h3">) => (
       <h3
-        className="mt-10 mb-3 scroll-mt-[100px] text-[1.1rem] font-semibold tracking-tight text-[#0a0d12] sm:text-[1.2rem]"
+        className="mt-10 mb-3 scroll-mt-[100px] text-[1.1rem] font-semibold tracking-tight text-white sm:text-[1.2rem]"
         {...props}
       />
     ),
     p: SmartParagraph,
     strong: (props: ComponentPropsWithoutRef<"strong">) => (
-      <strong className="font-semibold text-[#0a0d12]" {...props} />
+      <strong className="font-semibold text-white" {...props} />
     ),
     hr: (props: ComponentPropsWithoutRef<"hr">) => (
-      <hr className="my-12 border-[#0a0d12]/8" {...props} />
+      <hr className="my-12 border-white/10" {...props} />
     ),
     blockquote: (props: ComponentPropsWithoutRef<"blockquote">) => (
       <blockquote
-        className="my-6 border-l-2 border-[#0a0d12]/15 pl-5 text-[#0a0d12]/65 italic"
+        className="my-6 border-l-2 border-[#f2b15f]/35 pl-5 text-white/62 italic"
         {...props}
       />
     ),
     ul: (props: ComponentPropsWithoutRef<"ul">) => (
       <ul
-        className="my-4 list-disc space-y-2 pl-6 marker:text-[#0a0d12]/30"
+        className="my-4 list-disc space-y-2 pl-6 marker:text-[#f2b15f]/65"
         {...props}
       />
     ),
     ol: (props: ComponentPropsWithoutRef<"ol">) => (
       <ol
-        className="my-4 list-decimal space-y-2 pl-6 marker:text-[#0a0d12]/40"
+        className="my-4 list-decimal space-y-2 pl-6 marker:text-[#f2b15f]/65"
         {...props}
       />
     ),
@@ -181,7 +182,7 @@ function createMdxComponents(locale: SupportedLocale) {
     ),
     a: ({ href, ...props }: ComponentPropsWithoutRef<"a">) => {
       const className =
-        "underline decoration-[#0a0d12]/25 underline-offset-4 transition-colors hover:text-[#0a0d12] hover:decoration-[#0a0d12]/70";
+        "underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/70";
       // Internal links should keep SPA navigation (next/link); external links
       // (mailto:, https://, etc.) stay as native anchors.
       if (href && href.startsWith("/")) {
@@ -191,13 +192,13 @@ function createMdxComponents(locale: SupportedLocale) {
     },
     code: (props: ComponentPropsWithoutRef<"code">) => (
       <code
-        className="rounded bg-[#0a0d12]/[0.06] px-1.5 py-0.5 font-mono text-[0.88em] text-[#0a0d12]"
+        className="rounded bg-white/[0.08] px-1.5 py-0.5 font-mono text-[0.88em] text-white"
         {...props}
       />
     ),
     pre: (props: ComponentPropsWithoutRef<"pre">) => (
       <pre
-        className="my-6 overflow-x-auto rounded-lg bg-[#0a0d12]/[0.04] p-4 text-[13px] leading-[1.65]"
+        className="my-6 overflow-x-auto rounded-lg border border-white/10 bg-[#050706]/72 p-4 text-[13px] leading-[1.65]"
         {...props}
       />
     ),
@@ -219,10 +220,11 @@ export default async function UseCasePage(props: { params: Promise<Params> }) {
 
   return (
     <>
-      <div className="sticky top-0 z-40 bg-white">
-        <LandingHeader variant="light" />
+      <div className="sticky top-0 z-40 bg-[#050706]">
+        <LandingHeader variant="dark" />
       </div>
-      <main className="bg-white text-[#0a0d12]">
+      <LandingSectionShell>
+      <main>
         <div
           className={cn(
             "mx-auto max-w-[720px] px-4 py-16 sm:px-6 sm:py-20",
@@ -234,7 +236,7 @@ export default async function UseCasePage(props: { params: Promise<Params> }) {
             <h1 className="font-[family-name:var(--font-serif)] text-[2.6rem] leading-[1.05] tracking-[-0.03em] sm:text-[3.4rem]">
               {page.data.title}
             </h1>
-            <div className="mt-10 text-[16px] leading-[1.85] text-[#0a0d12]/72 [&>:first-child]:mt-0 [&>p]:my-5 sm:text-[17px]">
+            <div className="mt-10 text-[16px] leading-[1.85] text-white/66 [&>:first-child]:mt-0 [&>p]:my-5 sm:text-[17px]">
               <MDX components={mdxComponents} />
             </div>
           </article>
@@ -242,20 +244,20 @@ export default async function UseCasePage(props: { params: Promise<Params> }) {
           {toc.length > 0 ? (
             <aside className="hidden lg:block">
               <nav className="sticky top-[100px] max-h-[calc(100vh-120px)] overflow-y-auto">
-                <div className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-[#0a0d12]/40">
+                <div className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-[#f2b15f]/70">
                   {text.tableOfContents}
                 </div>
-                <ul className="border-l border-[#0a0d12]/8">
+                <ul className="border-l border-white/10">
                   {toc.map((item, i) => (
                     <li key={i}>
                       <a
                         href={item.url}
                         className={cn(
                           "-ml-px block border-l border-transparent py-1.5 pl-4 text-[13px] leading-snug transition-colors",
-                          "hover:border-[#0a0d12]/40 hover:text-[#0a0d12]",
+                          "hover:border-white/40 hover:text-white",
                           item.depth === 2
-                            ? "font-medium text-[#0a0d12]/70"
-                            : "pl-7 text-[12px] text-[#0a0d12]/50",
+                            ? "font-medium text-white/70"
+                            : "pl-7 text-[12px] text-white/48",
                         )}
                       >
                         {item.title}
@@ -268,6 +270,7 @@ export default async function UseCasePage(props: { params: Promise<Params> }) {
           ) : null}
         </div>
       </main>
+      </LandingSectionShell>
       <LandingFooter />
     </>
   );

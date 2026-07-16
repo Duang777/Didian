@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { LandingHeader } from "./landing-header";
 import { LandingFooter } from "./landing-footer";
-import { GitHubMark, githubUrl } from "./shared";
+import { GitHubMark, LandingSectionShell, githubUrl } from "./shared";
 import { useLocale } from "../i18n";
 
 export function AboutPageClient() {
@@ -12,28 +12,29 @@ export function AboutPageClient() {
 
   return (
     <>
-      <LandingHeader variant="light" />
-      <main className="bg-white text-[#0a0d12]">
-        <div className="mx-auto max-w-[720px] px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+      <div className="relative">
+        <LandingHeader variant="dark" />
+        <LandingSectionShell>
+          <main className="mx-auto max-w-[720px] px-4 py-28 sm:px-6 sm:py-32 lg:py-36">
           <h1 className="font-[family-name:var(--font-serif)] text-[2.6rem] leading-[1.05] tracking-[-0.03em] sm:text-[3.4rem]">
             {t.about.title}
           </h1>
-          <div className="mt-8 space-y-6 text-[15px] leading-[1.8] text-[#0a0d12]/70 sm:text-[16px]">
+          <div className="mt-8 space-y-6 text-[15px] leading-[1.8] text-white/66 sm:text-[16px]">
             <p>
               {n.prefix}
-              <strong className="font-semibold text-[#0a0d12]">
+              <strong className="font-semibold text-white">
                 {n.mul}
               </strong>
               {n.tiplexed}
-              <strong className="font-semibold text-[#0a0d12]">
+              <strong className="font-semibold text-white">
                 {n.i}
               </strong>
               {n.nformationAnd}
-              <strong className="font-semibold text-[#0a0d12]">
+              <strong className="font-semibold text-white">
                 {n.c}
               </strong>
               {n.omputing}
-              <strong className="font-semibold text-[#0a0d12]">
+              <strong className="font-semibold text-white">
                 {n.a}
               </strong>
               {n.gent}
@@ -48,14 +49,15 @@ export function AboutPageClient() {
               href={githubUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2.5 rounded-[12px] bg-[#0a0d12] px-5 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[#0a0d12]/88"
+              className="inline-flex items-center gap-2.5 rounded-[12px] bg-white px-5 py-3 text-[14px] font-semibold text-[#0a0d12] transition-colors hover:bg-white/90"
             >
               <GitHubMark className="size-4" />
               {t.about.cta}
             </Link>
           </div>
-        </div>
-      </main>
+          </main>
+        </LandingSectionShell>
+      </div>
       <LandingFooter />
     </>
   );

@@ -20,10 +20,12 @@ export function LandingFooter() {
   const groups = Object.values(t.footer.groups);
 
   return (
-    <footer className="bg-[#0a0d12] text-white">
+    <footer className="relative overflow-hidden bg-[#050706] text-white">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#efaa52]/45 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(115,216,197,0.1),transparent_28%)]" />
       <div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8">
         {/* Top: CTA + link columns */}
-        <div className="flex flex-col gap-12 border-b border-white/10 py-16 sm:py-20 lg:flex-row lg:gap-20">
+        <div className="relative flex flex-col gap-12 border-b border-white/10 py-16 sm:py-20 lg:flex-row lg:gap-20">
           {/* Left — newsletter / CTA */}
           <div className="lg:w-[340px] lg:shrink-0">
             <Link href="#product" className="flex items-center gap-3">
@@ -100,7 +102,7 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom: copyright + language switcher */}
-        <div className="flex items-center justify-between py-6">
+        <div className="relative flex items-center justify-between py-6">
           <p className="text-[13px] text-white/36">
             {t.footer.copyright.replace(
               "{year}",

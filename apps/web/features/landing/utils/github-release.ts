@@ -67,6 +67,9 @@ export async function fetchLatestRelease(): Promise<LatestRelease> {
       next: { revalidate: REVALIDATE_SECONDS },
       headers,
     });
+    if (res.status === 404) {
+      return emptyRelease();
+    }
     if (!res.ok) {
       throw new Error(`GitHub API responded ${res.status}`);
     }

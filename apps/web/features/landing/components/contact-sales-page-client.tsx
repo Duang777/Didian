@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { LandingHeader } from "./landing-header";
 import { LandingFooter } from "./landing-footer";
+import { LandingSectionShell } from "./shared";
 import { useLocale } from "../i18n";
 
 type SubmitState =
@@ -159,20 +160,22 @@ export function ContactSalesPageClient() {
 
   return (
     <>
-      <LandingHeader variant="light" />
-      <main className="bg-[#f7f8fa] text-[#0a0d12]">
+      <div className="relative">
+        <LandingHeader variant="dark" />
+        <LandingSectionShell>
+      <main>
         <div
           ref={successAnchorRef}
-          className="mx-auto max-w-[760px] px-4 py-12 sm:px-6 sm:py-16 lg:py-20"
+          className="mx-auto max-w-[760px] px-4 py-28 sm:px-6 sm:py-32 lg:py-36"
         >
           <div className="mb-8 text-center">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#0a0d12]/45">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#f2b15f]/70">
               {c.eyebrow}
             </p>
             <h1 className="mt-2 font-[family-name:var(--font-serif)] text-[2.4rem] leading-[1.1] tracking-[-0.02em] sm:text-[2.8rem]">
               {c.title}
             </h1>
-            <p className="mt-3 text-[14px] text-[#0a0d12]/60 sm:text-[15px]">
+            <p className="mt-3 text-[14px] text-white/58 sm:text-[15px]">
               {c.subtitle}
             </p>
           </div>
@@ -196,6 +199,8 @@ export function ContactSalesPageClient() {
           )}
         </div>
       </main>
+        </LandingSectionShell>
+      </div>
       <LandingFooter />
     </>
   );
@@ -211,17 +216,17 @@ function SuccessCard({
   cta: string;
 }) {
   return (
-    <div className="rounded-[16px] border border-[#0a0d12]/8 bg-white p-8 shadow-[0_1px_2px_rgba(10,13,18,0.04)] sm:p-10">
+    <div className="rounded-[8px] border border-white/12 bg-white/[0.045] p-8 shadow-[0_24px_80px_rgba(0,0,0,0.28)] sm:p-10">
       <h2 className="font-[family-name:var(--font-serif)] text-[1.8rem] leading-[1.15] tracking-[-0.02em]">
         {title}
       </h2>
-      <p className="mt-3 text-[15px] leading-[1.7] text-[#0a0d12]/70">
+      <p className="mt-3 text-[15px] leading-[1.7] text-white/62">
         {message}
       </p>
       <div className="mt-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-[11px] bg-[#0a0d12] px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#0a0d12]/88"
+          className="inline-flex items-center gap-2 rounded-[11px] bg-white px-5 py-2.5 text-[13px] font-semibold text-[#0a0d12] transition-colors hover:bg-white/90"
         >
           {cta}
         </Link>
@@ -265,11 +270,11 @@ function FormCard({
   return (
     <form
       onSubmit={onSubmit}
-      className="space-y-8 rounded-[16px] border border-[#0a0d12]/8 bg-white p-6 shadow-[0_1px_2px_rgba(10,13,18,0.04)] sm:p-10"
+      className="space-y-8 rounded-[8px] border border-white/12 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.3)] sm:p-10"
     >
-      <div className="rounded-[12px] border border-[#0a0d12]/8 bg-[#f7f8fa] p-4 text-[13px] leading-[1.6] text-[#0a0d12]/72">
-        <p className="font-semibold text-[#0a0d12]">
-          <span aria-hidden className="mr-1.5">📌</span>
+      <div className="rounded-[8px] border border-[#f2b15f]/18 bg-[#f2b15f]/8 p-4 text-[13px] leading-[1.6] text-white/66">
+        <p className="font-semibold text-white">
+          <span aria-hidden className="mr-1.5 text-[#f2b15f]">*</span>
           {dict.notice.badge}
         </p>
         <p className="mt-1">{dict.notice.body}</p>
@@ -385,7 +390,7 @@ function FormCard({
           maxLength={2000}
           disabled={busy}
           aria-describedby={goalsHintId}
-          className="block w-full rounded-[10px] border border-[#0a0d12]/14 bg-white px-3.5 py-2.5 text-[14px] text-[#0a0d12] placeholder:text-[#0a0d12]/35 transition-colors focus:border-[#0a0d12]/40 focus:outline-none focus:ring-2 focus:ring-[#0a0d12]/10 disabled:opacity-60"
+          className="block w-full rounded-[10px] border border-white/14 bg-[#050706]/72 px-3.5 py-2.5 text-[14px] text-white placeholder:text-white/35 transition-colors focus:border-[#f2b15f]/60 focus:outline-none focus:ring-2 focus:ring-[#f2b15f]/15 disabled:opacity-60"
         />
       </Field>
 
@@ -401,7 +406,7 @@ function FormCard({
       {error ? (
         <p
           role="alert"
-          className="rounded-[10px] border border-[#c83a3a]/24 bg-[#fdecec] px-4 py-3 text-[13px] leading-[1.6] text-[#7a1d1d]"
+          className="rounded-[10px] border border-[#f06a52]/28 bg-[#f06a52]/10 px-4 py-3 text-[13px] leading-[1.6] text-[#ffd3cb]"
         >
           {error}
         </p>
@@ -410,7 +415,7 @@ function FormCard({
       <button
         type="submit"
         disabled={busy}
-        className="inline-flex w-full items-center justify-center rounded-[12px] bg-[#f04a2f] px-5 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[#d63d24] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        className="inline-flex w-full items-center justify-center rounded-[12px] bg-white px-5 py-3 text-[14px] font-semibold text-[#0a0d12] transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {busy ? dict.fields.submitting : dict.fields.submit}
       </button>
@@ -439,10 +444,10 @@ function Field({
     <div className="space-y-1.5">
       <label
         htmlFor={htmlFor}
-        className="block text-[13px] font-medium text-[#0a0d12]/82"
+        className="block text-[13px] font-medium text-white/78"
       >
         {label}
-        {required ? <span className="ml-0.5 text-[#f04a2f]">*</span> : null}
+        {required ? <span className="ml-0.5 text-[#f2b15f]">*</span> : null}
       </label>
       {children}
       {hint ? (
@@ -450,8 +455,8 @@ function Field({
           id={hintId}
           className={
             tone === "warning"
-              ? "text-[12px] leading-[1.55] text-[#7a1d1d]"
-              : "text-[12px] leading-[1.55] text-[#0a0d12]/55"
+              ? "text-[12px] leading-[1.55] text-[#ffd3cb]"
+              : "text-[12px] leading-[1.55] text-white/46"
           }
         >
           {hint}
@@ -496,7 +501,7 @@ function TextInput({
       disabled={disabled}
       aria-describedby={ariaDescribedBy}
       aria-invalid={ariaInvalid}
-      className="block w-full rounded-[10px] border border-[#0a0d12]/14 bg-white px-3.5 py-2.5 text-[14px] text-[#0a0d12] placeholder:text-[#0a0d12]/35 transition-colors focus:border-[#0a0d12]/40 focus:outline-none focus:ring-2 focus:ring-[#0a0d12]/10 disabled:opacity-60 aria-[invalid=true]:border-[#c83a3a]/60 aria-[invalid=true]:focus:ring-[#c83a3a]/15"
+      className="block w-full rounded-[10px] border border-white/14 bg-[#050706]/72 px-3.5 py-2.5 text-[14px] text-white placeholder:text-white/35 transition-colors focus:border-[#f2b15f]/60 focus:outline-none focus:ring-2 focus:ring-[#f2b15f]/15 disabled:opacity-60 aria-[invalid=true]:border-[#f06a52]/60 aria-[invalid=true]:focus:ring-[#f06a52]/15"
     />
   );
 }
@@ -525,7 +530,7 @@ function SelectInput({
       onChange={(e) => onChange(e.target.value)}
       required={required}
       disabled={disabled}
-      className="block w-full appearance-none rounded-[10px] border border-[#0a0d12]/14 bg-white bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%228%22%20viewBox%3D%220%200%2012%208%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M1%201.5L6%206.5L11%201.5%22%20stroke%3D%22%230a0d12%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_8px] bg-[right_14px_center] bg-no-repeat px-3.5 py-2.5 pr-10 text-[14px] text-[#0a0d12] transition-colors focus:border-[#0a0d12]/40 focus:outline-none focus:ring-2 focus:ring-[#0a0d12]/10 disabled:opacity-60"
+      className="block w-full appearance-none rounded-[10px] border border-white/14 bg-[#050706]/72 bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%228%22%20viewBox%3D%220%200%2012%208%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M1%201.5L6%206.5L11%201.5%22%20stroke%3D%22%23ffffff%22%20stroke-opacity%3D%220.6%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_8px] bg-[right_14px_center] bg-no-repeat px-3.5 py-2.5 pr-10 text-[14px] text-white transition-colors focus:border-[#f2b15f]/60 focus:outline-none focus:ring-2 focus:ring-[#f2b15f]/15 disabled:opacity-60"
     >
       <option value="" disabled>
         {placeholder}
@@ -555,8 +560,8 @@ function ConsentBlock({
   busy: boolean;
 }) {
   return (
-    <div className="space-y-3 text-[13px] leading-[1.65] text-[#0a0d12]/70">
-      <p className="font-semibold text-[#0a0d12]">
+    <div className="space-y-3 text-[13px] leading-[1.65] text-white/60">
+      <p className="font-semibold text-white">
         {dict.consent.intro}
       </p>
       <ConsentCheckbox
@@ -577,7 +582,7 @@ function ConsentBlock({
         {dict.consent.unsubscribe}{" "}
         <Link
           href={dict.consent.privacyLinkHref}
-          className="text-[#0a0d12] underline decoration-[#0a0d12]/30 underline-offset-2 hover:decoration-[#0a0d12]/60"
+          className="text-white underline decoration-white/30 underline-offset-2 hover:decoration-white/70"
         >
           {dict.consent.privacyLinkLabel}
         </Link>
@@ -608,7 +613,7 @@ function ConsentCheckbox({
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
         disabled={disabled}
-        className="mt-0.5 size-4 shrink-0 rounded-[4px] border-[#0a0d12]/30 text-[#0a0d12] focus:ring-[#0a0d12]/20 disabled:opacity-60"
+        className="mt-0.5 size-4 shrink-0 rounded-[4px] border-white/30 bg-[#050706]/72 text-[#f2b15f] focus:ring-[#f2b15f]/20 disabled:opacity-60"
       />
       <span>{label}</span>
     </label>

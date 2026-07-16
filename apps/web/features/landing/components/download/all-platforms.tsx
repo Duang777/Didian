@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useLocale } from "../../i18n";
 import type { DownloadAssets } from "../../utils/parse-release-assets";
+import { LandingSectionShell } from "../shared";
 import { AppleIcon, LinuxIcon, WindowsIcon } from "./os-icons";
 
 interface Props {
@@ -23,18 +24,15 @@ export function AllPlatforms({
   const d = t.download.allPlatforms;
 
   return (
-    <section
-      id="all-platforms"
-      className="bg-white py-20 text-[#0a0d12] sm:py-24"
-    >
+    <LandingSectionShell id="all-platforms" grid={false}>
       <div className="mx-auto max-w-[920px] px-4 sm:px-6 lg:px-8">
         <h2 className="font-[family-name:var(--font-serif)] text-[2.2rem] leading-[1.1] tracking-[-0.03em] sm:text-[2.6rem]">
           {d.title}
         </h2>
 
-        <div className="mt-10 overflow-hidden rounded-2xl border border-[#0a0d12]/10">
+        <div className="mt-10 overflow-hidden rounded-[8px] border border-white/12 bg-white/[0.035] shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
           <Row
-            icon={<AppleIcon className="text-[#0a0d12]" />}
+            icon={<AppleIcon className="text-white" />}
             label={d.macLabel}
             formats={[
               {
@@ -49,7 +47,7 @@ export function AllPlatforms({
             unavailable={d.unavailable}
           />
           <Row
-            icon={<WindowsIcon className="text-[#0a0d12]" />}
+            icon={<WindowsIcon className="text-white" />}
             label={d.winX64Label}
             formats={[
               {
@@ -60,7 +58,7 @@ export function AllPlatforms({
             unavailable={d.unavailable}
           />
           <Row
-            icon={<WindowsIcon className="text-[#0a0d12]" />}
+            icon={<WindowsIcon className="text-white" />}
             label={d.winArm64Label}
             formats={[
               {
@@ -71,7 +69,7 @@ export function AllPlatforms({
             unavailable={d.unavailable}
           />
           <Row
-            icon={<LinuxIcon className="text-[#0a0d12]" />}
+            icon={<LinuxIcon className="text-white" />}
             label={d.linuxX64Label}
             formats={[
               {
@@ -90,7 +88,7 @@ export function AllPlatforms({
             unavailable={d.unavailable}
           />
           <Row
-            icon={<LinuxIcon className="text-[#0a0d12]" />}
+            icon={<LinuxIcon className="text-white" />}
             label={d.linuxArm64Label}
             formats={[
               {
@@ -111,13 +109,13 @@ export function AllPlatforms({
           />
         </div>
 
-        <p className="mt-6 text-[13px] text-[#0a0d12]/60">{d.intelNote}</p>
+        <p className="mt-6 text-[13px] text-white/48">{d.intelNote}</p>
 
         {isFallbackNeeded(assets) ? (
-          <p className="mt-2 text-[13px] text-[#0a0d12]/60">
+          <p className="mt-2 text-[13px] text-white/48">
             <Link
               href={fallbackHref}
-              className="underline decoration-[#0a0d12]/30 underline-offset-4 hover:text-[#0a0d12] hover:decoration-[#0a0d12]/70"
+              className="underline decoration-white/30 underline-offset-4 hover:text-white hover:decoration-white/70"
               target="_blank"
               rel="noreferrer"
             >
@@ -126,7 +124,7 @@ export function AllPlatforms({
           </p>
         ) : null}
       </div>
-    </section>
+    </LandingSectionShell>
   );
 }
 
@@ -148,10 +146,10 @@ interface RowProps {
 function Row({ icon, label, formats, unavailable, isLast }: RowProps) {
   return (
     <div
-      className={`flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-5 ${isLast ? "" : "border-b border-[#0a0d12]/8"}`}
+      className={`flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-5 text-white ${isLast ? "" : "border-b border-white/10"}`}
     >
       <div className="flex min-w-[220px] items-center gap-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0a0d12]/5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.055]">
           {icon}
         </span>
         <span className="text-[14.5px] font-medium">{label}</span>
@@ -162,7 +160,7 @@ function Row({ icon, label, formats, unavailable, isLast }: RowProps) {
             <a
               key={f.label}
               href={f.href}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#0a0d12]/12 bg-white px-3 py-1.5 text-[13px] font-medium transition-colors hover:border-[#0a0d12]/30 hover:bg-[#0a0d12]/5"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/14 bg-white/[0.06] px-3 py-1.5 text-[13px] font-medium text-white transition-colors hover:border-white/28 hover:bg-white/10"
             >
               {f.label}
             </a>
@@ -170,7 +168,7 @@ function Row({ icon, label, formats, unavailable, isLast }: RowProps) {
             <span
               key={f.label}
               aria-disabled="true"
-              className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-[#0a0d12]/8 bg-[#0a0d12]/5 px-3 py-1.5 text-[13px] text-[#0a0d12]/40"
+              className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-white/8 bg-white/[0.035] px-3 py-1.5 text-[13px] text-white/34"
               title={unavailable}
             >
               {f.label}

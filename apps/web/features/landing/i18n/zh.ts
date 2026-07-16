@@ -1452,7 +1452,7 @@ export function createZhDict(allowSignup: boolean): LandingDict {
           "Linux 上 daemon self-restart 改走 `brew prefix` 软链，Homebrew Cellar 删除后不再让 runtime 失联",
           "CLI 短 ID 现在可以正确路由，复制粘贴的短前缀不再 404",
           "Windows 上非 ASCII 字符评论 / 描述输入新增 `--content-file` / `--description-file`",
-          "Windows / Linux 桌面端用 Didian asterisk 替换 Electron 默认占位图标",
+          "Windows / Linux 桌面端用 Didian logo 替换 Electron 默认占位图标",
           "Timeline 中孤立的 reply 现在会被正确捞回展示",
           "Timeline 评论分页预算不再把 activity 算进去，避免活动多时挤掉真实评论",
         ],

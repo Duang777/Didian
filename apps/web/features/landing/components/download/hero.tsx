@@ -3,7 +3,7 @@ import { ArrowRight, Download } from "lucide-react";
 import { useLocale } from "../../i18n";
 import type { DetectResult } from "../../utils/os-detect";
 import type { DownloadAssets } from "../../utils/parse-release-assets";
-import { heroButtonClassName } from "../shared";
+import { LandingSectionShell, heroButtonClassName } from "../shared";
 
 interface Props {
   detected: DetectResult | null;
@@ -29,9 +29,8 @@ export function DownloadHero({
   const content = resolveContent(detected, assets, versionUnavailable, d);
 
   return (
-    <section className="relative overflow-hidden bg-[#05070b] text-white">
-      <BackdropGradient />
-      <div className="relative z-10 mx-auto max-w-[1120px] px-4 pb-24 pt-32 text-center sm:px-6 sm:pt-40 lg:px-8 lg:pb-28">
+    <LandingSectionShell grid={false}>
+      <div className="mx-auto max-w-[1120px] px-4 pb-24 pt-32 text-center sm:px-6 sm:pt-40 lg:px-8 lg:pb-28">
         <h1 className="mx-auto max-w-[880px] font-[family-name:var(--font-serif)] text-[3rem] leading-[1.02] tracking-[-0.035em] drop-shadow-[0_10px_34px_rgba(0,0,0,0.32)] sm:text-[4rem] lg:text-[5rem]">
           {content.title}
         </h1>
@@ -74,7 +73,7 @@ export function DownloadHero({
           </p>
         ) : null}
       </div>
-    </section>
+    </LandingSectionShell>
   );
 }
 
@@ -223,18 +222,5 @@ function PrimaryCta({
     <a href={href} className={heroButtonClassName("solid")}>
       {children}
     </a>
-  );
-}
-
-function BackdropGradient() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0"
-      style={{
-        background:
-          "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(80,120,255,0.18), transparent 60%), radial-gradient(ellipse 50% 40% at 50% 80%, rgba(255,90,90,0.08), transparent 60%)",
-      }}
-    />
   );
 }

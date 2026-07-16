@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LandingHeader } from "@/features/landing/components/landing-header";
 import { LandingFooter } from "@/features/landing/components/landing-footer";
+import { LandingSectionShell } from "@/features/landing/components/shared";
 import { DownloadHero } from "@/features/landing/components/download/hero";
 import { AllPlatforms } from "@/features/landing/components/download/all-platforms";
 import { CliSection } from "@/features/landing/components/download/cli-section";
@@ -78,45 +79,45 @@ function VersionInfoFooter({
   const d = t.download.footer;
 
   return (
-    <section className="bg-white pb-16 text-[#0a0d12] sm:pb-20">
-      <div className="mx-auto flex max-w-[920px] flex-wrap items-center gap-x-6 gap-y-2 border-t border-[#0a0d12]/8 px-4 pt-8 text-[13px] text-[#0a0d12]/60 sm:px-6 lg:px-8">
+    <LandingSectionShell grid={false}>
+      <div className="mx-auto flex max-w-[920px] flex-wrap items-center gap-x-6 gap-y-2 border-t border-white/10 px-4 pb-16 pt-8 text-[13px] text-white/52 sm:px-6 sm:pb-20 lg:px-8">
         {version ? (
           <>
             <span>
               {d.currentVersion.replace("{version}", version)}
             </span>
-            <span aria-hidden className="text-[#0a0d12]/25">
+            <span aria-hidden className="text-white/25">
               ·
             </span>
             <Link
               href={releaseHtmlUrl}
-              className="underline decoration-[#0a0d12]/30 underline-offset-4 hover:text-[#0a0d12] hover:decoration-[#0a0d12]/70"
+              className="underline decoration-white/30 underline-offset-4 hover:text-white hover:decoration-white/70"
               target="_blank"
               rel="noreferrer"
             >
               {d.releaseNotes.replace("{version}", version)}
             </Link>
-            <span aria-hidden className="text-[#0a0d12]/25">
+            <span aria-hidden className="text-white/25">
               ·
             </span>
           </>
         ) : (
           <>
             <span>{d.versionUnavailable}</span>
-            <span aria-hidden className="text-[#0a0d12]/25">
+            <span aria-hidden className="text-white/25">
               ·
             </span>
           </>
         )}
         <Link
           href={ALL_RELEASES_URL}
-          className="underline decoration-[#0a0d12]/30 underline-offset-4 hover:text-[#0a0d12] hover:decoration-[#0a0d12]/70"
+          className="underline decoration-white/30 underline-offset-4 hover:text-white hover:decoration-white/70"
           target="_blank"
           rel="noreferrer"
         >
           {d.allReleases}
         </Link>
       </div>
-    </section>
+    </LandingSectionShell>
   );
 }

@@ -8,6 +8,7 @@ import { Input } from "@didian/ui/components/ui/input";
 import { Label } from "@didian/ui/components/ui/label";
 import { Textarea } from "@didian/ui/components/ui/textarea";
 import { joinCloudWaitlist } from "@didian/core/onboarding";
+import { cn } from "@didian/ui/lib/utils";
 import { useT } from "../../i18n";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -26,9 +27,11 @@ const REASON_MAX = 500;
 export function CloudWaitlistExpand({
   submitted,
   onSubmitted,
+  variant = "default",
 }: {
   submitted: boolean;
   onSubmitted: () => void;
+  variant?: "default" | "dark";
 }) {
   const { t } = useT("onboarding");
   const [email, setEmail] = useState("");
@@ -58,10 +61,20 @@ export function CloudWaitlistExpand({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border bg-muted/40 p-5">
-      <p className="text-[13.5px] leading-[1.55] text-foreground/85">
+    <div
+      className={cn(
+        "flex flex-col gap-4 rounded-lg border bg-muted/40 p-5",
+        variant === "dark" && "border-white/12 bg-[#050706]/72 text-white",
+      )}
+    >
+      <p
+        className={cn(
+          "text-[13.5px] leading-[1.55] text-foreground/85",
+          variant === "dark" && "text-white/76",
+        )}
+      >
         {t(($) => $.cloud_waitlist.intro_main)}{" "}
-        <span className="text-foreground/70">
+        <span className={cn("text-foreground/70", variant === "dark" && "text-white/52")}>
           {t(($) => $.cloud_waitlist.intro_warning)}
         </span>
       </p>
@@ -69,7 +82,10 @@ export function CloudWaitlistExpand({
       <div className="flex flex-col gap-1.5">
         <Label
           htmlFor="waitlist-email"
-          className="text-xs font-medium text-muted-foreground"
+          className={cn(
+            "text-xs font-medium text-muted-foreground",
+            variant === "dark" && "text-white/58",
+          )}
         >
           {t(($) => $.cloud_waitlist.email_label)}
         </Label>
@@ -80,6 +96,10 @@ export function CloudWaitlistExpand({
           value={email}
           disabled={submitted}
           placeholder={t(($) => $.cloud_waitlist.email_placeholder)}
+          className={cn(
+            variant === "dark" &&
+              "border-white/14 bg-[#050706]/72 text-white placeholder:text-white/35 focus-visible:ring-[#f2b15f]/24",
+          )}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -93,10 +113,18 @@ export function CloudWaitlistExpand({
       <div className="flex flex-col gap-1.5">
         <Label
           htmlFor="waitlist-reason"
-          className="text-xs font-medium text-muted-foreground"
+          className={cn(
+            "text-xs font-medium text-muted-foreground",
+            variant === "dark" && "text-white/58",
+          )}
         >
           {t(($) => $.cloud_waitlist.reason_label)}
-          <span className="ml-2 font-normal text-muted-foreground/70">
+          <span
+            className={cn(
+              "ml-2 font-normal text-muted-foreground/70",
+              variant === "dark" && "text-white/42",
+            )}
+          >
             {t(($) => $.cloud_waitlist.optional)}
           </span>
         </Label>
@@ -106,13 +134,25 @@ export function CloudWaitlistExpand({
           disabled={submitted}
           onChange={(e) => setReason(e.target.value)}
           placeholder={t(($) => $.cloud_waitlist.reason_placeholder)}
+          className={cn(
+            variant === "dark" &&
+              "border-white/14 bg-[#050706]/72 text-white placeholder:text-white/35 focus-visible:ring-[#f2b15f]/24",
+          )}
           rows={3}
           maxLength={REASON_MAX}
         />
       </div>
 
       <div className="flex items-center justify-end">
-        <Button size="lg" disabled={submitted || !canSubmit} onClick={submit}>
+        <Button
+          size="lg"
+          disabled={submitted || !canSubmit}
+          onClick={submit}
+          className={cn(
+            variant === "dark" &&
+              "bg-white text-[#0a0d12] hover:bg-white/90 disabled:bg-white/60",
+          )}
+        >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           {submitted ? (
             <>
