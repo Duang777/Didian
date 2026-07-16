@@ -16,6 +16,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const HIGHLIGHT_NAME = "didian-find";
 const ACTIVE_HIGHLIGHT_NAME = "didian-find-active";
+const HIGHLIGHT_STYLE_ID = "didian-find-highlight-style";
 
 // Feature detection, evaluated lazily per call site. On browsers without the
 // CSS Custom Highlight API the bar still opens and navigates, it just paints
@@ -26,6 +27,22 @@ function highlightApiSupported(): boolean {
     "highlights" in CSS &&
     typeof Highlight !== "undefined"
   );
+}
+
+function ensureHighlightStyles() {
+  if (document.getElementById(HIGHLIGHT_STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = HIGHLIGHT_STYLE_ID;
+  style.textContent = `
+::highlight(${HIGHLIGHT_NAME}) {
+  background-color: var(--find-match);
+  color: var(--find-match-foreground);
+}
+::highlight(${ACTIVE_HIGHLIGHT_NAME}) {
+  background-color: var(--find-match-active);
+  color: var(--find-match-foreground);
+}`;
+  document.head.appendChild(style);
 }
 
 // Element text we never search.
@@ -160,6 +177,7 @@ export function useInPageFind(options: {
       // CSS Custom Highlight API, otherwise prev/next would open the bar but
       // never move the view.
       if (supported) {
+        ensureHighlightStyles();
         if (range) {
           const active = new Highlight(range);
           active.priority = 1;
@@ -204,6 +222,7 @@ export function useInPageFind(options: {
       }
 
       if (supported) {
+        ensureHighlightStyles();
         CSS.highlights.set(HIGHLIGHT_NAME, new Highlight(...ranges));
       }
       setMatchCount(ranges.length);
