@@ -99,7 +99,7 @@ vi.mock("@didian/core/auth", () => ({
   useAuthStore: (selector: (state: { user: { id: string } }) => unknown) => selector({ user: { id: "user-1" } }),
 }));
 vi.mock("@didian/core/paths", () => ({
-  paths: { workspace: (slug: string) => ({ aiInbox: () => `/${slug}/ai-inbox`, issues: () => `/${slug}/issues`, resources: () => `/${slug}/resources` }) },
+  paths: { workspace: (slug: string) => ({ aiInbox: () => `/${slug}/ai-inbox`, missions: () => `/${slug}/missions`, issues: () => `/${slug}/issues`, resources: () => `/${slug}/resources` }) },
   useCurrentWorkspace: () => ({ id: "ws-1", name: "Acme", slug: "acme" }),
   useWorkspacePaths: () => ({
     aiInbox: () => "/acme/ai-inbox",
@@ -207,6 +207,18 @@ describe("PinRow", () => {
       "true",
     );
     expect(container.querySelector('button[data-href="/acme/missions"]')).not.toHaveAttribute("data-active");
+  });
+
+  it("highlights Missions for the legacy issue board route", () => {
+    navigation.current.pathname = "/acme/issues";
+    pins.current = [];
+
+    const { container } = render(<AppSidebar />);
+
+    expect(container.querySelector('button[data-href="/acme/missions"]')).toHaveAttribute(
+      "data-active",
+      "true",
+    );
   });
 });
 

@@ -77,7 +77,7 @@ export function proxy(req: NextRequest) {
   // --- Root path: redirect logged-in users to their last workspace ---
   if (pathname === "/" && hasSession && lastSlug) {
     const url = req.nextUrl.clone();
-    url.pathname = `/${lastSlug}/issues`;
+    url.pathname = `/${lastSlug}/missions`;
     return NextResponse.redirect(url);
   }
 

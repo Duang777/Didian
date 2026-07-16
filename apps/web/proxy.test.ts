@@ -61,4 +61,10 @@ describe("proxy legacy workspace route redirects", () => {
   it("does not redirect workspace-scoped URLs whose first segment is already a slug", () => {
     expect(redirectLocation("/acme/squads", sessionCookies)).toBeNull();
   });
+
+  it("sends logged-in root visits to Missions in the last workspace", () => {
+    expect(redirectLocation("/", sessionCookies)).toBe(
+      "https://app.didian.test/acme/missions",
+    );
+  });
 });

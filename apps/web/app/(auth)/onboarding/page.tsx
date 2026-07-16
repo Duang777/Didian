@@ -78,7 +78,7 @@ export default function OnboardingPage() {
           if (ws && issueId) {
             router.push(paths.workspace(ws.slug).issueDetail(issueId));
           } else if (ws) {
-            router.push(paths.workspace(ws.slug).aiInbox());
+            router.push(paths.workspace(ws.slug).missions());
           } else {
             router.push(paths.root());
           }

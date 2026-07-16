@@ -29,15 +29,16 @@ function IssuesSurfaceHeader({
   );
 }
 
-export function IssuesPage() {
+export function IssuesPage({ title }: { title?: string } = {}) {
   const { t } = useT("issues");
   const scope = useIssuesScopeStore((s) => s.scope);
+  const pageTitle = title ?? t(($) => $.page.breadcrumb_title);
 
   return (
     <div className="flex flex-1 min-h-0 flex-col">
       <PageHeader className="gap-2">
         <ListTodo className="h-4 w-4 text-muted-foreground" />
-        <h1 className="text-sm font-medium">{t(($) => $.page.breadcrumb_title)}</h1>
+        <h1 className="text-sm font-medium">{pageTitle}</h1>
       </PageHeader>
 
       <IssueSurface

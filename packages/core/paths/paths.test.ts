@@ -5,6 +5,7 @@ describe("paths.workspace(slug)", () => {
   const ws = paths.workspace("acme");
 
   it("builds workspace paths with slug prefix", () => {
+    expect(ws.root()).toBe("/acme/missions");
     expect(ws.aiInbox()).toBe("/acme/ai-inbox");
     expect(ws.missions()).toBe("/acme/missions");
     expect(ws.missionDetail("mission-1")).toBe("/acme/missions/mission-1");

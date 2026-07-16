@@ -86,6 +86,11 @@ function isNavActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
+function isTopLevelNavActive(pathname: string, href: string, itemKey: NavKey): boolean {
+  if (isNavActive(pathname, href)) return true;
+  return itemKey === "missions" && /\/issues(?:\/|$)/.test(pathname);
+}
+
 // Stable empty arrays for query defaults. Using an inline `= []` default on
 // `useQuery` creates a new array reference on every render when `data` is
 // undefined (e.g. query disabled or loading) — which in turn breaks any
@@ -434,7 +439,7 @@ export function AppSidebar({ topSlot, searchSlot, headerClassName, headerStyle }
         ? list.find((w) => w.id === invitation.workspace_id)
         : null;
       if (joined) {
-        push(paths.workspace(joined.slug).aiInbox());
+        push(paths.workspace(joined.slug).missions());
       }
     },
   });
@@ -532,7 +537,7 @@ export function AppSidebar({ topSlot, searchSlot, headerClassName, headerStyle }
                       <DropdownMenuItem
                         key={ws.id}
                         render={
-                          <AppLink href={paths.workspace(ws.slug).aiInbox()} />
+                          <AppLink href={paths.workspace(ws.slug).missions()} />
                         }
                       >
                         <WorkspaceAvatar name={ws.name} avatarUrl={ws.avatar_url} size="sm" />
@@ -708,7 +713,7 @@ export function AppSidebar({ topSlot, searchSlot, headerClassName, headerStyle }
               <SidebarMenu className="gap-0.5">
                 {workspaceNav.map((item) => {
                   const href = p[item.key]();
-                  const isActive = !isActivePinnedRoute && isNavActive(pathname, href);
+                  const isActive = !isActivePinnedRoute && isTopLevelNavActive(pathname, href, item.key);
                   return (
                     <SidebarMenuItem key={item.key}>
                       <SidebarMenuButton
