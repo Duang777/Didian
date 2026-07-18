@@ -6,7 +6,10 @@ import type {
   AiStudioRecipe,
   AiStudioRole,
   AiUnderstanding,
+  AtlasContextScope,
   AtlasCollection,
+  AtlasWorkspace,
+  AtlasWorkspaceFile,
   AutopilotStrategy,
   BrowserCapturePayload,
   MissionView,
@@ -243,6 +246,7 @@ export const demoMissions: MissionView[] = [
       { id: "artifact-index", name: "资源索引", description: "按主题整理的入口索引。", kind: "index" },
       { id: "artifact-plan", name: "两周学习路线", description: "按概念、工具、实战安排学习顺序。", kind: "report" },
     ],
+    workspaceId: "workspace-ai-agent-pack",
     relatedAtlasIds: ["atlas-ai-agent-learning"],
     updatedAt: "刚刚",
   },
@@ -263,6 +267,224 @@ export const demoMissions: MissionView[] = [
   },
 ];
 
+export function missionToAtlasWorkspace(mission: MissionView): AtlasWorkspace {
+  const sourceFiles = mission.inputs.map((input) => sourceInputToWorkspaceFile(input));
+  const outputFiles = defaultWorkspaceOutputFiles(mission);
+  const files: AtlasWorkspaceFile[] = [
+    {
+      id: `${mission.id}-mission-md`,
+      path: "mission.md",
+      title: "mission.md",
+      kind: "mission",
+      content: missionDocumentContent(mission),
+      updatedAt: mission.updatedAt,
+    },
+    ...sourceFiles,
+    {
+      id: `${mission.id}-evidence-md`,
+      path: "evidence.md",
+      title: "evidence.md",
+      kind: "evidence",
+      content: evidenceDocumentContent(mission),
+      readonly: true,
+      updatedAt: mission.updatedAt,
+    },
+    {
+      id: `${mission.id}-decisions-md`,
+      path: "decisions.md",
+      title: "decisions.md",
+      kind: "decision",
+      content: decisionsDocumentContent(mission),
+      updatedAt: mission.updatedAt,
+    },
+    ...outputFiles,
+    {
+      id: `${mission.id}-agent-log-md`,
+      path: "agent-log.md",
+      title: "agent-log.md",
+      kind: "log",
+      content: agentLogDocumentContent(mission),
+      readonly: true,
+      updatedAt: mission.updatedAt,
+    },
+  ];
+
+  return {
+    id: mission.workspaceId ?? `workspace-${mission.id}`,
+    missionId: mission.id,
+    title: mission.title,
+    rootPath: workspaceRootPath(mission),
+    summary: "这个 Atlas Workspace 保存 Mission 目标、来源、证据、决策和可写回产物，供 Codex 或其他 Agent 后续继续工作。",
+    files,
+    contextScopes: defaultWorkspaceContextScopes(files),
+    updatedAt: mission.updatedAt,
+  };
+}
+
+function workspaceRootPath(mission: MissionView) {
+  if (mission.id === "mission-ai-agent-pack") return "AI Agent 项目调研";
+  return mission.title.replace(/[\\/:*?\"<>|]/g, " ").replace(/\s+/g, " ").trim() || "Mission Workspace";
+}
+
+function sourceInputToWorkspaceFile(input: MissionView["inputs"][number]): AtlasWorkspaceFile {
+  const basename = sourceFileBasename(input);
+  return {
+    id: `source-${input.id}`,
+    path: `sources/${basename}.md`,
+    title: `${basename}.md`,
+    kind: "source",
+    content: [
+      `# ${input.title}`,
+      "",
+      "## 来源",
+      input.sourceUrl ? `- URL: ${input.sourceUrl}` : input.source ? `- 来源: ${input.source}` : "- 来源: 用户输入",
+      input.sourceLabel ? `- 类型: ${input.sourceLabel}` : `- 类型: ${input.kind}`,
+      `- 置信度: ${Math.round(input.confidence * 100)}%`,
+      "",
+      "## 摘要",
+      input.preview,
+      "",
+      "## Agent 备注",
+      "保留原始上下文，后续分析必须引用本来源或说明为什么不采用。",
+    ].join("\n"),
+    readonly: true,
+    sourceUrl: input.sourceUrl,
+  };
+}
+
+function sourceFileBasename(input: MissionView["inputs"][number]) {
+  if (input.source?.includes("browser-use")) return "browser-use";
+  if (input.source?.includes("stagehand")) return "stagehand";
+  if (input.kind === "text") return "用户目标";
+  const source = input.sourceUrl ?? input.source ?? input.title;
+  try {
+    const url = new URL(source);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    return sanitizeWorkspaceBasename(pathParts.at(-1) || url.hostname);
+  } catch {
+    return sanitizeWorkspaceBasename(input.title);
+  }
+}
+
+function sanitizeWorkspaceBasename(value: string) {
+  return value.replace(/\.md$/i, "").replace(/[\\/:*?\"<>|#\[\]()]/g, " ").replace(/\s+/g, " ").trim() || "source";
+}
+
+function missionDocumentContent(mission: MissionView) {
+  return [
+    `# ${mission.title}`,
+    "",
+    "## Agent 工作目标",
+    mission.goal,
+    "",
+    "## AI 理解",
+    `- 意图: ${mission.understanding.intent}`,
+    `- 摘要: ${mission.understanding.summary}`,
+    `- 置信度: ${Math.round(mission.understanding.confidence * 100)}%`,
+    "",
+    "## Workspace 使用方式",
+    "- 先阅读 `sources/` 和 `evidence.md`。",
+    "- 需要用户确认的动作写入 `decisions.md`。",
+    "- 可交付内容写入 `outputs/`。",
+    "- 所有结论保留来源引用，不要把聊天回答停留在临时对话里。",
+    "",
+    "## Mission Plan",
+    ...mission.plan.map((step, index) => `${index + 1}. ${step.title} - ${step.description}`),
+    "",
+    "## 预期产出",
+    ...workspaceOutputNames().map((name) => `- outputs/${name}.md`),
+  ].join("\n");
+}
+
+function evidenceDocumentContent(mission: MissionView) {
+  const evidence = mission.plan.flatMap((step) => step.evidence ? [`- ${step.title}: ${step.evidence}`] : []);
+  return [
+    `# ${mission.title} / Evidence`,
+    "",
+    evidence.length > 0 ? evidence.join("\n") : "- 暂无证据，Agent 需要先读取来源。",
+    "",
+    "## 来源索引",
+    ...mission.inputs.map((input) => `- ${input.title}: ${input.sourceUrl ?? input.source ?? "用户输入"}`),
+  ].join("\n");
+}
+
+function decisionsDocumentContent(mission: MissionView) {
+  return [
+    `# ${mission.title} / Decisions`,
+    "",
+    mission.reviewItems.length > 0 ? mission.reviewItems.map((item) => `- [ ] ${item.title}: ${item.description}`).join("\n") : "暂无待确认决策。",
+    "",
+    "## 安全边界",
+    "- 允许创建 Markdown 产物。",
+    "- 允许保存链接副本。",
+    "- 删除、覆盖、批量移动必须进入 Review。",
+  ].join("\n");
+}
+
+function agentLogDocumentContent(mission: MissionView) {
+  return [
+    `# ${mission.title} / Agent Log`,
+    "",
+    ...mission.plan.map((step) => `- ${step.state}: ${step.title}`),
+    "",
+    "后续真实 Codex Runtime 日志会追加到这里。",
+  ].join("\n");
+}
+
+function defaultWorkspaceOutputFiles(mission: MissionView): AtlasWorkspaceFile[] {
+  return workspaceOutputNames().map((name) => ({
+    id: `${mission.id}-output-${name}`,
+    path: `outputs/${name}.md`,
+    title: `${name}.md`,
+    kind: "output",
+    content: outputDocumentContent(name, mission),
+    updatedAt: mission.updatedAt,
+  }));
+}
+
+function workspaceOutputNames() {
+  return ["资源索引", "项目对比表", "可复用清单", "下一步行动"];
+}
+
+function outputDocumentContent(name: string, mission: MissionView) {
+  if (name === "资源索引") {
+    return [
+      "# 资源索引",
+      "",
+      ...mission.inputs.map((input) => `- [${input.title}](${input.sourceUrl ?? input.source ?? "#"}) - ${input.preview}`),
+    ].join("\n");
+  }
+  if (name === "项目对比表") {
+    return [
+      "# 项目对比表",
+      "",
+      "| 项目 | 类型 | 可复用点 | 来源 |",
+      "| --- | --- | --- | --- |",
+      ...mission.inputs.filter((input) => input.kind !== "text").map((input) => `| ${input.title} | ${input.kind} | 待 Agent 补充 | ${input.sourceUrl ?? input.source ?? "-"} |`),
+    ].join("\n");
+  }
+  if (name === "可复用清单") {
+    return "# 可复用清单\n\n- [ ] 提取可复用前端组件。\n- [ ] 提取可复用浏览器自动化方案。\n- [ ] 标记许可证和商业化风险。";
+  }
+  return "# 下一步行动\n\n1. 补齐每个来源的证据引用。\n2. 完成项目对比表。\n3. 根据 Review 结果写入 Atlas。";
+}
+
+function defaultWorkspaceContextScopes(files: AtlasWorkspaceFile[]): AtlasContextScope[] {
+  const sourcePaths = files.filter((file) => file.kind === "source").map((file) => file.path);
+  const outputPaths = files.filter((file) => file.kind === "output").map((file) => file.path);
+  return [
+    { id: "current_document", label: "当前文档", description: "只把当前打开的 Markdown 交给 Agent。", enabled: true, filePaths: ["mission.md"] },
+    { id: "current_workspace", label: "当前 Workspace", description: "包含 Mission、证据、决策、日志和产物。", enabled: true, filePaths: files.map((file) => file.path) },
+    { id: "captured_sources", label: "已捕获来源", description: "允许 Agent 使用 sources/ 下的网页、文档和用户目标。", enabled: true, filePaths: sourcePaths },
+    { id: "workspace_outputs", label: "Workspace Outputs", description: "允许 Agent 读取和更新 outputs/ 下的产物。", enabled: true, filePaths: outputPaths },
+    { id: "entire_atlas", label: "整个 Atlas", description: "允许 Agent 参考其它 Collection 和历史 Mission。", enabled: false, filePaths: [] },
+    { id: "local_downloads", label: "本地下载目录", description: "允许 Agent 读取用户授权的本地下载目录。", enabled: false, filePaths: [] },
+    { id: "cloud_drive_resources", label: "云盘已有资源", description: "允许 Agent 和云盘 Adapter 比对已有资源。", enabled: false, filePaths: [] },
+  ];
+}
+
+export const demoAtlasWorkspaces: AtlasWorkspace[] = [missionToAtlasWorkspace(demoMissions[0]!)];
+
 export const demoAtlasCollections: AtlasCollection[] = [
   {
     id: "atlas-ai-agent-learning",
@@ -270,6 +492,7 @@ export const demoAtlasCollections: AtlasCollection[] = [
     summary: "围绕浏览器自动化 Agent 的入门、工具和实战资源合集，适合形成两周学习路线。",
     topic: "AI Agent / Browser Automation",
     sourceMissionId: "mission-ai-agent-pack",
+    workspaceId: "workspace-ai-agent-pack",
     updatedAt: "刚刚",
     resources: [
       {

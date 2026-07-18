@@ -85,7 +85,42 @@ export const MissionViewSchema = z.object({
     description: z.string(),
     kind: z.enum(["summary", "table", "index", "report", "markdown"]),
   })),
+  workspaceId: z.string().optional(),
   relatedAtlasIds: z.array(z.string()),
+  updatedAt: z.string(),
+});
+
+export const AtlasWorkspaceSchema = z.object({
+  id: z.string().min(1),
+  missionId: z.string().min(1),
+  title: z.string().min(1),
+  rootPath: z.string().min(1),
+  summary: z.string().min(1),
+  files: z.array(z.object({
+    id: z.string().min(1),
+    path: z.string().min(1),
+    title: z.string().min(1),
+    kind: z.enum(["mission", "source", "evidence", "decision", "output", "log"]),
+    content: z.string(),
+    readonly: z.boolean().optional(),
+    sourceUrl: z.string().optional(),
+    updatedAt: z.string().optional(),
+  })).min(1),
+  contextScopes: z.array(z.object({
+    id: z.enum([
+      "current_document",
+      "current_workspace",
+      "captured_sources",
+      "workspace_outputs",
+      "entire_atlas",
+      "local_downloads",
+      "cloud_drive_resources",
+    ]),
+    label: z.string().min(1),
+    description: z.string().min(1),
+    enabled: z.boolean(),
+    filePaths: z.array(z.string()),
+  })),
   updatedAt: z.string(),
 });
 
@@ -95,6 +130,7 @@ export const AtlasCollectionSchema = z.object({
   summary: z.string().min(1),
   topic: z.string().min(1),
   sourceMissionId: z.string().min(1),
+  workspaceId: z.string().optional(),
   updatedAt: z.string(),
   resources: z.array(z.object({
     id: z.string().min(1),

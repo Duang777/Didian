@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   demoAtlasCollections,
+  demoAtlasWorkspaces,
   demoAutopilotStrategies,
   demoMissions,
   inferAiUnderstanding,
+  missionToAtlasWorkspace,
 } from "./fixtures";
 import {
   AtlasCollectionSchema,
@@ -31,6 +33,52 @@ describe("inferAiUnderstanding", () => {
     expect(result.intent).toBe("collect");
     expect(result.suggestedMissionTitle).toBe("记录输入");
     expect(result.suggestedMissionTitle).not.toContain("AI Agent 资源包");
+  });
+});
+
+describe("missionToAtlasWorkspace", () => {
+  it("creates a Flowix-style Markdown workspace for a resource mission", () => {
+    const workspace = missionToAtlasWorkspace(demoMissions[0]!);
+
+    expect(workspace.rootPath).toBe("AI Agent 项目调研");
+    expect(workspace.missionId).toBe("mission-ai-agent-pack");
+    expect(workspace.files.map((file) => file.path)).toEqual([
+      "mission.md",
+      "sources/karakeep.md",
+      "sources/browser-use.md",
+      "sources/stagehand.md",
+      "sources/用户目标.md",
+      "evidence.md",
+      "decisions.md",
+      "outputs/资源索引.md",
+      "outputs/项目对比表.md",
+      "outputs/可复用清单.md",
+      "outputs/下一步行动.md",
+      "agent-log.md",
+    ]);
+    expect(workspace.files.find((file) => file.path === "mission.md")?.content).toContain("## Agent 工作目标");
+    expect(workspace.files.find((file) => file.path === "sources/browser-use.md")?.content).toContain("github.com/browser-use/browser-use");
+    expect(workspace.files.find((file) => file.path === "evidence.md")?.content).toContain("browser-use 和 Stagehand 均属于工具/实战主题");
+    expect(workspace.contextScopes.map((scope) => scope.id)).toEqual([
+      "current_document",
+      "current_workspace",
+      "captured_sources",
+      "workspace_outputs",
+      "entire_atlas",
+      "local_downloads",
+      "cloud_drive_resources",
+    ]);
+    expect(workspace.contextScopes.filter((scope) => scope.enabled).map((scope) => scope.id)).toEqual([
+      "current_document",
+      "current_workspace",
+      "captured_sources",
+      "workspace_outputs",
+    ]);
+  });
+
+  it("exposes demo Atlas workspaces keyed by Mission", () => {
+    expect(demoAtlasWorkspaces).toHaveLength(1);
+    expect(demoAtlasWorkspaces[0]?.missionId).toBe(demoAtlasCollections[0]?.sourceMissionId);
   });
 });
 

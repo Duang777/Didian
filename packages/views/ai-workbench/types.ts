@@ -102,6 +102,47 @@ export type MissionArtifact = {
   kind: "summary" | "table" | "index" | "report" | "markdown";
 };
 
+export type AtlasWorkspaceFileKind = "mission" | "source" | "evidence" | "decision" | "output" | "log";
+
+export type AtlasWorkspaceFile = {
+  id: string;
+  path: string;
+  title: string;
+  kind: AtlasWorkspaceFileKind;
+  content: string;
+  readonly?: boolean;
+  sourceUrl?: string;
+  updatedAt?: string;
+};
+
+export type AtlasContextScopeId =
+  | "current_document"
+  | "current_workspace"
+  | "captured_sources"
+  | "workspace_outputs"
+  | "entire_atlas"
+  | "local_downloads"
+  | "cloud_drive_resources";
+
+export type AtlasContextScope = {
+  id: AtlasContextScopeId;
+  label: string;
+  description: string;
+  enabled: boolean;
+  filePaths: string[];
+};
+
+export type AtlasWorkspace = {
+  id: string;
+  missionId: string;
+  title: string;
+  rootPath: string;
+  summary: string;
+  files: AtlasWorkspaceFile[];
+  contextScopes: AtlasContextScope[];
+  updatedAt: string;
+};
+
 export type MissionView = {
   id: string;
   title: string;
@@ -112,6 +153,7 @@ export type MissionView = {
   plan: MissionPlanStep[];
   reviewItems: MissionReviewItem[];
   artifacts: MissionArtifact[];
+  workspaceId?: string;
   relatedAtlasIds: string[];
   updatedAt: string;
 };
@@ -147,6 +189,7 @@ export type AtlasCollection = {
   summary: string;
   topic: string;
   sourceMissionId: string;
+  workspaceId?: string;
   updatedAt: string;
   resources: AtlasResource[];
 };
