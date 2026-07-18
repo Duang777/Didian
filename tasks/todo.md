@@ -99,12 +99,12 @@
 **验收标准：**
 - [x] Focused tests 通过。
 - [x] Typecheck 通过。
-- [ ] 工作树提交干净。
+- [x] 工作树提交干净。
 
 **验证：**
 - [x] `pnpm --filter @didian/views test -- ai-workbench`
 - [x] `pnpm --filter @didian/views typecheck`
-- [ ] `git status --short --branch`
+- [x] `git status --short --branch`
 
 **依赖：** Task F2、F3、F4
 
