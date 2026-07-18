@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Archive, CheckCircle2, Clock3, ExternalLink, Inbox, Loader2, RefreshCw, RotateCcw, Search, SendHorizontal } from "lucide-react";
+import { AlertCircle, Archive, CheckCircle2, Clock3, ExternalLink, FileText, Folder, Inbox, Loader2, RefreshCw, RotateCcw, Search, SendHorizontal } from "lucide-react";
 import { ApiError, api, DuplicateIssueErrorBodySchema, parseWithFallback, type DuplicateIssueErrorBody } from "@didian/core/api";
 import { browserCapturesOptions, useArchiveBrowserCapture, useCreateBrowserCapture, useRestoreBrowserCapture, type BrowserCaptureMemoryState } from "@didian/core/browser-memory";
 import { useWorkspaceId } from "@didian/core/hooks";
@@ -27,6 +27,12 @@ const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
 type InputUrlCollectionDecision = "saved" | "skipped";
 
+type WorkspacePreview = {
+  rootPath: string;
+  files: string[];
+  contextScopes: string[];
+};
+
 export function AiInboxPage() {
   const wsId = useWorkspaceId();
   const workspaceSlug = useRequiredWorkspaceSlug();
@@ -41,6 +47,8 @@ export function AiInboxPage() {
   const trimmedInput = input.trim();
   const fallbackUnderstanding = useMemo(() => inferAiUnderstanding(input), [input]);
   const inputUrls = useMemo(() => extractInputUrls(input), [input]);
+  const understanding: AiUnderstanding = fallbackUnderstanding;
+  const workspacePreview = useMemo(() => workspacePreviewForInput(trimmedInput, inputUrls, understanding), [trimmedInput, inputUrls, understanding]);
   const createMission = useMutation({ mutationFn: api.createAiInboxMission });
   const createBrowserCapture = useCreateBrowserCapture();
   const capturesQuery = useQuery({
@@ -55,7 +63,6 @@ export function AiInboxPage() {
   );
   const captureColumns = useMemo(() => splitIntoColumns(inboxInputs, 2), [inboxInputs]);
   const canCreateMission = trimmedInput.length > 0;
-  const understanding: AiUnderstanding = fallbackUnderstanding;
 
   async function handleCreateMission() {
     if (!canCreateMission || createMission.isPending || createdMission) return;
@@ -73,7 +80,7 @@ export function AiInboxPage() {
     try {
       const mission = await createMission.mutateAsync({
         title: missionTitleForInput(understanding.suggestedMissionTitle, inputUrls, trimmedInput),
-        description: buildMissionDescription({ input: trimmedInput, inputUrls, understanding, collectionDecision }),
+        description: buildMissionDescription({ input: trimmedInput, inputUrls, understanding, collectionDecision, workspacePreview }),
         understanding,
       });
       if (!mission.issue.id) {
@@ -176,6 +183,7 @@ export function AiInboxPage() {
               </div>
             </div>
           )}
+          {trimmedInput.length > 0 && <WorkspacePreviewPanel preview={workspacePreview} />}
         </WorkbenchSection>
       </div>
 
@@ -365,6 +373,36 @@ function CaptureFavicon({ src }: { src?: string | null }) {
   );
 }
 
+function WorkspacePreviewPanel({ preview }: { preview: WorkspacePreview }) {
+  return (
+    <div className="mt-3 rounded-md border bg-background p-3 text-sm">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 font-medium">
+          <Folder className="size-4 text-muted-foreground" />
+          Atlas Workspace Preview
+        </div>
+        <span className="text-xs text-muted-foreground">创建 Mission 时会作为 Agent 工作区交接</span>
+      </div>
+      <div className="mt-3 rounded-md border bg-muted/20 p-3">
+        <div className="text-sm font-medium">{preview.rootPath}</div>
+        <div className="mt-2 grid gap-1 sm:grid-cols-2">
+          {preview.files.map((file) => (
+            <div key={file} className="flex min-w-0 items-center gap-2 rounded-md bg-background px-2 py-1.5 text-xs text-muted-foreground">
+              <FileText className="size-3.5 shrink-0" />
+              <span className="truncate">{file}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {preview.contextScopes.map((scope) => (
+          <span key={scope} className="rounded-md border px-2 py-1 text-xs text-muted-foreground">{scope}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function browserCaptureStatusView(item: AiInboxInput) {
   switch (item.enrichmentStatus) {
     case "ready":
@@ -524,11 +562,13 @@ function buildMissionDescription({
   inputUrls,
   understanding,
   collectionDecision,
+  workspacePreview,
 }: {
   input: string;
   inputUrls: string[];
   understanding: AiUnderstanding;
   collectionDecision?: InputUrlCollectionDecision;
+  workspacePreview: WorkspacePreview;
 }) {
   const sections = [
     aiInboxLeadCopy({ input, inputUrls, understanding }),
@@ -541,6 +581,9 @@ function buildMissionDescription({
     "",
     "## 预期产出",
     ...understanding.suggestedOutputs.map((output) => `- ${output}`),
+    "",
+    "## Atlas Workspace",
+    workspaceHandoffCopy(workspacePreview),
   ];
 
   if (input) {
@@ -561,6 +604,61 @@ function buildMissionDescription({
   }
 
   return sections.join("\n");
+}
+
+function workspacePreviewForInput(input: string, inputUrls: string[], understanding: AiUnderstanding): WorkspacePreview {
+  const files = [
+    "mission.md",
+    ...inputUrls.map((url) => `sources/${workspaceSourceFileName(url)}.md`),
+    ...(inputUrls.length === 0 && input ? ["sources/用户输入.md"] : []),
+    "evidence.md",
+    "decisions.md",
+    "outputs/资源索引.md",
+    "outputs/项目对比表.md",
+    "outputs/可复用清单.md",
+    "outputs/下一步行动.md",
+    "agent-log.md",
+  ];
+  return {
+    rootPath: workspaceRootPathForInput(inputUrls, understanding),
+    files: Array.from(new Set(files)),
+    contextScopes: ["当前文档", "当前 Workspace", "已捕获来源", "Workspace Outputs"],
+  };
+}
+
+function workspaceRootPathForInput(inputUrls: string[], understanding: AiUnderstanding) {
+  if (understanding.intent === "learning_plan" || inputUrls.some((url) => /agent|browser-use|stagehand/i.test(url))) {
+    return "AI Agent 项目调研";
+  }
+  return understanding.suggestedMissionTitle.replace(/[\\/:*?\"<>|]/g, " ").replace(/\s+/g, " ").trim() || "Mission Workspace";
+}
+
+function workspaceSourceFileName(url: string) {
+  try {
+    const parsed = new URL(url);
+    const pathParts = parsed.pathname.split("/").filter(Boolean);
+    if (parsed.hostname === "github.com" && pathParts.length >= 2) return pathParts[1] ?? pathParts[0] ?? "source";
+    if (parsed.hostname.includes("stagehand")) return "stagehand";
+    return pathParts.at(-1)?.replace(/\.md$/i, "") || parsed.hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+function workspaceHandoffCopy(preview: WorkspacePreview) {
+  return [
+    "你正在维护一个 Atlas Workspace。不要只给一次性聊天回答；请把上下文、证据、决策和产物写回文档空间。",
+    "",
+    "```text",
+    `${preview.rootPath}/`,
+    ...preview.files.map((file) => `  ${file}`),
+    "```",
+    "",
+    "Agent context 默认使用：",
+    ...preview.contextScopes.map((scope) => `- ${scope}`),
+    "",
+    "写作约束：所有结论保留来源引用；需要用户确认的动作写入 decisions.md；可交付内容写入 outputs/。",
+  ].join("\n");
 }
 
 function aiInboxLeadCopy({

@@ -263,6 +263,22 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByRole("button", { name: "创建 Mission" })).toBeDisabled();
   });
 
+  it("previews the Atlas Workspace generated from the current input", async () => {
+    const user = userEvent.setup();
+    listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
+
+    renderPage();
+
+    await user.type(screen.getByLabelText("AI Inbox input"), "https://github.com/browser-use/browser-use\nhttps://docs.stagehand.dev\n帮我整理这些 AI Agent 学习资料");
+
+    expect(screen.getByText("Atlas Workspace Preview")).toBeInTheDocument();
+    expect(screen.getByText("AI Agent 项目调研")).toBeInTheDocument();
+    expect(screen.getByText("mission.md")).toBeInTheDocument();
+    expect(screen.getByText("sources/browser-use.md")).toBeInTheDocument();
+    expect(screen.getByText("outputs/项目对比表.md")).toBeInTheDocument();
+    expect(screen.getByText("当前 Workspace")).toBeInTheDocument();
+  });
+
   it("creates a mission only from the typed input and keeps existing captures out of mission context", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({
@@ -308,6 +324,12 @@ describe("AiInboxPage browser captures", () => {
     expect(description).toContain("## 任务交接");
     expect(description).toContain("学习路线");
     expect(description).toContain("## 预期产出");
+    expect(description).toContain("## Atlas Workspace");
+    expect(description).toContain("AI Agent 项目调研/");
+    expect(description).toContain("mission.md");
+    expect(description).toContain("sources/browser-use.md");
+    expect(description).toContain("outputs/项目对比表.md");
+    expect(description).toContain("你正在维护一个 Atlas Workspace");
     expect(description).toContain("## 本次输入链接");
     expect(description).not.toContain("Created from AI Inbox.");
     expect(description).not.toContain("意图：learning_plan");
