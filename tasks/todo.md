@@ -9,13 +9,13 @@
 **描述：** 定义 workspace 文件、上下文范围和写回动作需要的前端 view model，并为 demo Mission 生成稳定 Markdown 文件结构。
 
 **验收标准：**
-- [ ] `AtlasWorkspace` 包含 root path、files、context scopes、source Mission。
-- [ ] demo workspace 至少包含 `mission.md`、`sources/browser-use.md`、`sources/stagehand.md`、`evidence.md`、`decisions.md`、`outputs/资源索引.md`、`outputs/项目对比表.md`、`agent-log.md`。
-- [ ] workspace 文件内容保留来源 URL 和 evidence。
+- [x] `AtlasWorkspace` 包含 root path、files、context scopes、source Mission。
+- [x] demo workspace 至少包含 `mission.md`、`sources/browser-use.md`、`sources/stagehand.md`、`evidence.md`、`decisions.md`、`outputs/资源索引.md`、`outputs/项目对比表.md`、`agent-log.md`。
+- [x] workspace 文件内容保留来源 URL 和 evidence。
 
 **验证：**
-- [ ] `pnpm --filter @didian/views test -- fixtures`
-- [ ] `pnpm --filter @didian/views typecheck`
+- [x] `pnpm --filter @didian/views test -- fixtures`
+- [x] `pnpm --filter @didian/views typecheck`
 
 **依赖：** 无
 
@@ -31,15 +31,15 @@
 **描述：** 将 Mission Detail 从任务页改造成 Flowix 式工作区：左侧文件树、中间 Markdown 文档、右侧 Agent Context / Review / Outputs。
 
 **验收标准：**
-- [ ] 页面默认打开 `mission.md`。
-- [ ] 文件树支持切换 `sources/` 和 `outputs/` 文件。
-- [ ] 中间区域使用现有 Markdown renderer。
-- [ ] 右侧 context scopes 可勾选。
-- [ ] Output action 可模拟写回并打开 output 文档。
+- [x] 页面默认打开 `mission.md`。
+- [x] 文件树支持切换 `sources/` 和 `outputs/` 文件。
+- [x] 中间区域使用现有 Markdown renderer。
+- [x] 右侧 context scopes 可勾选。
+- [x] Output action 可模拟写回并打开 output 文档。
 
 **验证：**
-- [ ] `pnpm --filter @didian/views test -- mission-detail-page`
-- [ ] `pnpm --filter @didian/views typecheck`
+- [x] `pnpm --filter @didian/views test -- mission-detail-page`
+- [x] `pnpm --filter @didian/views typecheck`
 
 **依赖：** Task F1
 
@@ -54,14 +54,14 @@
 **描述：** 在 AI Inbox 创建 Mission 前展示将生成的 workspace 文件结构，并把 workspace 操作约束写入 Mission description。
 
 **验收标准：**
-- [ ] 输入后显示 Workspace Preview。
-- [ ] Preview 展示 root path、关键文件和 context scopes。
-- [ ] Mission description 包含 `## Atlas Workspace`、文件结构和 Agent handoff。
-- [ ] 链接收藏确认流程仍然可用。
+- [x] 输入后显示 Workspace Preview。
+- [x] Preview 展示 root path、关键文件和 context scopes。
+- [x] Mission description 包含 `## Atlas Workspace`、文件结构和 Agent handoff。
+- [x] 链接收藏确认流程仍然可用。
 
 **验证：**
-- [ ] `pnpm --filter @didian/views test -- ai-inbox-page`
-- [ ] `pnpm --filter @didian/views typecheck`
+- [x] `pnpm --filter @didian/views test -- ai-inbox-page`
+- [x] `pnpm --filter @didian/views typecheck`
 
 **依赖：** Task F1
 
@@ -76,13 +76,13 @@
 **描述：** 将 Atlas 页面从资源卡片拓展为可重新打开 workspace 的浏览体验。
 
 **验收标准：**
-- [ ] Atlas 显示 Collection 对应 Workspace。
-- [ ] 用户能在 Atlas 页面切换 workspace 文件。
-- [ ] Resource evidence 和 Ask Atlas 与 workspace 文档保持同屏关联。
+- [x] Atlas 显示 Collection 对应 Workspace。
+- [x] 用户能在 Atlas 页面切换 workspace 文件。
+- [x] Resource evidence 和 Ask Atlas 与 workspace 文档保持同屏关联。
 
 **验证：**
-- [ ] `pnpm --filter @didian/views test -- atlas-page`
-- [ ] `pnpm --filter @didian/views typecheck`
+- [x] `pnpm --filter @didian/views test -- atlas-page`
+- [x] `pnpm --filter @didian/views typecheck`
 
 **依赖：** Task F1
 
@@ -97,13 +97,13 @@
 **描述：** 跑 focused tests、typecheck，自审 UI/代码质量，按增量提交。
 
 **验收标准：**
-- [ ] Focused tests 通过。
-- [ ] Typecheck 通过。
+- [x] Focused tests 通过。
+- [x] Typecheck 通过。
 - [ ] 工作树提交干净。
 
 **验证：**
-- [ ] `pnpm --filter @didian/views test -- ai-workbench`
-- [ ] `pnpm --filter @didian/views typecheck`
+- [x] `pnpm --filter @didian/views test -- ai-workbench`
+- [x] `pnpm --filter @didian/views typecheck`
 - [ ] `git status --short --branch`
 
 **依赖：** Task F2、F3、F4

@@ -26,24 +26,24 @@ Workspace view model
 
 ### Flowix 增量任务
 
-- [ ] 定义 `AtlasWorkspace` / `AtlasWorkspaceFile` / `AtlasContextScope` view model。
-- [ ] 为 demo Mission 生成 `mission.md`、`sources/`、`outputs/`、`evidence.md`、`decisions.md`、`agent-log.md`。
-- [ ] Mission Detail 改成三栏文档工作区。
-- [ ] Agent Context 面板支持勾选当前文档、当前 workspace、捕获来源、outputs、整个 Atlas、本地下载、云盘资源。
-- [ ] Output action 支持模拟写回 Markdown 文件。
-- [ ] AI Inbox 展示创建前 Workspace Preview，并把 workspace handoff 写入 Mission description。
-- [ ] Atlas 展示 Collection 对应 Workspace，并支持文件切换。
-- [ ] 补齐 focused tests 和 typecheck。
+- [x] 定义 `AtlasWorkspace` / `AtlasWorkspaceFile` / `AtlasContextScope` view model。
+- [x] 为 demo Mission 生成 `mission.md`、`sources/`、`outputs/`、`evidence.md`、`decisions.md`、`agent-log.md`。
+- [x] Mission Detail 改成三栏文档工作区。
+- [x] Agent Context 面板支持勾选当前文档、当前 workspace、捕获来源、outputs、整个 Atlas、本地下载、云盘资源。
+- [x] Output action 支持模拟写回 Markdown 文件。
+- [x] AI Inbox 展示创建前 Workspace Preview，并把 workspace handoff 写入 Mission description。
+- [x] Atlas 展示 Collection 对应 Workspace，并支持文件切换。
+- [x] 补齐 focused tests 和 typecheck。
 
 ### Flowix 增量验收
 
-- [ ] 用户能从 AI Inbox 看到将生成的 workspace 文件结构。
-- [ ] Mission 详情默认打开 `mission.md`，并能切换到 `sources/*.md` 和 `outputs/*.md`。
-- [ ] Agent scope 勾选状态可见、可变更、不会打断文档阅读。
-- [ ] Artifact 写回动作会更新或打开 output 文档。
-- [ ] Atlas 能重新打开同一个 workspace 结构。
-- [ ] `pnpm --filter @didian/views test -- ai-workbench` 通过。
-- [ ] `pnpm --filter @didian/views typecheck` 通过。
+- [x] 用户能从 AI Inbox 看到将生成的 workspace 文件结构。
+- [x] Mission 详情默认打开 `mission.md`，并能切换到 `sources/*.md` 和 `outputs/*.md`。
+- [x] Agent scope 勾选状态可见、可变更、不会打断文档阅读。
+- [x] Artifact 写回动作会更新或打开 output 文档。
+- [x] Atlas 能重新打开同一个 workspace 结构。
+- [x] `pnpm --filter @didian/views test -- ai-workbench` 通过。
+- [x] `pnpm --filter @didian/views typecheck` 通过。
 
 ## 概览
 
