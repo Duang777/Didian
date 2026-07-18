@@ -1,5 +1,50 @@
 # 实施计划：AI 资源工作台
 
+## 2026-07-18 Flowix-style Atlas Workspace 增量计划
+
+本分支 `feature/flowix-atlas-workspace` 的目标是把 Flowix 的核心体感借到 Didian：文档不是 Mission 的附件列表，而是 Agent 的工作现场。详细规格见 `docs/ai-resource-workbench/05-flowix-atlas-workspace.md`。
+
+### 增量架构决策
+
+- **Workspace-first Mission Detail。** Mission 详情默认打开 `mission.md`，左侧文件树、中间 Markdown 文档、右侧 Agent Context / Review / Outputs。
+- **先用 view model，后接持久化。** 第一版使用 `AtlasWorkspace` fixture 和本地 UI 状态；后续 Local Drive / Mock Drive / MCP 可以替换数据源。
+- **复用成熟编辑/渲染基础。** 第一版复用现有 Markdown renderer；暂不手写 Markdown 编辑器。需要编辑时再接现有 Tiptap `ContentEditor`。
+- **AI Inbox 创建前预览 Workspace。** 用户创建 Mission 前先看到即将生成的文件结构和上下文边界。
+- **Atlas 可重新打开 Workspace。** Atlas 不只是资源卡片，而是能回到 Mission 生成的文档工作区。
+
+### Flowix 增量依赖图
+
+```text
+Workspace view model
+  -> demo workspace fixtures
+    -> Mission Detail document workspace
+      -> Agent context scopes and write-back actions
+    -> AI Inbox workspace preview and handoff prompt
+    -> Atlas workspace browser
+  -> tests, typecheck, UI verification
+```
+
+### Flowix 增量任务
+
+- [ ] 定义 `AtlasWorkspace` / `AtlasWorkspaceFile` / `AtlasContextScope` view model。
+- [ ] 为 demo Mission 生成 `mission.md`、`sources/`、`outputs/`、`evidence.md`、`decisions.md`、`agent-log.md`。
+- [ ] Mission Detail 改成三栏文档工作区。
+- [ ] Agent Context 面板支持勾选当前文档、当前 workspace、捕获来源、outputs、整个 Atlas、本地下载、云盘资源。
+- [ ] Output action 支持模拟写回 Markdown 文件。
+- [ ] AI Inbox 展示创建前 Workspace Preview，并把 workspace handoff 写入 Mission description。
+- [ ] Atlas 展示 Collection 对应 Workspace，并支持文件切换。
+- [ ] 补齐 focused tests 和 typecheck。
+
+### Flowix 增量验收
+
+- [ ] 用户能从 AI Inbox 看到将生成的 workspace 文件结构。
+- [ ] Mission 详情默认打开 `mission.md`，并能切换到 `sources/*.md` 和 `outputs/*.md`。
+- [ ] Agent scope 勾选状态可见、可变更、不会打断文档阅读。
+- [ ] Artifact 写回动作会更新或打开 output 文档。
+- [ ] Atlas 能重新打开同一个 workspace 结构。
+- [ ] `pnpm --filter @didian/views test -- ai-workbench` 通过。
+- [ ] `pnpm --filter @didian/views typecheck` 通过。
+
 ## 概览
 
 本计划按 `docs/ai-resource-workbench/01-product-requirements.md` 重写，具体技术落地以 `docs/ai-resource-workbench/02-technical-plan.md` 为准，方案审核和开工顺序以 `docs/ai-resource-workbench/03-implementation-review.md` 为准。产品主线从旧的 Tasks / Resources / Projects / Nodes / Analytics 收敛为 Runtime-first 工作流：AI Inbox、Missions / Codex Run、Atlas、System。

@@ -1,5 +1,115 @@
 # 任务清单：AI 资源工作台
 
+## 2026-07-18 Flowix-style Atlas Workspace
+
+本分支执行 `docs/ai-resource-workbench/05-flowix-atlas-workspace.md`。目标是借鉴 Flowix 的文档工作区体感，让 Didian 的 Mission 产物成为 Agent 可继续工作的 Atlas Workspace。
+
+## Task F1：Atlas Workspace view model 与 fixture
+
+**描述：** 定义 workspace 文件、上下文范围和写回动作需要的前端 view model，并为 demo Mission 生成稳定 Markdown 文件结构。
+
+**验收标准：**
+- [ ] `AtlasWorkspace` 包含 root path、files、context scopes、source Mission。
+- [ ] demo workspace 至少包含 `mission.md`、`sources/browser-use.md`、`sources/stagehand.md`、`evidence.md`、`decisions.md`、`outputs/资源索引.md`、`outputs/项目对比表.md`、`agent-log.md`。
+- [ ] workspace 文件内容保留来源 URL 和 evidence。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views test -- fixtures`
+- [ ] `pnpm --filter @didian/views typecheck`
+
+**依赖：** 无
+
+**可能触及文件：**
+- `packages/views/ai-workbench/types.ts`
+- `packages/views/ai-workbench/fixtures.ts`
+- `packages/views/ai-workbench/fixtures.test.ts`
+
+**规模预估：** M
+
+## Task F2：Mission Detail 文档工作区
+
+**描述：** 将 Mission Detail 从任务页改造成 Flowix 式工作区：左侧文件树、中间 Markdown 文档、右侧 Agent Context / Review / Outputs。
+
+**验收标准：**
+- [ ] 页面默认打开 `mission.md`。
+- [ ] 文件树支持切换 `sources/` 和 `outputs/` 文件。
+- [ ] 中间区域使用现有 Markdown renderer。
+- [ ] 右侧 context scopes 可勾选。
+- [ ] Output action 可模拟写回并打开 output 文档。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views test -- mission-detail-page`
+- [ ] `pnpm --filter @didian/views typecheck`
+
+**依赖：** Task F1
+
+**可能触及文件：**
+- `packages/views/ai-workbench/missions/mission-detail-page.tsx`
+- `packages/views/ai-workbench/missions/mission-detail-page.test.tsx`
+
+**规模预估：** M
+
+## Task F3：AI Inbox Workspace Preview 与 handoff
+
+**描述：** 在 AI Inbox 创建 Mission 前展示将生成的 workspace 文件结构，并把 workspace 操作约束写入 Mission description。
+
+**验收标准：**
+- [ ] 输入后显示 Workspace Preview。
+- [ ] Preview 展示 root path、关键文件和 context scopes。
+- [ ] Mission description 包含 `## Atlas Workspace`、文件结构和 Agent handoff。
+- [ ] 链接收藏确认流程仍然可用。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views test -- ai-inbox-page`
+- [ ] `pnpm --filter @didian/views typecheck`
+
+**依赖：** Task F1
+
+**可能触及文件：**
+- `packages/views/ai-workbench/ai-inbox/ai-inbox-page.tsx`
+- `packages/views/ai-workbench/ai-inbox/ai-inbox-page.test.tsx`
+
+**规模预估：** M
+
+## Task F4：Atlas Workspace Browser
+
+**描述：** 将 Atlas 页面从资源卡片拓展为可重新打开 workspace 的浏览体验。
+
+**验收标准：**
+- [ ] Atlas 显示 Collection 对应 Workspace。
+- [ ] 用户能在 Atlas 页面切换 workspace 文件。
+- [ ] Resource evidence 和 Ask Atlas 与 workspace 文档保持同屏关联。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views test -- atlas-page`
+- [ ] `pnpm --filter @didian/views typecheck`
+
+**依赖：** Task F1
+
+**可能触及文件：**
+- `packages/views/ai-workbench/atlas/atlas-page.tsx`
+- `packages/views/ai-workbench/atlas/atlas-page.test.tsx`
+
+**规模预估：** M
+
+## Task F5：完整验证与提交
+
+**描述：** 跑 focused tests、typecheck，自审 UI/代码质量，按增量提交。
+
+**验收标准：**
+- [ ] Focused tests 通过。
+- [ ] Typecheck 通过。
+- [ ] 工作树提交干净。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views test -- ai-workbench`
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] `git status --short --branch`
+
+**依赖：** Task F2、F3、F4
+
+**规模预估：** S
+
 ## 2026-07-14 Runtime-first 更新
 
 最新产品和技术方案以 `docs/ai-resource-workbench/01-product-requirements.md`、`02-technical-plan.md`、`03-implementation-review.md`、`04-browser-memory-bookmarks.md` 为准。第一版主线收敛为：
