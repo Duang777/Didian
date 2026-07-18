@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { issueKeys } from "@didian/core/issues/queries";
 import { AiInboxPage } from "./ai-inbox-page";
 
 const { ApiError } = vi.hoisted(() => {
@@ -71,11 +72,12 @@ function renderPage() {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
 
-  return render(
+  const view = render(
     <QueryClientProvider client={qc}>
       <AiInboxPage />
     </QueryClientProvider>,
   );
+  return { ...view, queryClient: qc };
 }
 
 function captureFixture(overrides: Record<string, unknown> = {}) {
@@ -251,6 +253,16 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.queryByText("Karakeep GitHub")).not.toBeInTheDocument();
   });
 
+  it("starts with an empty mission input instead of demo text", async () => {
+    listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
+
+    renderPage();
+
+    expect(screen.getByLabelText("AI Inbox input")).toHaveValue("");
+    expect(screen.queryByText("本次输入链接")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "创建 Mission" })).toBeDisabled();
+  });
+
   it("creates a mission only from the typed input and keeps existing captures out of mission context", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({
@@ -269,35 +281,73 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Browser-use repository")).toBeInTheDocument());
+    await user.type(screen.getByLabelText("AI Inbox input"), "https://github.com/browser-use/browser-use\nhttps://docs.stagehand.dev\n帮我整理这些 AI Agent 学习资料，按入门、工具、实战分类。");
     expect(screen.getByText("本次输入链接")).toBeInTheDocument();
     expect(screen.getByText("创建后会询问是否收藏")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "创建 Mission" }));
 
+    expect(createAiInboxMission).not.toHaveBeenCalled();
+    expect(navigationPush).not.toHaveBeenCalled();
+    const collectDialog = screen.getByRole("dialog", { name: "收藏输入链接？" });
+    expect(collectDialog).toBeInTheDocument();
+    expect(within(collectDialog).getByText("github.com/browser-use/browser-use")).toBeInTheDocument();
+    expect(within(collectDialog).getByText("docs.stagehand.dev")).toBeInTheDocument();
+    await user.click(within(collectDialog).getByRole("button", { name: "收藏并创建 Mission" }));
+
+    await waitFor(() => expect(createBrowserCapture).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(createAiInboxMission).toHaveBeenCalledTimes(1));
     expect(createAiInboxMission.mock.calls[0]?.[0]).toEqual(expect.objectContaining({
-      title: "整理学习资料路线",
+      title: "整理学习资料路线：browser-use/browser-use + docs.stagehand.dev",
       description: expect.stringContaining("## 输入"),
       understanding: expect.objectContaining({ intent: "learning_plan" }),
     }));
     const description = createAiInboxMission.mock.calls[0]?.[0]?.description as string;
     expect(description).toContain("https://github.com/browser-use/browser-use");
     expect(description).toContain("https://docs.stagehand.dev");
+    expect(description).toContain("AI Inbox 收到 2 个链接和一段补充说明");
+    expect(description).toContain("## 任务交接");
+    expect(description).toContain("学习路线");
+    expect(description).toContain("## 预期产出");
     expect(description).toContain("## 本次输入链接");
+    expect(description).not.toContain("Created from AI Inbox.");
+    expect(description).not.toContain("意图：learning_plan");
+    expect(description).not.toContain("置信度：");
     expect(description).not.toContain("Browser-use repository");
-    expect(createBrowserCapture).not.toHaveBeenCalled();
+    expect(description).toContain("用户已确认收藏这些链接");
     expect(toastSuccess).toHaveBeenCalledWith("Mission 已创建，Codex 已开始规划");
-    const collectDialog = screen.getByRole("dialog", { name: "收藏输入链接？" });
-    expect(collectDialog).toBeInTheDocument();
-    expect(within(collectDialog).getByText("github.com/browser-use/browser-use")).toBeInTheDocument();
-    expect(within(collectDialog).getByText("docs.stagehand.dev")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "收藏" }));
-    await waitFor(() => expect(createBrowserCapture).toHaveBeenCalledTimes(2));
-    expect(navigationPush).toHaveBeenCalledWith("/acme/issues/mission-1");
-    expect(screen.getByRole("status")).toHaveTextContent("Mission 已创建，正在打开详情页。");
+    expect(navigationPush).not.toHaveBeenCalled();
+    expect(screen.getByRole("status")).toHaveTextContent("你的 idea 已创建到 Mission");
     expect(screen.getByRole("link", { name: "打开 整理学习资料路线" })).toHaveAttribute("href", "/acme/issues/mission-1");
   });
 
-  it("asks whether to save typed URLs when the prompt has no organize intent", async () => {
+  it("refreshes Mission panels after creating a plain text mission", async () => {
+    const user = userEvent.setup();
+    listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
+    createAiInboxMission.mockResolvedValue({ issue: { id: "mission-hello", title: "整理输入线索" }, planningStatus: "queued", planningAgentId: "agent-1" });
+
+    const { queryClient } = renderPage();
+    const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
+
+    await user.type(screen.getByLabelText("AI Inbox input"), "你好");
+    await user.click(screen.getByRole("button", { name: "创建 Mission" }));
+
+    await waitFor(() => expect(createAiInboxMission).toHaveBeenCalledTimes(1));
+    expect(createAiInboxMission.mock.calls[0]?.[0]).toEqual(expect.objectContaining({
+      title: "记录输入：你好",
+      understanding: expect.objectContaining({ intent: "collect", suggestedMissionTitle: "记录输入" }),
+    }));
+    const description = createAiInboxMission.mock.calls[0]?.[0]?.description as string;
+    expect(description).toContain("AI Inbox 收到一条简短输入：“你好”。");
+    expect(description).toContain("当前输入还没有明确来源");
+    expect(description).not.toContain("Created from AI Inbox.");
+    expect(description).not.toContain("意图：collect");
+    expect(description).not.toContain("置信度：");
+    await waitFor(() => expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: issueKeys.all("ws-test") }));
+    expect(screen.getByRole("status")).toHaveTextContent("你的 idea 已创建到 Mission");
+    expect(screen.getByRole("link", { name: "打开 整理输入线索" })).toHaveAttribute("href", "/acme/issues/mission-hello");
+  });
+
+  it("can skip saving typed URLs before creating the mission", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
     createAiInboxMission.mockResolvedValue({ issue: { id: "mission-plain", title: "总结单个资源" }, planningStatus: "queued", planningAgentId: "agent-1" });
@@ -309,11 +359,18 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByText("创建后会询问是否收藏")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "创建 Mission" }));
 
-    await waitFor(() => expect(createAiInboxMission).toHaveBeenCalledTimes(1));
     expect(createBrowserCapture).not.toHaveBeenCalled();
     const collectDialog = screen.getByRole("dialog", { name: "收藏输入链接？" });
     expect(collectDialog).toBeInTheDocument();
     expect(within(collectDialog).getByText("example.com/article")).toBeInTheDocument();
+    await user.click(within(collectDialog).getByRole("button", { name: "暂不收藏，继续创建" }));
+
+    await waitFor(() => expect(createAiInboxMission).toHaveBeenCalledTimes(1));
+    expect(createBrowserCapture).not.toHaveBeenCalled();
+    expect(createAiInboxMission.mock.calls[0]?.[0]?.title).toBe("总结单个资源：example.com/article");
+    expect(createAiInboxMission.mock.calls[0]?.[0]?.description).toContain("用户选择暂不收藏这些链接");
+    expect(navigationPush).not.toHaveBeenCalled();
+    expect(screen.getByRole("status")).toHaveTextContent("你的 idea 已创建到 Mission");
   });
 
   it("archives a capture from the active favorites list", async () => {
@@ -336,6 +393,8 @@ describe("AiInboxPage browser captures", () => {
 
     renderPage();
 
+    await user.clear(screen.getByLabelText("AI Inbox input"));
+    await user.type(screen.getByLabelText("AI Inbox input"), "帮我整理这些 AI Agent 学习资料");
     await user.click(await screen.findByRole("button", { name: "创建 Mission" }));
 
     await waitFor(() => expect(toastError).toHaveBeenCalledWith("创建 Mission 失败：服务端没有返回 Mission ID"));
@@ -366,7 +425,7 @@ describe("AiInboxPage browser captures", () => {
     await user.click(screen.getByRole("button", { name: "已创建" }));
 
     expect(createAiInboxMission).toHaveBeenCalledTimes(1);
-    expect(navigationPush).toHaveBeenCalledWith("/acme/issues/mission-2");
+    expect(navigationPush).not.toHaveBeenCalled();
   });
 
   it("opens the existing mission when the server reports an active duplicate", async () => {
@@ -384,11 +443,13 @@ describe("AiInboxPage browser captures", () => {
 
     renderPage();
 
+    await user.clear(screen.getByLabelText("AI Inbox input"));
+    await user.type(screen.getByLabelText("AI Inbox input"), "帮我整理这些 AI Agent 学习资料");
     await user.click(await screen.findByRole("button", { name: "创建 Mission" }));
 
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith("已有相同的 active Mission，已为你打开。"));
-    expect(navigationPush).toHaveBeenCalledWith("/acme/issues/mission-existing");
-    expect(screen.getByRole("status", { hidden: true })).toHaveTextContent("已找到已有 Mission，正在打开详情页。");
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith("已有相同的 active Mission，可从下方打开。"));
+    expect(navigationPush).not.toHaveBeenCalled();
+    expect(screen.getByRole("status", { hidden: true })).toHaveTextContent("已找到已有 Mission。");
     expect(screen.getByRole("link", { name: "打开 整理学习资料路线", hidden: true })).toHaveAttribute("href", "/acme/issues/mission-existing");
   });
 });

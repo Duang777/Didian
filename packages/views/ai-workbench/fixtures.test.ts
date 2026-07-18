@@ -24,6 +24,14 @@ describe("inferAiUnderstanding", () => {
 
     expect(result.intent).toBe("diagnose");
   });
+
+  it("does not classify a short greeting as an AI Agent resource pack", () => {
+    const result = inferAiUnderstanding("你好");
+
+    expect(result.intent).toBe("collect");
+    expect(result.suggestedMissionTitle).toBe("记录输入");
+    expect(result.suggestedMissionTitle).not.toContain("AI Agent 资源包");
+  });
 });
 
 describe("ai workbench fixtures", () => {

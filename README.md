@@ -62,6 +62,81 @@ make check
 
 Read `CLAUDE.md` before code changes. It is the root engineering guide for local Agent work in this repository.
 
+## Connect Your Local Codex
+
+Didian does not run Codex in the browser. It dispatches work to a local daemon, and the daemon detects the `codex` CLI on your machine, registers a Codex runtime, and executes assigned Missions locally. The normal user path is CLI-first: run setup once, then keep the daemon running.
+
+For a local self-hosted development server, start the web/API stack first, then run the setup flow:
+
+```bash
+didian setup self-host
+```
+
+When developing from this repository before installing the CLI, run the same command through the source CLI:
+
+```bash
+cd server
+go run ./cmd/didian setup self-host
+```
+
+`setup self-host` configures `http://localhost:8080` as the API, `http://localhost:3000` as the app, opens the browser login flow, discovers your workspaces, and starts the daemon. The daemon auto-detects Codex from `PATH`; on macOS it also checks the Codex binary bundled in ChatGPT.app and Codex.app.
+
+Verify that setup found Codex:
+
+```bash
+didian daemon status
+didian runtime list --output json
+```
+
+With the source CLI:
+
+```bash
+go run ./cmd/didian daemon status
+go run ./cmd/didian runtime list --output json
+```
+
+In the runtime output, the Codex row should have `provider` set to `codex` and `status` set to `online`. Once the Codex runtime is online and an Agent is bound to it, newly created Missions can be assigned to that Agent from the UI.
+
+If an already-created Mission is still unassigned, attach it to the Codex-backed Agent from the CLI:
+
+```bash
+didian agent list --output json
+didian issue update DID-8 --assignee-id <agent-id> --status todo
+```
+
+### Troubleshooting Codex Detection
+
+If `daemon status` shows only another agent, or `runtime list` shows the Codex runtime as `offline`, first restart the daemon after confirming Codex is available:
+
+```bash
+codex --version
+didian daemon stop
+didian daemon start
+```
+
+On macOS, if Codex is bundled inside ChatGPT.app and still is not detected, pin the path explicitly:
+
+```bash
+didian daemon stop
+
+DIDIAN_CODEX_PATH=/Applications/ChatGPT.app/Contents/Resources/codex \
+didian daemon start
+```
+
+The equivalent source-CLI debugging flow is:
+
+```bash
+cd server
+
+export DIDIAN_SERVER_URL=http://localhost:8080
+export DIDIAN_WORKSPACE_ID=<workspace-id>
+
+DIDIAN_CODEX_PATH=/Applications/ChatGPT.app/Contents/Resources/codex \
+go run ./cmd/didian daemon start --foreground
+```
+
+Keep `didian daemon start` running while you create or assign Missions. You can set `DIDIAN_CODEX_MODEL=<model-id>` to choose a daemon-wide default model.
+
 ## Status
 
 Didian is in MVP build-out. The first milestones focus on the resource workbench shell, runtime visibility, browser capture payloads, local Agent execution, mock-drive writes, and artifact generation.

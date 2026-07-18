@@ -20,13 +20,15 @@ export function inferAiUnderstanding(rawInput: string): AiUnderstanding {
   const hasCompare = /对比|比较|compare|versus|vs\.?/.test(normalized);
   const hasDiagnose = /失败|错误|坏链|diagnose|failed|error/.test(normalized);
   const hasMonitor = /监控|更新|watch|monitor|weekly|每天|每周/.test(normalized);
+  const hasResourceIntent = /资源|资料|链接|整理|收集|收藏|索引|agent|resource|link|collect|organize|research/.test(normalized);
 
-  let intent: AiIntent = "research_pack";
+  let intent: AiIntent = "collect";
   if (hasDiagnose) intent = "diagnose";
   else if (hasMonitor) intent = "monitor";
   else if (hasLearning) intent = "learning_plan";
   else if (hasCompare) intent = "compare";
   else if (urlCount === 1) intent = "summarize";
+  else if (urlCount > 1 || hasResourceIntent) intent = "research_pack";
 
   const suggestedMissionTitle = (() => {
     if (intent === "learning_plan") return "整理学习资料路线";
@@ -34,18 +36,22 @@ export function inferAiUnderstanding(rawInput: string): AiUnderstanding {
     if (intent === "diagnose") return "诊断失败资源";
     if (intent === "monitor") return "创建资源监控策略";
     if (intent === "summarize") return "总结单个资源";
+    if (intent === "collect") return "记录输入";
     return "整理 AI Agent 资源包";
   })();
 
+  const isResourceLike = intent !== "collect";
   return {
     intent,
     suggestedMissionTitle,
     summary: urlCount > 1
       ? `检测到 ${urlCount} 个链接，适合创建一个带计划的 Mission。`
-      : "检测到一段资源线索，可以先生成 Mission 计划再沉淀到 Atlas。",
-    suggestedOutputs: ["资源索引", "重点摘要", "相关关系", "下一步建议"],
-    missingInfo: urlCount === 0 ? ["如果有原始链接，补充后可以提升来源引用质量。"] : [],
-    confidence: urlCount > 0 ? 0.82 : 0.68,
+      : isResourceLike
+        ? "检测到一段资源线索，可以先生成 Mission 计划再沉淀到 Atlas。"
+        : "检测到一段普通输入，可以创建 Mission 继续澄清或处理。",
+    suggestedOutputs: isResourceLike ? ["资源索引", "重点摘要", "相关关系", "下一步建议"] : ["任务记录", "下一步建议"],
+    missingInfo: urlCount === 0 && isResourceLike ? ["如果有原始链接，补充后可以提升来源引用质量。"] : [],
+    confidence: urlCount > 0 ? 0.82 : isResourceLike ? 0.68 : 0.5,
   };
 }
 

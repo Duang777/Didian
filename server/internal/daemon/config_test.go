@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -657,6 +658,22 @@ func TestLoadConfig_UsesCodexDesktopAppBundleFallback(t *testing.T) {
 	}
 	if got.Model != "gpt-5" {
 		t.Fatalf("codex model = %q, want gpt-5", got.Model)
+	}
+}
+
+func TestCodexDesktopAppBundlePathsIncludesChatGPTApp(t *testing.T) {
+	paths := codexDesktopAppBundlePaths()
+	wants := []string{
+		"/Applications/ChatGPT.app/Contents/Resources/codex",
+	}
+	if home, err := os.UserHomeDir(); err == nil {
+		wants = append(wants, filepath.Join(home, "Applications", "ChatGPT.app", "Contents", "Resources", "codex"))
+	}
+
+	for _, want := range wants {
+		if !slices.Contains(paths, want) {
+			t.Fatalf("codex desktop bundle paths = %#v, missing %q", paths, want)
+		}
 	}
 }
 

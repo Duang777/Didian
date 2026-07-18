@@ -62,6 +62,81 @@ make check
 
 修改代码前请先阅读 `CLAUDE.md`。它是本仓库给本地 Agent 和工程协作使用的根级规范。
 
+## 接入本机 Codex
+
+Didian 不会在浏览器里直接运行 Codex。它会把 Mission 派发给本机 daemon，由 daemon 检测你机器上的 `codex` CLI，注册 Codex runtime，并在本机执行被分配的任务。正常用户路径应该是 CLI-first：执行一次 setup，然后保持 daemon 运行。
+
+本地 self-host 开发时，先启动 Web/API，再跑 setup 流程：
+
+```bash
+didian setup self-host
+```
+
+如果还没安装 CLI、正在仓库源码里开发，可以用源码 CLI 跑同一条命令：
+
+```bash
+cd server
+go run ./cmd/didian setup self-host
+```
+
+`setup self-host` 会配置 `http://localhost:8080` 为 API、`http://localhost:3000` 为 Web，打开浏览器登录，发现你的 workspace，并启动 daemon。daemon 会从 `PATH` 自动检测 Codex；在 macOS 上也会检查 ChatGPT.app 和 Codex.app 内置的 Codex binary。
+
+确认 setup 已经找到 Codex：
+
+```bash
+didian daemon status
+didian runtime list --output json
+```
+
+使用源码 CLI 时：
+
+```bash
+go run ./cmd/didian daemon status
+go run ./cmd/didian runtime list --output json
+```
+
+在 runtime 输出里，Codex 记录应该是 `provider` 为 `codex`，并且 `status` 为 `online`。Codex runtime 在线且 Agent 已绑定后，新建 Mission 就可以在 UI 里分配给这个 Agent。
+
+如果已经创建的 Mission 仍然是“未分配”，可以用 CLI 手动绑定到 Codex Agent：
+
+```bash
+didian agent list --output json
+didian issue update DID-8 --assignee-id <agent-id> --status todo
+```
+
+### Codex 检测排障
+
+如果 `daemon status` 只显示其他 agent，或者 `runtime list` 里 Codex runtime 是 `offline`，先确认 Codex 可用后重启 daemon：
+
+```bash
+codex --version
+didian daemon stop
+didian daemon start
+```
+
+在 macOS 上，如果 Codex 打包在 ChatGPT.app 里但仍然没有被检测到，可以显式指定路径：
+
+```bash
+didian daemon stop
+
+DIDIAN_CODEX_PATH=/Applications/ChatGPT.app/Contents/Resources/codex \
+didian daemon start
+```
+
+对应的源码 CLI 调试方式是：
+
+```bash
+cd server
+
+export DIDIAN_SERVER_URL=http://localhost:8080
+export DIDIAN_WORKSPACE_ID=<workspace-id>
+
+DIDIAN_CODEX_PATH=/Applications/ChatGPT.app/Contents/Resources/codex \
+go run ./cmd/didian daemon start --foreground
+```
+
+创建或分配 Mission 时保持 `didian daemon start` 运行。可以设置 `DIDIAN_CODEX_MODEL=<model-id>` 作为 daemon 级默认模型。
+
 ## 当前状态
 
 Didian 处于 MVP 构建阶段。第一批里程碑聚焦资源工作台外壳、Runtime 可见性、浏览器采集 payload、本地 Agent 执行、Mock 云盘写入和 artifact 生成。
