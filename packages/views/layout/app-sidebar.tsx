@@ -5,7 +5,6 @@ import { cn } from "@didian/ui/lib/utils";
 import { useScrollFade } from "@didian/ui/hooks/use-scroll-fade";
 import { AppLink, useNavigation } from "../navigation";
 import { HelpLauncher } from "./help-launcher";
-import { JoinDiscordCard } from "./join-discord-card";
 import {
   DndContext,
   PointerSensor,
@@ -757,7 +756,6 @@ export function AppSidebar({ topSlot, searchSlot, headerClassName, headerStyle }
         </SidebarContent>
 
         <SidebarFooter className="p-2">
-          <JoinDiscordCard />
           <div className="flex justify-end">
             <HelpLauncher />
           </div>

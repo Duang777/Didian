@@ -33,11 +33,6 @@
     "pinned_label": "고정됨",
     "workspace_group": "워크벤치",
     "configure_group": "System",
-    "unread_overflow": "99+",
-    "discord_card": {
-      "title": "Discord 참여하기",
-      "description": "팀과 다른 사용자들과 교류해 보세요.",
-      "dismiss": "닫기"
-    }
+    "unread_overflow": "99+"
   }
 }
