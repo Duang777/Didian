@@ -37,6 +37,22 @@ export const AiInboxInputSchema = z.object({
   source: z.string().optional(),
   previewImageUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
+  skillOpportunity: z.object({
+    shouldSuggest: z.boolean(),
+    confidence: z.number().min(0).max(1),
+    pageType: z.enum(["technical_doc", "github_repo", "tutorial", "blog", "paper", "product_page", "unknown"]),
+    proposedTitle: z.string().min(1),
+    proposedCapability: z.string().min(1),
+    whyUseful: z.string().min(1),
+    triggerExamples: z.array(z.string()),
+    expectedInputs: z.array(z.string()),
+    expectedOutputs: z.array(z.string()),
+    reusableWorkflowScore: z.number().min(0).max(1),
+    instructionDensityScore: z.number().min(0).max(1),
+    futureUseScore: z.number().min(0).max(1),
+    evidenceSnippets: z.array(z.string()),
+    riskNotes: z.array(z.string()),
+  }).nullable().optional(),
   confidence: z.number().min(0).max(1),
 });
 

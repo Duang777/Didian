@@ -12,6 +12,7 @@ import type {
   MissionView,
 } from "./types";
 import { BrowserCapturePayloadSchema } from "./schemas";
+import { inferSkillOpportunity } from "./skill-opportunities";
 
 export function inferAiUnderstanding(rawInput: string): AiUnderstanding {
   const normalized = rawInput.toLowerCase();
@@ -160,6 +161,7 @@ export function browserCaptureRecordToInboxInput(capture: BrowserCapture): AiInb
     sourceLabel: browserCaptureLabel(capture),
     previewImageUrl: capture.preview_image_url ?? undefined,
     faviconUrl: capture.favicon_url ?? undefined,
+    skillOpportunity: inferSkillOpportunity(capture),
     ...memoryStatus,
     confidence: capture.selected_text || capture.readable_text ? 0.9 : 0.72,
   };

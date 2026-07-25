@@ -215,6 +215,64 @@ describe("AiInboxPage browser captures", () => {
     expect(listBrowserCaptures).toHaveBeenCalledWith({ limit: 12, offset: 0, state: "active", q: undefined });
   });
 
+  it("shows personal Skill proposals on high-signal bookmark cards", async () => {
+    const user = userEvent.setup();
+    listBrowserCaptures.mockResolvedValue({
+      captures: [
+        captureFixture({
+          url: "https://docs.stripe.com/payments/checkout",
+          normalized_url: "https://docs.stripe.com/payments/checkout",
+          title: "Stripe Checkout documentation",
+          domain: "docs.stripe.com",
+          description: "Use Checkout to accept payments with API parameters, webhooks, and error handling.",
+          readable_text: "Install the SDK, configure API keys, create a checkout session, handle webhooks, and test common errors.",
+          memory: memoryFixture({
+            summary: "Technical documentation for integrating Stripe Checkout with API parameters, SDK setup, and webhook troubleshooting.",
+            one_line_takeaway: "Stripe Checkout integration guide with API setup and error handling.",
+            key_points: ["Create a checkout session with API parameters.", "Handle webhooks and common errors."],
+            topics: ["api", "payments", "checkout"],
+            entities: ["Stripe"],
+            keywords: ["api", "sdk", "webhook", "error"],
+            status: "ready",
+            generated_at: "2026-07-14T02:41:00.000Z",
+          }),
+        }),
+        captureFixture({
+          id: "capture-blog",
+          url: "https://example.com/blog/my-opinion-about-ai",
+          normalized_url: "https://example.com/blog/my-opinion-about-ai",
+          title: "My opinion about AI tools",
+          domain: "example.com",
+          description: "A personal essay about AI tools and taste.",
+          readable_text: "This post shares opinions and reflections without a repeatable workflow.",
+          memory: memoryFixture({
+            summary: "A personal opinion article about AI tools.",
+            one_line_takeaway: "A reflective blog post.",
+            key_points: ["AI tools are changing creative work."],
+            topics: ["blog"],
+            keywords: ["opinion", "essay"],
+            status: "ready",
+          }),
+        }),
+      ],
+      total: 2,
+    });
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
+    expect(screen.getByText("可生成个人 Skill")).toBeInTheDocument();
+    expect(screen.getByText("Stripe Checkout 接入助手")).toBeInTheDocument();
+    expect(screen.getByText(/接入步骤、请求示例/)).toBeInTheDocument();
+    expect(screen.getByText("Docs")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "生成 Skill" })).toHaveLength(1);
+    expect(screen.getByText("My opinion about AI tools")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "生成 Skill" }));
+
+    expect(toastSuccess).toHaveBeenCalledWith("已准备生成个人 Skill 草稿，真实生成会在下一阶段接入。");
+  });
+
   it("falls back to the Didian icon when a capture favicon is missing or broken", async () => {
     listBrowserCaptures.mockResolvedValue({
       captures: [

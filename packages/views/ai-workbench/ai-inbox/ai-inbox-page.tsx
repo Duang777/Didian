@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Archive, CheckCircle2, Clock3, ExternalLink, Inbox, Loader2, RefreshCw, RotateCcw, Search, SendHorizontal } from "lucide-react";
+import { AlertCircle, Archive, CheckCircle2, Clock3, ExternalLink, Inbox, Loader2, RefreshCw, RotateCcw, Search, SendHorizontal, Sparkles } from "lucide-react";
 import { ApiError, api, DuplicateIssueErrorBodySchema, parseWithFallback, type DuplicateIssueErrorBody } from "@didian/core/api";
 import { browserCapturesOptions, useArchiveBrowserCapture, useCreateBrowserCapture, useRestoreBrowserCapture, type BrowserCaptureMemoryState } from "@didian/core/browser-memory";
 import { useWorkspaceId } from "@didian/core/hooks";
@@ -19,12 +19,19 @@ import {
   browserCaptureRecordToInboxInput,
   inferAiUnderstanding,
 } from "../fixtures";
-import type { AiInboxInput, AiUnderstanding } from "../types";
+import type { AiInboxInput, AiUnderstanding, SkillOpportunity } from "../types";
 import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
 
 const createMissionLabel = "创建 Mission";
 const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
+const personalSkillSuggestionLabel = "可生成个人 Skill";
+const generateSkillLabel = "生成 Skill";
+const keepAsKnowledgeLabel = "收藏为知识";
+const reduceSkillSuggestionsLabel = "少推荐";
+const skillDraftPendingToast = "已准备生成个人 Skill 草稿，真实生成会在下一阶段接入。";
+const keepAsKnowledgeToast = "已保留为知识卡片";
+const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
 type InputUrlCollectionDecision = "saved" | "skipped";
 
 export function AiInboxPage() {
@@ -320,6 +327,9 @@ function BrowserCaptureCard({ item, archivedView }: { item: AiInboxInput; archiv
           </div>
         )}
       </a>
+      {item.skillOpportunity?.shouldSuggest && (
+        <SkillOpportunityPanel opportunity={item.skillOpportunity} />
+      )}
       {captureId && (
         <div className="border-t px-3 py-2">
           <Button
@@ -337,6 +347,68 @@ function BrowserCaptureCard({ item, archivedView }: { item: AiInboxInput; archiv
       )}
     </article>
   );
+}
+
+function SkillOpportunityPanel({ opportunity }: { opportunity: SkillOpportunity }) {
+  return (
+    <div className="border-t bg-muted/20 px-3 py-3">
+      <div className="flex items-start gap-2">
+        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border bg-background text-primary">
+          <Sparkles className="size-3.5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="text-xs font-medium text-foreground">{personalSkillSuggestionLabel}</p>
+            <Badge variant="outline" className="h-5 rounded-sm px-1.5 text-[10px] uppercase text-muted-foreground">
+              {formatSkillOpportunityPageType(opportunity.pageType)}
+            </Badge>
+            <Badge variant="secondary" className="h-5 rounded-sm px-1.5 text-[10px] text-muted-foreground">
+              {Math.round(opportunity.confidence * 100)}%
+            </Badge>
+          </div>
+          <h4 className="mt-1 line-clamp-1 text-sm font-medium">{opportunity.proposedTitle}</h4>
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{opportunity.proposedCapability}</p>
+          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{opportunity.whyUseful}</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <Button
+              type="button"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => toast.success(skillDraftPendingToast)}
+            >
+              <Sparkles className="size-3.5" />
+              {generateSkillLabel}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-xs"
+              onClick={() => toast.success(keepAsKnowledgeToast)}
+            >
+              {keepAsKnowledgeLabel}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-xs"
+              onClick={() => toast.success(reduceSkillSuggestionsToast)}
+            >
+              {reduceSkillSuggestionsLabel}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function formatSkillOpportunityPageType(pageType: SkillOpportunity["pageType"]): string {
+  if (pageType === "technical_doc") return "Docs";
+  if (pageType === "github_repo") return "Repo";
+  if (pageType === "tutorial") return "How-to";
+  return "Page";
 }
 
 function splitIntoColumns<T>(items: T[], columnCount: number): T[][] {
