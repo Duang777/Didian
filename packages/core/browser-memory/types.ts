@@ -25,6 +25,32 @@ export interface PageMemory {
   updated_at: string;
 }
 
+export type SkillOpportunityPageType =
+  | "technical_doc"
+  | "github_repo"
+  | "tutorial"
+  | "blog"
+  | "paper"
+  | "product_page"
+  | "unknown";
+
+export interface SkillOpportunity {
+  shouldSuggest: boolean;
+  confidence: number;
+  pageType: SkillOpportunityPageType;
+  proposedTitle: string;
+  proposedCapability: string;
+  whyUseful: string;
+  triggerExamples: string[];
+  expectedInputs: string[];
+  expectedOutputs: string[];
+  reusableWorkflowScore: number;
+  instructionDensityScore: number;
+  futureUseScore: number;
+  evidenceSnippets: string[];
+  riskNotes: string[];
+}
+
 export interface CreateBrowserCaptureRequest {
   source?: BrowserCaptureSource;
   sourceType?: BrowserCaptureSourceType;
@@ -68,6 +94,7 @@ export interface BrowserCapture {
   memory_state: BrowserCaptureMemoryState;
   failure_reason?: string | null;
   memory?: PageMemory | null;
+  skillOpportunity?: SkillOpportunity | null;
   captured_at: string;
   created_at: string;
   updated_at: string;

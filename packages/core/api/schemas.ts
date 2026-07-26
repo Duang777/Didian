@@ -240,6 +240,23 @@ const PageMemorySchema = z.object({
   updated_at: z.string().default(""),
 }).loose();
 
+const SkillOpportunitySchema = z.object({
+  shouldSuggest: z.boolean().default(false),
+  confidence: z.number().min(0).max(1).default(0),
+  pageType: z.enum(["technical_doc", "github_repo", "tutorial", "blog", "paper", "product_page", "unknown"]),
+  proposedTitle: z.string().default(""),
+  proposedCapability: z.string().default(""),
+  whyUseful: z.string().default(""),
+  triggerExamples: z.array(z.string()).optional().default([]),
+  expectedInputs: z.array(z.string()).optional().default([]),
+  expectedOutputs: z.array(z.string()).optional().default([]),
+  reusableWorkflowScore: z.number().min(0).max(1).default(0),
+  instructionDensityScore: z.number().min(0).max(1).default(0),
+  futureUseScore: z.number().min(0).max(1).default(0),
+  evidenceSnippets: z.array(z.string()).optional().default([]),
+  riskNotes: z.array(z.string()).optional().default([]),
+}).loose();
+
 export const BrowserCaptureSchema = z.object({
   id: z.string().default(""),
   workspace_id: z.string().default(""),
@@ -266,6 +283,7 @@ export const BrowserCaptureSchema = z.object({
   memory_state: z.string().default("active"),
   failure_reason: z.string().nullable().optional(),
   memory: PageMemorySchema.nullable().optional(),
+  skillOpportunity: SkillOpportunitySchema.nullable().optional(),
   captured_at: z.string().default(""),
   created_at: z.string().default(""),
   updated_at: z.string().default(""),
@@ -297,6 +315,7 @@ export const EMPTY_BROWSER_CAPTURE: BrowserCapture = {
   memory_state: "active",
   failure_reason: null,
   memory: null,
+  skillOpportunity: null,
   captured_at: "",
   created_at: "",
   updated_at: "",

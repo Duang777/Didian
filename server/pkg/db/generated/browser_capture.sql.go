@@ -57,6 +57,7 @@ INSERT INTO captured_source (
     favicon_url,
     description,
     preview_image_url,
+    skill_opportunity,
     selected_text,
     readable_text,
     links,
@@ -72,37 +73,38 @@ INSERT INTO captured_source (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
     $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
-    $21, $22, $23, $24, $25
+    $21, $22, $23, $24, $25, $26
 )
-RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at
+RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at, skill_opportunity
 `
 
 type CreateCapturedSourceParams struct {
-	WorkspaceID     pgtype.UUID        `json:"workspace_id"`
-	CreatorID       pgtype.UUID        `json:"creator_id"`
-	SourceType      string             `json:"source_type"`
-	Source          string             `json:"source"`
-	CaptureScope    string             `json:"capture_scope"`
-	SourceTabID     pgtype.Text        `json:"source_tab_id"`
-	Url             string             `json:"url"`
-	NormalizedUrl   string             `json:"normalized_url"`
-	Title           string             `json:"title"`
-	Domain          string             `json:"domain"`
-	FaviconUrl      pgtype.Text        `json:"favicon_url"`
-	Description     pgtype.Text        `json:"description"`
-	PreviewImageUrl pgtype.Text        `json:"preview_image_url"`
-	SelectedText    pgtype.Text        `json:"selected_text"`
-	ReadableText    pgtype.Text        `json:"readable_text"`
-	Links           []byte             `json:"links"`
-	TextHash        pgtype.Text        `json:"text_hash"`
-	PageHash        pgtype.Text        `json:"page_hash"`
-	Status          string             `json:"status"`
-	MetadataStatus  string             `json:"metadata_status"`
-	ArchiveStatus   string             `json:"archive_status"`
-	SummaryStatus   string             `json:"summary_status"`
-	EmbeddingStatus string             `json:"embedding_status"`
-	MemoryState     string             `json:"memory_state"`
-	CapturedAt      pgtype.Timestamptz `json:"captured_at"`
+	WorkspaceID      pgtype.UUID        `json:"workspace_id"`
+	CreatorID        pgtype.UUID        `json:"creator_id"`
+	SourceType       string             `json:"source_type"`
+	Source           string             `json:"source"`
+	CaptureScope     string             `json:"capture_scope"`
+	SourceTabID      pgtype.Text        `json:"source_tab_id"`
+	Url              string             `json:"url"`
+	NormalizedUrl    string             `json:"normalized_url"`
+	Title            string             `json:"title"`
+	Domain           string             `json:"domain"`
+	FaviconUrl       pgtype.Text        `json:"favicon_url"`
+	Description      pgtype.Text        `json:"description"`
+	PreviewImageUrl  pgtype.Text        `json:"preview_image_url"`
+	SkillOpportunity []byte             `json:"skill_opportunity"`
+	SelectedText     pgtype.Text        `json:"selected_text"`
+	ReadableText     pgtype.Text        `json:"readable_text"`
+	Links            []byte             `json:"links"`
+	TextHash         pgtype.Text        `json:"text_hash"`
+	PageHash         pgtype.Text        `json:"page_hash"`
+	Status           string             `json:"status"`
+	MetadataStatus   string             `json:"metadata_status"`
+	ArchiveStatus    string             `json:"archive_status"`
+	SummaryStatus    string             `json:"summary_status"`
+	EmbeddingStatus  string             `json:"embedding_status"`
+	MemoryState      string             `json:"memory_state"`
+	CapturedAt       pgtype.Timestamptz `json:"captured_at"`
 }
 
 func (q *Queries) CreateCapturedSource(ctx context.Context, arg CreateCapturedSourceParams) (CapturedSource, error) {
@@ -120,6 +122,7 @@ func (q *Queries) CreateCapturedSource(ctx context.Context, arg CreateCapturedSo
 		arg.FaviconUrl,
 		arg.Description,
 		arg.PreviewImageUrl,
+		arg.SkillOpportunity,
 		arg.SelectedText,
 		arg.ReadableText,
 		arg.Links,
@@ -164,6 +167,7 @@ func (q *Queries) CreateCapturedSource(ctx context.Context, arg CreateCapturedSo
 		&i.CapturedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SkillOpportunity,
 	)
 	return i, err
 }
@@ -221,7 +225,7 @@ func (q *Queries) CreatePendingPageMemory(ctx context.Context, arg CreatePending
 }
 
 const findCapturedSourceDuplicate = `-- name: FindCapturedSourceDuplicate :one
-SELECT id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at FROM captured_source
+SELECT id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at, skill_opportunity FROM captured_source
 WHERE workspace_id = $1
   AND normalized_url = $2
   AND (
@@ -271,12 +275,13 @@ func (q *Queries) FindCapturedSourceDuplicate(ctx context.Context, arg FindCaptu
 		&i.CapturedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SkillOpportunity,
 	)
 	return i, err
 }
 
 const getCapturedSourceInWorkspace = `-- name: GetCapturedSourceInWorkspace :one
-SELECT id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at FROM captured_source
+SELECT id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at, skill_opportunity FROM captured_source
 WHERE id = $1 AND workspace_id = $2
 `
 
@@ -318,6 +323,7 @@ func (q *Queries) GetCapturedSourceInWorkspace(ctx context.Context, arg GetCaptu
 		&i.CapturedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SkillOpportunity,
 	)
 	return i, err
 }
@@ -388,7 +394,7 @@ func (q *Queries) GetPageMemoryByEnrichmentTask(ctx context.Context, enrichmentT
 }
 
 const listCapturedSources = `-- name: ListCapturedSources :many
-SELECT id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at FROM captured_source
+SELECT id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at, skill_opportunity FROM captured_source
 WHERE captured_source.workspace_id = $1
   AND ($4::text IS NULL OR captured_source.memory_state = $4::text)
   AND (
@@ -460,6 +466,7 @@ func (q *Queries) ListCapturedSources(ctx context.Context, arg ListCapturedSourc
 			&i.CapturedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.SkillOpportunity,
 		); err != nil {
 			return nil, err
 		}
@@ -472,7 +479,7 @@ func (q *Queries) ListCapturedSources(ctx context.Context, arg ListCapturedSourc
 }
 
 const listPendingPageMemoryCaptures = `-- name: ListPendingPageMemoryCaptures :many
-SELECT captured_source.id, captured_source.workspace_id, captured_source.creator_id, captured_source.source_type, captured_source.source, captured_source.capture_scope, captured_source.source_tab_id, captured_source.url, captured_source.normalized_url, captured_source.title, captured_source.domain, captured_source.favicon_url, captured_source.description, captured_source.preview_image_url, captured_source.selected_text, captured_source.readable_text, captured_source.links, captured_source.text_hash, captured_source.page_hash, captured_source.status, captured_source.metadata_status, captured_source.archive_status, captured_source.summary_status, captured_source.embedding_status, captured_source.memory_state, captured_source.failure_reason, captured_source.captured_at, captured_source.created_at, captured_source.updated_at FROM captured_source
+SELECT captured_source.id, captured_source.workspace_id, captured_source.creator_id, captured_source.source_type, captured_source.source, captured_source.capture_scope, captured_source.source_tab_id, captured_source.url, captured_source.normalized_url, captured_source.title, captured_source.domain, captured_source.favicon_url, captured_source.description, captured_source.preview_image_url, captured_source.selected_text, captured_source.readable_text, captured_source.links, captured_source.text_hash, captured_source.page_hash, captured_source.status, captured_source.metadata_status, captured_source.archive_status, captured_source.summary_status, captured_source.embedding_status, captured_source.memory_state, captured_source.failure_reason, captured_source.captured_at, captured_source.created_at, captured_source.updated_at, captured_source.skill_opportunity FROM captured_source
 JOIN page_memory ON page_memory.captured_source_id = captured_source.id
 WHERE page_memory.status = 'pending'
   AND captured_source.summary_status = 'pending'
@@ -519,6 +526,7 @@ func (q *Queries) ListPendingPageMemoryCaptures(ctx context.Context, limit int32
 			&i.CapturedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.SkillOpportunity,
 		); err != nil {
 			return nil, err
 		}
@@ -624,7 +632,7 @@ SET summary_status = $3,
     failure_reason = $4,
     updated_at = now()
 WHERE id = $1 AND workspace_id = $2
-RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at
+RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at, skill_opportunity
 `
 
 type UpdateCapturedSourceEnrichmentStatusParams struct {
@@ -672,6 +680,7 @@ func (q *Queries) UpdateCapturedSourceEnrichmentStatus(ctx context.Context, arg 
 		&i.CapturedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SkillOpportunity,
 	)
 	return i, err
 }
@@ -681,7 +690,7 @@ UPDATE captured_source
 SET memory_state = $3,
     updated_at = now()
 WHERE id = $1 AND workspace_id = $2
-RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at
+RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at, skill_opportunity
 `
 
 type UpdateCapturedSourceMemoryStateParams struct {
@@ -723,6 +732,7 @@ func (q *Queries) UpdateCapturedSourceMemoryState(ctx context.Context, arg Updat
 		&i.CapturedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SkillOpportunity,
 	)
 	return i, err
 }
@@ -732,17 +742,19 @@ UPDATE captured_source
 SET favicon_url = COALESCE($3, favicon_url),
     description = COALESCE($4, description),
     preview_image_url = COALESCE($5, preview_image_url),
+    skill_opportunity = COALESCE($6, skill_opportunity),
     updated_at = now()
 WHERE id = $1 AND workspace_id = $2
-RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at
+RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at, skill_opportunity
 `
 
 type UpdateCapturedSourcePreviewMetadataParams struct {
-	ID              pgtype.UUID `json:"id"`
-	WorkspaceID     pgtype.UUID `json:"workspace_id"`
-	FaviconUrl      pgtype.Text `json:"favicon_url"`
-	Description     pgtype.Text `json:"description"`
-	PreviewImageUrl pgtype.Text `json:"preview_image_url"`
+	ID               pgtype.UUID `json:"id"`
+	WorkspaceID      pgtype.UUID `json:"workspace_id"`
+	FaviconUrl       pgtype.Text `json:"favicon_url"`
+	Description      pgtype.Text `json:"description"`
+	PreviewImageUrl  pgtype.Text `json:"preview_image_url"`
+	SkillOpportunity []byte      `json:"skill_opportunity"`
 }
 
 func (q *Queries) UpdateCapturedSourcePreviewMetadata(ctx context.Context, arg UpdateCapturedSourcePreviewMetadataParams) (CapturedSource, error) {
@@ -752,6 +764,7 @@ func (q *Queries) UpdateCapturedSourcePreviewMetadata(ctx context.Context, arg U
 		arg.FaviconUrl,
 		arg.Description,
 		arg.PreviewImageUrl,
+		arg.SkillOpportunity,
 	)
 	var i CapturedSource
 	err := row.Scan(
@@ -784,6 +797,7 @@ func (q *Queries) UpdateCapturedSourcePreviewMetadata(ctx context.Context, arg U
 		&i.CapturedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SkillOpportunity,
 	)
 	return i, err
 }

@@ -13,6 +13,7 @@ INSERT INTO captured_source (
     favicon_url,
     description,
     preview_image_url,
+    skill_opportunity,
     selected_text,
     readable_text,
     links,
@@ -28,7 +29,7 @@ INSERT INTO captured_source (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
     $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
-    $21, $22, $23, $24, $25
+    $21, $22, $23, $24, $25, $26
 )
 RETURNING *;
 
@@ -52,6 +53,7 @@ UPDATE captured_source
 SET favicon_url = COALESCE(sqlc.narg('favicon_url'), favicon_url),
     description = COALESCE(sqlc.narg('description'), description),
     preview_image_url = COALESCE(sqlc.narg('preview_image_url'), preview_image_url),
+    skill_opportunity = COALESCE(sqlc.narg('skill_opportunity'), skill_opportunity),
     updated_at = now()
 WHERE id = $1 AND workspace_id = $2
 RETURNING *;

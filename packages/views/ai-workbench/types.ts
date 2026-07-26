@@ -1,4 +1,11 @@
-import type { BrowserCapture as CoreBrowserCapture } from "@didian/core/browser-memory";
+import type {
+  BrowserCapture as CoreBrowserCapture,
+  SkillOpportunity,
+} from "@didian/core/browser-memory";
+export type {
+  SkillOpportunity,
+  SkillOpportunityPageType,
+} from "@didian/core/browser-memory";
 
 export type MissionState =
   | "understanding"
@@ -27,25 +34,6 @@ export type AiInboxInput = {
   failureReason?: string | null;
   skillOpportunity?: SkillOpportunity | null;
   confidence: number;
-};
-
-export type SkillOpportunityPageType = "technical_doc" | "github_repo" | "tutorial" | "blog" | "paper" | "product_page" | "unknown";
-
-export type SkillOpportunity = {
-  shouldSuggest: boolean;
-  confidence: number;
-  pageType: SkillOpportunityPageType;
-  proposedTitle: string;
-  proposedCapability: string;
-  whyUseful: string;
-  triggerExamples: string[];
-  expectedInputs: string[];
-  expectedOutputs: string[];
-  reusableWorkflowScore: number;
-  instructionDensityScore: number;
-  futureUseScore: number;
-  evidenceSnippets: string[];
-  riskNotes: string[];
 };
 
 export type BrowserCaptureSource = "extension" | "import" | "api";

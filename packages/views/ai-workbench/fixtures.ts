@@ -161,7 +161,7 @@ export function browserCaptureRecordToInboxInput(capture: BrowserCapture): AiInb
     sourceLabel: browserCaptureLabel(capture),
     previewImageUrl: capture.preview_image_url ?? undefined,
     faviconUrl: capture.favicon_url ?? undefined,
-    skillOpportunity: inferSkillOpportunity(capture),
+    skillOpportunity: capture.skillOpportunity ?? inferSkillOpportunity(capture),
     ...memoryStatus,
     confidence: capture.selected_text || capture.readable_text ? 0.9 : 0.72,
   };
