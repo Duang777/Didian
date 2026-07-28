@@ -22,6 +22,52 @@ export interface IssueReaction {
   created_at: string;
 }
 
+export type IssueSkillUsageSource =
+  | "manual"
+  | "recommendation"
+  | "capture_origin"
+  | "slash_command"
+  | "agent_default";
+
+export type IssueSkillUsageStatus =
+  | "planned"
+  | "injected"
+  | "used"
+  | "failed"
+  | "skipped";
+
+export interface IssueSkillUsage {
+  id: string;
+  workspace_id: string;
+  issue_id: string;
+  skill_id: string;
+  skill_name: string;
+  skill_description?: string;
+  task_id?: string | null;
+  agent_id?: string | null;
+  agent_name?: string | null;
+  runtime_id?: string | null;
+  runtime_name?: string | null;
+  source: IssueSkillUsageSource;
+  status: IssueSkillUsageStatus;
+  reason: string;
+  skill_version?: string | null;
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IssueSkillUsagesResponse {
+  skills: IssueSkillUsage[];
+  total: number;
+}
+
+export interface AddIssueSkillRequest {
+  skill_id: string;
+  source?: IssueSkillUsageSource;
+  reason?: string;
+}
+
 /**
  * Per-issue metadata is a flat KV map agents use to record pipeline state
  * (PR number, pipeline_status, waiting_on, ...). Values are primitives only —

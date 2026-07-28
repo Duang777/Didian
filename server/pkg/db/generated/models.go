@@ -596,6 +596,24 @@ type IssueReaction struct {
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
+type IssueSkillUsage struct {
+	ID           pgtype.UUID        `json:"id"`
+	WorkspaceID  pgtype.UUID        `json:"workspace_id"`
+	IssueID      pgtype.UUID        `json:"issue_id"`
+	SkillID      pgtype.UUID        `json:"skill_id"`
+	TaskID       pgtype.UUID        `json:"task_id"`
+	AgentID      pgtype.UUID        `json:"agent_id"`
+	RuntimeID    pgtype.UUID        `json:"runtime_id"`
+	Source       string             `json:"source"`
+	Status       string             `json:"status"`
+	Reason       string             `json:"reason"`
+	SkillVersion pgtype.Text        `json:"skill_version"`
+	Metadata     []byte             `json:"metadata"`
+	CreatedBy    pgtype.UUID        `json:"created_by"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
 type IssueSubscriber struct {
 	IssueID   pgtype.UUID        `json:"issue_id"`
 	UserType  string             `json:"user_type"`

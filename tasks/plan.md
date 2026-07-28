@@ -1,5 +1,68 @@
 # 实施计划：AI 资源工作台
 
+## 2026-07-28 Mission Skill Runtime 闭环
+
+### 概览
+
+本阶段以 `docs/ai-resource-workbench/05-mission-skill-runtime-loop.md` 为准，目标是把“收藏网页生成 Skill”推进到“Mission 真实选择、注入、展示 Skill 使用记录”。第一版不做 marketplace、不做跨 workspace 共享、不做 embedding 推荐；先跑通手动选择和 runtime 注入闭环。
+
+### 架构决策
+
+- 新增 `issue_skill_usage` 记录 Mission 级 Skill 使用，不复用 `agent_skill`，避免一次选择永久污染 agent 默认能力。
+- API 以 `/api/issues/{issueId}/skills` 作为 Mission Skill usage 子资源，沿用后端 `issue` 实现名。
+- task claim 时合并 agent 默认 skills 和 issue planned skills，去重后传给 daemon。
+- claim 成功后将 planned usage 标记为 `injected`，并记录 task/agent/runtime。
+- Mission 页面先展示 Used Skills 区块，后续再做创建页推荐和右侧 Properties 摘要。
+
+### Phase 1: Foundation
+
+- [x] Task 1: 数据库迁移和 sqlc 查询。
+- [x] Task 2: 后端 API list/add/delete Mission skills。
+- [x] Task 3: 后端测试覆盖同 workspace、跨 workspace、幂等、删除 planned。
+
+### Checkpoint: Foundation
+
+- [x] `go test ./internal/handler -run 'TestIssueSkill' -count=1`
+- [x] API contract 可以被前端 client 使用。
+
+### Phase 2: Runtime Injection
+
+- [x] Task 4: task claim 合并 issue planned skills。
+- [x] Task 5: claim 成功后 usage 进入 injected，记录 task/agent/runtime。
+- [x] Task 6: daemon claim payload 注入 Mission selected skills。
+
+### Checkpoint: Runtime
+
+- [x] claim/finalize 测试证明 Mission 级 Skill 被注入并记录。
+- [x] planned -> injected 状态可追踪。
+
+### Phase 3: Frontend
+
+- [x] Task 7: core types/client/query hooks。
+- [x] Task 8: Mission detail 渲染 Used Skills。
+- [x] Task 9: Mission detail 支持添加/移除 planned Skill 的第一版入口。
+
+### Checkpoint: Complete
+
+- [x] `pnpm --filter @didian/core typecheck`
+- [x] `pnpm --filter @didian/views test -- issue-detail`
+- [x] `pnpm --filter @didian/views typecheck`
+- [x] Mission/Issue 详情页能看到 Used Skills 区块。
+
+### Risks
+
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+| claim payload 过大 | Medium | 复用现有 skill bundle refs/capability，避免重复传大文件。 |
+| Skill 选择误变成 agent 永久配置 | High | `issue_skill_usage` 与 `agent_skill` 分表。 |
+| 跨 workspace Skill 泄漏 | High | API 和查询都校验 issue/skill workspace_id。 |
+| UI 抢占 Mission 主流程 | Medium | Used Skills 用紧凑区块，不做大型配置面板。 |
+
+### Open Questions
+
+- injected usage 删除时第一版返回 409，保留为 runtime 审计记录。
+- generated Skill 是否要自动添加到 originating Mission？当前计划先不自动添加，只在用户确认后使用。
+
 ## 概览
 
 本计划按 `docs/ai-resource-workbench/01-product-requirements.md` 重写，具体技术落地以 `docs/ai-resource-workbench/02-technical-plan.md` 为准，方案审核和开工顺序以 `docs/ai-resource-workbench/03-implementation-review.md` 为准。产品主线从旧的 Tasks / Resources / Projects / Nodes / Analytics 收敛为 Runtime-first 工作流：AI Inbox、Missions / Codex Run、Atlas、System。

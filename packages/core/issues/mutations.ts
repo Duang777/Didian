@@ -34,7 +34,7 @@ import {
 import { useWorkspaceId } from "../hooks";
 import { useRecentContextStore } from "../chat/recent-context-store";
 import { useRecentIssuesStore } from "./stores";
-import type { GroupedIssuesResponse, InboxItem, Issue, IssueAssigneeGroup, IssueReaction, IssueStatus } from "../types";
+import type { AddIssueSkillRequest, GroupedIssuesResponse, InboxItem, Issue, IssueAssigneeGroup, IssueReaction, IssueStatus } from "../types";
 import type {
   CreateIssueRequest,
   UpdateIssueRequest,
@@ -679,6 +679,30 @@ export function useBatchDeleteIssues() {
           parentIssueIds: Array.from(ctx.parentIssueIds),
         });
       }
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Issue Skills
+// ---------------------------------------------------------------------------
+
+export function useAddIssueSkill(issueId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AddIssueSkillRequest) => api.addIssueSkill(issueId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: issueKeys.skills(issueId) });
+    },
+  });
+}
+
+export function useDeleteIssueSkill(issueId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (skillId: string) => api.deleteIssueSkill(issueId, skillId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: issueKeys.skills(issueId) });
     },
   });
 }

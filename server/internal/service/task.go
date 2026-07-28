@@ -1722,32 +1722,54 @@ func (s *TaskService) FinalizeTaskClaim(
 	token db.CreateTaskTokenParams,
 	deliveredCommentIDs []pgtype.UUID,
 	recordCommentReceipt bool,
+	issueSkillInjection *IssueSkillInjection,
 ) ([]pgtype.UUID, error) {
 	receipt := task.DeliveredCommentIds
 	err := s.runInTx(ctx, func(qtx *db.Queries) error {
 		if _, err := qtx.CreateTaskToken(ctx, token); err != nil {
 			return fmt.Errorf("create task token: %w", err)
 		}
-		if !recordCommentReceipt {
-			return nil
+		if recordCommentReceipt {
+			persisted, err := qtx.SetTaskDeliveredCommentIDs(ctx, db.SetTaskDeliveredCommentIDsParams{
+				DeliveredCommentIds:      deliveredCommentIDs,
+				TaskID:                   task.ID,
+				RuntimeID:                task.RuntimeID,
+				DispatchedAt:             task.DispatchedAt,
+				ExpectedTriggerCommentID: task.TriggerCommentID,
+			})
+			if err != nil {
+				return fmt.Errorf("set delivered comment ids: %w", err)
+			}
+			receipt = persisted
 		}
-		persisted, err := qtx.SetTaskDeliveredCommentIDs(ctx, db.SetTaskDeliveredCommentIDsParams{
-			DeliveredCommentIds:      deliveredCommentIDs,
-			TaskID:                   task.ID,
-			RuntimeID:                task.RuntimeID,
-			DispatchedAt:             task.DispatchedAt,
-			ExpectedTriggerCommentID: task.TriggerCommentID,
-		})
-		if err != nil {
-			return fmt.Errorf("set delivered comment ids: %w", err)
+		if issueSkillInjection != nil {
+			if _, err := qtx.MarkPlannedIssueSkillsInjected(ctx, db.MarkPlannedIssueSkillsInjectedParams{
+				WorkspaceID: issueSkillInjection.WorkspaceID,
+				IssueID:     issueSkillInjection.IssueID,
+				TaskID:      issueSkillInjection.TaskID,
+				AgentID:     issueSkillInjection.AgentID,
+				RuntimeID:   issueSkillInjection.RuntimeID,
+			}); err != nil {
+				return fmt.Errorf("mark issue skills injected: %w", err)
+			}
 		}
-		receipt = persisted
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 	return receipt, nil
+}
+
+// IssueSkillInjection identifies the per-Mission skills a claim has injected
+// into the runtime payload. It is passed into FinalizeTaskClaim so the status
+// update commits with the claim token and delivery receipt.
+type IssueSkillInjection struct {
+	WorkspaceID pgtype.UUID
+	IssueID     pgtype.UUID
+	TaskID      pgtype.UUID
+	AgentID     pgtype.UUID
+	RuntimeID   pgtype.UUID
 }
 
 // RequeueTaskAfterClaimFailure immediately releases an exact dispatched claim
@@ -2832,6 +2854,35 @@ func (s *TaskService) publishAgentStatus(agent db.Agent) {
 // LoadAgentSkills loads an agent's skills with their files for task execution.
 func (s *TaskService) LoadAgentSkills(ctx context.Context, agentID pgtype.UUID) []AgentSkillData {
 	skills, err := s.Queries.ListAgentSkills(ctx, agentID)
+	if err != nil || len(skills) == 0 {
+		return nil
+	}
+
+	result := make([]AgentSkillData, 0, len(skills))
+	for _, sk := range skills {
+		data := AgentSkillData{
+			ID:          util.UUIDToString(sk.ID),
+			Name:        sk.Name,
+			Description: sk.Description,
+			Content:     sk.Content,
+		}
+		files, _ := s.Queries.ListSkillFiles(ctx, sk.ID)
+		for _, f := range files {
+			data.Files = append(data.Files, AgentSkillFileData{Path: f.Path, Content: f.Content})
+		}
+		result = append(result, data)
+	}
+	return result
+}
+
+// LoadIssueSkills loads per-Mission skills selected for the current task.
+// These are not permanent agent defaults; claim-time injection makes them
+// available only to the runtime executing this Mission.
+func (s *TaskService) LoadIssueSkills(ctx context.Context, issueID, workspaceID pgtype.UUID) []AgentSkillData {
+	skills, err := s.Queries.ListIssueSkillsForClaim(ctx, db.ListIssueSkillsForClaimParams{
+		WorkspaceID: workspaceID,
+		IssueID:     issueID,
+	})
 	if err != nil || len(skills) == 0 {
 		return nil
 	}

@@ -1,5 +1,120 @@
 # 任务清单：AI 资源工作台
 
+## 2026-07-28 Mission Skill Runtime 闭环
+
+### Task MS-1：新增 Mission Skill Usage 数据基础
+
+**描述：** 新增 `issue_skill_usage` migration 和查询，记录某个 Mission 计划或已经注入的 Skill。
+
+**验收标准：**
+- [x] migration 建立 `issue_skill_usage` 表、唯一约束和必要索引。
+- [x] 查询支持 list、upsert planned、delete planned、mark injected。
+- [x] 跨 workspace 查询无法返回或写入 usage。
+
+**验证：**
+- [x] `go test ./internal/handler -run 'TestIssueSkill' -count=1`
+
+**依赖：** 无
+
+**可能触及文件：**
+- `server/migrations/165_issue_skill_usage.*.sql`
+- `server/pkg/db/queries/issue_skill_usage.sql`
+- generated sqlc files
+
+**规模预估：** M
+
+### Task MS-2：新增 Mission Skill Usage API
+
+**描述：** 新增 `/api/issues/{issueId}/skills` list/add/delete，供 Mission 页面使用。
+
+**验收标准：**
+- [x] `GET` 返回 usage + skill/agent/runtime 展示字段。
+- [x] `POST` 同 workspace skill 成功，重复添加幂等。
+- [x] `POST` 跨 workspace skill 返回 404/403。
+- [x] `DELETE` 只允许删除 planned usage。
+
+**验证：**
+- [x] `go test ./internal/handler -run 'TestIssueSkill' -count=1`
+
+**依赖：** MS-1
+
+**可能触及文件：**
+- `server/internal/handler/issue_skill_usage.go`
+- `server/cmd/server/router.go`
+- `server/internal/handler/handler_test.go`
+
+**规模预估：** M
+
+### Task MS-3：runtime claim 注入 Mission 级 Skill
+
+**描述：** daemon claim task 时合并 agent 默认 skills 和 issue planned skills，并将使用记录标记为 injected。
+
+**验收标准：**
+- [x] planned issue skill 出现在 claimed task 的 skill bundle/ref 中。
+- [x] agent 默认 skill 和 issue selected skill 去重。
+- [x] claim 成功后记录 task/agent/runtime。
+
+**验证：**
+- [x] `go test ./internal/handler ./internal/service -run 'Test.*IssueSkill|TestFinalizeTaskClaim|Test.*SkillBundle|Test.*Claim' -count=1`
+- [ ] daemon prompt 文案专测后续补充。
+
+**依赖：** MS-2
+
+**可能触及文件：**
+- `server/internal/service/task.go`
+- `server/internal/handler/daemon.go`
+- `server/internal/daemon/prompt.go`
+
+**规模预估：** M
+
+### Task MS-4：Mission 页面展示 Used Skills
+
+**描述：** 前端新增类型/client/query，并在 Mission 详情页渲染 Used Skills 区块。
+
+**验收标准：**
+- [x] 无 usage 时显示紧凑空状态。
+- [x] planned/injected/used/failed/skipped 有可读状态。
+- [x] 每条记录链接到 Skill 详情。
+- [x] 若有 agent/runtime/task 信息，作为辅助元信息展示。
+
+**验证：**
+- [x] `pnpm --filter @didian/core typecheck`
+- [ ] `pnpm --filter @didian/views test -- issue-detail`
+- [x] `pnpm --filter @didian/views typecheck`
+
+**依赖：** MS-2
+
+**可能触及文件：**
+- `packages/core/types/agent.ts`
+- `packages/core/api/client.ts`
+- `packages/core/issues/queries.ts`
+- `packages/views/issues/components/issue-detail.tsx`
+- `packages/views/issues/components/issue-detail.test.tsx`
+
+**规模预估：** M
+
+### Task MS-5：Mission 页面添加/移除 planned Skill
+
+**描述：** 在 Mission 详情页提供第一版手动添加 Skill 的入口，先用 workspace Skill 列表选择，不做自动推荐。移除仅对 `planned` 生效；`injected/used/failed/skipped` 保留为审计记录。
+
+**验收标准：**
+- [x] 用户能从 workspace Skill 列表添加 planned Skill。
+- [x] planned Skill 可以移除。
+- [x] injected Skill 不允许静默删除。
+- [x] 添加/移除成功后刷新 Skills 区块。
+- [x] API 失败时显示 toast，不破坏现有展示。
+
+**验证：**
+- [x] `pnpm --filter @didian/views test -- issue-detail`
+
+**依赖：** MS-4
+
+**可能触及文件：**
+- `packages/views/issues/components/issue-detail.tsx`
+- `packages/views/issues/components/issue-detail.test.tsx`
+
+**规模预估：** M
+
 ## 2026-07-14 Runtime-first 更新
 
 最新产品和技术方案以 `docs/ai-resource-workbench/01-product-requirements.md`、`02-technical-plan.md`、`03-implementation-review.md`、`04-browser-memory-bookmarks.md` 为准。第一版主线收敛为：

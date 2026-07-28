@@ -7,6 +7,7 @@ import { AppLink } from "../../navigation";
 import { useNavigation } from "../../navigation";
 import {
   Archive,
+  BookOpenText,
   Calendar,
   CalendarClock,
   CalendarDays,
@@ -23,6 +24,7 @@ import {
   Tag,
   Unlink,
   Users,
+  X,
 } from "lucide-react";
 import { BreadcrumbHeader, type BreadcrumbSegment } from "../../layout/breadcrumb-header";
 import { Skeleton } from "@didian/ui/components/ui/skeleton";
@@ -44,11 +46,11 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { AvatarGroup, AvatarGroupCount } from "@didian/ui/components/ui/avatar";
 import { ActorAvatar } from "../../common/actor-avatar";
 import { PropRow } from "../../common/prop-row";
-import type { Attachment, Issue, IssueStatus, IssuePriority, TimelineEntry, UpdateIssueRequest } from "@didian/core/types";
+import type { Attachment, Issue, IssueSkillUsage, IssueStatus, IssuePriority, SkillSummary, TimelineEntry, UpdateIssueRequest } from "@didian/core/types";
 import { contentReferencesAttachment } from "@didian/core/types";
 import { STATUS_CONFIG, PRIORITY_CONFIG } from "@didian/core/issues/config";
 import { formatDateOnly } from "@didian/core/issues/date";
-import { useUpdateIssue } from "@didian/core/issues/mutations";
+import { useAddIssueSkill, useDeleteIssueSkill, useUpdateIssue } from "@didian/core/issues/mutations";
 import { toast } from "sonner";
 import { StatusIcon, PriorityIcon, StatusPicker, PriorityPicker, StagePicker, StartDatePicker, DueDatePicker, AssigneePicker, LabelPicker } from ".";
 import { maxSiblingStage } from "./pickers/stage-picker";
@@ -70,11 +72,11 @@ import { useWorkspacePaths } from "@didian/core/paths";
 import { useActorName } from "@didian/core/workspace/hooks";
 import { useWorkspaceId } from "@didian/core/hooks";
 import { useRecentContextStore } from "@didian/core/chat";
-import { issueListOptions, issueDetailOptions, childIssuesOptions, issueUsageOptions, issueAttachmentsOptions } from "@didian/core/issues/queries";
+import { issueListOptions, issueDetailOptions, childIssuesOptions, issueUsageOptions, issueSkillsOptions, issueAttachmentsOptions } from "@didian/core/issues/queries";
 import { projectDetailOptions } from "@didian/core/projects/queries";
 import { ProjectIcon } from "../../projects/components/project-icon";
 import { issueLabelsOptions } from "@didian/core/labels";
-import { memberListOptions, agentListOptions } from "@didian/core/workspace/queries";
+import { memberListOptions, agentListOptions, skillListOptions } from "@didian/core/workspace/queries";
 import { useRecentIssuesStore } from "@didian/core/issues/stores";
 import { useIssueSelectionStore } from "@didian/core/issues/stores/selection-store";
 import { BatchActionToolbar } from "./batch-action-toolbar";
@@ -185,6 +187,82 @@ function SubscriberPopoverContent({
 function shortDate(date: string | null): string {
   if (!date) return "—";
   return formatDateOnly(date, { month: "short", day: "numeric" }, "en-US");
+}
+
+function issueSkillStatusClass(status: IssueSkillUsage["status"]) {
+  switch (status) {
+    case "injected":
+    case "used":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "failed":
+      return "border-red-200 bg-red-50 text-red-700";
+    case "skipped":
+      return "border-muted bg-muted text-muted-foreground";
+    default:
+      return "border-blue-200 bg-blue-50 text-blue-700";
+  }
+}
+
+function IssueSkillsSectionContent({
+  skills,
+  skillHref,
+  onRemovePlanned,
+  removingSkillId,
+}: {
+  skills: IssueSkillUsage[];
+  skillHref: (skillId: string) => string;
+  onRemovePlanned?: (skill: IssueSkillUsage) => void;
+  removingSkillId?: string | null;
+}) {
+  if (skills.length === 0) {
+    return (
+      <div className="rounded-md border border-dashed px-2 py-2 text-xs text-muted-foreground">
+        No Skills selected for this Mission yet.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {skills.map((skill) => (
+        <div key={skill.id} className="rounded-md border bg-background px-2 py-1.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <BookOpenText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <AppLink
+              href={skillHref(skill.skill_id)}
+              className="min-w-0 flex-1 truncate text-xs font-medium hover:underline"
+            >
+              {skill.skill_name || "Untitled Skill"}
+            </AppLink>
+            <span className={cn("shrink-0 rounded border px-1.5 py-0.5 text-[10px] leading-3", issueSkillStatusClass(skill.status))}>
+              {skill.status}
+            </span>
+            {skill.status === "planned" && onRemovePlanned && (
+              <button
+                type="button"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={`Remove ${skill.skill_name || "Skill"} from Mission`}
+                title="Remove planned Skill"
+                disabled={removingSkillId === skill.skill_id}
+                onClick={() => onRemovePlanned(skill)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          {(skill.agent_name || skill.runtime_name || skill.reason) && (
+            <div className="mt-1 line-clamp-2 text-[11px] leading-4 text-muted-foreground">
+              {skill.agent_name && <span>{skill.agent_name}</span>}
+              {skill.agent_name && skill.runtime_name && <span>{" · "}</span>}
+              {skill.runtime_name && <span>{skill.runtime_name}</span>}
+              {(skill.agent_name || skill.runtime_name) && skill.reason && <span>{" · "}</span>}
+              {skill.reason && <span>{skill.reason}</span>}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 type ActivityT = ReturnType<typeof useT<"issues">>["t"];
@@ -710,6 +788,7 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
   const wsId = useWorkspaceId();
   const { data: members = [] } = useQuery(memberListOptions(wsId));
   const { data: agents = [] } = useQuery(agentListOptions(wsId));
+  const { data: workspaceSkills = [] } = useQuery(skillListOptions(wsId));
   // Workspace owners and admins moderate any comment authored by anyone
   // (mirrors backend `comment.go:507-512`). Computed here so per-comment
   // rendering doesn't have to re-derive it for every row.
@@ -748,6 +827,9 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [parentIssueOpen, setParentIssueOpen] = useState(true);
   const [pullRequestsOpen, setPullRequestsOpen] = useState(true);
+  const [issueSkillsOpen, setIssueSkillsOpen] = useState(true);
+  const [issueSkillPickerOpen, setIssueSkillPickerOpen] = useState(false);
+  const [removingIssueSkillId, setRemovingIssueSkillId] = useState<string | null>(null);
   const [metadataOpen, setMetadataOpen] = useState(false);
   const [tokenUsageOpen, setTokenUsageOpen] = useState(true);
   const githubSettings = useGitHubSettings();
@@ -1144,6 +1226,48 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
 
   // Token usage
   const { data: usage } = useQuery(issueUsageOptions(id));
+  const { data: issueSkills = [] } = useQuery(issueSkillsOptions(id));
+  const addIssueSkill = useAddIssueSkill(id);
+  const deleteIssueSkill = useDeleteIssueSkill(id);
+  const selectedIssueSkillIds = useMemo(
+    () => new Set(issueSkills.map((skill) => skill.skill_id)),
+    [issueSkills],
+  );
+  const availableIssueSkills = useMemo(
+    () => workspaceSkills.filter((skill) => !selectedIssueSkillIds.has(skill.id)),
+    [selectedIssueSkillIds, workspaceSkills],
+  );
+  const handleAddIssueSkill = useCallback(
+    async (skill: SkillSummary) => {
+      try {
+        await addIssueSkill.mutateAsync({
+          skill_id: skill.id,
+          source: "manual",
+          reason: "Selected from Mission detail",
+        });
+        setIssueSkillPickerOpen(false);
+        toast.success("Skill added to Mission");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to add Skill");
+      }
+    },
+    [addIssueSkill],
+  );
+  const handleRemoveIssueSkill = useCallback(
+    async (skill: IssueSkillUsage) => {
+      if (skill.status !== "planned") return;
+      setRemovingIssueSkillId(skill.skill_id);
+      try {
+        await deleteIssueSkill.mutateAsync(skill.skill_id);
+        toast.success("Skill removed from Mission");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to remove Skill");
+      } finally {
+        setRemovingIssueSkillId(null);
+      }
+    },
+    [deleteIssueSkill],
+  );
 
   // Attachments uploaded against this issue. Drives the description
   // editor's click-time fresh-sign download: NodeViews match
@@ -1664,6 +1788,82 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
           {pullRequestsOpen && <div className="pl-2"><PullRequestList issueId={id} /></div>}
         </div>
       )}
+
+      {/* Skills selected for this Mission and injected into local agent runtime claims. */}
+      <div>
+        <div className="mb-2 flex items-center gap-1">
+          <button
+            type="button"
+            className={`flex min-w-0 flex-1 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors hover:bg-accent/70 ${issueSkillsOpen ? "" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setIssueSkillsOpen(!issueSkillsOpen)}
+          >
+            Skills
+            {issueSkills.length > 0 && <span className="text-muted-foreground">{issueSkills.length}</span>}
+            <ChevronRight className={`!size-3 shrink-0 stroke-[2.5] text-muted-foreground transition-transform ${issueSkillsOpen ? "rotate-90" : ""}`} />
+          </button>
+          <Popover open={issueSkillPickerOpen} onOpenChange={setIssueSkillPickerOpen}>
+            <Tooltip>
+              <PopoverTrigger
+                render={
+                  <TooltipTrigger
+                    render={
+                      <button
+                        type="button"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Add Skill to Mission"
+                        disabled={addIssueSkill.isPending}
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
+                    }
+                  />
+                }
+              />
+              <TooltipContent>Add Skill</TooltipContent>
+            </Tooltip>
+            <PopoverContent align="end" className="w-80 p-0">
+              <Command>
+                <CommandInput placeholder="Search Skills..." />
+                <CommandList className="max-h-72">
+                  <CommandEmpty>No Skills available</CommandEmpty>
+                  {availableIssueSkills.length > 0 && (
+                    <CommandGroup>
+                      {availableIssueSkills.map((skill) => (
+                        <CommandItem
+                          key={skill.id}
+                          value={`${skill.name} ${skill.description}`}
+                          onSelect={() => handleAddIssueSkill(skill)}
+                          className="flex items-start gap-2.5"
+                        >
+                          <BookOpenText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-xs font-medium">{skill.name}</span>
+                            {skill.description && (
+                              <span className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-muted-foreground">
+                                {skill.description}
+                              </span>
+                            )}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+        {issueSkillsOpen && (
+          <div className="pl-2">
+            <IssueSkillsSectionContent
+              skills={issueSkills}
+              skillHref={(skillId) => paths.skillDetail(skillId)}
+              removingSkillId={removingIssueSkillId}
+              onRemovePlanned={handleRemoveIssueSkill}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Details */}
       <div>

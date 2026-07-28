@@ -16,6 +16,7 @@ import type {
   CreateBillingPortalSessionResponse,
   GroupedIssuesResponse,
   InboxWorkspaceUnread,
+  IssueSkillUsagesResponse,
   ListIssuesResponse,
   ListWebhookDeliveriesResponse,
   SearchIssuesResponse,
@@ -456,6 +457,37 @@ export const IssueSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
 }).loose();
+
+const IssueSkillUsageSchema = z.object({
+  id: z.string(),
+  workspace_id: z.string(),
+  issue_id: z.string(),
+  skill_id: z.string(),
+  skill_name: z.string().default(""),
+  skill_description: z.string().optional().default(""),
+  task_id: z.string().nullable().optional(),
+  agent_id: z.string().nullable().optional(),
+  agent_name: z.string().nullable().optional(),
+  runtime_id: z.string().nullable().optional(),
+  runtime_name: z.string().nullable().optional(),
+  source: z.string().default("manual"),
+  status: z.string().default("planned"),
+  reason: z.string().default(""),
+  skill_version: z.string().nullable().optional(),
+  created_by: z.string().nullable().optional(),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const IssueSkillUsagesResponseSchema = z.object({
+  skills: z.array(IssueSkillUsageSchema).default([]),
+  total: z.number().default(0),
+}).loose();
+
+export const EMPTY_ISSUE_SKILL_USAGES_RESPONSE: IssueSkillUsagesResponse = {
+  skills: [],
+  total: 0,
+};
 
 export const ListIssuesResponseSchema = z.object({
   issues: z.array(IssueSchema).default([]),

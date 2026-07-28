@@ -1321,6 +1321,41 @@ func parseRuntimeConnectedAppsForClaim(raw []byte, taskID pgtype.UUID) []runtime
 	return apps
 }
 
+func appendAgentSkillsDedup(base []service.AgentSkillData, extra ...service.AgentSkillData) []service.AgentSkillData {
+	if len(extra) == 0 {
+		return base
+	}
+	seen := make(map[string]struct{}, len(base)+len(extra))
+	for _, skill := range base {
+		seen[agentSkillDedupeKey(skill)] = struct{}{}
+	}
+	for _, skill := range extra {
+		key := agentSkillDedupeKey(skill)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		base = append(base, skill)
+	}
+	return base
+}
+
+func agentSkillDedupeKey(skill service.AgentSkillData) string {
+	source := skill.Source
+	if source == "" {
+		if skill.ID == "" {
+			source = "builtin"
+		} else {
+			source = "workspace"
+		}
+	}
+	id := skill.ID
+	if id == "" {
+		id = skill.Name
+	}
+	return source + "\x00" + id
+}
+
 // ClaimTaskByRuntime atomically claims the next queued task for a runtime.
 // The response includes the agent's name and skills, fetched fresh from the DB.
 func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
@@ -1423,6 +1458,20 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 	// in the capability-aware response built below.
 	deliveredCommentIDs := []pgtype.UUID{}
 	commentBackedTask := task.TriggerCommentID.Valid || len(task.CoalescedCommentIds) > 0
+	var issueSkillInjection *service.IssueSkillInjection
+	var issueSkills []service.AgentSkillData
+	if task.IssueID.Valid {
+		issueSkills = h.TaskService.LoadIssueSkills(r.Context(), task.IssueID, runtime.WorkspaceID)
+		if len(issueSkills) > 0 {
+			issueSkillInjection = &service.IssueSkillInjection{
+				WorkspaceID: runtime.WorkspaceID,
+				IssueID:     task.IssueID,
+				TaskID:      task.ID,
+				AgentID:     task.AgentID,
+				RuntimeID:   task.RuntimeID,
+			}
+		}
+	}
 	requeueFailedClaim := func(reason string) {
 		if _, err := h.TaskService.RequeueTaskAfterClaimFailure(r.Context(), *task); err != nil {
 			slog.Error("task claim: failed to requeue after finalization error",
@@ -1487,15 +1536,21 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 			RuntimeConfig: runtimeConfig,
 		}
 		if useSkillRefs {
-			_, skillRefs := h.TaskService.LoadAgentSkillBundles(r.Context(), task.AgentID)
-			agentSkillCount = len(skillRefs)
+			skills := h.TaskService.LoadAgentSkills(r.Context(), task.AgentID)
+			agentSkillCount = len(skills)
+			skills = appendAgentSkillsDedup(skills, issueSkills...)
+			builtinSkills := h.TaskService.BuiltinSkills()
+			builtinSkillCount = len(builtinSkills)
+			skills = appendAgentSkillsDedup(skills, builtinSkills...)
+			_, skillRefs := service.BuildAgentSkillBundles(skills)
 			resp.Agent.SkillRefs = skillRefs
 		} else {
 			skills := h.TaskService.LoadAgentSkills(r.Context(), task.AgentID)
 			agentSkillCount = len(skills)
+			skills = appendAgentSkillsDedup(skills, issueSkills...)
 			builtinSkills := h.TaskService.BuiltinSkills()
 			builtinSkillCount = len(builtinSkills)
-			skills = append(skills, builtinSkills...)
+			skills = appendAgentSkillsDedup(skills, builtinSkills...)
 			resp.Agent.Skills = skills
 		}
 	}
@@ -2259,7 +2314,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 		WorkspaceID: parseUUID(resp.WorkspaceID),
 		UserID:      runtime.OwnerID,
 		ExpiresAt:   pgtype.Timestamptz{Time: time.Now().Add(24 * time.Hour), Valid: true},
-	}, deliveredCommentIDs, commentBackedTask)
+	}, deliveredCommentIDs, commentBackedTask, issueSkillInjection)
 	if ferr != nil {
 		outcome = "error_claim_finalize"
 		slog.Error("task claim: failed to finalize token and comment delivery receipt",
@@ -2339,6 +2394,11 @@ func (h *Handler) ResolveTaskSkillBundles(w http.ResponseWriter, r *http.Request
 	}
 
 	bundles, _ := h.TaskService.LoadAgentSkillBundles(r.Context(), task.AgentID)
+	if task.IssueID.Valid {
+		issueSkills := h.TaskService.LoadIssueSkills(r.Context(), task.IssueID, runtime.WorkspaceID)
+		bundles = appendAgentSkillsDedup(bundles, issueSkills...)
+		bundles, _ = service.BuildAgentSkillBundles(bundles)
+	}
 	allowed := make(map[string]service.AgentSkillData, len(bundles))
 	for _, bundle := range bundles {
 		allowed[bundle.Source+"\x00"+bundle.ID] = bundle

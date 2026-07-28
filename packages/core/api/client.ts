@@ -34,8 +34,11 @@ import type {
   CommentTriggerPreview,
   IssueTriggerPreview,
   IssueTriggerPreviewParams,
+  AddIssueSkillRequest,
   Reaction,
   IssueReaction,
+  IssueSkillUsage,
+  IssueSkillUsagesResponse,
   Workspace,
   WorkspaceRepo,
   MemberWithUser,
@@ -168,6 +171,7 @@ import {
   CommentsListSchema,
   CommentTriggerPreviewSchema,
   IssueTriggerPreviewSchema,
+  IssueSkillUsagesResponseSchema,
   CloudRuntimeNodeListSchema,
   CloudRuntimeNodeSchema,
   CreateAgentFromTemplateResponseSchema,
@@ -183,6 +187,7 @@ import {
   EMPTY_CLOUD_RUNTIME_NODE_LIST,
   EMPTY_CREATE_AGENT_FROM_TEMPLATE_RESPONSE,
   EMPTY_GROUPED_ISSUES_RESPONSE,
+  EMPTY_ISSUE_SKILL_USAGES_RESPONSE,
   EMPTY_LIST_ISSUES_RESPONSE,
   EMPTY_SEARCH_ISSUES_RESPONSE,
   EMPTY_SEARCH_PROJECTS_RESPONSE,
@@ -620,6 +625,26 @@ export class ApiClient {
 
   async getIssue(id: string): Promise<Issue> {
     return this.fetch(`/api/issues/${id}`);
+  }
+
+  async listIssueSkills(issueId: string): Promise<IssueSkillUsagesResponse> {
+    const raw = await this.fetch<unknown>(`/api/issues/${issueId}/skills`);
+    return parseWithFallback(raw, IssueSkillUsagesResponseSchema, EMPTY_ISSUE_SKILL_USAGES_RESPONSE, {
+      endpoint: "GET /api/issues/:id/skills",
+    });
+  }
+
+  async addIssueSkill(issueId: string, data: AddIssueSkillRequest): Promise<IssueSkillUsage> {
+    return this.fetch(`/api/issues/${issueId}/skills`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteIssueSkill(issueId: string, skillId: string): Promise<void> {
+    await this.fetch(`/api/issues/${issueId}/skills/${skillId}`, {
+      method: "DELETE",
+    });
   }
 
   async createIssue(data: CreateIssueRequest): Promise<Issue> {

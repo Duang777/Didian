@@ -66,6 +66,10 @@ vi.mock("@didian/core/workspace/queries", () => ({
     queryKey: ["workspaces", "ws-1", "agents"],
     queryFn: () => Promise.resolve([]),
   }),
+  skillListOptions: () => ({
+    queryKey: ["workspaces", "ws-1", "skills"],
+    queryFn: () => Promise.resolve([]),
+  }),
   squadListOptions: () => ({
     queryKey: ["workspaces", "ws-1", "squads"],
     queryFn: () => Promise.resolve([]),
@@ -217,10 +221,14 @@ const mockApiObj = vi.hoisted(() => ({
   addIssueReaction: vi.fn(),
   removeIssueReaction: vi.fn(),
   listAttachments: vi.fn().mockResolvedValue([]),
+  listIssueSkills: vi.fn().mockResolvedValue({ skills: [], total: 0 }),
+  addIssueSkill: vi.fn(),
+  deleteIssueSkill: vi.fn(),
   addCommentReaction: vi.fn(),
   removeCommentReaction: vi.fn(),
   listMembers: vi.fn().mockResolvedValue([{ user_id: "user-1", name: "Test User", email: "test@test.com", role: "admin" }]),
   listAgents: vi.fn().mockResolvedValue([]),
+  listSkills: vi.fn().mockResolvedValue([]),
   getProject: vi.fn(),
   listProjects: vi.fn().mockResolvedValue({ projects: [] }),
 }));
