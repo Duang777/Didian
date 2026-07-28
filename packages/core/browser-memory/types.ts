@@ -1,4 +1,5 @@
 import type { Issue } from "../types/issue";
+import type { Skill } from "../types/agent";
 
 export type BrowserCaptureSource = "web" | "extension" | "api" | "cli" | "rss" | "import" | "singlefile";
 
@@ -155,4 +156,8 @@ export interface CreateAiInboxMissionResponse {
   issue: Issue;
   planningStatus: "queued" | "no_codex_agent" | string;
   planningAgentId?: string;
+}
+
+export interface CreateBrowserCaptureSkillGenerationMissionResponse extends CreateAiInboxMissionResponse {
+  skill: Skill;
 }

@@ -37,7 +37,7 @@ export function SystemPage() {
   ];
   const advancedItems: SystemItem[] = [
     { icon: Bot, title: "Agents", description: "兼容入口：查看 Codex Run 可调用的角色和所有权。", href: paths.agents() },
-    { icon: Sparkles, title: "Skills", description: "兼容入口：管理 Runtime 上下文和能力包。", href: paths.skills() },
+    { icon: Sparkles, title: "Skills", description: "管理收藏网页生成的能力包，也可以从左侧 Workbench 直接进入。", href: paths.skills() },
     { icon: Users, title: "Squads", description: "兼容入口：后续多角色处理配方的基础。", href: paths.squads() },
     { icon: Zap, title: "Autopilots", description: "兼容入口：后续基于真实重复行为生成后台策略。", href: paths.autopilots() },
   ];
@@ -54,7 +54,7 @@ export function SystemPage() {
         </div>
       </WorkbenchSection>
 
-      <WorkbenchSection title="Advanced" description="Agents、Skills、Squads 和 Autopilots 作为高级兼容入口保留，不进入第一版主导航。">
+      <WorkbenchSection title="Advanced" description="Agents、Squads 和 Autopilots 作为高级兼容入口保留；Skills 已进入 Workbench 主导航。">
         <div className="grid gap-3 md:grid-cols-2">
           {advancedItems.map((item) => <SystemCard key={item.title} item={item} />)}
         </div>

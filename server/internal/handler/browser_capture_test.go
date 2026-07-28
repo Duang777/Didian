@@ -350,6 +350,187 @@ func TestBrowserCaptureSearchArchiveAndRestore(t *testing.T) {
 	}
 }
 
+func TestCreateBrowserCaptureSkillGenerationMissionAssignsOwnedCodexAgent(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not available")
+	}
+
+	_, agentID := seedOwnedCodexBrowserMemoryAgent(t)
+	suffix := time.Now().UnixNano()
+	body := map[string]any{
+		"source":       "extension",
+		"sourceType":   "link",
+		"captureScope": "page",
+		"url":          fmt.Sprintf("https://docs.stripe.com/payments/checkout?skill-generation=%d", suffix),
+		"title":        "Stripe Checkout documentation",
+		"domain":       "docs.stripe.com",
+		"description":  "Use Checkout to accept payments with API parameters, webhooks, and error handling.",
+		"selectedText": "Install the SDK and configure API keys before creating a checkout session.",
+		"readableText": "Install the SDK, configure API keys, create a checkout session, handle webhooks, test common errors, and troubleshoot integration failures.",
+		"capturedAt":   "2026-07-14T10:00:00Z",
+	}
+
+	w := httptest.NewRecorder()
+	testHandler.CreateBrowserCapture(w, newRequest(http.MethodPost, "/api/browser-captures", body))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCapture: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var created CreateBrowserCaptureResponse
+	if err := json.NewDecoder(w.Body).Decode(&created); err != nil {
+		t.Fatalf("decode create response: %v", err)
+	}
+	if created.Capture.SkillOpportunity == nil || !created.Capture.SkillOpportunity.ShouldSuggest {
+		t.Fatalf("created capture missing skill opportunity: %+v", created.Capture.SkillOpportunity)
+	}
+
+	w = httptest.NewRecorder()
+	req := withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", nil), "id", created.CaptureID)
+	testHandler.CreateBrowserCaptureSkillGenerationMission(w, req)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCaptureSkillGenerationMission: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var resp CreateBrowserCaptureSkillGenerationMissionResponse
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if resp.PlanningStatus != "queued" || resp.PlanningAgentID == nil || *resp.PlanningAgentID != agentID {
+		t.Fatalf("planning status/agent = %q/%v, want queued/%s", resp.PlanningStatus, resp.PlanningAgentID, agentID)
+	}
+	if resp.Skill.ID == "" || !strings.Contains(resp.Skill.Name, "Stripe Checkout") || !strings.Contains(resp.Skill.Name, "接入助手") {
+		t.Fatalf("skill response = %+v, want created skill draft", resp.Skill)
+	}
+	if !strings.Contains(resp.Skill.Content, "Didian-generated draft") || !strings.Contains(resp.Skill.Content, "https://docs.stripe.com/payments/checkout") {
+		t.Fatalf("skill draft content missing source context: %q", resp.Skill.Content)
+	}
+	if !strings.Contains(resp.Issue.Title, "完善 Skill：") || !strings.Contains(resp.Issue.Title, resp.Skill.Name) {
+		t.Fatalf("issue title = %q, want skill generation title", resp.Issue.Title)
+	}
+	if resp.Issue.Description == nil ||
+		!strings.Contains(*resp.Issue.Description, "didian skill update "+resp.Skill.ID) ||
+		!strings.Contains(*resp.Issue.Description, created.CaptureID) ||
+		!strings.Contains(*resp.Issue.Description, "browser_capture_skill_generation") {
+		t.Fatalf("issue description missing skill update instructions: %v", resp.Issue.Description)
+	}
+	if resp.Issue.AssigneeID == nil || *resp.Issue.AssigneeID != agentID {
+		t.Fatalf("issue assignee = %v, want %s", resp.Issue.AssigneeID, agentID)
+	}
+
+	var taskCount int
+	if err := testPool.QueryRow(context.Background(), `
+		SELECT count(*) FROM agent_task_queue
+		WHERE issue_id = $1 AND agent_id = $2 AND status = 'queued'
+	`, resp.Issue.ID, agentID).Scan(&taskCount); err != nil {
+		t.Fatalf("count queued task: %v", err)
+	}
+	if taskCount != 1 {
+		t.Fatalf("queued task count = %d, want 1", taskCount)
+	}
+	t.Cleanup(func() {
+		ctx := context.Background()
+		testPool.Exec(ctx, `DELETE FROM agent_task_queue WHERE issue_id = $1`, resp.Issue.ID)
+		testPool.Exec(ctx, `DELETE FROM issue WHERE id = $1`, resp.Issue.ID)
+		testPool.Exec(ctx, `DELETE FROM skill WHERE id = $1`, resp.Skill.ID)
+		testPool.Exec(ctx, `DELETE FROM captured_source WHERE id = $1`, created.CaptureID)
+	})
+}
+
+func TestCreateBrowserCaptureSkillGenerationMissionQueuesExistingUnassignedMission(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not available")
+	}
+
+	ctx := context.Background()
+	if _, err := testPool.Exec(ctx, `
+		UPDATE agent_runtime
+		SET status = 'offline'
+		WHERE workspace_id = $1 AND owner_id = $2 AND provider = 'codex'
+	`, testWorkspaceID, testUserID); err != nil {
+		t.Fatalf("mark existing codex runtimes offline: %v", err)
+	}
+
+	suffix := time.Now().UnixNano()
+	body := map[string]any{
+		"source":       "extension",
+		"sourceType":   "link",
+		"captureScope": "page",
+		"url":          fmt.Sprintf("https://github.com/example/existing-skill-%d", suffix),
+		"title":        "example/existing-skill",
+		"domain":       "github.com",
+		"description":  "A GitHub repository with setup, maintenance signals, and integration notes.",
+		"readableText": "README install commands, project structure, API examples, license details, and troubleshooting notes.",
+		"capturedAt":   "2026-07-14T10:00:00Z",
+	}
+
+	w := httptest.NewRecorder()
+	testHandler.CreateBrowserCapture(w, newRequest(http.MethodPost, "/api/browser-captures", body))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCapture: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var created CreateBrowserCaptureResponse
+	if err := json.NewDecoder(w.Body).Decode(&created); err != nil {
+		t.Fatalf("decode create response: %v", err)
+	}
+
+	w = httptest.NewRecorder()
+	req := withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", nil), "id", created.CaptureID)
+	testHandler.CreateBrowserCaptureSkillGenerationMission(w, req)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("initial CreateBrowserCaptureSkillGenerationMission: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var initial CreateBrowserCaptureSkillGenerationMissionResponse
+	if err := json.NewDecoder(w.Body).Decode(&initial); err != nil {
+		t.Fatalf("decode initial response: %v", err)
+	}
+	if initial.PlanningStatus != "no_codex_agent" {
+		t.Fatalf("initial planning status = %q, want no_codex_agent", initial.PlanningStatus)
+	}
+	if initial.Issue.AssigneeID != nil {
+		t.Fatalf("initial issue assignee = %v, want unassigned", initial.Issue.AssigneeID)
+	}
+
+	_, agentID := seedOwnedCodexBrowserMemoryAgent(t)
+
+	w = httptest.NewRecorder()
+	req = withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", nil), "id", created.CaptureID)
+	testHandler.CreateBrowserCaptureSkillGenerationMission(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("duplicate CreateBrowserCaptureSkillGenerationMission: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var resp CreateBrowserCaptureSkillGenerationMissionResponse
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode duplicate response: %v", err)
+	}
+	if resp.PlanningStatus != "queued" || resp.PlanningAgentID == nil || *resp.PlanningAgentID != agentID {
+		t.Fatalf("duplicate planning status/agent = %q/%v, want queued/%s", resp.PlanningStatus, resp.PlanningAgentID, agentID)
+	}
+	if resp.Issue.ID != initial.Issue.ID {
+		t.Fatalf("duplicate issue id = %s, want existing issue %s", resp.Issue.ID, initial.Issue.ID)
+	}
+	if resp.Issue.AssigneeID == nil || *resp.Issue.AssigneeID != agentID {
+		t.Fatalf("duplicate issue assignee = %v, want %s", resp.Issue.AssigneeID, agentID)
+	}
+
+	var taskCount int
+	if err := testPool.QueryRow(ctx, `
+		SELECT count(*) FROM agent_task_queue
+		WHERE issue_id = $1 AND agent_id = $2 AND status = 'queued'
+	`, resp.Issue.ID, agentID).Scan(&taskCount); err != nil {
+		t.Fatalf("count queued task: %v", err)
+	}
+	if taskCount != 1 {
+		t.Fatalf("queued task count = %d, want 1", taskCount)
+	}
+
+	t.Cleanup(func() {
+		c := context.Background()
+		testPool.Exec(c, `DELETE FROM agent_task_queue WHERE issue_id = $1`, resp.Issue.ID)
+		testPool.Exec(c, `DELETE FROM issue WHERE id = $1`, resp.Issue.ID)
+		testPool.Exec(c, `DELETE FROM skill WHERE id = $1`, resp.Skill.ID)
+		testPool.Exec(c, `DELETE FROM captured_source WHERE id = $1`, created.CaptureID)
+	})
+}
+
 func cloneMap(input map[string]any) map[string]any {
 	out := make(map[string]any, len(input))
 	for key, value := range input {

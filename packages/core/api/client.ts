@@ -141,6 +141,7 @@ import type {
   BrowserCapture,
   CreateAiInboxMissionRequest,
   CreateAiInboxMissionResponse,
+  CreateBrowserCaptureSkillGenerationMissionResponse,
   CreateBrowserCaptureRequest,
   CreateBrowserCaptureResponse,
   ListBrowserCapturesParams,
@@ -1575,6 +1576,10 @@ export class ApiClient {
     return parseWithFallback(raw, BrowserCaptureSchema, EMPTY_BROWSER_CAPTURE, {
       endpoint: "GET /api/browser-captures/:id",
     });
+  }
+
+  async createBrowserCaptureSkillGenerationMission(id: string): Promise<CreateBrowserCaptureSkillGenerationMissionResponse> {
+    return this.fetch(`/api/browser-captures/${id}/skill-generation-mission`, { method: "POST" });
   }
 
   async archiveBrowserCapture(id: string): Promise<BrowserCapture> {

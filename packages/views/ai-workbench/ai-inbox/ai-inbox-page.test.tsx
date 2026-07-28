@@ -23,11 +23,13 @@ const { ApiError } = vi.hoisted(() => {
   return { ApiError: ApiErrorImpl };
 });
 
-const { archiveBrowserCapture, createAiInboxMission, createBrowserCapture, listBrowserCaptures, restoreBrowserCapture } = vi.hoisted(() => ({
+const { archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillGenerationMission, listBrowserCaptures, listSkills, restoreBrowserCapture } = vi.hoisted(() => ({
   archiveBrowserCapture: vi.fn(),
   createAiInboxMission: vi.fn(),
   createBrowserCapture: vi.fn(),
+  createBrowserCaptureSkillGenerationMission: vi.fn(),
   listBrowserCaptures: vi.fn(),
+  listSkills: vi.fn(),
   restoreBrowserCapture: vi.fn(),
 }));
 
@@ -43,7 +45,7 @@ vi.mock("@didian/core/api", async () => {
   return {
     ...actual,
     ApiError,
-    api: { archiveBrowserCapture, createAiInboxMission, createBrowserCapture, listBrowserCaptures, restoreBrowserCapture },
+    api: { archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillGenerationMission, listBrowserCaptures, listSkills, restoreBrowserCapture },
   };
 });
 
@@ -134,12 +136,21 @@ describe("AiInboxPage browser captures", () => {
     archiveBrowserCapture.mockReset();
     createAiInboxMission.mockReset();
     createBrowserCapture.mockReset();
+    createBrowserCaptureSkillGenerationMission.mockReset();
+    listSkills.mockReset();
     restoreBrowserCapture.mockReset();
     navigationPush.mockReset();
     toastFn.mockReset();
     toastError.mockReset();
     toastSuccess.mockReset();
     createBrowserCapture.mockResolvedValue({ capture: captureFixture(), captureId: "capture-new", status: "captured", memoryStatus: "pending", dedupe: { isDuplicate: false, existingCaptureId: null } });
+    listSkills.mockResolvedValue([]);
+    createBrowserCaptureSkillGenerationMission.mockResolvedValue({
+      issue: { id: "skill-mission-1", title: "完善 Skill：Stripe Checkout 接入助手" },
+      skill: { id: "skill-1", name: "Stripe Checkout 接入助手", config: { generation: { status: "draft" } } },
+      planningStatus: "queued",
+      planningAgentId: "agent-1",
+    });
   });
 
   it("renders browser capture cards from the real browser-captures API", async () => {
@@ -270,7 +281,64 @@ describe("AiInboxPage browser captures", () => {
 
     await user.click(screen.getByRole("button", { name: "生成 Skill" }));
 
-    expect(toastSuccess).toHaveBeenCalledWith("已准备生成个人 Skill 草稿，真实生成会在下一阶段接入。");
+    await waitFor(() => expect(createBrowserCaptureSkillGenerationMission.mock.calls[0]?.[0]).toBe("capture-1"));
+    expect(toastSuccess).toHaveBeenCalledWith("Skill 生成任务已创建，本地 agent 会生成并写入 Skill 库。");
+    expect(screen.getByRole("status")).toHaveTextContent("Skill 已写入库");
+    expect(screen.getByRole("link", { name: "打开 Skill：Stripe Checkout 接入助手" })).toHaveAttribute("href", "/acme/skills/skill-1");
+    expect(screen.getByRole("link", { name: "打开 Mission" })).toHaveAttribute("href", "/acme/issues/skill-mission-1");
+    expect(screen.getByRole("button", { name: "已创建" })).toBeDisabled();
+  });
+
+  it("shows generated Skill state from the persisted Skill library after refresh", async () => {
+    listBrowserCaptures.mockResolvedValue({
+      captures: [
+        captureFixture({
+          url: "https://docs.stripe.com/payments/checkout",
+          normalized_url: "https://docs.stripe.com/payments/checkout",
+          title: "Stripe Checkout documentation",
+          domain: "docs.stripe.com",
+          description: "Use Checkout to accept payments with API parameters, webhooks, and error handling.",
+          readable_text: "Install the SDK, configure API keys, create a checkout session, handle webhooks, and test common errors.",
+          memory: memoryFixture({
+            summary: "Technical documentation for integrating Stripe Checkout with API parameters, SDK setup, and webhook troubleshooting.",
+            one_line_takeaway: "Stripe Checkout integration guide with API setup and error handling.",
+            key_points: ["Create a checkout session with API parameters.", "Handle webhooks and common errors."],
+            topics: ["api", "payments", "checkout"],
+            entities: ["Stripe"],
+            keywords: ["api", "sdk", "webhook", "error"],
+            status: "ready",
+            generated_at: "2026-07-14T02:41:00.000Z",
+          }),
+        }),
+      ],
+      total: 1,
+    });
+    listSkills.mockResolvedValue([
+      {
+        id: "skill-persisted",
+        workspace_id: "ws-test",
+        name: "Stripe Checkout 接入助手",
+        description: "根据项目栈生成接入步骤、请求示例、环境变量清单和常见错误排查。",
+        config: {
+          origin: { type: "browser_capture", capture_id: "capture-1" },
+          generation: { type: "browser_capture_skill_generation", status: "agent_refined" },
+        },
+        created_by: "user-1",
+        created_at: "2026-07-14T02:42:00.000Z",
+        updated_at: "2026-07-14T02:43:00.000Z",
+      },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
+    expect(screen.getByRole("link", { name: "Skill 库" })).toHaveAttribute("href", "/acme/skills");
+    expect(screen.getByRole("status")).toHaveTextContent("Skill 已生成并保存在 Skill 库。");
+    expect(screen.getByRole("link", { name: "打开 Skill：Stripe Checkout 接入助手" })).toHaveAttribute("href", "/acme/skills/skill-persisted");
+    expect(screen.queryByRole("link", { name: "打开 Mission" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "生成 Skill" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "已生成" })).toBeDisabled();
+    expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
   });
 
   it("falls back to the Didian icon when a capture favicon is missing or broken", async () => {

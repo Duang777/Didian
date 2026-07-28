@@ -24,6 +24,7 @@ import {
   Settings,
   LogOut,
   Plus,
+  Sparkles,
   Check,
   SquarePen,
   X,
@@ -109,6 +110,7 @@ type NavKey =
   | "chat"
   | "missions"
   | "atlas"
+  | "skills"
   | "system";
 
 // Static schema (key + icon) — labels resolved at render via useT("layout").
@@ -117,6 +119,7 @@ type NavLabelKey =
   | "chat"
   | "missions"
   | "atlas"
+  | "skills"
   | "system";
 
 const personalNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
@@ -127,6 +130,7 @@ const personalNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] 
 const workspaceNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
   { key: "missions", labelKey: "missions", icon: ListTodo },
   { key: "atlas", labelKey: "atlas", icon: Network },
+  { key: "skills", labelKey: "skills", icon: Sparkles },
 ];
 
 const configureNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [

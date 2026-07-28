@@ -8,6 +8,8 @@ import { browserCapturesOptions, useArchiveBrowserCapture, useCreateBrowserCaptu
 import { useWorkspaceId } from "@didian/core/hooks";
 import { issueKeys } from "@didian/core/issues/queries";
 import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
+import type { SkillSummary } from "@didian/core/types";
+import { skillListOptions, workspaceKeys } from "@didian/core/workspace/queries";
 import { Badge } from "@didian/ui/components/ui/badge";
 import { Button } from "@didian/ui/components/ui/button";
 import { DidianIcon } from "@didian/ui/components/common/didian-icon";
@@ -29,10 +31,13 @@ const personalSkillSuggestionLabel = "可生成个人 Skill";
 const generateSkillLabel = "生成 Skill";
 const keepAsKnowledgeLabel = "收藏为知识";
 const reduceSkillSuggestionsLabel = "少推荐";
-const skillDraftPendingToast = "已准备生成个人 Skill 草稿，真实生成会在下一阶段接入。";
+const skillGenerationQueuedToast = "Skill 生成任务已创建，本地 agent 会生成并写入 Skill 库。";
+const skillGenerationNoAgentToast = "Skill 生成任务已创建，当前没有可用 Codex agent。";
 const keepAsKnowledgeToast = "已保留为知识卡片";
 const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
 type InputUrlCollectionDecision = "saved" | "skipped";
+type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
+type SkillGenerationMission = { id?: string; href?: string; title?: string; skillHref: string; skillName: string; state: SkillGenerationState };
 
 export function AiInboxPage() {
   const wsId = useWorkspaceId();
@@ -42,6 +47,7 @@ export function AiInboxPage() {
   const [captureState, setCaptureState] = useState<Extract<BrowserCaptureMemoryState, "active" | "archived">>("active");
   const [captureQuery, setCaptureQuery] = useState("");
   const [createdMission, setCreatedMission] = useState<{ id: string; href: string; title: string; state: "created" | "duplicate" } | null>(null);
+  const [skillGenerationMissions, setSkillGenerationMissions] = useState<Record<string, SkillGenerationMission>>({});
   const [createError, setCreateError] = useState<string | null>(null);
   const [collectPromptUrls, setCollectPromptUrls] = useState<string[]>([]);
   const trimmedCaptureQuery = captureQuery.trim();
@@ -49,7 +55,9 @@ export function AiInboxPage() {
   const fallbackUnderstanding = useMemo(() => inferAiUnderstanding(input), [input]);
   const inputUrls = useMemo(() => extractInputUrls(input), [input]);
   const createMission = useMutation({ mutationFn: api.createAiInboxMission });
+  const createSkillGenerationMission = useMutation({ mutationFn: api.createBrowserCaptureSkillGenerationMission });
   const createBrowserCapture = useCreateBrowserCapture();
+  const skillsQuery = useQuery(skillListOptions(wsId));
   const capturesQuery = useQuery({
     ...browserCapturesOptions(wsId, { limit: 12, offset: 0, state: captureState, q: trimmedCaptureQuery || undefined }),
     refetchInterval: 5_000,
@@ -60,6 +68,7 @@ export function AiInboxPage() {
     () => (capturesQuery.data?.captures ?? []).map(browserCaptureRecordToInboxInput),
     [capturesQuery.data?.captures],
   );
+  const skillsByCaptureId = useMemo(() => buildBrowserCaptureSkillMap(skillsQuery.data, workspaceSlug), [skillsQuery.data, workspaceSlug]);
   const captureColumns = useMemo(() => splitIntoColumns(inboxInputs, 2), [inboxInputs]);
   const canCreateMission = trimmedInput.length > 0;
   const understanding: AiUnderstanding = fallbackUnderstanding;
@@ -111,6 +120,50 @@ export function AiInboxPage() {
 
   function refreshMissionQueries() {
     queryClient.invalidateQueries({ queryKey: issueKeys.all(wsId) });
+  }
+
+  async function handleGenerateSkill(item: AiInboxInput) {
+    if (!item.captureId || createSkillGenerationMission.isPending) return;
+    try {
+      const mission = await createSkillGenerationMission.mutateAsync(item.captureId);
+      if (!mission.issue.id) {
+        throw new Error("创建 Skill 生成任务失败：服务端没有返回 Mission ID");
+      }
+      refreshMissionQueries();
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.skills(wsId) });
+      setSkillGenerationMissions((prev) => ({
+        ...prev,
+        [item.captureId!]: {
+          id: mission.issue.id,
+          href: paths.workspace(workspaceSlug).issueDetail(mission.issue.id),
+          title: mission.issue.title,
+          skillHref: paths.workspace(workspaceSlug).skillDetail(mission.skill.id),
+          skillName: mission.skill.name,
+          state: mission.planningStatus === "existing" ? skillGenerationStateForSkill(mission.skill) : "created",
+        },
+      }));
+      toast.success(mission.planningStatus === "queued" ? skillGenerationQueuedToast : mission.planningStatus === "existing" ? "Skill 已在 Skill 库中，已打开现有生成任务入口。" : skillGenerationNoAgentToast);
+    } catch (err) {
+      const duplicate = parseDuplicateIssueError(err);
+      if (duplicate) {
+        refreshMissionQueries();
+        setSkillGenerationMissions((prev) => ({
+          ...prev,
+          [item.captureId!]: {
+            id: duplicate.issue.id,
+            href: paths.workspace(workspaceSlug).issueDetail(duplicate.issue.id),
+            title: duplicate.issue.title,
+            skillHref: paths.workspace(workspaceSlug).skills(),
+            skillName: item.skillOpportunity?.proposedTitle ?? "Skill",
+            state: "duplicate",
+          },
+        }));
+        toast.error("已有相同的 active Skill 生成任务，可从卡片打开。");
+        return;
+      }
+      const message = err instanceof Error && err.message ? err.message : "创建 Skill 生成任务失败";
+      toast.error(message);
+    }
   }
 
   async function handleCollectPromptConfirm() {
@@ -199,21 +252,30 @@ export function AiInboxPage() {
               className="pl-8"
             />
           </div>
-          <div className="inline-flex h-8 shrink-0 overflow-hidden rounded-lg border bg-background p-0.5">
-            <button
-              type="button"
-              onClick={() => setCaptureState("active")}
-              className={captureState === "active" ? "rounded-md bg-muted px-3 text-xs font-medium text-foreground" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
+          <div className="flex shrink-0 items-center gap-2">
+            <a
+              href={paths.workspace(workspaceSlug).skills()}
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              Active
-            </button>
-            <button
-              type="button"
-              onClick={() => setCaptureState("archived")}
-              className={captureState === "archived" ? "rounded-md bg-muted px-3 text-xs font-medium text-foreground" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
-            >
-              Archived
-            </button>
+              <Sparkles className="size-3.5" />
+              Skill 库
+            </a>
+            <div className="inline-flex h-8 overflow-hidden rounded-lg border bg-background p-0.5">
+              <button
+                type="button"
+                onClick={() => setCaptureState("active")}
+                className={captureState === "active" ? "rounded-md bg-muted px-3 text-xs font-medium text-foreground" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
+              >
+                Active
+              </button>
+              <button
+                type="button"
+                onClick={() => setCaptureState("archived")}
+                className={captureState === "archived" ? "rounded-md bg-muted px-3 text-xs font-medium text-foreground" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
+              >
+                Archived
+              </button>
+            </div>
           </div>
         </div>
         {capturesQuery.isLoading ? (
@@ -239,7 +301,14 @@ export function AiInboxPage() {
             {captureColumns.map((column, columnIndex) => (
               <div key={columnIndex} className="grid gap-3">
                 {column.map((item) => (
-                  <BrowserCaptureCard key={item.id} item={item} archivedView={captureState === "archived"} />
+                  <BrowserCaptureCard
+                    key={item.id}
+                    item={item}
+                    archivedView={captureState === "archived"}
+                    skillGenerationMission={item.captureId ? skillGenerationMissions[item.captureId] ?? skillsByCaptureId.get(item.captureId) : undefined}
+                    isGeneratingSkill={createSkillGenerationMission.isPending && createSkillGenerationMission.variables === item.captureId}
+                    onGenerateSkill={handleGenerateSkill}
+                  />
                 ))}
               </div>
             ))}
@@ -276,7 +345,19 @@ export function AiInboxPage() {
   );
 }
 
-function BrowserCaptureCard({ item, archivedView }: { item: AiInboxInput; archivedView: boolean }) {
+function BrowserCaptureCard({
+  item,
+  archivedView,
+  skillGenerationMission,
+  isGeneratingSkill,
+  onGenerateSkill,
+}: {
+  item: AiInboxInput;
+  archivedView: boolean;
+  skillGenerationMission?: SkillGenerationMission;
+  isGeneratingSkill: boolean;
+  onGenerateSkill: (item: AiInboxInput) => void;
+}) {
   const status = browserCaptureStatusView(item);
   const StatusIcon = status.icon;
   const archiveMutation = useArchiveBrowserCapture();
@@ -328,7 +409,12 @@ function BrowserCaptureCard({ item, archivedView }: { item: AiInboxInput; archiv
         )}
       </a>
       {item.skillOpportunity?.shouldSuggest && (
-        <SkillOpportunityPanel opportunity={item.skillOpportunity} />
+        <SkillOpportunityPanel
+          opportunity={item.skillOpportunity}
+          mission={skillGenerationMission}
+          isGenerating={isGeneratingSkill}
+          onGenerate={() => onGenerateSkill(item)}
+        />
       )}
       {captureId && (
         <div className="border-t px-3 py-2">
@@ -349,7 +435,17 @@ function BrowserCaptureCard({ item, archivedView }: { item: AiInboxInput; archiv
   );
 }
 
-function SkillOpportunityPanel({ opportunity }: { opportunity: SkillOpportunity }) {
+function SkillOpportunityPanel({
+  opportunity,
+  mission,
+  isGenerating,
+  onGenerate,
+}: {
+  opportunity: SkillOpportunity;
+  mission?: SkillGenerationMission;
+  isGenerating: boolean;
+  onGenerate: () => void;
+}) {
   return (
     <div className="border-t bg-muted/20 px-3 py-3">
       <div className="flex items-start gap-2">
@@ -374,10 +470,11 @@ function SkillOpportunityPanel({ opportunity }: { opportunity: SkillOpportunity 
               type="button"
               size="sm"
               className="h-7 px-2 text-xs"
-              onClick={() => toast.success(skillDraftPendingToast)}
+              disabled={isGenerating || Boolean(mission)}
+              onClick={onGenerate}
             >
-              <Sparkles className="size-3.5" />
-              {generateSkillLabel}
+              {isGenerating ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+              {skillActionLabel({ isGenerating, mission })}
             </Button>
             <Button
               type="button"
@@ -398,10 +495,69 @@ function SkillOpportunityPanel({ opportunity }: { opportunity: SkillOpportunity 
               {reduceSkillSuggestionsLabel}
             </Button>
           </div>
+          {mission && (
+            <div className="mt-2 rounded-md border border-emerald-500/30 bg-background px-2.5 py-2 text-xs text-emerald-800 dark:text-emerald-200" role="status">
+              {skillStatusText(mission)}
+              <a href={mission.skillHref} className="ml-1 font-medium underline underline-offset-2">
+                打开 Skill：{mission.skillName}
+              </a>
+              {mission.href && (
+                <a href={mission.href} className="ml-2 font-medium underline underline-offset-2">
+                  打开 Mission
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+function buildBrowserCaptureSkillMap(skills: SkillSummary[] | undefined, workspaceSlug: string): Map<string, SkillGenerationMission> {
+  const map = new Map<string, SkillGenerationMission>();
+  for (const skill of skills ?? []) {
+    const captureID = skillOriginCaptureId(skill);
+    if (!captureID) continue;
+    map.set(captureID, {
+      skillHref: paths.workspace(workspaceSlug).skillDetail(skill.id),
+      skillName: skill.name,
+      state: skillGenerationStateForSkill(skill),
+    });
+  }
+  return map;
+}
+
+function skillOriginCaptureId(skill: SkillSummary): string | null {
+  const origin = recordValue(skill.config, "origin");
+  const captureID = origin ? recordValue(origin, "capture_id") : null;
+  return typeof captureID === "string" && captureID ? captureID : null;
+}
+
+function skillGenerationStateForSkill(skill: Pick<SkillSummary, "config">): SkillGenerationState {
+  const generation = recordValue(skill.config, "generation");
+  const status = generation ? recordValue(generation, "status") : null;
+  return status === "agent_refined" ? "generated" : "draft";
+}
+
+function recordValue(value: unknown, key: string): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return (value as Record<string, unknown>)[key];
+}
+
+function skillActionLabel({ isGenerating, mission }: { isGenerating: boolean; mission?: SkillGenerationMission }) {
+  if (isGenerating) return "创建中";
+  if (!mission) return generateSkillLabel;
+  if (mission.state === "generated") return "已生成";
+  if (mission.state === "draft") return "生成中";
+  return "已创建";
+}
+
+function skillStatusText(mission: SkillGenerationMission) {
+  if (mission.state === "generated") return "Skill 已生成并保存在 Skill 库。";
+  if (mission.state === "draft") return "Skill 已创建，等待本地 agent 完善。";
+  if (mission.state === "duplicate") return "Skill 已在库中，并找到已有生成任务。";
+  return "Skill 已写入库，本地 agent 的完善任务已创建。";
 }
 
 function formatSkillOpportunityPageType(pageType: SkillOpportunity["pageType"]): string {

@@ -106,6 +106,7 @@ vi.mock("@didian/core/paths", () => ({
     chat: () => "/acme/chat",
     missions: () => "/acme/missions",
     atlas: () => "/acme/atlas",
+    skills: () => "/acme/skills",
     aiStudio: () => "/acme/ai-studio",
     autopilot: () => "/acme/autopilot",
     system: () => "/acme/system",
@@ -325,6 +326,7 @@ describe("workspace IA nav", () => {
     expect(container.querySelector('button[data-href="/acme/ai-inbox"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/missions"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/atlas"]')).not.toBeNull();
+    expect(container.querySelector('button[data-href="/acme/skills"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/system"]')).not.toBeNull();
   });
 
@@ -342,7 +344,6 @@ describe("workspace IA nav", () => {
     expect(container.querySelector('button[data-href="/acme/issues"]')).toBeNull();
     expect(container.querySelector('button[data-href="/acme/projects"]')).toBeNull();
     expect(container.querySelector('button[data-href="/acme/agents"]')).toBeNull();
-    expect(container.querySelector('button[data-href="/acme/skills"]')).toBeNull();
     expect(container.querySelector('button[data-href="/acme/squads"]')).toBeNull();
     expect(container.querySelector('button[data-href="/acme/runtimes"]')).toBeNull();
     expect(container.querySelector('button[data-href="/acme/usage"]')).toBeNull();
