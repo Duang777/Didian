@@ -41,11 +41,13 @@
 - [x] Task 7: core types/client/query hooks。
 - [x] Task 8: Mission detail 渲染 Used Skills。
 - [x] Task 9: Mission detail 支持添加/移除 planned Skill 的第一版入口。
+- [x] Task 10: 已生成 Skill 的收藏卡片支持创建并绑定 Mission。
 
 ### Checkpoint: Complete
 
 - [x] `pnpm --filter @didian/core typecheck`
 - [x] `pnpm --filter @didian/views test -- issue-detail`
+- [x] `pnpm --filter @didian/views test -- ai-inbox-page`
 - [x] `pnpm --filter @didian/views typecheck`
 - [x] Mission/Issue 详情页能看到 Used Skills 区块。
 

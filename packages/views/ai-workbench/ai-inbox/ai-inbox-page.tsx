@@ -37,7 +37,8 @@ const keepAsKnowledgeToast = "已保留为知识卡片";
 const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
 type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
-type SkillGenerationMission = { id?: string; href?: string; title?: string; skillHref: string; skillName: string; state: SkillGenerationState };
+type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
+type SkillUsageMission = { id: string; href: string; title: string };
 
 export function AiInboxPage() {
   const wsId = useWorkspaceId();
@@ -48,6 +49,7 @@ export function AiInboxPage() {
   const [captureQuery, setCaptureQuery] = useState("");
   const [createdMission, setCreatedMission] = useState<{ id: string; href: string; title: string; state: "created" | "duplicate" } | null>(null);
   const [skillGenerationMissions, setSkillGenerationMissions] = useState<Record<string, SkillGenerationMission>>({});
+  const [skillUsageMissions, setSkillUsageMissions] = useState<Record<string, SkillUsageMission>>({});
   const [createError, setCreateError] = useState<string | null>(null);
   const [collectPromptUrls, setCollectPromptUrls] = useState<string[]>([]);
   const trimmedCaptureQuery = captureQuery.trim();
@@ -55,6 +57,27 @@ export function AiInboxPage() {
   const fallbackUnderstanding = useMemo(() => inferAiUnderstanding(input), [input]);
   const inputUrls = useMemo(() => extractInputUrls(input), [input]);
   const createMission = useMutation({ mutationFn: api.createAiInboxMission });
+  const createSkillUsageMission = useMutation({
+    mutationFn: async ({ item, mission }: { item: AiInboxInput; mission: SkillGenerationMission }) => {
+      if (!item.captureId || !mission.skillId) {
+        throw new Error("缺少收藏或 Skill 信息");
+      }
+      const created = await api.createAiInboxMission({
+        title: skillUsageMissionTitle(item, mission),
+        description: skillUsageMissionDescription(item, mission),
+        understanding: inferAiUnderstanding(`${item.title}\n${item.preview}\n${item.sourceUrl}`),
+      });
+      if (!created.issue.id) {
+        throw new Error("创建 Mission 失败：服务端没有返回 Mission ID");
+      }
+      await api.addIssueSkill(created.issue.id, {
+        skill_id: mission.skillId,
+        source: "capture_origin",
+        reason: `Created from browser capture: ${item.title}`,
+      });
+      return created.issue;
+    },
+  });
   const createSkillGenerationMission = useMutation({ mutationFn: api.createBrowserCaptureSkillGenerationMission });
   const createBrowserCapture = useCreateBrowserCapture();
   const skillsQuery = useQuery(skillListOptions(wsId));
@@ -137,6 +160,7 @@ export function AiInboxPage() {
           id: mission.issue.id,
           href: paths.workspace(workspaceSlug).issueDetail(mission.issue.id),
           title: mission.issue.title,
+          skillId: mission.skill.id,
           skillHref: paths.workspace(workspaceSlug).skillDetail(mission.skill.id),
           skillName: mission.skill.name,
           state: mission.planningStatus === "existing" ? skillGenerationStateForSkill(mission.skill) : "created",
@@ -153,6 +177,7 @@ export function AiInboxPage() {
             id: duplicate.issue.id,
             href: paths.workspace(workspaceSlug).issueDetail(duplicate.issue.id),
             title: duplicate.issue.title,
+            skillId: undefined,
             skillHref: paths.workspace(workspaceSlug).skills(),
             skillName: item.skillOpportunity?.proposedTitle ?? "Skill",
             state: "duplicate",
@@ -162,6 +187,41 @@ export function AiInboxPage() {
         return;
       }
       const message = err instanceof Error && err.message ? err.message : "创建 Skill 生成任务失败";
+      toast.error(message);
+    }
+  }
+
+  async function handleUseGeneratedSkill(item: AiInboxInput, mission: SkillGenerationMission) {
+    if (!item.captureId || !mission.skillId || createSkillUsageMission.isPending) return;
+    try {
+      const issue = await createSkillUsageMission.mutateAsync({ item, mission });
+      refreshMissionQueries();
+      queryClient.invalidateQueries({ queryKey: issueKeys.skills(issue.id) });
+      setSkillUsageMissions((prev) => ({
+        ...prev,
+        [item.captureId!]: {
+          id: issue.id,
+          href: paths.workspace(workspaceSlug).issueDetail(issue.id),
+          title: issue.title,
+        },
+      }));
+      toast.success("Mission 已创建，并已绑定这个 Skill");
+    } catch (err) {
+      const duplicate = parseDuplicateIssueError(err);
+      if (duplicate && item.captureId) {
+        refreshMissionQueries();
+        setSkillUsageMissions((prev) => ({
+          ...prev,
+          [item.captureId!]: {
+            id: duplicate.issue.id,
+            href: paths.workspace(workspaceSlug).issueDetail(duplicate.issue.id),
+            title: duplicate.issue.title,
+          },
+        }));
+        toast.error("已有相同的 active Mission，可从卡片打开。");
+        return;
+      }
+      const message = err instanceof Error && err.message ? err.message : "创建 Mission 失败";
       toast.error(message);
     }
   }
@@ -306,8 +366,11 @@ export function AiInboxPage() {
                     item={item}
                     archivedView={captureState === "archived"}
                     skillGenerationMission={item.captureId ? skillGenerationMissions[item.captureId] ?? skillsByCaptureId.get(item.captureId) : undefined}
+                    skillUsageMission={item.captureId ? skillUsageMissions[item.captureId] : undefined}
                     isGeneratingSkill={createSkillGenerationMission.isPending && createSkillGenerationMission.variables === item.captureId}
+                    isCreatingSkillMission={createSkillUsageMission.isPending && createSkillUsageMission.variables?.item.captureId === item.captureId}
                     onGenerateSkill={handleGenerateSkill}
+                    onUseGeneratedSkill={handleUseGeneratedSkill}
                   />
                 ))}
               </div>
@@ -349,14 +412,20 @@ function BrowserCaptureCard({
   item,
   archivedView,
   skillGenerationMission,
+  skillUsageMission,
   isGeneratingSkill,
+  isCreatingSkillMission,
   onGenerateSkill,
+  onUseGeneratedSkill,
 }: {
   item: AiInboxInput;
   archivedView: boolean;
   skillGenerationMission?: SkillGenerationMission;
+  skillUsageMission?: SkillUsageMission;
   isGeneratingSkill: boolean;
+  isCreatingSkillMission: boolean;
   onGenerateSkill: (item: AiInboxInput) => void;
+  onUseGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
 }) {
   const status = browserCaptureStatusView(item);
   const StatusIcon = status.icon;
@@ -412,8 +481,11 @@ function BrowserCaptureCard({
         <SkillOpportunityPanel
           opportunity={item.skillOpportunity}
           mission={skillGenerationMission}
+          skillUsageMission={skillUsageMission}
           isGenerating={isGeneratingSkill}
+          isCreatingSkillMission={isCreatingSkillMission}
           onGenerate={() => onGenerateSkill(item)}
+          onUseGeneratedSkill={skillGenerationMission ? () => onUseGeneratedSkill(item, skillGenerationMission) : undefined}
         />
       )}
       {captureId && (
@@ -438,14 +510,21 @@ function BrowserCaptureCard({
 function SkillOpportunityPanel({
   opportunity,
   mission,
+  skillUsageMission,
   isGenerating,
+  isCreatingSkillMission,
   onGenerate,
+  onUseGeneratedSkill,
 }: {
   opportunity: SkillOpportunity;
   mission?: SkillGenerationMission;
+  skillUsageMission?: SkillUsageMission;
   isGenerating: boolean;
+  isCreatingSkillMission: boolean;
   onGenerate: () => void;
+  onUseGeneratedSkill?: () => void;
 }) {
+  const canUseGeneratedSkill = Boolean(mission?.skillId && onUseGeneratedSkill);
   return (
     <div className="border-t bg-muted/20 px-3 py-3">
       <div className="flex items-start gap-2">
@@ -476,6 +555,19 @@ function SkillOpportunityPanel({
               {isGenerating ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
               {skillActionLabel({ isGenerating, mission })}
             </Button>
+            {canUseGeneratedSkill && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs"
+                disabled={isCreatingSkillMission}
+                onClick={onUseGeneratedSkill}
+              >
+                {isCreatingSkillMission ? <Loader2 className="size-3.5 animate-spin" /> : <SendHorizontal className="size-3.5" />}
+                {isCreatingSkillMission ? "创建中" : "用 Skill 创建 Mission"}
+              </Button>
+            )}
             <Button
               type="button"
               size="sm"
@@ -506,6 +598,14 @@ function SkillOpportunityPanel({
                   打开 Mission
                 </a>
               )}
+              {skillUsageMission && (
+                <span className="ml-2">
+                  Mission 已创建并绑定 Skill。
+                  <a href={skillUsageMission.href} className="ml-1 font-medium underline underline-offset-2">
+                    打开 Mission：{skillUsageMission.title}
+                  </a>
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -520,6 +620,7 @@ function buildBrowserCaptureSkillMap(skills: SkillSummary[] | undefined, workspa
     const captureID = skillOriginCaptureId(skill);
     if (!captureID) continue;
     map.set(captureID, {
+      skillId: skill.id,
       skillHref: paths.workspace(workspaceSlug).skillDetail(skill.id),
       skillName: skill.name,
       state: skillGenerationStateForSkill(skill),
@@ -558,6 +659,28 @@ function skillStatusText(mission: SkillGenerationMission) {
   if (mission.state === "draft") return "Skill 已创建，等待本地 agent 完善。";
   if (mission.state === "duplicate") return "Skill 已在库中，并找到已有生成任务。";
   return "Skill 已写入库，本地 agent 的完善任务已创建。";
+}
+
+function skillUsageMissionTitle(item: AiInboxInput, mission: Pick<SkillGenerationMission, "skillName">) {
+  return truncateTitle(`用 ${mission.skillName}处理 ${item.title}`);
+}
+
+function skillUsageMissionDescription(item: AiInboxInput, mission: SkillGenerationMission) {
+  return [
+    `从收藏网页创建 Mission，并绑定 Skill：${mission.skillName}。`,
+    "",
+    "## 收藏网页",
+    `- 标题：${item.title}`,
+    `- URL：${item.sourceUrl}`,
+    item.preview ? `- 摘要：${item.preview}` : null,
+    "",
+    "## 已绑定 Skill",
+    `- ${mission.skillName}`,
+    mission.skillId ? `- Skill ID：${mission.skillId}` : null,
+    "",
+    "## 任务目标",
+    "使用这个 Skill 处理收藏网页里的信息，生成可执行的下一步建议或交付物。",
+  ].filter((line): line is string => line !== null).join("\n");
 }
 
 function formatSkillOpportunityPageType(pageType: SkillOpportunity["pageType"]): string {

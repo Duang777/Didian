@@ -115,6 +115,29 @@
 
 **规模预估：** M
 
+### Task MS-6：收藏卡片用已生成 Skill 创建 Mission
+
+**描述：** 当收藏网页已经沉淀为平台 Skill 后，在收藏卡片提供 `用 Skill 创建 Mission`，创建 Mission 后立即把该 Skill 以 `capture_origin` 绑定到 Mission。
+
+**验收标准：**
+- [x] 已生成 Skill 的收藏卡片显示 `打开 Skill`。
+- [x] 已生成 Skill 不再重复触发生成任务。
+- [x] 用户能从收藏卡片创建 Mission。
+- [x] 创建成功后调用 Mission Skill Usage API 绑定 Skill。
+- [x] 卡片展示已创建并绑定的 Mission 链接。
+
+**验证：**
+- [x] `pnpm --filter @didian/views test -- ai-inbox-page`
+- [x] `pnpm --filter @didian/views typecheck`
+
+**依赖：** MS-5
+
+**可能触及文件：**
+- `packages/views/ai-workbench/ai-inbox/ai-inbox-page.tsx`
+- `packages/views/ai-workbench/ai-inbox/ai-inbox-page.test.tsx`
+
+**规模预估：** S
+
 ## 2026-07-14 Runtime-first 更新
 
 最新产品和技术方案以 `docs/ai-resource-workbench/01-product-requirements.md`、`02-technical-plan.md`、`03-implementation-review.md`、`04-browser-memory-bookmarks.md` 为准。第一版主线收敛为：

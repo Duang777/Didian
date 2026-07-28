@@ -169,6 +169,23 @@ Mission 详情页提供第一版手动选择入口：
 
 This keeps the first UX intentionally simple: users decide which Skill a Mission should use before the next local runtime claim. The system does not silently attach generated Skills yet.
 
+### Browser Capture Generated Skill CTA
+
+Once a browser capture has a generated platform Skill, the capture card becomes an entry point into Mission execution:
+
+- The card reads Skill provenance from `skill.config.origin.capture_id`.
+- The primary generation button stays disabled as `已生成` instead of offering duplicate generation.
+- The card shows `打开 Skill`.
+- The card exposes `用 Skill 创建 Mission` when the mapped Skill has a concrete `skill_id`.
+- Clicking it creates a Mission from the capture title, URL, preview and Skill name.
+- After the Mission is created, the client calls `POST /api/issues/{issueId}/skills` with:
+  - `skill_id`: generated Skill id
+  - `source`: `capture_origin`
+  - `reason`: `Created from browser capture: {capture title}`
+- Success shows the created Mission link in the same card status block.
+
+This completes the MVP path: browser capture -> generated Skill -> Mission selected Skill -> local runtime injection on claim.
+
 ## 7. Runtime Injection Contract
 
 When daemon claims a task:
