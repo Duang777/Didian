@@ -74,7 +74,8 @@ export function squadMemberStatusOptions(wsId: string, squadId: string) {
 export function skillListOptions(wsId: string) {
   return queryOptions({
     queryKey: workspaceKeys.skills(wsId),
-    queryFn: () => api.listSkills(),
+    queryFn: () => api.listSkills({ workspace_id: wsId }),
+    enabled: !!wsId,
   });
 }
 

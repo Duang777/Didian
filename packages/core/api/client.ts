@@ -1773,8 +1773,11 @@ export class ApiClient {
   }
 
   // Skills
-  async listSkills(): Promise<SkillSummary[]> {
-    return this.fetch("/api/skills");
+  async listSkills(params?: { workspace_id?: string }): Promise<SkillSummary[]> {
+    const search = new URLSearchParams();
+    if (params?.workspace_id) search.set("workspace_id", params.workspace_id);
+    const query = search.toString();
+    return this.fetch(`/api/skills${query ? `?${query}` : ""}`);
   }
 
   async getSkill(id: string): Promise<Skill> {
