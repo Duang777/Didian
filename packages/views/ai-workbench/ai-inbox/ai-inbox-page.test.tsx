@@ -294,10 +294,17 @@ describe("AiInboxPage browser captures", () => {
 
     expect(screen.getByRole("dialog", { name: "确认 Skill 方向" })).toBeInTheDocument();
     expect(screen.getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 接入助手");
-    expect(screen.getByLabelText("主要用途")).toHaveValue("根据项目栈生成接入步骤、请求示例、环境变量清单和常见错误排查。");
+    expect(screen.getByText("先定 Skill 方向")).toBeInTheDocument();
+    expect(screen.getByText("复用流程")).toBeInTheDocument();
+    expect(screen.getByText("指令密度")).toBeInTheDocument();
+    expect(screen.getByLabelText("主要用途")).toHaveValue("当我需要把 Stripe Checkout 接入真实项目时，用它根据项目栈生成落地步骤、代码示例、环境变量清单和验收检查。");
+    expect(screen.getByLabelText("能力描述")).toHaveValue("把 Stripe Checkout 的技术文档沉淀成项目接入流程，覆盖配置、示例、验证、错误处理和上线前检查。");
     expect(screen.getByText("生成前先确认方向，之后交给本地 Codex 完善并写入 Skill 库。")).toBeInTheDocument();
     expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
 
+    await user.click(screen.getByRole("button", { name: /排障修复/ }));
+    expect(screen.getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 排障助手");
+    expect(screen.getByLabelText("期望输出")).toHaveValue("可能原因排序\n验证命令\n修复步骤\n回归检查清单");
     await user.clear(screen.getByLabelText("主要用途"));
     await user.type(screen.getByLabelText("主要用途"), "帮我把 Stripe Checkout 文档沉淀成项目接入和 webhook 排障流程。");
     await user.click(screen.getByRole("button", { name: "交给 Codex 生成" }));
@@ -305,10 +312,11 @@ describe("AiInboxPage browser captures", () => {
     await waitFor(() => expect(createBrowserCaptureSkillGenerationMission.mock.calls[0]?.[0]).toBe("capture-1"));
     expect(createBrowserCaptureSkillGenerationMission.mock.calls[0]?.[1]).toEqual(expect.objectContaining({
       direction: expect.objectContaining({
-        title: "Stripe Checkout 接入助手",
+        title: "Stripe Checkout 排障助手",
         primaryUseCase: "帮我把 Stripe Checkout 文档沉淀成项目接入和 webhook 排障流程。",
-        expectedInputs: ["项目栈", "集成目标", "错误信息或现有代码"],
-        expectedOutputs: ["接入步骤", "示例代码", "错误排查清单"],
+        expectedInputs: ["错误信息或日志", "当前配置", "运行环境", "已尝试步骤"],
+        expectedOutputs: ["可能原因排序", "验证命令", "修复步骤", "回归检查清单"],
+        notes: expect.stringContaining("方向：排障修复"),
       }),
     }));
     expect(toastSuccess).toHaveBeenCalledWith("Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。");

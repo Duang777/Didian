@@ -42,8 +42,10 @@ type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
 type SkillUsageMission = { id: string; href: string; title: string };
 type SkillDeleteTarget = { captureId: string; mission: SkillGenerationMission };
+type SkillDirectionMode = "adoption_review" | "integration_setup" | "troubleshooting" | "learning_runbook";
 type SkillDirectionDraft = {
   item: AiInboxInput;
+  mode: SkillDirectionMode;
   title: string;
   capability: string;
   primaryUseCase: string;
@@ -51,6 +53,8 @@ type SkillDirectionDraft = {
   expectedInputs: string;
   expectedOutputs: string;
   boundaries: string;
+  targetContext: string;
+  successCriteria: string;
   notes: string;
 };
 
@@ -540,8 +544,28 @@ function SkillDirectionDialog({
           <div className="grid max-h-[65vh] gap-4 overflow-y-auto pr-1">
             <div className="rounded-md border bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
               <div className="font-medium text-foreground">平台自动评估</div>
-              <div className="mt-1">
-                这个收藏页有较高复用信号，适合先做成候选 Skill。请确认它真正要服务的重复任务，避免生成成泛泛摘要。
+              <div className="mt-1">{skillOpportunityAssessmentText(draft.item.skillOpportunity)}</div>
+              <SkillOpportunityEvidence opportunity={draft.item.skillOpportunity} />
+            </div>
+            <div className="grid gap-2">
+              <Label>先定 Skill 方向</Label>
+              <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Skill 方向">
+                {skillDirectionModeOptions(draft.item).map((option) => (
+                  <Button
+                    key={option.mode}
+                    type="button"
+                    variant={draft.mode === option.mode ? "default" : "outline"}
+                    className="h-auto justify-start whitespace-normal px-3 py-2 text-left"
+                    onClick={() => onChange(applySkillDirectionMode(draft, option.mode))}
+                  >
+                    <span className="grid gap-0.5">
+                      <span className="text-xs font-medium">{option.label}</span>
+                      <span className={draft.mode === option.mode ? "text-[11px] font-normal text-primary-foreground/80" : "text-[11px] font-normal text-muted-foreground"}>
+                        {option.description}
+                      </span>
+                    </span>
+                  </Button>
+                ))}
               </div>
             </div>
             <div className="grid gap-2">
@@ -560,6 +584,26 @@ function SkillDirectionDialog({
                 onChange={(event) => update({ primaryUseCase: event.target.value })}
                 className="min-h-20 resize-none text-sm"
               />
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="skill-direction-context">使用场景</Label>
+                <Textarea
+                  id="skill-direction-context"
+                  value={draft.targetContext}
+                  onChange={(event) => update({ targetContext: event.target.value })}
+                  className="min-h-20 resize-none text-sm"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="skill-direction-success">成功标准</Label>
+                <Textarea
+                  id="skill-direction-success"
+                  value={draft.successCriteria}
+                  onChange={(event) => update({ successCriteria: event.target.value })}
+                  className="min-h-20 resize-none text-sm"
+                />
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="skill-direction-capability">能力描述</Label>
@@ -911,22 +955,104 @@ function buildBrowserCaptureSkillMap(skills: SkillSummary[] | undefined, workspa
   return map;
 }
 
+function SkillOpportunityEvidence({ opportunity }: { opportunity: SkillOpportunity | null | undefined }) {
+  if (!opportunity) return null;
+  const scores = [
+    { label: "复用流程", value: opportunity.reusableWorkflowScore },
+    { label: "指令密度", value: opportunity.instructionDensityScore },
+    { label: "后续复用", value: opportunity.futureUseScore },
+  ];
+  return (
+    <div className="mt-3 grid gap-3">
+      <div className="grid gap-1.5 sm:grid-cols-3">
+        {scores.map((score) => (
+          <div key={score.label} className="rounded-md border bg-background px-2.5 py-2">
+            <div className="text-[11px] text-muted-foreground">{score.label}</div>
+            <div className="mt-0.5 font-medium text-foreground">{Math.round(score.value * 100)}%</div>
+          </div>
+        ))}
+      </div>
+      {opportunity.evidenceSnippets.length > 0 && (
+        <div className="grid gap-1">
+          <div className="text-[11px] font-medium text-foreground">证据片段</div>
+          <ul className="grid gap-1">
+            {opportunity.evidenceSnippets.slice(0, 3).map((snippet, index) => (
+              <li key={`${index}-${snippet}`} className="line-clamp-2 text-[11px] leading-5">
+                {snippet}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function skillOpportunityAssessmentText(opportunity: SkillOpportunity | null | undefined): string {
+  if (!opportunity) {
+    return "这个收藏页有一定复用信号。请确认它真正要服务的重复任务，避免生成成泛泛摘要。";
+  }
+  return `这个收藏被识别为 ${formatSkillOpportunityPageType(opportunity.pageType)}，推荐置信度 ${Math.round(opportunity.confidence * 100)}%。${opportunity.whyUseful}`;
+}
+
+function skillDirectionModeOptions(item: AiInboxInput): Array<{ mode: SkillDirectionMode; label: string; description: string }> {
+  const subject = skillDirectionSubject(item);
+  return [
+    {
+      mode: "adoption_review",
+      label: "选型尽调",
+      description: `判断 ${subject} 是否值得采用，输出取舍和风险。`,
+    },
+    {
+      mode: "integration_setup",
+      label: "接入落地",
+      description: `把 ${subject} 变成项目接入、配置和验证流程。`,
+    },
+    {
+      mode: "troubleshooting",
+      label: "排障修复",
+      description: `围绕 ${subject} 的错误、配置失败和集成问题排查。`,
+    },
+    {
+      mode: "learning_runbook",
+      label: "学习上手",
+      description: `把 ${subject} 整理成上手路线和练习检查单。`,
+    },
+  ];
+}
+
 function buildSkillDirectionDraft(item: AiInboxInput): SkillDirectionDraft {
-  const opportunity = item.skillOpportunity;
+  const mode = defaultSkillDirectionMode(item.skillOpportunity?.pageType);
+  const direction = skillDirectionPreset(item, mode);
   return {
     item,
-    title: opportunity?.proposedTitle ?? `${item.title} 助手`,
-    capability: opportunity?.proposedCapability ?? "把收藏网页沉淀成可重复使用的操作流程。",
-    primaryUseCase: opportunity?.proposedCapability ?? "把收藏网页沉淀成以后可以反复调用的个人工作流。",
-    triggerExamples: listToText(opportunity?.triggerExamples ?? [`使用 ${item.title} 处理当前任务`]),
-    expectedInputs: listToText(opportunity?.expectedInputs ?? ["任务背景", "当前上下文"]),
-    expectedOutputs: listToText(opportunity?.expectedOutputs ?? ["执行步骤", "检查清单", "风险提示"]),
-    boundaries: defaultSkillDirectionBoundaries(opportunity),
+    mode,
+    ...direction,
+    boundaries: defaultSkillDirectionBoundaries(item.skillOpportunity, mode),
+    targetContext: defaultSkillTargetContext(mode),
+    successCriteria: defaultSkillSuccessCriteria(mode),
     notes: "",
   };
 }
 
+function applySkillDirectionMode(draft: SkillDirectionDraft, mode: SkillDirectionMode): SkillDirectionDraft {
+  return {
+    ...draft,
+    mode,
+    ...skillDirectionPreset(draft.item, mode),
+    boundaries: defaultSkillDirectionBoundaries(draft.item.skillOpportunity, mode),
+    targetContext: defaultSkillTargetContext(mode),
+    successCriteria: defaultSkillSuccessCriteria(mode),
+  };
+}
+
 function skillDirectionFromDraft(draft: SkillDirectionDraft): BrowserCaptureSkillDirection {
+  const notes = [
+    `方向：${skillDirectionModeLabel(draft.mode)}`,
+    draft.targetContext.trim() ? `使用场景：${draft.targetContext.trim()}` : null,
+    draft.successCriteria.trim() ? `成功标准：${draft.successCriteria.trim()}` : null,
+    draft.notes.trim() ? `补充说明：${draft.notes.trim()}` : null,
+  ].filter((line): line is string => line !== null).join("\n");
   return {
     title: draft.title.trim(),
     capability: draft.capability.trim(),
@@ -935,14 +1061,92 @@ function skillDirectionFromDraft(draft: SkillDirectionDraft): BrowserCaptureSkil
     expectedInputs: linesToList(draft.expectedInputs),
     expectedOutputs: linesToList(draft.expectedOutputs),
     boundaries: draft.boundaries.trim(),
-    notes: draft.notes.trim() || undefined,
+    notes: notes || undefined,
   };
 }
 
-function defaultSkillDirectionBoundaries(opportunity: SkillOpportunity | null | undefined): string {
+function defaultSkillDirectionMode(pageType: SkillOpportunity["pageType"] | undefined): SkillDirectionMode {
+  if (pageType === "github_repo") return "adoption_review";
+  if (pageType === "tutorial") return "learning_runbook";
+  return "integration_setup";
+}
+
+function skillDirectionPreset(item: AiInboxInput, mode: SkillDirectionMode): Pick<SkillDirectionDraft, "title" | "capability" | "primaryUseCase" | "triggerExamples" | "expectedInputs" | "expectedOutputs"> {
+  const subject = skillDirectionSubject(item);
+  switch (mode) {
+    case "adoption_review":
+      return {
+        title: `${subject} 尽调助手`,
+        capability: `围绕 ${subject} 建立可重复的选型尽调流程，检查来源文档、安装方式、license、维护信号、集成成本和风险。`,
+        primaryUseCase: `当我收藏一个仓库或技术页面后，用它判断 ${subject} 是否适合当前项目采用，并给出 Adopt / Pilot / Defer / Reject 建议。`,
+        triggerExamples: listToText([`评估 ${subject} 是否适合我的项目`, `帮我做 ${subject} 采用前尽调`]),
+        expectedInputs: listToText(["项目背景", "技术栈", "采用目标", "评估关注点"]),
+        expectedOutputs: listToText(["采用建议", "证据摘要", "上手步骤", "风险清单", "替代方案"]),
+      };
+    case "troubleshooting":
+      return {
+        title: `${subject} 排障助手`,
+        capability: `把 ${subject} 的文档、常见错误和配置要求沉淀成排障流程，定位失败原因并给出修复步骤。`,
+        primaryUseCase: `当我在使用 ${subject} 遇到安装、配置、运行或集成错误时，用它快速收集上下文、定位问题并给出修复路径。`,
+        triggerExamples: listToText([`帮我排查 ${subject} 集成错误`, `根据日志定位 ${subject} 配置问题`]),
+        expectedInputs: listToText(["错误信息或日志", "当前配置", "运行环境", "已尝试步骤"]),
+        expectedOutputs: listToText(["可能原因排序", "验证命令", "修复步骤", "回归检查清单"]),
+      };
+    case "learning_runbook":
+      return {
+        title: `${subject} 上手助手`,
+        capability: `把 ${subject} 的教程和文档沉淀成循序渐进的学习、配置、练习和检查流程。`,
+        primaryUseCase: `当我想学习或快速上手 ${subject} 时，用它生成适合当前水平和项目目标的路线、练习和检查点。`,
+        triggerExamples: listToText([`带我上手 ${subject}`, `把 ${subject} 文档变成学习计划`]),
+        expectedInputs: listToText(["当前水平", "学习目标", "可投入时间", "项目背景"]),
+        expectedOutputs: listToText(["学习路线", "关键概念", "练习任务", "完成检查点"]),
+      };
+    case "integration_setup":
+    default:
+      return {
+        title: `${subject} 接入助手`,
+        capability: `把 ${subject} 的技术文档沉淀成项目接入流程，覆盖配置、示例、验证、错误处理和上线前检查。`,
+        primaryUseCase: `当我需要把 ${subject} 接入真实项目时，用它根据项目栈生成落地步骤、代码示例、环境变量清单和验收检查。`,
+        triggerExamples: listToText([`帮我接入 ${subject}`, `根据这份文档实现 ${subject}`]),
+        expectedInputs: listToText(["项目栈", "集成目标", "现有代码或配置", "错误信息"]),
+        expectedOutputs: listToText(["接入步骤", "示例代码", "配置清单", "测试步骤", "错误排查清单"]),
+      };
+  }
+}
+
+function skillDirectionSubject(item: AiInboxInput): string {
+  const title = item.skillOpportunity?.proposedTitle || item.title || "网页";
+  return title
+    .replace(/\s+(尽调|接入|配置|排障|上手|学习)助手(?:\s+\S+)?$/u, "")
+    .replace(/\s+/g, " ")
+    .trim() || item.title || "网页";
+}
+
+function skillDirectionModeLabel(mode: SkillDirectionMode): string {
+  if (mode === "adoption_review") return "选型尽调";
+  if (mode === "troubleshooting") return "排障修复";
+  if (mode === "learning_runbook") return "学习上手";
+  return "接入落地";
+}
+
+function defaultSkillTargetContext(mode: SkillDirectionMode): string {
+  if (mode === "adoption_review") return "个人或团队在引入新依赖、工具或服务前，需要快速判断是否值得采用。";
+  if (mode === "troubleshooting") return "本地开发、CI 或生产集成遇到错误，需要基于日志和配置快速定位问题。";
+  if (mode === "learning_runbook") return "用户希望把收藏页面变成可执行的学习路线，并能按检查点推进。";
+  return "真实项目准备接入这个技术、API、工具或服务，需要可执行步骤和验收标准。";
+}
+
+function defaultSkillSuccessCriteria(mode: SkillDirectionMode): string {
+  if (mode === "adoption_review") return "输出有证据链的采用建议，并明确风险、替代方案和下一步试点动作。";
+  if (mode === "troubleshooting") return "能给出可验证的原因排序、修复步骤和回归检查，避免只列泛泛建议。";
+  if (mode === "learning_runbook") return "能按阶段给出学习路径、练习任务和完成标准，避免只总结文章。";
+  return "能让 agent 按步骤完成接入、生成必要代码或配置，并给出测试和上线前检查。";
+}
+
+function defaultSkillDirectionBoundaries(opportunity: SkillOpportunity | null | undefined, mode: SkillDirectionMode): string {
   const riskNotes = opportunity?.riskNotes ?? [];
   return [
-    "不要只总结网页内容；要沉淀成 agent 可执行、可复用的 Skill。",
+    `不要只总结网页内容；要沉淀成 ${skillDirectionModeLabel(mode)} 方向的 agent 可执行、可复用 Skill。`,
     "必须保留来源 URL 和需要刷新来源信息的步骤。",
     ...riskNotes,
   ].join("\n");

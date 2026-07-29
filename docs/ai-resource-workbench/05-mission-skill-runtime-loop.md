@@ -112,11 +112,13 @@ type BrowserCaptureSkillDirection = {
 
 Rules:
 
-- 默认值来自自动评估的 `SkillOpportunity`。
-- 用户可以修改 Skill 名称和能力描述。
+- 默认值来自自动评估的 `SkillOpportunity`，但不能把推荐语原样复制成最终方向。
+- 前端必须展示推荐依据：页面类型、置信度、复用流程分、指令密度分、后续复用分和证据片段。
+- 用户必须先确认生成方向，再创建任务。MVP 支持四类方向：`选型尽调`、`接入落地`、`排障修复`、`学习上手`。
+- 用户可以修改 Skill 名称、主要用途、能力描述、输入、输出、边界、使用场景和成功标准。
 - 至少要有 `primaryUseCase`、`expectedInputs`、`expectedOutputs`。
 - `boundaries` 用来阻止 Codex 把 Skill 做成泛泛总结，例如：“不要只总结 README；要沉淀成接入/排障/尽调流程”。
-- 后端创建的 Skill 草稿和 Codex 生成 Mission 都必须引用这份 direction。
+- 后端创建的 Skill 草稿和 Codex 生成 Mission 都必须引用这份 direction，并把用户确认的方向、使用场景、成功标准写入 generation notes。
 
 ## 6. API Contract
 
@@ -246,6 +248,12 @@ This block is trusted platform metadata. Skill file contents remain user/workspa
 
 - If Skill generated: show `已生成 Skill`.
 - Show `打开 Skill`.
+- If generated from this capture: allow deleting the generated Skill from the card, then restore the card to `生成 Skill` so the user can retry the full direction-confirmation flow.
+- Generate flow:
+  1. Show Skill opportunity only after the platform evaluation passes confidence and evidence thresholds.
+  2. Clicking `生成 Skill` opens a confirmation dialog instead of creating a task immediately.
+  3. Dialog shows evaluation evidence and asks the user to choose the Skill direction.
+  4. Confirming creates/updates the Skill draft and queues the local Codex generation Mission.
 - Later: show `已用于 N 个 Mission`.
 
 ### Skill Library
