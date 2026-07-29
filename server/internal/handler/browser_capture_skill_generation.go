@@ -27,6 +27,12 @@ type CreateBrowserCaptureSkillGenerationMissionResponse struct {
 	PlanningAgentID *string       `json:"planningAgentId,omitempty"`
 }
 
+type CreateBrowserCaptureSkillDirectionMissionResponse struct {
+	Issue           IssueResponse `json:"issue"`
+	PlanningStatus  string        `json:"planningStatus"`
+	PlanningAgentID *string       `json:"planningAgentId,omitempty"`
+}
+
 type CreateBrowserCaptureSkillGenerationMissionRequest struct {
 	Direction BrowserCaptureSkillDirectionRequest `json:"direction"`
 }
@@ -40,6 +46,122 @@ type BrowserCaptureSkillDirectionRequest struct {
 	ExpectedOutputs []string `json:"expectedOutputs"`
 	Boundaries      string   `json:"boundaries"`
 	Notes           string   `json:"notes,omitempty"`
+}
+
+func (h *Handler) CreateBrowserCaptureSkillDirectionMission(w http.ResponseWriter, r *http.Request) {
+	workspaceID, ok := parseUUIDOrBadRequest(w, h.resolveWorkspaceID(r), "workspace id")
+	if !ok {
+		return
+	}
+	creatorID, ok := requireUserID(w, r)
+	if !ok {
+		return
+	}
+	creatorUUID, ok := parseUUIDOrBadRequest(w, creatorID, "creator id")
+	if !ok {
+		return
+	}
+	captureID, err := util.ParseUUID(chi.URLParam(r, "id"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid browser capture id")
+		return
+	}
+
+	capture, err := h.Queries.GetCapturedSourceInWorkspace(r.Context(), db.GetCapturedSourceInWorkspaceParams{
+		ID:          captureID,
+		WorkspaceID: workspaceID,
+	})
+	if err != nil {
+		writeError(w, http.StatusNotFound, "browser capture not found")
+		return
+	}
+
+	opportunity := skillOpportunityForCapture(capture)
+	if opportunity == nil || !opportunity.ShouldSuggest {
+		writeError(w, http.StatusUnprocessableEntity, "browser capture has no skill opportunity")
+		return
+	}
+
+	description := buildBrowserCaptureSkillDirectionMissionDescription(capture, opportunity)
+	if utf8.RuneCountInString(description) > maxAIInboxInputRunes {
+		description = truncateTrimmed(description, maxAIInboxInputRunes)
+	}
+
+	planningStatus := "no_codex_agent"
+	var planningAgentID *string
+	var assigneeType pgtype.Text
+	var assigneeID pgtype.UUID
+	if agent, err := h.Queries.FindOwnedOnlineCodexAgent(r.Context(), db.FindOwnedOnlineCodexAgentParams{
+		WorkspaceID: workspaceID,
+		OwnerID:     creatorUUID,
+	}); err == nil && agent.ID.Valid {
+		assigneeType = pgtype.Text{String: "agent", Valid: true}
+		assigneeID = agent.ID
+		id := uuidToString(agent.ID)
+		planningAgentID = &id
+		planningStatus = "queued"
+	}
+
+	prefix := h.getIssuePrefix(r.Context(), workspaceID)
+	res, err := h.IssueService.Create(r.Context(), service.IssueCreateParams{
+		WorkspaceID:    workspaceID,
+		Title:          truncateTrimmed("分析 Skill 方向："+capture.Title, 120),
+		Description:    strToText(description),
+		Status:         "todo",
+		Priority:       "none",
+		AssigneeType:   assigneeType,
+		AssigneeID:     assigneeID,
+		CreatorType:    "member",
+		CreatorID:      creatorUUID,
+		AttachmentIDs:  nil,
+		AllowDuplicate: false,
+	}, service.IssueCreateOpts{
+		ActorID:          creatorID,
+		AnalyticsAgentID: firstNonNilString(planningAgentID),
+		Platform:         func() string { p, _, _ := middleware.ClientMetadataFromContext(r.Context()); return p }(),
+		BroadcastPayload: func(issue db.Issue, atts []db.Attachment) map[string]any {
+			return map[string]any{"issue": issueToResponse(issue, prefix)}
+		},
+	})
+	if errors.Is(err, service.ErrActiveDuplicate) {
+		dup := *res.DuplicateIssue
+		queuedExisting := false
+		if assigneeID.Valid {
+			updated, queued, queueErr := h.queueExistingBrowserCaptureSkillMission(r, dup, assigneeID, creatorID)
+			if queueErr != nil {
+				slog.Warn("queue existing browser capture skill direction mission failed", append(logger.RequestAttrs(r), "error", queueErr, "workspace_id", uuidToString(workspaceID), "issue_id", uuidToString(dup.ID), "agent_id", uuidToString(assigneeID))...)
+				writeError(w, http.StatusInternalServerError, "failed to queue existing skill direction mission")
+				return
+			}
+			dup = updated
+			queuedExisting = queued
+		}
+		existingPlanningStatus := "existing"
+		var existingPlanningAgentID *string
+		if queuedExisting {
+			existingPlanningStatus = "queued"
+			existingPlanningAgentID = planningAgentID
+		} else if !assigneeID.Valid && !dup.AssigneeID.Valid {
+			existingPlanningStatus = "no_codex_agent"
+		}
+		writeJSON(w, http.StatusOK, CreateBrowserCaptureSkillDirectionMissionResponse{
+			Issue:           issueToResponse(dup, h.getIssuePrefix(r.Context(), dup.WorkspaceID)),
+			PlanningStatus:  existingPlanningStatus,
+			PlanningAgentID: existingPlanningAgentID,
+		})
+		return
+	}
+	if err != nil {
+		slog.Warn("create browser capture skill direction mission failed", append(logger.RequestAttrs(r), "error", err, "workspace_id", uuidToString(workspaceID), "capture_id", uuidToString(captureID))...)
+		writeError(w, http.StatusInternalServerError, "failed to create skill direction mission")
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, CreateBrowserCaptureSkillDirectionMissionResponse{
+		Issue:           issueToResponse(res.Issue, prefix),
+		PlanningStatus:  planningStatus,
+		PlanningAgentID: planningAgentID,
+	})
 }
 
 func (h *Handler) CreateBrowserCaptureSkillGenerationMission(w http.ResponseWriter, r *http.Request) {
@@ -357,6 +479,45 @@ func skillDirectionConfig(direction BrowserCaptureSkillDirectionRequest) map[str
 		"boundaries":      direction.Boundaries,
 		"notes":           direction.Notes,
 	}
+}
+
+func buildBrowserCaptureSkillDirectionMissionDescription(capture db.CapturedSource, opportunity *SkillOpportunityResponse) string {
+	var b strings.Builder
+	b.WriteString("请阅读这个收藏链接，判断它最适合沉淀成哪些具体的 Didian Skill 方向。此任务只做方向分析，不要创建或更新 Skill。\n\n")
+	b.WriteString("## 收藏来源\n")
+	b.WriteString(fmt.Sprintf("- Capture ID：%s\n", uuidToString(capture.ID)))
+	b.WriteString(fmt.Sprintf("- 标题：%s\n", capture.Title))
+	b.WriteString(fmt.Sprintf("- URL：%s\n", capture.Url))
+	b.WriteString(fmt.Sprintf("- 页面类型：%s\n", opportunity.PageType))
+	b.WriteString(fmt.Sprintf("- 平台初筛置信度：%.0f%%\n", opportunity.Confidence*100))
+	b.WriteString(fmt.Sprintf("- 平台初筛理由：%s\n\n", opportunity.WhyUseful))
+
+	appendSkillMissionExcerpt(&b, "页面描述", textToString(capture.Description), 700)
+	appendSkillMissionExcerpt(&b, "用户选中内容", textToString(capture.SelectedText), 1200)
+	appendSkillMissionExcerpt(&b, "页面正文摘录", textToString(capture.ReadableText), 5000)
+	appendSkillMissionList(&b, "平台证据片段", opportunity.EvidenceSnippets)
+	appendSkillMissionList(&b, "平台风险提示", opportunity.RiskNotes)
+
+	b.WriteString("## 请输出\n")
+	b.WriteString("请先基于链接内容和上面的页面摘录做判断，然后输出 2-3 个高质量 Skill 方向。每个方向必须包含：\n")
+	b.WriteString("- 方向名称：例如“选型尽调”“接入落地”“排障修复”“学习上手”，也可以提出更具体的方向。\n")
+	b.WriteString("- Skill 名称：面向用户日后直接调用的名称。\n")
+	b.WriteString("- 适用场景：什么任务会触发这个 Skill。\n")
+	b.WriteString("- 必要输入：用户或 agent 需要提供什么上下文。\n")
+	b.WriteString("- 期望输出：最终应该交付什么。\n")
+	b.WriteString("- 不要做：哪些泛化、过度承诺或失真内容要避免。\n")
+	b.WriteString("- 证据：引用你从页面里看到的具体信号，说明为什么这个方向成立。\n\n")
+	b.WriteString("## 输出格式\n")
+	b.WriteString("用中文回复，结构如下：\n\n")
+	b.WriteString("### 推荐方向 1：<方向名>\n")
+	b.WriteString("- Skill 名称：...\n")
+	b.WriteString("- 适用场景：...\n")
+	b.WriteString("- 必要输入：...\n")
+	b.WriteString("- 期望输出：...\n")
+	b.WriteString("- 不要做：...\n")
+	b.WriteString("- 页面证据：...\n\n")
+	b.WriteString("最后给出你的首选方向，并列出需要问用户确认的 1-3 个问题。")
+	return b.String()
 }
 
 func buildBrowserCaptureSkillMissionDescription(capture db.CapturedSource, opportunity *SkillOpportunityResponse, direction BrowserCaptureSkillDirectionRequest, skill SkillResponse) string {

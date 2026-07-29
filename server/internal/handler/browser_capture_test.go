@@ -453,6 +453,91 @@ func TestCreateBrowserCaptureSkillGenerationMissionAssignsOwnedCodexAgent(t *tes
 	})
 }
 
+func TestCreateBrowserCaptureSkillDirectionMissionQueuesCodexWithoutCreatingSkill(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not available")
+	}
+
+	_, agentID := seedOwnedCodexBrowserMemoryAgent(t)
+	suffix := time.Now().UnixNano()
+	body := map[string]any{
+		"source":       "extension",
+		"sourceType":   "link",
+		"captureScope": "page",
+		"url":          fmt.Sprintf("https://github.com/example/direction-only-%d", suffix),
+		"title":        "example/direction-only",
+		"domain":       "github.com",
+		"description":  "A GitHub repository with README, install commands, license, and integration notes.",
+		"readableText": "README install commands, setup examples, license details, maintenance signals, troubleshooting notes, and integration examples.",
+		"capturedAt":   "2026-07-14T10:00:00Z",
+	}
+
+	w := httptest.NewRecorder()
+	testHandler.CreateBrowserCapture(w, newRequest(http.MethodPost, "/api/browser-captures", body))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCapture: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var created CreateBrowserCaptureResponse
+	if err := json.NewDecoder(w.Body).Decode(&created); err != nil {
+		t.Fatalf("decode create response: %v", err)
+	}
+
+	w = httptest.NewRecorder()
+	req := withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-direction-mission", map[string]any{}), "id", created.CaptureID)
+	testHandler.CreateBrowserCaptureSkillDirectionMission(w, req)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCaptureSkillDirectionMission: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var resp CreateBrowserCaptureSkillDirectionMissionResponse
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if resp.PlanningStatus != "queued" || resp.PlanningAgentID == nil || *resp.PlanningAgentID != agentID {
+		t.Fatalf("planning status/agent = %q/%v, want queued/%s", resp.PlanningStatus, resp.PlanningAgentID, agentID)
+	}
+	if !strings.Contains(resp.Issue.Title, "分析 Skill 方向：") {
+		t.Fatalf("issue title = %q, want direction analysis title", resp.Issue.Title)
+	}
+	if resp.Issue.Description == nil ||
+		!strings.Contains(*resp.Issue.Description, "只做方向分析，不要创建或更新 Skill") ||
+		!strings.Contains(*resp.Issue.Description, "推荐方向 1") ||
+		!strings.Contains(*resp.Issue.Description, created.CaptureID) {
+		t.Fatalf("issue description missing direction instructions: %v", resp.Issue.Description)
+	}
+	if strings.Contains(*resp.Issue.Description, "didian skill update") {
+		t.Fatalf("direction mission must not include skill update instructions: %s", *resp.Issue.Description)
+	}
+
+	var skillCount int
+	if err := testPool.QueryRow(context.Background(), `
+		SELECT count(*) FROM skill
+		WHERE workspace_id = $1 AND name = 'example/direction-only 尽调助手'
+	`, testWorkspaceID).Scan(&skillCount); err != nil {
+		t.Fatalf("count skills: %v", err)
+	}
+	if skillCount != 0 {
+		t.Fatalf("skill count = %d, want 0", skillCount)
+	}
+
+	var taskCount int
+	if err := testPool.QueryRow(context.Background(), `
+		SELECT count(*) FROM agent_task_queue
+		WHERE issue_id = $1 AND agent_id = $2 AND status = 'queued'
+	`, resp.Issue.ID, agentID).Scan(&taskCount); err != nil {
+		t.Fatalf("count queued task: %v", err)
+	}
+	if taskCount != 1 {
+		t.Fatalf("queued task count = %d, want 1", taskCount)
+	}
+	t.Cleanup(func() {
+		ctx := context.Background()
+		testPool.Exec(ctx, `DELETE FROM agent_task_queue WHERE issue_id = $1`, resp.Issue.ID)
+		testPool.Exec(ctx, `DELETE FROM issue WHERE id = $1`, resp.Issue.ID)
+		testPool.Exec(ctx, `DELETE FROM captured_source WHERE id = $1`, created.CaptureID)
+	})
+}
+
 func TestCreateBrowserCaptureSkillGenerationMissionQueuesExistingUnassignedMission(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("handler test fixture not available")

@@ -30,8 +30,11 @@ const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
 const personalSkillSuggestionLabel = "Skill 候选";
 const generateSkillLabel = "生成 Skill";
+const analyzeSkillDirectionLabel = "让 Codex 分析方向";
 const keepAsKnowledgeLabel = "收藏为知识";
 const reduceSkillSuggestionsLabel = "少推荐";
+const skillDirectionQueuedToast = "方向分析任务已创建，本地 Codex 会先阅读链接并给出具体 Skill 方向。";
+const skillDirectionNoAgentToast = "方向分析任务已创建，当前没有可用 Codex agent。";
 const skillGenerationQueuedToast = "Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。";
 const skillGenerationNoAgentToast = "Skill 生成任务已创建，当前没有可用 Codex agent。";
 const deleteGeneratedSkillToast = "Skill 已删除，可以重新生成。";
@@ -40,6 +43,7 @@ const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
 type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
+type SkillDirectionMission = { id: string; href: string; title: string; state: "created" | "duplicate" };
 type SkillUsageMission = { id: string; href: string; title: string };
 type SkillDeleteTarget = { captureId: string; mission: SkillGenerationMission };
 type SkillDirectionMode = "adoption_review" | "integration_setup" | "troubleshooting" | "learning_runbook";
@@ -66,6 +70,7 @@ export function AiInboxPage() {
   const [captureState, setCaptureState] = useState<Extract<BrowserCaptureMemoryState, "active" | "archived">>("active");
   const [captureQuery, setCaptureQuery] = useState("");
   const [createdMission, setCreatedMission] = useState<{ id: string; href: string; title: string; state: "created" | "duplicate" } | null>(null);
+  const [skillDirectionMissions, setSkillDirectionMissions] = useState<Record<string, SkillDirectionMission>>({});
   const [skillGenerationMissions, setSkillGenerationMissions] = useState<Record<string, SkillGenerationMission>>({});
   const [skillUsageMissions, setSkillUsageMissions] = useState<Record<string, SkillUsageMission>>({});
   const [deletedSkillCaptureIds, setDeletedSkillCaptureIds] = useState<ReadonlySet<string>>(() => new Set());
@@ -101,6 +106,9 @@ export function AiInboxPage() {
   });
   const createSkillGenerationMission = useMutation({
     mutationFn: ({ captureId, direction }: { captureId: string; direction: BrowserCaptureSkillDirection }) => api.createBrowserCaptureSkillGenerationMission(captureId, { direction }),
+  });
+  const createSkillDirectionMission = useMutation({
+    mutationFn: ({ captureId }: { captureId: string }) => api.createBrowserCaptureSkillDirectionMission(captureId),
   });
   const deleteGeneratedSkill = useMutation({
     mutationFn: ({ skillId }: { captureId: string; skillId: string }) => api.deleteSkill(skillId),
@@ -179,7 +187,46 @@ export function AiInboxPage() {
     queryClient.invalidateQueries({ queryKey: issueKeys.all(wsId) });
   }
 
-  async function handleGenerateSkill(item: AiInboxInput) {
+  async function handleAnalyzeSkillDirection(item: AiInboxInput) {
+    if (!item.captureId || !item.skillOpportunity || createSkillDirectionMission.isPending) return;
+    try {
+      const mission = await createSkillDirectionMission.mutateAsync({ captureId: item.captureId });
+      if (!mission.issue.id) {
+        throw new Error("创建方向分析任务失败：服务端没有返回 Mission ID");
+      }
+      refreshMissionQueries();
+      setSkillDirectionMissions((prev) => ({
+        ...prev,
+        [item.captureId!]: {
+          id: mission.issue.id,
+          href: paths.workspace(workspaceSlug).issueDetail(mission.issue.id),
+          title: mission.issue.title,
+          state: mission.planningStatus === "existing" ? "duplicate" : "created",
+        },
+      }));
+      toast.success(mission.planningStatus === "queued" ? skillDirectionQueuedToast : mission.planningStatus === "existing" ? "方向分析任务已存在，可从卡片打开。" : skillDirectionNoAgentToast);
+    } catch (err) {
+      const duplicate = parseDuplicateIssueError(err);
+      if (duplicate && item.captureId) {
+        refreshMissionQueries();
+        setSkillDirectionMissions((prev) => ({
+          ...prev,
+          [item.captureId!]: {
+            id: duplicate.issue.id,
+            href: paths.workspace(workspaceSlug).issueDetail(duplicate.issue.id),
+            title: duplicate.issue.title,
+            state: "duplicate",
+          },
+        }));
+        toast.error("已有相同的 active 方向分析任务，可从卡片打开。");
+        return;
+      }
+      const message = err instanceof Error && err.message ? err.message : "创建方向分析任务失败";
+      toast.error(message);
+    }
+  }
+
+  function handleGenerateSkill(item: AiInboxInput) {
     if (!item.captureId || !item.skillOpportunity || createSkillGenerationMission.isPending) return;
     setSkillDirectionDraft(buildSkillDirectionDraft(item));
   }
@@ -455,10 +502,13 @@ export function AiInboxPage() {
                     item={item}
                     archivedView={captureState === "archived"}
                     skillGenerationMission={item.captureId ? skillGenerationMissions[item.captureId] ?? visibleSkillsByCaptureId.get(item.captureId) : undefined}
+                    skillDirectionMission={item.captureId ? skillDirectionMissions[item.captureId] : undefined}
                     skillUsageMission={item.captureId ? skillUsageMissions[item.captureId] : undefined}
+                    isAnalyzingSkillDirection={createSkillDirectionMission.isPending && createSkillDirectionMission.variables?.captureId === item.captureId}
                     isGeneratingSkill={createSkillGenerationMission.isPending && createSkillGenerationMission.variables?.captureId === item.captureId}
                     isCreatingSkillMission={createSkillUsageMission.isPending && createSkillUsageMission.variables?.item.captureId === item.captureId}
                     isDeletingSkill={deleteGeneratedSkill.isPending && deleteGeneratedSkill.variables?.captureId === item.captureId}
+                    onAnalyzeSkillDirection={handleAnalyzeSkillDirection}
                     onGenerateSkill={handleGenerateSkill}
                     onUseGeneratedSkill={handleUseGeneratedSkill}
                     onDeleteGeneratedSkill={handleRequestDeleteGeneratedSkill}
@@ -714,10 +764,13 @@ function BrowserCaptureCard({
   item,
   archivedView,
   skillGenerationMission,
+  skillDirectionMission,
   skillUsageMission,
+  isAnalyzingSkillDirection,
   isGeneratingSkill,
   isCreatingSkillMission,
   isDeletingSkill,
+  onAnalyzeSkillDirection,
   onGenerateSkill,
   onUseGeneratedSkill,
   onDeleteGeneratedSkill,
@@ -725,10 +778,13 @@ function BrowserCaptureCard({
   item: AiInboxInput;
   archivedView: boolean;
   skillGenerationMission?: SkillGenerationMission;
+  skillDirectionMission?: SkillDirectionMission;
   skillUsageMission?: SkillUsageMission;
+  isAnalyzingSkillDirection: boolean;
   isGeneratingSkill: boolean;
   isCreatingSkillMission: boolean;
   isDeletingSkill: boolean;
+  onAnalyzeSkillDirection: (item: AiInboxInput) => void;
   onGenerateSkill: (item: AiInboxInput) => void;
   onUseGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
   onDeleteGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
@@ -787,11 +843,14 @@ function BrowserCaptureCard({
         <SkillOpportunityPanel
           opportunity={item.skillOpportunity}
           mission={skillGenerationMission}
+          directionMission={skillDirectionMission}
           skillUsageMission={skillUsageMission}
+          isAnalyzingDirection={isAnalyzingSkillDirection}
           isGenerating={isGeneratingSkill}
           isCreatingSkillMission={isCreatingSkillMission}
           isDeletingSkill={isDeletingSkill}
-          onGenerate={() => onGenerateSkill(item)}
+          onAnalyzeDirection={() => onAnalyzeSkillDirection(item)}
+          onGenerate={skillDirectionMission ? () => onGenerateSkill(item) : undefined}
           onUseGeneratedSkill={skillGenerationMission ? () => onUseGeneratedSkill(item, skillGenerationMission) : undefined}
           onDeleteGeneratedSkill={skillGenerationMission ? () => onDeleteGeneratedSkill(item, skillGenerationMission) : undefined}
         />
@@ -818,26 +877,33 @@ function BrowserCaptureCard({
 function SkillOpportunityPanel({
   opportunity,
   mission,
+  directionMission,
   skillUsageMission,
+  isAnalyzingDirection,
   isGenerating,
   isCreatingSkillMission,
   isDeletingSkill,
+  onAnalyzeDirection,
   onGenerate,
   onUseGeneratedSkill,
   onDeleteGeneratedSkill,
 }: {
   opportunity: SkillOpportunity;
   mission?: SkillGenerationMission;
+  directionMission?: SkillDirectionMission;
   skillUsageMission?: SkillUsageMission;
+  isAnalyzingDirection: boolean;
   isGenerating: boolean;
   isCreatingSkillMission: boolean;
   isDeletingSkill: boolean;
-  onGenerate: () => void;
+  onAnalyzeDirection: () => void;
+  onGenerate?: () => void;
   onUseGeneratedSkill?: () => void;
   onDeleteGeneratedSkill?: () => void;
 }) {
   const canUseGeneratedSkill = Boolean(mission?.skillId && onUseGeneratedSkill);
   const canDeleteGeneratedSkill = Boolean(mission?.skillId && onDeleteGeneratedSkill);
+  const canConfirmDirection = Boolean(directionMission && !mission && onGenerate);
   return (
     <div className="border-t bg-muted/20 px-3 py-3">
       <div className="flex items-start gap-2">
@@ -858,16 +924,41 @@ function SkillOpportunityPanel({
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{opportunity.proposedCapability}</p>
           <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{opportunity.whyUseful}</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Button
-              type="button"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              disabled={isGenerating || Boolean(mission)}
-              onClick={onGenerate}
-            >
-              {isGenerating ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-              {skillActionLabel({ isGenerating, mission })}
-            </Button>
+            {!directionMission && !mission && (
+              <Button
+                type="button"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                disabled={isAnalyzingDirection}
+                onClick={onAnalyzeDirection}
+              >
+                {isAnalyzingDirection ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+                {isAnalyzingDirection ? "分析中" : analyzeSkillDirectionLabel}
+              </Button>
+            )}
+            {canConfirmDirection && (
+              <Button
+                type="button"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                disabled={isGenerating}
+                onClick={onGenerate}
+              >
+                {isGenerating ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+                {isGenerating ? "创建中" : generateSkillLabel}
+              </Button>
+            )}
+            {mission && (
+              <Button
+                type="button"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                disabled
+              >
+                <Sparkles className="size-3.5" />
+                {skillActionLabel({ isGenerating, mission })}
+              </Button>
+            )}
             {canUseGeneratedSkill && (
               <Button
                 type="button"
@@ -913,6 +1004,15 @@ function SkillOpportunityPanel({
               {reduceSkillSuggestionsLabel}
             </Button>
           </div>
+          {directionMission && !mission && (
+            <div className="mt-2 rounded-md border border-primary/30 bg-background px-2.5 py-2 text-xs text-primary" role="status">
+              Codex 正在分析这个收藏适合做成哪些 Skill 方向。
+              <a href={directionMission.href} className="ml-1 font-medium underline underline-offset-2">
+                打开方向分析 Mission：{directionMission.title}
+              </a>
+              <span className="ml-2 text-muted-foreground">看完 Codex 的方向建议后，再点“生成 Skill”。</span>
+            </div>
+          )}
           {mission && (
             <div className="mt-2 rounded-md border border-emerald-500/30 bg-background px-2.5 py-2 text-xs text-emerald-800 dark:text-emerald-200" role="status">
               {skillStatusText(mission)}

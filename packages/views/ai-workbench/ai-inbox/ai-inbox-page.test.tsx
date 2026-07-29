@@ -23,11 +23,12 @@ const { ApiError } = vi.hoisted(() => {
   return { ApiError: ApiErrorImpl };
 });
 
-const { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listSkills, restoreBrowserCapture } = vi.hoisted(() => ({
+const { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillDirectionMission, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listSkills, restoreBrowserCapture } = vi.hoisted(() => ({
   addIssueSkill: vi.fn(),
   archiveBrowserCapture: vi.fn(),
   createAiInboxMission: vi.fn(),
   createBrowserCapture: vi.fn(),
+  createBrowserCaptureSkillDirectionMission: vi.fn(),
   createBrowserCaptureSkillGenerationMission: vi.fn(),
   deleteSkill: vi.fn(),
   listBrowserCaptures: vi.fn(),
@@ -47,7 +48,7 @@ vi.mock("@didian/core/api", async () => {
   return {
     ...actual,
     ApiError,
-    api: { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listSkills, restoreBrowserCapture },
+    api: { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillDirectionMission, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listSkills, restoreBrowserCapture },
   };
 });
 
@@ -139,6 +140,7 @@ describe("AiInboxPage browser captures", () => {
     archiveBrowserCapture.mockReset();
     createAiInboxMission.mockReset();
     createBrowserCapture.mockReset();
+    createBrowserCaptureSkillDirectionMission.mockReset();
     createBrowserCaptureSkillGenerationMission.mockReset();
     deleteSkill.mockReset();
     listSkills.mockReset();
@@ -156,6 +158,11 @@ describe("AiInboxPage browser captures", () => {
     });
     deleteSkill.mockResolvedValue(undefined);
     listSkills.mockResolvedValue([]);
+    createBrowserCaptureSkillDirectionMission.mockResolvedValue({
+      issue: { id: "skill-direction-mission-1", title: "分析 Skill 方向：Stripe Checkout documentation" },
+      planningStatus: "queued",
+      planningAgentId: "agent-1",
+    });
     createBrowserCaptureSkillGenerationMission.mockResolvedValue({
       issue: { id: "skill-mission-1", title: "完善 Skill：Stripe Checkout 接入助手" },
       skill: { id: "skill-1", name: "Stripe Checkout 接入助手", config: { generation: { status: "draft" } } },
@@ -287,8 +294,15 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByText("Stripe Checkout 接入助手")).toBeInTheDocument();
     expect(screen.getByText(/接入步骤、请求示例/)).toBeInTheDocument();
     expect(screen.getByText("Docs")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "生成 Skill" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "让 Codex 分析方向" })).toHaveLength(1);
     expect(screen.getByText("My opinion about AI tools")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "让 Codex 分析方向" }));
+
+    await waitFor(() => expect(createBrowserCaptureSkillDirectionMission).toHaveBeenCalledWith("capture-1"));
+    expect(toastSuccess).toHaveBeenCalledWith("方向分析任务已创建，本地 Codex 会先阅读链接并给出具体 Skill 方向。");
+    expect(screen.getByRole("status")).toHaveTextContent("Codex 正在分析这个收藏适合做成哪些 Skill 方向。");
+    expect(screen.getByRole("link", { name: "打开方向分析 Mission：分析 Skill 方向：Stripe Checkout documentation" })).toHaveAttribute("href", "/acme/issues/skill-direction-mission-1");
 
     await user.click(screen.getByRole("button", { name: "生成 Skill" }));
 
@@ -435,7 +449,7 @@ describe("AiInboxPage browser captures", () => {
     expect(toastSuccess).toHaveBeenCalledWith("Skill 已删除，可以重新生成。");
     expect(screen.queryByText("Skill 已生成并保存在 Skill 库。")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "已生成" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "生成 Skill" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "让 Codex 分析方向" })).toBeEnabled();
   });
 
   it("creates a Mission and attaches a generated capture Skill", async () => {

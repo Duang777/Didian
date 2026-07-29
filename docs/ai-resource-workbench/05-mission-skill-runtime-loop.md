@@ -251,9 +251,9 @@ This block is trusted platform metadata. Skill file contents remain user/workspa
 - If generated from this capture: allow deleting the generated Skill from the card, then restore the card to `生成 Skill` so the user can retry the full direction-confirmation flow.
 - Generate flow:
   1. Show Skill opportunity only after the platform evaluation passes confidence and evidence thresholds.
-  2. Clicking `生成 Skill` opens a confirmation dialog instead of creating a task immediately.
-  3. Dialog shows evaluation evidence and asks the user to choose the Skill direction.
-  4. Confirming creates/updates the Skill draft and queues the local Codex generation Mission.
+  2. Clicking `让 Codex 分析方向` creates a direction-analysis Mission assigned to the user's local Codex runtime.
+  3. The direction-analysis Mission must ask Codex to read the bookmarked URL/page excerpt and return 2-3 concrete Skill directions with evidence, inputs, outputs, boundaries, and user questions. It must not create or update a Skill.
+  4. After reviewing Codex's direction analysis, the user clicks `生成 Skill`, confirms the final direction, and only then creates/updates the Skill draft and queues the local Codex generation Mission.
 - Later: show `已用于 N 个 Mission`.
 
 ### Skill Library

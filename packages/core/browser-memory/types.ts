@@ -158,6 +158,8 @@ export interface CreateAiInboxMissionResponse {
   planningAgentId?: string;
 }
 
+export type CreateBrowserCaptureSkillDirectionMissionResponse = CreateAiInboxMissionResponse;
+
 export interface BrowserCaptureSkillDirection {
   title: string;
   capability: string;
