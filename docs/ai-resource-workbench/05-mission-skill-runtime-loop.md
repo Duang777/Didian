@@ -5,8 +5,8 @@
 Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Skill 被用户本地连接的 agent runtime 在 Mission 执行时真实使用。成功体验不是“Skill 库里多了一张卡”，也不是系统替用户武断决定 Skill 方向，而是：
 
 ```text
-收藏网页 -> 自动评估是否适合做 Skill -> 向用户解释可做成什么能力
--> 用户点击生成 -> 弹出方向确认问题 -> 本地 Codex 生成/完善 Skill -> Skill 入库
+收藏网页 -> 平台初筛是否适合做 Skill -> 用户点击让本地 Codex 分析具体方向
+-> AI Inbox 弹窗展示 Codex 方向建议 -> 用户确认/修改方向问题 -> 本地 Codex 生成/完善 Skill -> Skill 入库
 -> 创建 Mission 时推荐使用 -> 用户确认 -> 本地 runtime 注入 Skill
 -> Mission 页面展示使用记录 -> 结果沉淀回 Skill / Atlas
 ```
@@ -31,7 +31,8 @@ Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Ski
 - 平台负责发现、保存、推荐、分发、审计；本地 runtime 负责执行和生成结果。
 - Skill 使用默认是 Mission 级临时选择，不默认永久污染 agent 的全局 skill set。
 - 用户确认优先。自动推荐可以高置信显示，但第一版不静默注入。
-- 推荐不是生成。推荐阶段只说明“这个网页可能适合沉淀成什么能力”；生成阶段必须先确认方向。
+- 推荐不是生成。平台推荐阶段只说明“这个网页可能适合沉淀成 Skill”；方向分析阶段由本地 Codex 给出具体能力方向；生成阶段必须先让用户确认方向。
+- 方向分析不应该表现为普通 Mission。即使底层复用 issue/task 队列，也必须在产品上隐藏为后台任务，结果回到 AI Inbox 智能弹窗。
 - 生成 Skill 前必须问清楚：用户要解决的重复任务、触发场景、必要输入、期望输出、边界和命名偏好。
 - 每条 Skill 使用记录必须可回溯来源网页、Skill 版本、agent、runtime、task。
 
@@ -46,10 +47,10 @@ Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Ski
 - task claim 时可读取 Mission planned skills 并注入给本地 runtime。
 - claim 成功后记录 `injected` 状态、task、agent、runtime。
 - API 和类型契约覆盖 Skill usage list/add/remove。
+- AI Inbox 支持本地 Codex 方向分析弹窗：创建后台分析任务、轮询 Codex 回复、在弹窗内展示结果。
 
 ### Later
 
-- 自动推荐 Skill。
 - Mission 创建页推荐确认条。
 - runtime 本地文件同步状态。
 - agent 完成后回传“实际使用/跳过/建议更新 Skill”。
@@ -95,7 +96,9 @@ Rationale:
 
 ### Browser Capture Skill Direction
 
-用户点击“生成 Skill”后，前端必须先收集方向确认，而不是直接创建 Skill。请求体：
+用户点击 `让 Codex 分析方向` 后，后端创建一个内部 direction-analysis task 给本地 Codex。它底层可以复用 issue/task 队列，但必须打上 `issue.metadata.didian_internal = true` 和 `didian_internal_kind = "skill_direction_analysis"`，普通 Mission 列表默认隐藏。AI Inbox 弹窗通过该任务的评论结果展示 Codex 建议。
+
+之后用户点击“确认方向”时，前端必须先收集方向确认，而不是直接创建 Skill。请求体：
 
 ```ts
 type BrowserCaptureSkillDirection = {
@@ -114,11 +117,12 @@ Rules:
 
 - 默认值来自自动评估的 `SkillOpportunity`，但不能把推荐语原样复制成最终方向。
 - 前端必须展示推荐依据：页面类型、置信度、复用流程分、指令密度分、后续复用分和证据片段。
-- 用户必须先确认生成方向，再创建任务。MVP 支持四类方向：`选型尽调`、`接入落地`、`排障修复`、`学习上手`。
+- 用户必须先看过或跳过 Codex 方向分析，再确认生成方向。MVP 支持四类方向：`选型尽调`、`接入落地`、`排障修复`、`学习上手`。
 - 用户可以修改 Skill 名称、主要用途、能力描述、输入、输出、边界、使用场景和成功标准。
 - 至少要有 `primaryUseCase`、`expectedInputs`、`expectedOutputs`。
 - `boundaries` 用来阻止 Codex 把 Skill 做成泛泛总结，例如：“不要只总结 README；要沉淀成接入/排障/尽调流程”。
 - 后端创建的 Skill 草稿和 Codex 生成 Mission 都必须引用这份 direction，并把用户确认的方向、使用场景、成功标准写入 generation notes。
+- 如果浏览器抓取正文包含 GitHub/dev SPA payload、tree JSON 或错误页文本，后端必须清洗该摘录，并提示 Codex 打开来源 URL 重新读取真实内容。
 
 ## 6. API Contract
 
@@ -201,11 +205,12 @@ This keeps the first UX intentionally simple: users decide which Skill a Mission
 
 ### Browser Capture Generated Skill CTA
 
-Capture card has three phases:
+Capture card has four phases:
 
 1. **Skill 候选**：系统自动评估网页是否适合沉淀成 Skill，并展示推荐方向、置信度和原因。
-2. **方向确认**：用户点击生成后弹窗确认 Skill 名称、用途、触发场景、输入、输出和边界；提交后才创建本地 Codex 生成 Mission。
-3. **已生成/可使用**：一旦 Skill 入库，卡片展示 Skill 库链接和“用 Skill 创建 Mission”。
+2. **Codex 方向分析**：用户点击 `让 Codex 分析方向` 后，AI Inbox 打开智能弹窗，后台本地 Codex 阅读收藏链接并给出 2-3 个具体 Skill 方向。该分析任务不出现在普通 Mission 列表。
+3. **方向确认**：用户从弹窗继续后确认 Skill 名称、用途、触发场景、输入、输出和边界；提交后才创建本地 Codex 生成 Mission。
+4. **已生成/可使用**：一旦 Skill 入库，卡片展示 Skill 库链接和“用 Skill 创建 Mission”。
 
 Once a browser capture has a generated platform Skill, the capture card becomes an entry point into Mission execution:
 
@@ -251,9 +256,10 @@ This block is trusted platform metadata. Skill file contents remain user/workspa
 - If generated from this capture: allow deleting the generated Skill from the card, then restore the card to `生成 Skill` so the user can retry the full direction-confirmation flow.
 - Generate flow:
   1. Show Skill opportunity only after the platform evaluation passes confidence and evidence thresholds.
-  2. Clicking `让 Codex 分析方向` creates a direction-analysis Mission assigned to the user's local Codex runtime.
-  3. The direction-analysis Mission must ask Codex to read the bookmarked URL/page excerpt and return 2-3 concrete Skill directions with evidence, inputs, outputs, boundaries, and user questions. It must not create or update a Skill.
-  4. After reviewing Codex's direction analysis, the user clicks `生成 Skill`, confirms the final direction, and only then creates/updates the Skill draft and queues the local Codex generation Mission.
+  2. Clicking `让 Codex 分析方向` creates an internal direction-analysis task assigned to the user's local Codex runtime and immediately opens the smart modal.
+  3. The direction-analysis task must ask Codex to read the bookmarked URL/page excerpt and return 2-3 concrete Skill directions with evidence, inputs, outputs, boundaries, and user questions. It must not create or update a Skill.
+  4. The smart modal polls task comments and renders the latest Codex analysis inline. No “open Mission” link is shown for this step.
+  5. After reviewing Codex's direction analysis, the user clicks `确认方向`, edits the final direction fields, and only then creates/updates the Skill draft and queues the local Codex generation Mission.
 - Later: show `已用于 N 个 Mission`.
 
 ### Skill Library
