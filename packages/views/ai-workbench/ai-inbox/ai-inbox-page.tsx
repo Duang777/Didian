@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Archive, CheckCircle2, Clock3, ExternalLink, Inbox, Loader2, RefreshCw, RotateCcw, Search, SendHorizontal, Sparkles } from "lucide-react";
+import { AlertCircle, Archive, CheckCircle2, Clock3, ExternalLink, Inbox, Loader2, RefreshCw, RotateCcw, Search, SendHorizontal, Sparkles, Trash2 } from "lucide-react";
 import { ApiError, api, DuplicateIssueErrorBodySchema, parseWithFallback, type DuplicateIssueErrorBody } from "@didian/core/api";
 import { browserCapturesOptions, useArchiveBrowserCapture, useCreateBrowserCapture, useRestoreBrowserCapture, type BrowserCaptureMemoryState, type BrowserCaptureSkillDirection } from "@didian/core/browser-memory";
 import { useWorkspaceId } from "@didian/core/hooks";
@@ -34,12 +34,14 @@ const keepAsKnowledgeLabel = "收藏为知识";
 const reduceSkillSuggestionsLabel = "少推荐";
 const skillGenerationQueuedToast = "Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。";
 const skillGenerationNoAgentToast = "Skill 生成任务已创建，当前没有可用 Codex agent。";
+const deleteGeneratedSkillToast = "Skill 已删除，可以重新生成。";
 const keepAsKnowledgeToast = "已保留为知识卡片";
 const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
 type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
 type SkillUsageMission = { id: string; href: string; title: string };
+type SkillDeleteTarget = { captureId: string; mission: SkillGenerationMission };
 type SkillDirectionDraft = {
   item: AiInboxInput;
   title: string;
@@ -62,6 +64,8 @@ export function AiInboxPage() {
   const [createdMission, setCreatedMission] = useState<{ id: string; href: string; title: string; state: "created" | "duplicate" } | null>(null);
   const [skillGenerationMissions, setSkillGenerationMissions] = useState<Record<string, SkillGenerationMission>>({});
   const [skillUsageMissions, setSkillUsageMissions] = useState<Record<string, SkillUsageMission>>({});
+  const [deletedSkillCaptureIds, setDeletedSkillCaptureIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [skillDeleteTarget, setSkillDeleteTarget] = useState<SkillDeleteTarget | null>(null);
   const [skillDirectionDraft, setSkillDirectionDraft] = useState<SkillDirectionDraft | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [collectPromptUrls, setCollectPromptUrls] = useState<string[]>([]);
@@ -94,6 +98,9 @@ export function AiInboxPage() {
   const createSkillGenerationMission = useMutation({
     mutationFn: ({ captureId, direction }: { captureId: string; direction: BrowserCaptureSkillDirection }) => api.createBrowserCaptureSkillGenerationMission(captureId, { direction }),
   });
+  const deleteGeneratedSkill = useMutation({
+    mutationFn: ({ skillId }: { captureId: string; skillId: string }) => api.deleteSkill(skillId),
+  });
   const createBrowserCapture = useCreateBrowserCapture();
   const skillsQuery = useQuery(skillListOptions(wsId));
   const capturesQuery = useQuery({
@@ -107,6 +114,14 @@ export function AiInboxPage() {
     [capturesQuery.data?.captures],
   );
   const skillsByCaptureId = useMemo(() => buildBrowserCaptureSkillMap(skillsQuery.data, workspaceSlug), [skillsQuery.data, workspaceSlug]);
+  const visibleSkillsByCaptureId = useMemo(() => {
+    if (deletedSkillCaptureIds.size === 0) return skillsByCaptureId;
+    const visibleSkills = new Map(skillsByCaptureId);
+    for (const captureId of deletedSkillCaptureIds) {
+      visibleSkills.delete(captureId);
+    }
+    return visibleSkills;
+  }, [deletedSkillCaptureIds, skillsByCaptureId]);
   const captureColumns = useMemo(() => splitIntoColumns(inboxInputs, 2), [inboxInputs]);
   const canCreateMission = trimmedInput.length > 0;
   const understanding: AiUnderstanding = fallbackUnderstanding;
@@ -179,6 +194,12 @@ export function AiInboxPage() {
       }
       refreshMissionQueries();
       queryClient.invalidateQueries({ queryKey: workspaceKeys.skills(wsId) });
+      setDeletedSkillCaptureIds((prev) => {
+        if (!prev.has(captureId)) return prev;
+        const next = new Set(prev);
+        next.delete(captureId);
+        return next;
+      });
       setSkillGenerationMissions((prev) => ({
         ...prev,
         [captureId]: {
@@ -249,6 +270,43 @@ export function AiInboxPage() {
         return;
       }
       const message = err instanceof Error && err.message ? err.message : "创建 Mission 失败";
+      toast.error(message);
+    }
+  }
+
+  function handleRequestDeleteGeneratedSkill(item: AiInboxInput, mission: SkillGenerationMission) {
+    if (!item.captureId || !mission.skillId) return;
+    setSkillDeleteTarget({ captureId: item.captureId, mission });
+  }
+
+  async function handleConfirmDeleteGeneratedSkill() {
+    const target = skillDeleteTarget;
+    const skillId = target?.mission.skillId;
+    if (!target || !skillId || deleteGeneratedSkill.isPending) return;
+    try {
+      await deleteGeneratedSkill.mutateAsync({ captureId: target.captureId, skillId });
+      setSkillGenerationMissions((prev) => {
+        const next = { ...prev };
+        delete next[target.captureId];
+        return next;
+      });
+      setSkillUsageMissions((prev) => {
+        const next = { ...prev };
+        delete next[target.captureId];
+        return next;
+      });
+      setDeletedSkillCaptureIds((prev) => {
+        const next = new Set(prev);
+        next.add(target.captureId);
+        return next;
+      });
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.skills(wsId) });
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.agents(wsId) });
+      refreshMissionQueries();
+      setSkillDeleteTarget(null);
+      toast.success(deleteGeneratedSkillToast);
+    } catch (err) {
+      const message = err instanceof Error && err.message ? err.message : "删除 Skill 失败";
       toast.error(message);
     }
   }
@@ -392,12 +450,14 @@ export function AiInboxPage() {
                     key={item.id}
                     item={item}
                     archivedView={captureState === "archived"}
-                    skillGenerationMission={item.captureId ? skillGenerationMissions[item.captureId] ?? skillsByCaptureId.get(item.captureId) : undefined}
+                    skillGenerationMission={item.captureId ? skillGenerationMissions[item.captureId] ?? visibleSkillsByCaptureId.get(item.captureId) : undefined}
                     skillUsageMission={item.captureId ? skillUsageMissions[item.captureId] : undefined}
                     isGeneratingSkill={createSkillGenerationMission.isPending && createSkillGenerationMission.variables?.captureId === item.captureId}
                     isCreatingSkillMission={createSkillUsageMission.isPending && createSkillUsageMission.variables?.item.captureId === item.captureId}
+                    isDeletingSkill={deleteGeneratedSkill.isPending && deleteGeneratedSkill.variables?.captureId === item.captureId}
                     onGenerateSkill={handleGenerateSkill}
                     onUseGeneratedSkill={handleUseGeneratedSkill}
+                    onDeleteGeneratedSkill={handleRequestDeleteGeneratedSkill}
                   />
                 ))}
               </div>
@@ -411,6 +471,12 @@ export function AiInboxPage() {
         onChange={setSkillDirectionDraft}
         onClose={() => setSkillDirectionDraft(null)}
         onConfirm={() => void handleConfirmSkillDirection()}
+      />
+      <DeleteGeneratedSkillDialog
+        target={skillDeleteTarget}
+        isDeleting={deleteGeneratedSkill.isPending}
+        onClose={() => setSkillDeleteTarget(null)}
+        onConfirm={() => void handleConfirmDeleteGeneratedSkill()}
       />
       <Dialog open={collectPromptUrls.length > 0} onOpenChange={(open) => { if (!open) setCollectPromptUrls([]); }}>
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
@@ -565,6 +631,41 @@ function SkillDirectionDialog({
   );
 }
 
+function DeleteGeneratedSkillDialog({
+  target,
+  isDeleting,
+  onClose,
+  onConfirm,
+}: {
+  target: SkillDeleteTarget | null;
+  isDeleting: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog open={Boolean(target)} onOpenChange={(open) => { if (!open && !isDeleting) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>删除 Skill？</DialogTitle>
+          <DialogDescription>
+            这会从 Skill 库删除「{target?.mission.skillName ?? "这个 Skill"}」。收藏卡片会恢复为可重新生成，已创建过的 Mission 记录会作为历史保留。
+          </DialogDescription>
+        </DialogHeader>
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs leading-5 text-destructive">
+          删除后不可恢复；如果方向不对，建议删除后重新从收藏卡片生成。
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isDeleting}>取消</Button>
+          <Button type="button" variant="destructive" onClick={onConfirm} disabled={isDeleting}>
+            {isDeleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+            {isDeleting ? "删除中" : "确认删除"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function BrowserCaptureCard({
   item,
   archivedView,
@@ -572,8 +673,10 @@ function BrowserCaptureCard({
   skillUsageMission,
   isGeneratingSkill,
   isCreatingSkillMission,
+  isDeletingSkill,
   onGenerateSkill,
   onUseGeneratedSkill,
+  onDeleteGeneratedSkill,
 }: {
   item: AiInboxInput;
   archivedView: boolean;
@@ -581,8 +684,10 @@ function BrowserCaptureCard({
   skillUsageMission?: SkillUsageMission;
   isGeneratingSkill: boolean;
   isCreatingSkillMission: boolean;
+  isDeletingSkill: boolean;
   onGenerateSkill: (item: AiInboxInput) => void;
   onUseGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
+  onDeleteGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
 }) {
   const status = browserCaptureStatusView(item);
   const StatusIcon = status.icon;
@@ -641,8 +746,10 @@ function BrowserCaptureCard({
           skillUsageMission={skillUsageMission}
           isGenerating={isGeneratingSkill}
           isCreatingSkillMission={isCreatingSkillMission}
+          isDeletingSkill={isDeletingSkill}
           onGenerate={() => onGenerateSkill(item)}
           onUseGeneratedSkill={skillGenerationMission ? () => onUseGeneratedSkill(item, skillGenerationMission) : undefined}
+          onDeleteGeneratedSkill={skillGenerationMission ? () => onDeleteGeneratedSkill(item, skillGenerationMission) : undefined}
         />
       )}
       {captureId && (
@@ -670,18 +777,23 @@ function SkillOpportunityPanel({
   skillUsageMission,
   isGenerating,
   isCreatingSkillMission,
+  isDeletingSkill,
   onGenerate,
   onUseGeneratedSkill,
+  onDeleteGeneratedSkill,
 }: {
   opportunity: SkillOpportunity;
   mission?: SkillGenerationMission;
   skillUsageMission?: SkillUsageMission;
   isGenerating: boolean;
   isCreatingSkillMission: boolean;
+  isDeletingSkill: boolean;
   onGenerate: () => void;
   onUseGeneratedSkill?: () => void;
+  onDeleteGeneratedSkill?: () => void;
 }) {
   const canUseGeneratedSkill = Boolean(mission?.skillId && onUseGeneratedSkill);
+  const canDeleteGeneratedSkill = Boolean(mission?.skillId && onDeleteGeneratedSkill);
   return (
     <div className="border-t bg-muted/20 px-3 py-3">
       <div className="flex items-start gap-2">
@@ -723,6 +835,19 @@ function SkillOpportunityPanel({
               >
                 {isCreatingSkillMission ? <Loader2 className="size-3.5 animate-spin" /> : <SendHorizontal className="size-3.5" />}
                 {isCreatingSkillMission ? "创建中" : "用 Skill 创建 Mission"}
+              </Button>
+            )}
+            {canDeleteGeneratedSkill && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                disabled={isDeletingSkill}
+                onClick={onDeleteGeneratedSkill}
+              >
+                {isDeletingSkill ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+                {isDeletingSkill ? "删除中" : "删除 Skill"}
               </Button>
             )}
             <Button

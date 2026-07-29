@@ -23,12 +23,13 @@ const { ApiError } = vi.hoisted(() => {
   return { ApiError: ApiErrorImpl };
 });
 
-const { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillGenerationMission, listBrowserCaptures, listSkills, restoreBrowserCapture } = vi.hoisted(() => ({
+const { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listSkills, restoreBrowserCapture } = vi.hoisted(() => ({
   addIssueSkill: vi.fn(),
   archiveBrowserCapture: vi.fn(),
   createAiInboxMission: vi.fn(),
   createBrowserCapture: vi.fn(),
   createBrowserCaptureSkillGenerationMission: vi.fn(),
+  deleteSkill: vi.fn(),
   listBrowserCaptures: vi.fn(),
   listSkills: vi.fn(),
   restoreBrowserCapture: vi.fn(),
@@ -46,7 +47,7 @@ vi.mock("@didian/core/api", async () => {
   return {
     ...actual,
     ApiError,
-    api: { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillGenerationMission, listBrowserCaptures, listSkills, restoreBrowserCapture },
+    api: { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listSkills, restoreBrowserCapture },
   };
 });
 
@@ -139,6 +140,7 @@ describe("AiInboxPage browser captures", () => {
     createAiInboxMission.mockReset();
     createBrowserCapture.mockReset();
     createBrowserCaptureSkillGenerationMission.mockReset();
+    deleteSkill.mockReset();
     listSkills.mockReset();
     restoreBrowserCapture.mockReset();
     navigationPush.mockReset();
@@ -152,6 +154,7 @@ describe("AiInboxPage browser captures", () => {
       issue_id: "mission-using-skill",
       status: "planned",
     });
+    deleteSkill.mockResolvedValue(undefined);
     listSkills.mockResolvedValue([]);
     createBrowserCaptureSkillGenerationMission.mockResolvedValue({
       issue: { id: "skill-mission-1", title: "完善 Skill：Stripe Checkout 接入助手" },
@@ -365,6 +368,66 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.queryByRole("button", { name: "生成 Skill" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "已生成" })).toBeDisabled();
     expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
+  });
+
+  it("deletes a generated Skill from its bookmark card and allows regeneration", async () => {
+    const user = userEvent.setup();
+    listBrowserCaptures.mockResolvedValue({
+      captures: [
+        captureFixture({
+          url: "https://docs.stripe.com/payments/checkout",
+          normalized_url: "https://docs.stripe.com/payments/checkout",
+          title: "Stripe Checkout documentation",
+          domain: "docs.stripe.com",
+          description: "Use Checkout to accept payments with API parameters, webhooks, and error handling.",
+          readable_text: "Install the SDK, configure API keys, create a checkout session, handle webhooks, and test common errors.",
+          memory: memoryFixture({
+            summary: "Technical documentation for integrating Stripe Checkout with API parameters, SDK setup, and webhook troubleshooting.",
+            one_line_takeaway: "Stripe Checkout integration guide with API setup and error handling.",
+            key_points: ["Create a checkout session with API parameters.", "Handle webhooks and common errors."],
+            topics: ["api", "payments", "checkout"],
+            entities: ["Stripe"],
+            keywords: ["api", "sdk", "webhook", "error"],
+            status: "ready",
+            generated_at: "2026-07-14T02:41:00.000Z",
+          }),
+        }),
+      ],
+      total: 1,
+    });
+    listSkills.mockResolvedValue([
+      {
+        id: "skill-persisted",
+        workspace_id: "ws-test",
+        name: "Stripe Checkout 接入助手",
+        description: "根据项目栈生成接入步骤、请求示例、环境变量清单和常见错误排查。",
+        config: {
+          origin: { type: "browser_capture", capture_id: "capture-1" },
+          generation: { type: "browser_capture_skill_generation", status: "agent_refined" },
+        },
+        created_by: "user-1",
+        created_at: "2026-07-14T02:42:00.000Z",
+        updated_at: "2026-07-14T02:43:00.000Z",
+      },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
+    expect(screen.getByRole("status")).toHaveTextContent("Skill 已生成并保存在 Skill 库。");
+
+    await user.click(screen.getByRole("button", { name: "删除 Skill" }));
+
+    const dialog = screen.getByRole("dialog", { name: "删除 Skill？" });
+    expect(within(dialog).getByText(/Stripe Checkout 接入助手/)).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole("button", { name: "确认删除" }));
+
+    await waitFor(() => expect(deleteSkill).toHaveBeenCalledWith("skill-persisted"));
+    expect(toastSuccess).toHaveBeenCalledWith("Skill 已删除，可以重新生成。");
+    expect(screen.queryByText("Skill 已生成并保存在 Skill 库。")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "已生成" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "生成 Skill" })).toBeEnabled();
   });
 
   it("creates a Mission and attaches a generated capture Skill", async () => {
