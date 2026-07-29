@@ -23,7 +23,7 @@ const { ApiError } = vi.hoisted(() => {
   return { ApiError: ApiErrorImpl };
 });
 
-const { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillDirectionMission, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listSkills, restoreBrowserCapture } = vi.hoisted(() => ({
+const { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillDirectionMission, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listComments, listSkills, restoreBrowserCapture } = vi.hoisted(() => ({
   addIssueSkill: vi.fn(),
   archiveBrowserCapture: vi.fn(),
   createAiInboxMission: vi.fn(),
@@ -32,6 +32,7 @@ const { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowse
   createBrowserCaptureSkillGenerationMission: vi.fn(),
   deleteSkill: vi.fn(),
   listBrowserCaptures: vi.fn(),
+  listComments: vi.fn(),
   listSkills: vi.fn(),
   restoreBrowserCapture: vi.fn(),
 }));
@@ -48,7 +49,7 @@ vi.mock("@didian/core/api", async () => {
   return {
     ...actual,
     ApiError,
-    api: { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillDirectionMission, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listSkills, restoreBrowserCapture },
+    api: { addIssueSkill, archiveBrowserCapture, createAiInboxMission, createBrowserCapture, createBrowserCaptureSkillDirectionMission, createBrowserCaptureSkillGenerationMission, deleteSkill, listBrowserCaptures, listComments, listSkills, restoreBrowserCapture },
   };
 });
 
@@ -144,6 +145,7 @@ describe("AiInboxPage browser captures", () => {
     createBrowserCaptureSkillGenerationMission.mockReset();
     deleteSkill.mockReset();
     listSkills.mockReset();
+    listComments.mockReset();
     restoreBrowserCapture.mockReset();
     navigationPush.mockReset();
     toastFn.mockReset();
@@ -157,6 +159,7 @@ describe("AiInboxPage browser captures", () => {
       status: "planned",
     });
     deleteSkill.mockResolvedValue(undefined);
+    listComments.mockResolvedValue([]);
     listSkills.mockResolvedValue([]);
     createBrowserCaptureSkillDirectionMission.mockResolvedValue({
       issue: { id: "skill-direction-mission-1", title: "分析 Skill 方向：Stripe Checkout documentation" },
@@ -246,6 +249,24 @@ describe("AiInboxPage browser captures", () => {
 
   it("shows personal Skill proposals on high-signal bookmark cards", async () => {
     const user = userEvent.setup();
+    listComments.mockResolvedValue([
+      {
+        id: "comment-direction-1",
+        issue_id: "skill-direction-mission-1",
+        author_type: "agent",
+        author_id: "agent-1",
+        content: "### 推荐方向 1：接入落地\n- Skill 名称：Stripe Checkout 接入助手\n- 适用场景：项目接入和 webhook 排障。",
+        type: "comment",
+        parent_id: null,
+        reactions: [],
+        attachments: [],
+        created_at: "2026-07-14T02:42:00.000Z",
+        updated_at: "2026-07-14T02:42:00.000Z",
+        resolved_at: null,
+        resolved_by_type: null,
+        resolved_by_id: null,
+      },
+    ]);
     listBrowserCaptures.mockResolvedValue({
       captures: [
         captureFixture({
@@ -300,11 +321,14 @@ describe("AiInboxPage browser captures", () => {
     await user.click(screen.getByRole("button", { name: "让 Codex 分析方向" }));
 
     await waitFor(() => expect(createBrowserCaptureSkillDirectionMission).toHaveBeenCalledWith("capture-1"));
-    expect(toastSuccess).toHaveBeenCalledWith("方向分析任务已创建，本地 Codex 会先阅读链接并给出具体 Skill 方向。");
-    expect(screen.getByRole("status")).toHaveTextContent("Codex 正在分析这个收藏适合做成哪些 Skill 方向。");
-    expect(screen.getByRole("link", { name: "打开方向分析 Mission：分析 Skill 方向：Stripe Checkout documentation" })).toHaveAttribute("href", "/acme/issues/skill-direction-mission-1");
+    expect(toastSuccess).toHaveBeenCalledWith("已交给本地 Codex 分析，结果会在弹窗中更新。");
+    expect(screen.getByRole("dialog", { name: "Skill 方向分析" })).toBeInTheDocument();
+    await waitFor(() => expect(listComments).toHaveBeenCalledWith("skill-direction-mission-1"));
+    expect(screen.getByText("Codex 建议")).toBeInTheDocument();
+    expect(screen.getByText(/推荐方向 1：接入落地/)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /打开方向分析 Mission/ })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "生成 Skill" }));
+    await user.click(screen.getByRole("button", { name: "根据分析确认方向" }));
 
     expect(screen.getByRole("dialog", { name: "确认 Skill 方向" })).toBeInTheDocument();
     expect(screen.getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 接入助手");
