@@ -2,10 +2,11 @@
 
 ## 1. Objective
 
-Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Skill 被用户本地连接的 agent runtime 在 Mission 执行时真实使用。成功体验不是“Skill 库里多了一张卡”，而是：
+Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Skill 被用户本地连接的 agent runtime 在 Mission 执行时真实使用。成功体验不是“Skill 库里多了一张卡”，也不是系统替用户武断决定 Skill 方向，而是：
 
 ```text
-收藏网页 -> 推荐生成 Skill -> 本地 agent 生成/完善 Skill -> Skill 入库
+收藏网页 -> 自动评估是否适合做 Skill -> 向用户解释可做成什么能力
+-> 用户点击生成 -> 弹出方向确认问题 -> 本地 Codex 生成/完善 Skill -> Skill 入库
 -> 创建 Mission 时推荐使用 -> 用户确认 -> 本地 runtime 注入 Skill
 -> Mission 页面展示使用记录 -> 结果沉淀回 Skill / Atlas
 ```
@@ -30,6 +31,8 @@ Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Ski
 - 平台负责发现、保存、推荐、分发、审计；本地 runtime 负责执行和生成结果。
 - Skill 使用默认是 Mission 级临时选择，不默认永久污染 agent 的全局 skill set。
 - 用户确认优先。自动推荐可以高置信显示，但第一版不静默注入。
+- 推荐不是生成。推荐阶段只说明“这个网页可能适合沉淀成什么能力”；生成阶段必须先确认方向。
+- 生成 Skill 前必须问清楚：用户要解决的重复任务、触发场景、必要输入、期望输出、边界和命名偏好。
 - 每条 Skill 使用记录必须可回溯来源网页、Skill 版本、agent、runtime、task。
 
 ## 4. Scope
@@ -88,7 +91,32 @@ Rationale:
 
 ### Later: issue_skill_suggestion
 
-推荐记录后续单独建表。MVP 可以先不保存 suggestion，只支持手动添加和从收藏卡片进入 Skill。
+推荐记录后续单独建表。当前 MVP 在 capture 的 `skill_opportunity` JSON 中保存自动评估结果，并在用户确认生成时把方向确认写入 Skill `config.generation.direction`。
+
+### Browser Capture Skill Direction
+
+用户点击“生成 Skill”后，前端必须先收集方向确认，而不是直接创建 Skill。请求体：
+
+```ts
+type BrowserCaptureSkillDirection = {
+  title: string;
+  capability: string;
+  primaryUseCase: string;
+  triggerExamples: string[];
+  expectedInputs: string[];
+  expectedOutputs: string[];
+  boundaries: string;
+  notes?: string;
+};
+```
+
+Rules:
+
+- 默认值来自自动评估的 `SkillOpportunity`。
+- 用户可以修改 Skill 名称和能力描述。
+- 至少要有 `primaryUseCase`、`expectedInputs`、`expectedOutputs`。
+- `boundaries` 用来阻止 Codex 把 Skill 做成泛泛总结，例如：“不要只总结 README；要沉淀成接入/排障/尽调流程”。
+- 后端创建的 Skill 草稿和 Codex 生成 Mission 都必须引用这份 direction。
 
 ## 6. API Contract
 
@@ -170,6 +198,12 @@ Mission 详情页提供第一版手动选择入口：
 This keeps the first UX intentionally simple: users decide which Skill a Mission should use before the next local runtime claim. The system does not silently attach generated Skills yet.
 
 ### Browser Capture Generated Skill CTA
+
+Capture card has three phases:
+
+1. **Skill 候选**：系统自动评估网页是否适合沉淀成 Skill，并展示推荐方向、置信度和原因。
+2. **方向确认**：用户点击生成后弹窗确认 Skill 名称、用途、触发场景、输入、输出和边界；提交后才创建本地 Codex 生成 Mission。
+3. **已生成/可使用**：一旦 Skill 入库，卡片展示 Skill 库链接和“用 Skill 创建 Mission”。
 
 Once a browser capture has a generated platform Skill, the capture card becomes an entry point into Mission execution:
 
