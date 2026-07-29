@@ -27,6 +27,21 @@ type CreateBrowserCaptureSkillGenerationMissionResponse struct {
 	PlanningAgentID *string       `json:"planningAgentId,omitempty"`
 }
 
+type CreateBrowserCaptureSkillGenerationMissionRequest struct {
+	Direction BrowserCaptureSkillDirectionRequest `json:"direction"`
+}
+
+type BrowserCaptureSkillDirectionRequest struct {
+	Title           string   `json:"title"`
+	Capability      string   `json:"capability"`
+	PrimaryUseCase  string   `json:"primaryUseCase"`
+	TriggerExamples []string `json:"triggerExamples"`
+	ExpectedInputs  []string `json:"expectedInputs"`
+	ExpectedOutputs []string `json:"expectedOutputs"`
+	Boundaries      string   `json:"boundaries"`
+	Notes           string   `json:"notes,omitempty"`
+}
+
 func (h *Handler) CreateBrowserCaptureSkillGenerationMission(w http.ResponseWriter, r *http.Request) {
 	workspaceID, ok := parseUUIDOrBadRequest(w, h.resolveWorkspaceID(r), "workspace id")
 	if !ok {
@@ -55,20 +70,33 @@ func (h *Handler) CreateBrowserCaptureSkillGenerationMission(w http.ResponseWrit
 		return
 	}
 
+	var req CreateBrowserCaptureSkillGenerationMissionRequest
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
 	opportunity := skillOpportunityForCapture(capture)
 	if opportunity == nil || !opportunity.ShouldSuggest {
 		writeError(w, http.StatusUnprocessableEntity, "browser capture has no skill opportunity")
 		return
 	}
+	direction, err := normalizeBrowserCaptureSkillDirection(req.Direction, opportunity)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
-	skill, _, err := h.ensureBrowserCaptureSkillDraft(r, workspaceID, creatorUUID, capture, opportunity)
+	skill, _, err := h.ensureBrowserCaptureSkillDraft(r, workspaceID, creatorUUID, capture, opportunity, direction)
 	if err != nil {
 		slog.Warn("create browser capture skill draft failed", append(logger.RequestAttrs(r), "error", err, "workspace_id", uuidToString(workspaceID), "capture_id", uuidToString(captureID))...)
 		writeError(w, http.StatusInternalServerError, "failed to create skill draft")
 		return
 	}
 
-	description := buildBrowserCaptureSkillMissionDescription(capture, opportunity, skill)
+	description := buildBrowserCaptureSkillMissionDescription(capture, opportunity, direction, skill)
 	if utf8.RuneCountInString(description) > maxAIInboxInputRunes {
 		description = truncateTrimmed(description, maxAIInboxInputRunes)
 	}
@@ -208,10 +236,10 @@ func (h *Handler) queueExistingBrowserCaptureSkillMission(r *http.Request, issue
 	return issue, true, nil
 }
 
-func (h *Handler) ensureBrowserCaptureSkillDraft(r *http.Request, workspaceID, creatorID pgtype.UUID, capture db.CapturedSource, opportunity *SkillOpportunityResponse) (SkillResponse, bool, error) {
+func (h *Handler) ensureBrowserCaptureSkillDraft(r *http.Request, workspaceID, creatorID pgtype.UUID, capture db.CapturedSource, opportunity *SkillOpportunityResponse, direction BrowserCaptureSkillDirectionRequest) (SkillResponse, bool, error) {
 	existing, err := h.Queries.GetSkillByWorkspaceAndName(r.Context(), db.GetSkillByWorkspaceAndNameParams{
 		WorkspaceID: workspaceID,
-		Name:        opportunity.ProposedTitle,
+		Name:        direction.Title,
 	})
 	if err == nil {
 		return skillToResponse(existing), false, nil
@@ -223,16 +251,16 @@ func (h *Handler) ensureBrowserCaptureSkillDraft(r *http.Request, workspaceID, c
 	created, err := h.createSkillWithFiles(r.Context(), skillCreateInput{
 		WorkspaceID: workspaceID,
 		CreatorID:   creatorID,
-		Name:        opportunity.ProposedTitle,
-		Description: opportunity.ProposedCapability,
-		Content:     buildBrowserCaptureSkillDraftContent(capture, opportunity),
-		Config:      buildBrowserCaptureSkillConfig(capture, opportunity, "draft"),
+		Name:        direction.Title,
+		Description: direction.Capability,
+		Content:     buildBrowserCaptureSkillDraftContent(capture, opportunity, direction),
+		Config:      buildBrowserCaptureSkillConfig(capture, opportunity, direction, "draft"),
 	})
 	if err != nil {
 		if isUniqueViolation(err) {
 			skill, lookupErr := h.Queries.GetSkillByWorkspaceAndName(r.Context(), db.GetSkillByWorkspaceAndNameParams{
 				WorkspaceID: workspaceID,
-				Name:        opportunity.ProposedTitle,
+				Name:        direction.Title,
 			})
 			if lookupErr == nil {
 				return skillToResponse(skill), false, nil
@@ -264,8 +292,75 @@ func skillOpportunityForCapture(capture db.CapturedSource) *SkillOpportunityResp
 	})
 }
 
-func buildBrowserCaptureSkillMissionDescription(capture db.CapturedSource, opportunity *SkillOpportunityResponse, skill SkillResponse) string {
-	configJSON, _ := json.Marshal(buildBrowserCaptureSkillConfig(capture, opportunity, "agent_refined"))
+func normalizeBrowserCaptureSkillDirection(direction BrowserCaptureSkillDirectionRequest, opportunity *SkillOpportunityResponse) (BrowserCaptureSkillDirectionRequest, error) {
+	direction.Title = truncateTrimmed(normalizeSpace(firstNonEmpty(direction.Title, opportunity.ProposedTitle)), 120)
+	direction.Capability = truncateTrimmed(normalizeSpace(firstNonEmpty(direction.Capability, opportunity.ProposedCapability)), 500)
+	direction.PrimaryUseCase = truncateTrimmed(normalizeSpace(direction.PrimaryUseCase), 800)
+	direction.Boundaries = truncateTrimmed(normalizeSpace(direction.Boundaries), 1000)
+	direction.Notes = truncateTrimmed(normalizeSpace(direction.Notes), 1200)
+	direction.TriggerExamples = normalizeSkillDirectionList(direction.TriggerExamples, opportunity.TriggerExamples, 6, 160)
+	direction.ExpectedInputs = normalizeSkillDirectionList(direction.ExpectedInputs, opportunity.ExpectedInputs, 8, 80)
+	direction.ExpectedOutputs = normalizeSkillDirectionList(direction.ExpectedOutputs, opportunity.ExpectedOutputs, 8, 80)
+
+	if direction.Title == "" {
+		return BrowserCaptureSkillDirectionRequest{}, errors.New("direction.title is required")
+	}
+	if direction.Capability == "" {
+		return BrowserCaptureSkillDirectionRequest{}, errors.New("direction.capability is required")
+	}
+	if direction.PrimaryUseCase == "" {
+		return BrowserCaptureSkillDirectionRequest{}, errors.New("direction.primaryUseCase is required")
+	}
+	if len(direction.ExpectedInputs) == 0 {
+		return BrowserCaptureSkillDirectionRequest{}, errors.New("direction.expectedInputs is required")
+	}
+	if len(direction.ExpectedOutputs) == 0 {
+		return BrowserCaptureSkillDirectionRequest{}, errors.New("direction.expectedOutputs is required")
+	}
+	if direction.Boundaries == "" {
+		direction.Boundaries = "不要只总结网页内容；要沉淀成 agent 可执行、可复用的 Skill。"
+	}
+	return direction, nil
+}
+
+func normalizeSkillDirectionList(values, fallback []string, limit, maxRunes int) []string {
+	if len(values) == 0 {
+		values = fallback
+	}
+	out := make([]string, 0, min(len(values), limit))
+	seen := map[string]struct{}{}
+	for _, value := range values {
+		value = truncateTrimmed(normalizeSpace(value), maxRunes)
+		if value == "" {
+			continue
+		}
+		if _, ok := seen[value]; ok {
+			continue
+		}
+		seen[value] = struct{}{}
+		out = append(out, value)
+		if len(out) == limit {
+			break
+		}
+	}
+	return out
+}
+
+func skillDirectionConfig(direction BrowserCaptureSkillDirectionRequest) map[string]any {
+	return map[string]any{
+		"title":           direction.Title,
+		"capability":      direction.Capability,
+		"primaryUseCase":  direction.PrimaryUseCase,
+		"triggerExamples": direction.TriggerExamples,
+		"expectedInputs":  direction.ExpectedInputs,
+		"expectedOutputs": direction.ExpectedOutputs,
+		"boundaries":      direction.Boundaries,
+		"notes":           direction.Notes,
+	}
+}
+
+func buildBrowserCaptureSkillMissionDescription(capture db.CapturedSource, opportunity *SkillOpportunityResponse, direction BrowserCaptureSkillDirectionRequest, skill SkillResponse) string {
+	configJSON, _ := json.Marshal(buildBrowserCaptureSkillConfig(capture, opportunity, direction, "agent_refined"))
 
 	var b strings.Builder
 	b.WriteString("请基于这个收藏网页，完善一个已经创建在 Didian Skill 库里的平台 Skill。\n\n")
@@ -285,25 +380,31 @@ func buildBrowserCaptureSkillMissionDescription(capture db.CapturedSource, oppor
 	appendSkillMissionExcerpt(&b, "页面正文摘录", textToString(capture.ReadableText), 4500)
 
 	b.WriteString("## 建议 Skill\n")
-	b.WriteString(fmt.Sprintf("- 名称：%s\n", opportunity.ProposedTitle))
-	b.WriteString(fmt.Sprintf("- 能力：%s\n", opportunity.ProposedCapability))
+	b.WriteString(fmt.Sprintf("- 名称：%s\n", direction.Title))
+	b.WriteString(fmt.Sprintf("- 能力：%s\n", direction.Capability))
+	b.WriteString(fmt.Sprintf("- 用户确认的主要用途：%s\n", direction.PrimaryUseCase))
+	b.WriteString(fmt.Sprintf("- 边界和不要做：%s\n", direction.Boundaries))
+	if direction.Notes != "" {
+		b.WriteString(fmt.Sprintf("- 用户补充说明：%s\n", direction.Notes))
+	}
 	b.WriteString(fmt.Sprintf("- 为什么值得沉淀：%s\n\n", opportunity.WhyUseful))
 
-	appendSkillMissionList(&b, "触发示例", opportunity.TriggerExamples)
-	appendSkillMissionList(&b, "期望输入", opportunity.ExpectedInputs)
-	appendSkillMissionList(&b, "期望输出", opportunity.ExpectedOutputs)
+	appendSkillMissionList(&b, "触发示例", direction.TriggerExamples)
+	appendSkillMissionList(&b, "期望输入", direction.ExpectedInputs)
+	appendSkillMissionList(&b, "期望输出", direction.ExpectedOutputs)
 	appendSkillMissionList(&b, "证据片段", opportunity.EvidenceSnippets)
 	appendSkillMissionList(&b, "风险提示", opportunity.RiskNotes)
 
 	b.WriteString("## 执行要求\n")
-	b.WriteString("1. 读取来源网页内容和当前工作区上下文，判断这个 Skill 应该解决的真实重复任务。\n")
+	b.WriteString("1. 读取来源网页内容和当前工作区上下文，按用户确认的方向判断这个 Skill 应该解决的真实重复任务。\n")
 	b.WriteString("2. 写出一个可直接使用的 `SKILL.md`，包含清晰触发场景、输入要求、操作步骤、输出格式和质量检查。\n")
 	b.WriteString("3. 不要只复述网页内容；要把网页沉淀为用户以后能反复调用的操作能力。\n")
-	b.WriteString("4. 用下面的 CLI 命令更新这个已经存在的 Didian Skill，让 Skill 库里的内容变成最终版本。\n\n")
+	b.WriteString("4. 如果网页不适合当前方向，先在 Mission 里说明原因和建议调整方向，再谨慎更新 Skill。\n")
+	b.WriteString("5. 用下面的 CLI 命令更新这个已经存在的 Didian Skill，让 Skill 库里的内容变成最终版本。\n\n")
 
 	b.WriteString("```bash\n")
 	b.WriteString(fmt.Sprintf("didian skill update %s \\\n", skill.ID))
-	b.WriteString(fmt.Sprintf("  --description %q \\\n", opportunity.ProposedCapability))
+	b.WriteString(fmt.Sprintf("  --description %q \\\n", direction.Capability))
 	b.WriteString("  --content-file ./SKILL.md \\\n")
 	b.WriteString(fmt.Sprintf("  --config %q \\\n", string(configJSON)))
 	b.WriteString("  --output json\n")
@@ -312,7 +413,7 @@ func buildBrowserCaptureSkillMissionDescription(capture db.CapturedSource, oppor
 	return b.String()
 }
 
-func buildBrowserCaptureSkillConfig(capture db.CapturedSource, opportunity *SkillOpportunityResponse, status string) map[string]any {
+func buildBrowserCaptureSkillConfig(capture db.CapturedSource, opportunity *SkillOpportunityResponse, direction BrowserCaptureSkillDirectionRequest, status string) map[string]any {
 	return map[string]any{
 		"origin": map[string]any{
 			"type":       "browser_capture",
@@ -322,24 +423,36 @@ func buildBrowserCaptureSkillConfig(capture db.CapturedSource, opportunity *Skil
 			"confidence": opportunity.Confidence,
 		},
 		"generation": map[string]any{
-			"type":   "browser_capture_skill_generation",
-			"status": status,
+			"type":      "browser_capture_skill_generation",
+			"status":    status,
+			"direction": skillDirectionConfig(direction),
 		},
 	}
 }
 
-func buildBrowserCaptureSkillDraftContent(capture db.CapturedSource, opportunity *SkillOpportunityResponse) string {
+func buildBrowserCaptureSkillDraftContent(capture db.CapturedSource, opportunity *SkillOpportunityResponse, direction BrowserCaptureSkillDirectionRequest) string {
 	var b strings.Builder
 	b.WriteString("# ")
-	b.WriteString(opportunity.ProposedTitle)
+	b.WriteString(direction.Title)
 	b.WriteString("\n\n")
 	b.WriteString("Use this skill when the user wants to turn the saved page into a repeatable workflow. This is a Didian-generated draft and should be refined by a local agent before heavy reuse.\n\n")
 	b.WriteString("## Capability\n")
-	b.WriteString(opportunity.ProposedCapability)
+	b.WriteString(direction.Capability)
 	b.WriteString("\n\n")
-	appendSkillMissionList(&b, "Trigger Examples", opportunity.TriggerExamples)
-	appendSkillMissionList(&b, "Expected Inputs", opportunity.ExpectedInputs)
-	appendSkillMissionList(&b, "Expected Outputs", opportunity.ExpectedOutputs)
+	b.WriteString("## Primary Use Case\n")
+	b.WriteString(direction.PrimaryUseCase)
+	b.WriteString("\n\n")
+	appendSkillMissionList(&b, "Trigger Examples", direction.TriggerExamples)
+	appendSkillMissionList(&b, "Expected Inputs", direction.ExpectedInputs)
+	appendSkillMissionList(&b, "Expected Outputs", direction.ExpectedOutputs)
+	b.WriteString("## Boundaries\n")
+	b.WriteString(direction.Boundaries)
+	b.WriteString("\n\n")
+	if direction.Notes != "" {
+		b.WriteString("## User Notes\n")
+		b.WriteString(direction.Notes)
+		b.WriteString("\n\n")
+	}
 	appendSkillMissionList(&b, "Source Evidence", opportunity.EvidenceSnippets)
 	appendSkillMissionList(&b, "Risk Notes", opportunity.RiskNotes)
 	b.WriteString("## Source\n")

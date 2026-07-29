@@ -383,8 +383,21 @@ func TestCreateBrowserCaptureSkillGenerationMissionAssignsOwnedCodexAgent(t *tes
 		t.Fatalf("created capture missing skill opportunity: %+v", created.Capture.SkillOpportunity)
 	}
 
+	directionBody := map[string]any{
+		"direction": map[string]any{
+			"title":           "Stripe Checkout webhook 接入助手",
+			"capability":      "把 Stripe Checkout 文档沉淀成项目接入、webhook 配置和排障流程。",
+			"primaryUseCase":  "用于真实项目接入 Stripe Checkout，并在 webhook 或 API 错误时给出排查路径。",
+			"triggerExamples": []string{"帮我接入 Stripe Checkout", "排查 Stripe Checkout webhook 错误"},
+			"expectedInputs":  []string{"项目栈", "集成目标", "错误信息或现有代码"},
+			"expectedOutputs": []string{"接入步骤", "示例代码", "错误排查清单"},
+			"boundaries":      "不要只总结文档；必须沉淀成可执行接入流程。",
+			"notes":           "优先覆盖 webhook 和测试模式。",
+		},
+	}
+
 	w = httptest.NewRecorder()
-	req := withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", nil), "id", created.CaptureID)
+	req := withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", directionBody), "id", created.CaptureID)
 	testHandler.CreateBrowserCaptureSkillGenerationMission(w, req)
 	if w.Code != http.StatusCreated {
 		t.Fatalf("CreateBrowserCaptureSkillGenerationMission: expected 201, got %d: %s", w.Code, w.Body.String())
@@ -397,10 +410,13 @@ func TestCreateBrowserCaptureSkillGenerationMissionAssignsOwnedCodexAgent(t *tes
 	if resp.PlanningStatus != "queued" || resp.PlanningAgentID == nil || *resp.PlanningAgentID != agentID {
 		t.Fatalf("planning status/agent = %q/%v, want queued/%s", resp.PlanningStatus, resp.PlanningAgentID, agentID)
 	}
-	if resp.Skill.ID == "" || !strings.Contains(resp.Skill.Name, "Stripe Checkout") || !strings.Contains(resp.Skill.Name, "接入助手") {
+	if resp.Skill.ID == "" || resp.Skill.Name != "Stripe Checkout webhook 接入助手" {
 		t.Fatalf("skill response = %+v, want created skill draft", resp.Skill)
 	}
-	if !strings.Contains(resp.Skill.Content, "Didian-generated draft") || !strings.Contains(resp.Skill.Content, "https://docs.stripe.com/payments/checkout") {
+	if !strings.Contains(resp.Skill.Content, "Didian-generated draft") ||
+		!strings.Contains(resp.Skill.Content, "https://docs.stripe.com/payments/checkout") ||
+		!strings.Contains(resp.Skill.Content, "用于真实项目接入 Stripe Checkout") ||
+		!strings.Contains(resp.Skill.Content, "不要只总结文档") {
 		t.Fatalf("skill draft content missing source context: %q", resp.Skill.Content)
 	}
 	if !strings.Contains(resp.Issue.Title, "完善 Skill：") || !strings.Contains(resp.Issue.Title, resp.Skill.Name) {
@@ -409,7 +425,9 @@ func TestCreateBrowserCaptureSkillGenerationMissionAssignsOwnedCodexAgent(t *tes
 	if resp.Issue.Description == nil ||
 		!strings.Contains(*resp.Issue.Description, "didian skill update "+resp.Skill.ID) ||
 		!strings.Contains(*resp.Issue.Description, created.CaptureID) ||
-		!strings.Contains(*resp.Issue.Description, "browser_capture_skill_generation") {
+		!strings.Contains(*resp.Issue.Description, "browser_capture_skill_generation") ||
+		!strings.Contains(*resp.Issue.Description, "用户确认的主要用途") ||
+		!strings.Contains(*resp.Issue.Description, "优先覆盖 webhook 和测试模式") {
 		t.Fatalf("issue description missing skill update instructions: %v", resp.Issue.Description)
 	}
 	if resp.Issue.AssigneeID == nil || *resp.Issue.AssigneeID != agentID {
@@ -472,8 +490,20 @@ func TestCreateBrowserCaptureSkillGenerationMissionQueuesExistingUnassignedMissi
 		t.Fatalf("decode create response: %v", err)
 	}
 
+	directionBody := map[string]any{
+		"direction": map[string]any{
+			"title":           "example/existing-skill 评估助手",
+			"capability":      "评估 GitHub repo 的采用价值、维护信号和集成风险。",
+			"primaryUseCase":  "用于判断这个 repo 是否适合当前项目采用。",
+			"triggerExamples": []string{"评估这个 repo 是否适合我的项目"},
+			"expectedInputs":  []string{"项目背景", "技术栈", "评估关注点"},
+			"expectedOutputs": []string{"采用建议", "上手步骤", "风险清单"},
+			"boundaries":      "不要只复述 README。",
+		},
+	}
+
 	w = httptest.NewRecorder()
-	req := withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", nil), "id", created.CaptureID)
+	req := withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", directionBody), "id", created.CaptureID)
 	testHandler.CreateBrowserCaptureSkillGenerationMission(w, req)
 	if w.Code != http.StatusCreated {
 		t.Fatalf("initial CreateBrowserCaptureSkillGenerationMission: expected 201, got %d: %s", w.Code, w.Body.String())
@@ -492,7 +522,7 @@ func TestCreateBrowserCaptureSkillGenerationMissionQueuesExistingUnassignedMissi
 	_, agentID := seedOwnedCodexBrowserMemoryAgent(t)
 
 	w = httptest.NewRecorder()
-	req = withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", nil), "id", created.CaptureID)
+	req = withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", directionBody), "id", created.CaptureID)
 	testHandler.CreateBrowserCaptureSkillGenerationMission(w, req)
 	if w.Code != http.StatusOK {
 		t.Fatalf("duplicate CreateBrowserCaptureSkillGenerationMission: expected 200, got %d: %s", w.Code, w.Body.String())
