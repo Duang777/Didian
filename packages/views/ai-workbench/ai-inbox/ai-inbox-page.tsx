@@ -11,7 +11,7 @@ import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
 import type { Comment, SkillSummary } from "@didian/core/types";
 import { skillListOptions, workspaceKeys } from "@didian/core/workspace/queries";
 import { Badge } from "@didian/ui/components/ui/badge";
-import { Button } from "@didian/ui/components/ui/button";
+import { Button, buttonVariants } from "@didian/ui/components/ui/button";
 import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@didian/ui/components/ui/dialog";
 import { Input } from "@didian/ui/components/ui/input";
@@ -1015,8 +1015,9 @@ function SkillOpportunityPanel({
   const canUseGeneratedSkill = Boolean(mission?.skillId && onUseGeneratedSkill);
   const canDeleteGeneratedSkill = Boolean(mission?.skillId && onDeleteGeneratedSkill);
   const canConfirmDirection = Boolean(directionAnalysis && !mission && onGenerate);
+  const hasGeneratedSkill = Boolean(mission);
   return (
-    <div className="border-t bg-muted/20 px-3 py-3">
+    <div className="border-t bg-muted/10 px-3 py-3">
       <div className="flex items-start gap-2">
         <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border bg-background text-primary">
           <Sparkles className="size-3.5" />
@@ -1030,11 +1031,17 @@ function SkillOpportunityPanel({
             <Badge variant="secondary" className="h-5 rounded-sm px-1.5 text-[10px] text-muted-foreground">
               {Math.round(opportunity.confidence * 100)}%
             </Badge>
+            {mission && (
+              <Badge variant="secondary" className="h-5 rounded-sm px-1.5 text-[10px] text-muted-foreground">
+                <CheckCircle2 className="mr-1 size-3" />
+                {skillActionLabel({ isGenerating, mission })}
+              </Badge>
+            )}
           </div>
           <h4 className="mt-1 line-clamp-1 text-sm font-medium">{opportunity.proposedTitle}</h4>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{opportunity.proposedCapability}</p>
           <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{opportunity.whyUseful}</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {!directionAnalysis && !mission && (
               <Button
                 type="button"
@@ -1071,22 +1078,11 @@ function SkillOpportunityPanel({
                 {isGenerating ? "创建中" : confirmSkillDirectionLabel}
               </Button>
             )}
-            {mission && (
-              <Button
-                type="button"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                disabled
-              >
-                <Sparkles className="size-3.5" />
-                {skillActionLabel({ isGenerating, mission })}
-              </Button>
-            )}
             {canUseGeneratedSkill && (
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="default"
                 className="h-7 px-2 text-xs"
                 disabled={isCreatingSkillMission}
                 onClick={onUseGeneratedSkill}
@@ -1095,60 +1091,73 @@ function SkillOpportunityPanel({
                 {isCreatingSkillMission ? "创建中" : "用 Skill 创建 Mission"}
               </Button>
             )}
+            {mission && (
+              <a href={mission.skillHref} className={buttonVariants({ size: "sm", variant: "outline", className: "h-7 px-2 text-xs" })}>
+                <ExternalLink className="size-3.5" />
+                打开 Skill
+              </a>
+            )}
+            {!hasGeneratedSkill && (
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => toast.success(keepAsKnowledgeToast)}
+                >
+                  {keepAsKnowledgeLabel}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs text-muted-foreground"
+                  onClick={() => toast.success(reduceSkillSuggestionsToast)}
+                >
+                  {reduceSkillSuggestionsLabel}
+                </Button>
+              </>
+            )}
             {canDeleteGeneratedSkill && (
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                className="ml-auto size-7 px-0 text-muted-foreground hover:text-destructive"
                 disabled={isDeletingSkill}
                 onClick={onDeleteGeneratedSkill}
+                aria-label="删除 Skill"
               >
                 {isDeletingSkill ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-                {isDeletingSkill ? "删除中" : "删除 Skill"}
               </Button>
             )}
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-7 px-2 text-xs"
-              onClick={() => toast.success(keepAsKnowledgeToast)}
-            >
-              {keepAsKnowledgeLabel}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="h-7 px-2 text-xs"
-              onClick={() => toast.success(reduceSkillSuggestionsToast)}
-            >
-              {reduceSkillSuggestionsLabel}
-            </Button>
           </div>
           {directionAnalysis && !mission && (
-            <div className="mt-2 rounded-md border border-primary/30 bg-background px-2.5 py-2 text-xs text-primary" role="status">
-              {directionAnalysis.planningStatus === "queued" ? "Codex 正在分析这个收藏适合做成哪些 Skill 方向。" : "方向分析已准备好。"}
-              <span className="ml-2 text-muted-foreground">在弹窗里查看建议，然后确认 Skill 方向。</span>
+            <div className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-muted-foreground" role="status">
+              <Clock3 className="mt-0.5 size-3.5 shrink-0 text-primary" />
+              <span>
+                {directionAnalysis.planningStatus === "queued" ? "Codex 正在分析 Skill 方向" : "方向分析已准备好"}
+                <span className="text-muted-foreground">，在弹窗里确认后再生成。</span>
+              </span>
             </div>
           )}
           {mission && (
-            <div className="mt-2 rounded-md border border-emerald-500/30 bg-background px-2.5 py-2 text-xs text-emerald-800 dark:text-emerald-200" role="status">
-              {skillStatusText(mission)}
-              <a href={mission.skillHref} className="ml-1 font-medium underline underline-offset-2">
-                打开 Skill：{mission.skillName}
-              </a>
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-5 text-muted-foreground" role="status">
+              <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="size-3.5" />
+                {skillStatusText(mission)}
+              </span>
               {mission.href && (
-                <a href={mission.href} className="ml-2 font-medium underline underline-offset-2">
-                  打开 Mission
+                <a href={mission.href} className="font-medium text-foreground underline underline-offset-2">
+                  查看生成 Mission
                 </a>
               )}
               {skillUsageMission && (
-                <span className="ml-2">
-                  Mission 已创建并绑定 Skill。
-                  <a href={skillUsageMission.href} className="ml-1 font-medium underline underline-offset-2">
-                    打开 Mission：{skillUsageMission.title}
+                <span>
+                  已创建使用记录：
+                  <a href={skillUsageMission.href} className="ml-1 font-medium text-foreground underline underline-offset-2">
+                    {skillUsageMission.title}
                   </a>
                 </span>
               )}

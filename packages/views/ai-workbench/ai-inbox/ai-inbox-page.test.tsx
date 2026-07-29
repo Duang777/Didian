@@ -359,9 +359,9 @@ describe("AiInboxPage browser captures", () => {
     }));
     expect(toastSuccess).toHaveBeenCalledWith("Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。");
     expect(screen.getByRole("status")).toHaveTextContent("Skill 已写入库");
-    expect(screen.getByRole("link", { name: "打开 Skill：Stripe Checkout 接入助手" })).toHaveAttribute("href", "/acme/skills/skill-1");
-    expect(screen.getByRole("link", { name: "打开 Mission" })).toHaveAttribute("href", "/acme/issues/skill-mission-1");
-    expect(screen.getByRole("button", { name: "已创建" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "打开 Skill" })).toHaveAttribute("href", "/acme/skills/skill-1");
+    expect(screen.getByRole("link", { name: "查看生成 Mission" })).toHaveAttribute("href", "/acme/issues/skill-mission-1");
+    expect(screen.queryByRole("button", { name: "已创建" })).not.toBeInTheDocument();
   });
 
   it("shows generated Skill state from the persisted Skill library after refresh", async () => {
@@ -409,10 +409,10 @@ describe("AiInboxPage browser captures", () => {
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
     expect(screen.getByRole("link", { name: "Skill 库" })).toHaveAttribute("href", "/acme/skills");
     expect(screen.getByRole("status")).toHaveTextContent("Skill 已生成并保存在 Skill 库。");
-    expect(screen.getByRole("link", { name: "打开 Skill：Stripe Checkout 接入助手" })).toHaveAttribute("href", "/acme/skills/skill-persisted");
-    expect(screen.queryByRole("link", { name: "打开 Mission" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "打开 Skill" })).toHaveAttribute("href", "/acme/skills/skill-persisted");
+    expect(screen.queryByRole("link", { name: "查看生成 Mission" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "生成 Skill" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "已生成" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "已生成" })).not.toBeInTheDocument();
     expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
   });
 
@@ -538,8 +538,8 @@ describe("AiInboxPage browser captures", () => {
       reason: "Created from browser capture: Stripe Checkout documentation",
     }));
     expect(toastSuccess).toHaveBeenCalledWith("Mission 已创建，并已绑定这个 Skill");
-    expect(screen.getByRole("status")).toHaveTextContent("Mission 已创建并绑定 Skill。");
-    expect(screen.getByRole("link", { name: "打开 Mission：用 Stripe Checkout 接入助手处理 Stripe Checkout documentation" })).toHaveAttribute("href", "/acme/issues/mission-using-skill");
+    expect(screen.getByRole("status")).toHaveTextContent("已创建使用记录");
+    expect(screen.getByRole("link", { name: "用 Stripe Checkout 接入助手处理 Stripe Checkout documentation" })).toHaveAttribute("href", "/acme/issues/mission-using-skill");
   });
 
   it("falls back to the Didian icon when a capture favicon is missing or broken", async () => {
