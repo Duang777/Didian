@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -47,6 +48,12 @@ type BrowserCaptureSkillDirectionRequest struct {
 	Boundaries      string   `json:"boundaries"`
 	Notes           string   `json:"notes,omitempty"`
 }
+
+const (
+	issueMetadataInternalKey            = "didian_internal"
+	issueMetadataInternalKindKey        = "didian_internal_kind"
+	issueMetadataSkillDirectionAnalysis = "skill_direction_analysis"
+)
 
 func (h *Handler) CreateBrowserCaptureSkillDirectionMission(w http.ResponseWriter, r *http.Request) {
 	workspaceID, ok := parseUUIDOrBadRequest(w, h.resolveWorkspaceID(r), "workspace id")
@@ -119,9 +126,6 @@ func (h *Handler) CreateBrowserCaptureSkillDirectionMission(w http.ResponseWrite
 		ActorID:          creatorID,
 		AnalyticsAgentID: firstNonNilString(planningAgentID),
 		Platform:         func() string { p, _, _ := middleware.ClientMetadataFromContext(r.Context()); return p }(),
-		BroadcastPayload: func(issue db.Issue, atts []db.Attachment) map[string]any {
-			return map[string]any{"issue": issueToResponse(issue, prefix)}
-		},
 	})
 	if errors.Is(err, service.ErrActiveDuplicate) {
 		dup := *res.DuplicateIssue
@@ -144,6 +148,11 @@ func (h *Handler) CreateBrowserCaptureSkillDirectionMission(w http.ResponseWrite
 		} else if !assigneeID.Valid && !dup.AssigneeID.Valid {
 			existingPlanningStatus = "no_codex_agent"
 		}
+		if hidden, err := h.markIssueAsInternalSkillDirectionAnalysis(r, dup); err == nil {
+			dup = hidden
+		} else {
+			slog.Warn("mark existing skill direction mission internal failed", append(logger.RequestAttrs(r), "error", err, "workspace_id", uuidToString(workspaceID), "issue_id", uuidToString(dup.ID))...)
+		}
 		writeJSON(w, http.StatusOK, CreateBrowserCaptureSkillDirectionMissionResponse{
 			Issue:           issueToResponse(dup, h.getIssuePrefix(r.Context(), dup.WorkspaceID)),
 			PlanningStatus:  existingPlanningStatus,
@@ -157,11 +166,39 @@ func (h *Handler) CreateBrowserCaptureSkillDirectionMission(w http.ResponseWrite
 		return
 	}
 
+	issue := res.Issue
+	if hidden, err := h.markIssueAsInternalSkillDirectionAnalysis(r, issue); err == nil {
+		issue = hidden
+	} else {
+		slog.Warn("mark skill direction mission internal failed", append(logger.RequestAttrs(r), "error", err, "workspace_id", uuidToString(workspaceID), "issue_id", uuidToString(issue.ID))...)
+	}
 	writeJSON(w, http.StatusCreated, CreateBrowserCaptureSkillDirectionMissionResponse{
-		Issue:           issueToResponse(res.Issue, prefix),
+		Issue:           issueToResponse(issue, prefix),
 		PlanningStatus:  planningStatus,
 		PlanningAgentID: planningAgentID,
 	})
+}
+
+func (h *Handler) markIssueAsInternalSkillDirectionAnalysis(r *http.Request, issue db.Issue) (db.Issue, error) {
+	updated, err := h.Queries.SetIssueMetadataKey(r.Context(), db.SetIssueMetadataKeyParams{
+		Key:         issueMetadataInternalKey,
+		Value:       []byte("true"),
+		ID:          issue.ID,
+		WorkspaceID: issue.WorkspaceID,
+	})
+	if err != nil {
+		return issue, err
+	}
+	updated, err = h.Queries.SetIssueMetadataKey(r.Context(), db.SetIssueMetadataKeyParams{
+		Key:         issueMetadataInternalKindKey,
+		Value:       []byte(strconv.Quote(issueMetadataSkillDirectionAnalysis)),
+		ID:          issue.ID,
+		WorkspaceID: issue.WorkspaceID,
+	})
+	if err != nil {
+		return updated, err
+	}
+	return updated, nil
 }
 
 func (h *Handler) CreateBrowserCaptureSkillGenerationMission(w http.ResponseWriter, r *http.Request) {
@@ -483,7 +520,8 @@ func skillDirectionConfig(direction BrowserCaptureSkillDirectionRequest) map[str
 
 func buildBrowserCaptureSkillDirectionMissionDescription(capture db.CapturedSource, opportunity *SkillOpportunityResponse) string {
 	var b strings.Builder
-	b.WriteString("请阅读这个收藏链接，判断它最适合沉淀成哪些具体的 Didian Skill 方向。此任务只做方向分析，不要创建或更新 Skill。\n\n")
+	b.WriteString("请阅读这个收藏链接，判断它最适合沉淀成哪些具体的 Didian Skill 方向。此任务只做方向分析，不要创建或更新 Skill。\n")
+	b.WriteString("如果页面正文摘录缺失或提示被清洗，请优先打开 URL 重新读取来源页面，不要把 GitHub/dev 的前端 payload、tree JSON 或错误页文本当作真实网页内容。\n\n")
 	b.WriteString("## 收藏来源\n")
 	b.WriteString(fmt.Sprintf("- Capture ID：%s\n", uuidToString(capture.ID)))
 	b.WriteString(fmt.Sprintf("- 标题：%s\n", capture.Title))
@@ -494,7 +532,7 @@ func buildBrowserCaptureSkillDirectionMissionDescription(capture db.CapturedSour
 
 	appendSkillMissionExcerpt(&b, "页面描述", textToString(capture.Description), 700)
 	appendSkillMissionExcerpt(&b, "用户选中内容", textToString(capture.SelectedText), 1200)
-	appendSkillMissionExcerpt(&b, "页面正文摘录", textToString(capture.ReadableText), 5000)
+	appendSkillMissionCleanExcerpt(&b, "页面正文摘录", textToString(capture.ReadableText), 5000)
 	appendSkillMissionList(&b, "平台证据片段", opportunity.EvidenceSnippets)
 	appendSkillMissionList(&b, "平台风险提示", opportunity.RiskNotes)
 
@@ -538,7 +576,7 @@ func buildBrowserCaptureSkillMissionDescription(capture db.CapturedSource, oppor
 
 	appendSkillMissionExcerpt(&b, "页面描述", textToString(capture.Description), 700)
 	appendSkillMissionExcerpt(&b, "用户选中内容", textToString(capture.SelectedText), 1200)
-	appendSkillMissionExcerpt(&b, "页面正文摘录", textToString(capture.ReadableText), 4500)
+	appendSkillMissionCleanExcerpt(&b, "页面正文摘录", textToString(capture.ReadableText), 4500)
 
 	b.WriteString("## 建议 Skill\n")
 	b.WriteString(fmt.Sprintf("- 名称：%s\n", direction.Title))
@@ -621,7 +659,7 @@ func buildBrowserCaptureSkillDraftContent(capture db.CapturedSource, opportunity
 	b.WriteString(fmt.Sprintf("- URL: %s\n", capture.Url))
 	b.WriteString(fmt.Sprintf("- Page type: %s\n", opportunity.PageType))
 	b.WriteString(fmt.Sprintf("- Confidence: %.0f%%\n\n", opportunity.Confidence*100))
-	appendSkillMissionExcerpt(&b, "Page Excerpt", textToString(capture.ReadableText), 3000)
+	appendSkillMissionCleanExcerpt(&b, "Page Excerpt", textToString(capture.ReadableText), 3000)
 	b.WriteString("## Quality Check\n")
 	b.WriteString("- Replace this draft with concrete steps that an agent can execute.\n")
 	b.WriteString("- Keep the source URL for future refreshes.\n")
@@ -658,4 +696,44 @@ func appendSkillMissionExcerpt(b *strings.Builder, title, value string, maxRunes
 	b.WriteString("\n")
 	b.WriteString(value)
 	b.WriteString("\n\n")
+}
+
+func appendSkillMissionCleanExcerpt(b *strings.Builder, title, value string, maxRunes int) {
+	value = normalizeSpace(value)
+	if value == "" {
+		return
+	}
+	if isNoisyBrowserCaptureText(value) {
+		b.WriteString("## ")
+		b.WriteString(title)
+		b.WriteString("\n")
+		b.WriteString("浏览器捕获的正文像前端应用 payload 或错误页，已从提示中省略。请打开来源 URL 重新读取真实内容。\n\n")
+		return
+	}
+	appendSkillMissionExcerpt(b, title, value, maxRunes)
+}
+
+func isNoisyBrowserCaptureText(value string) bool {
+	if value == "" {
+		return false
+	}
+	lower := strings.ToLower(value)
+	noisySignals := 0
+	for _, signal := range []string{
+		`"payload"`,
+		`"tree":{"items"`,
+		`"codeviewreporoute"`,
+		`"contenttype":"directory"`,
+		`github.dev`,
+		`加载时出错`,
+		`糟糕`,
+	} {
+		if strings.Contains(lower, signal) {
+			noisySignals++
+		}
+	}
+	if noisySignals >= 2 {
+		return true
+	}
+	return strings.Count(value, `{"`) >= 12 && strings.Count(value, `":"`) >= 12
 }

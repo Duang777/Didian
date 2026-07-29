@@ -468,7 +468,7 @@ func TestCreateBrowserCaptureSkillDirectionMissionQueuesCodexWithoutCreatingSkil
 		"title":        "example/direction-only",
 		"domain":       "github.com",
 		"description":  "A GitHub repository with README, install commands, license, and integration notes.",
-		"readableText": "README install commands, setup examples, license details, maintenance signals, troubleshooting notes, and integration examples.",
+		"readableText": `糟糕！ 加载时出错，请重新加载此页面。 在 github.dev 中打开 {"payload":{"codeViewRepoRoute":{"path":"/","refInfo":{"name":"main"}}},"tree":{"items":[{"name":".cargo","contentType":"directory"},{"name":"Cargo.toml","contentType":"file"},{"name":"README.md","contentType":"file"}]}}`,
 		"capturedAt":   "2026-07-14T10:00:00Z",
 	}
 
@@ -505,8 +505,56 @@ func TestCreateBrowserCaptureSkillDirectionMissionQueuesCodexWithoutCreatingSkil
 		!strings.Contains(*resp.Issue.Description, created.CaptureID) {
 		t.Fatalf("issue description missing direction instructions: %v", resp.Issue.Description)
 	}
+	if resp.Issue.Metadata["didian_internal"] != true || resp.Issue.Metadata["didian_internal_kind"] != "skill_direction_analysis" {
+		t.Fatalf("direction issue metadata = %#v, want internal skill direction analysis", resp.Issue.Metadata)
+	}
+	if strings.Contains(*resp.Issue.Description, `"payload"`) || strings.Contains(*resp.Issue.Description, `"tree":{"items"`) {
+		t.Fatalf("direction mission should not include noisy browser payload: %s", *resp.Issue.Description)
+	}
+	if !strings.Contains(*resp.Issue.Description, "已从提示中省略") {
+		t.Fatalf("direction mission should explain noisy excerpt cleanup: %s", *resp.Issue.Description)
+	}
 	if strings.Contains(*resp.Issue.Description, "didian skill update") {
 		t.Fatalf("direction mission must not include skill update instructions: %s", *resp.Issue.Description)
+	}
+
+	w = httptest.NewRecorder()
+	listReq := newRequest(http.MethodGet, "/api/issues?metadata=%7B%22didian_internal_kind%22%3A%22skill_direction_analysis%22%7D", nil)
+	testHandler.ListIssues(w, listReq)
+	if w.Code != http.StatusOK {
+		t.Fatalf("ListIssues metadata filter: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var internalList struct {
+		Issues []IssueResponse `json:"issues"`
+	}
+	if err := json.NewDecoder(w.Body).Decode(&internalList); err != nil {
+		t.Fatalf("decode internal list: %v", err)
+	}
+	foundInternal := false
+	for _, issue := range internalList.Issues {
+		if issue.ID == resp.Issue.ID {
+			foundInternal = true
+		}
+	}
+	if !foundInternal {
+		t.Fatalf("metadata-filtered issue list should include internal direction issue")
+	}
+
+	w = httptest.NewRecorder()
+	testHandler.ListIssues(w, newRequest(http.MethodGet, "/api/issues", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("ListIssues default: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var defaultList struct {
+		Issues []IssueResponse `json:"issues"`
+	}
+	if err := json.NewDecoder(w.Body).Decode(&defaultList); err != nil {
+		t.Fatalf("decode default list: %v", err)
+	}
+	for _, issue := range defaultList.Issues {
+		if issue.ID == resp.Issue.ID {
+			t.Fatalf("default issue list should hide internal direction issue")
+		}
 	}
 
 	var skillCount int

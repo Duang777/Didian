@@ -817,6 +817,7 @@ func (h *Handler) ListIssues(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	includeInternalIssues := r.URL.Query().Get("include_internal") == "true"
 	dateFilter, ok := parseIssueDateFilter(w, r.URL.Query())
 	if !ok {
 		return
@@ -837,6 +838,9 @@ func (h *Handler) ListIssues(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to list issues")
 			return
+		}
+		if !includeInternalIssues && metadataFilter == nil {
+			issues = filterInternalOpenIssues(issues)
 		}
 
 		prefix := h.getIssuePrefix(ctx, wsUUID)
@@ -968,6 +972,8 @@ func (h *Handler) ListIssues(w http.ResponseWriter, r *http.Request) {
 	}
 	if metadataFilter != nil {
 		where = append(where, fmt.Sprintf("i.metadata @> %s::jsonb", addArg(string(metadataFilter))))
+	} else if !includeInternalIssues {
+		where = append(where, fmt.Sprintf("NOT (i.metadata @> %s::jsonb)", addArg(`{"didian_internal":true}`)))
 	}
 	where = appendIssueDateFilter(where, addArg, dateFilter)
 	if involvesUserFilter.Valid {
@@ -1169,6 +1175,20 @@ func appendIssueDateFilter(where []string, addArg func(any) string, filter *issu
 		filter.column,
 		endRef,
 	))
+}
+
+func filterInternalOpenIssues(issues []db.ListOpenIssuesRow) []db.ListOpenIssuesRow {
+	if len(issues) == 0 {
+		return issues
+	}
+	out := issues[:0]
+	for _, issue := range issues {
+		if parseIssueMetadata(issue.Metadata)[issueMetadataInternalKey] == true {
+			continue
+		}
+		out = append(out, issue)
+	}
+	return out
 }
 
 func splitCommaParam(raw string) []string {
