@@ -158,6 +158,21 @@ export interface CreateAiInboxMissionResponse {
   planningAgentId?: string;
 }
 
+export interface BrowserCaptureSkillDirection {
+  title: string;
+  capability: string;
+  primaryUseCase: string;
+  triggerExamples: string[];
+  expectedInputs: string[];
+  expectedOutputs: string[];
+  boundaries: string;
+  notes?: string;
+}
+
+export interface CreateBrowserCaptureSkillGenerationMissionRequest {
+  direction: BrowserCaptureSkillDirection;
+}
+
 export interface CreateBrowserCaptureSkillGenerationMissionResponse extends CreateAiInboxMissionResponse {
   skill: Skill;
 }

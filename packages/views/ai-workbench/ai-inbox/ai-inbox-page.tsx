@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Archive, CheckCircle2, Clock3, ExternalLink, Inbox, Loader2, RefreshCw, RotateCcw, Search, SendHorizontal, Sparkles } from "lucide-react";
 import { ApiError, api, DuplicateIssueErrorBodySchema, parseWithFallback, type DuplicateIssueErrorBody } from "@didian/core/api";
-import { browserCapturesOptions, useArchiveBrowserCapture, useCreateBrowserCapture, useRestoreBrowserCapture, type BrowserCaptureMemoryState } from "@didian/core/browser-memory";
+import { browserCapturesOptions, useArchiveBrowserCapture, useCreateBrowserCapture, useRestoreBrowserCapture, type BrowserCaptureMemoryState, type BrowserCaptureSkillDirection } from "@didian/core/browser-memory";
 import { useWorkspaceId } from "@didian/core/hooks";
 import { issueKeys } from "@didian/core/issues/queries";
 import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
@@ -15,6 +15,7 @@ import { Button } from "@didian/ui/components/ui/button";
 import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@didian/ui/components/ui/dialog";
 import { Input } from "@didian/ui/components/ui/input";
+import { Label } from "@didian/ui/components/ui/label";
 import { Textarea } from "@didian/ui/components/ui/textarea";
 import { toast } from "sonner";
 import {
@@ -27,11 +28,11 @@ import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
 const createMissionLabel = "创建 Mission";
 const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
-const personalSkillSuggestionLabel = "可生成个人 Skill";
+const personalSkillSuggestionLabel = "Skill 候选";
 const generateSkillLabel = "生成 Skill";
 const keepAsKnowledgeLabel = "收藏为知识";
 const reduceSkillSuggestionsLabel = "少推荐";
-const skillGenerationQueuedToast = "Skill 生成任务已创建，本地 agent 会生成并写入 Skill 库。";
+const skillGenerationQueuedToast = "Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。";
 const skillGenerationNoAgentToast = "Skill 生成任务已创建，当前没有可用 Codex agent。";
 const keepAsKnowledgeToast = "已保留为知识卡片";
 const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
@@ -39,6 +40,17 @@ type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
 type SkillUsageMission = { id: string; href: string; title: string };
+type SkillDirectionDraft = {
+  item: AiInboxInput;
+  title: string;
+  capability: string;
+  primaryUseCase: string;
+  triggerExamples: string;
+  expectedInputs: string;
+  expectedOutputs: string;
+  boundaries: string;
+  notes: string;
+};
 
 export function AiInboxPage() {
   const wsId = useWorkspaceId();
@@ -50,6 +62,7 @@ export function AiInboxPage() {
   const [createdMission, setCreatedMission] = useState<{ id: string; href: string; title: string; state: "created" | "duplicate" } | null>(null);
   const [skillGenerationMissions, setSkillGenerationMissions] = useState<Record<string, SkillGenerationMission>>({});
   const [skillUsageMissions, setSkillUsageMissions] = useState<Record<string, SkillUsageMission>>({});
+  const [skillDirectionDraft, setSkillDirectionDraft] = useState<SkillDirectionDraft | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [collectPromptUrls, setCollectPromptUrls] = useState<string[]>([]);
   const trimmedCaptureQuery = captureQuery.trim();
@@ -78,7 +91,9 @@ export function AiInboxPage() {
       return created.issue;
     },
   });
-  const createSkillGenerationMission = useMutation({ mutationFn: api.createBrowserCaptureSkillGenerationMission });
+  const createSkillGenerationMission = useMutation({
+    mutationFn: ({ captureId, direction }: { captureId: string; direction: BrowserCaptureSkillDirection }) => api.createBrowserCaptureSkillGenerationMission(captureId, { direction }),
+  });
   const createBrowserCapture = useCreateBrowserCapture();
   const skillsQuery = useQuery(skillListOptions(wsId));
   const capturesQuery = useQuery({
@@ -146,9 +161,19 @@ export function AiInboxPage() {
   }
 
   async function handleGenerateSkill(item: AiInboxInput) {
-    if (!item.captureId || createSkillGenerationMission.isPending) return;
+    if (!item.captureId || !item.skillOpportunity || createSkillGenerationMission.isPending) return;
+    setSkillDirectionDraft(buildSkillDirectionDraft(item));
+  }
+
+  async function handleConfirmSkillDirection() {
+    const captureId = skillDirectionDraft?.item.captureId;
+    if (!skillDirectionDraft || !captureId || createSkillGenerationMission.isPending) return;
+    const item = skillDirectionDraft.item;
     try {
-      const mission = await createSkillGenerationMission.mutateAsync(item.captureId);
+      const mission = await createSkillGenerationMission.mutateAsync({
+        captureId,
+        direction: skillDirectionFromDraft(skillDirectionDraft),
+      });
       if (!mission.issue.id) {
         throw new Error("创建 Skill 生成任务失败：服务端没有返回 Mission ID");
       }
@@ -156,7 +181,7 @@ export function AiInboxPage() {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.skills(wsId) });
       setSkillGenerationMissions((prev) => ({
         ...prev,
-        [item.captureId!]: {
+        [captureId]: {
           id: mission.issue.id,
           href: paths.workspace(workspaceSlug).issueDetail(mission.issue.id),
           title: mission.issue.title,
@@ -166,6 +191,7 @@ export function AiInboxPage() {
           state: mission.planningStatus === "existing" ? skillGenerationStateForSkill(mission.skill) : "created",
         },
       }));
+      setSkillDirectionDraft(null);
       toast.success(mission.planningStatus === "queued" ? skillGenerationQueuedToast : mission.planningStatus === "existing" ? "Skill 已在 Skill 库中，已打开现有生成任务入口。" : skillGenerationNoAgentToast);
     } catch (err) {
       const duplicate = parseDuplicateIssueError(err);
@@ -173,7 +199,7 @@ export function AiInboxPage() {
         refreshMissionQueries();
         setSkillGenerationMissions((prev) => ({
           ...prev,
-          [item.captureId!]: {
+          [captureId]: {
             id: duplicate.issue.id,
             href: paths.workspace(workspaceSlug).issueDetail(duplicate.issue.id),
             title: duplicate.issue.title,
@@ -183,6 +209,7 @@ export function AiInboxPage() {
             state: "duplicate",
           },
         }));
+        setSkillDirectionDraft(null);
         toast.error("已有相同的 active Skill 生成任务，可从卡片打开。");
         return;
       }
@@ -367,7 +394,7 @@ export function AiInboxPage() {
                     archivedView={captureState === "archived"}
                     skillGenerationMission={item.captureId ? skillGenerationMissions[item.captureId] ?? skillsByCaptureId.get(item.captureId) : undefined}
                     skillUsageMission={item.captureId ? skillUsageMissions[item.captureId] : undefined}
-                    isGeneratingSkill={createSkillGenerationMission.isPending && createSkillGenerationMission.variables === item.captureId}
+                    isGeneratingSkill={createSkillGenerationMission.isPending && createSkillGenerationMission.variables?.captureId === item.captureId}
                     isCreatingSkillMission={createSkillUsageMission.isPending && createSkillUsageMission.variables?.item.captureId === item.captureId}
                     onGenerateSkill={handleGenerateSkill}
                     onUseGeneratedSkill={handleUseGeneratedSkill}
@@ -378,6 +405,13 @@ export function AiInboxPage() {
           </div>
         )}
       </WorkbenchSection>
+      <SkillDirectionDialog
+        draft={skillDirectionDraft}
+        isSubmitting={createSkillGenerationMission.isPending}
+        onChange={setSkillDirectionDraft}
+        onClose={() => setSkillDirectionDraft(null)}
+        onConfirm={() => void handleConfirmSkillDirection()}
+      />
       <Dialog open={collectPromptUrls.length > 0} onOpenChange={(open) => { if (!open) setCollectPromptUrls([]); }}>
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
           <DialogHeader>
@@ -405,6 +439,129 @@ export function AiInboxPage() {
         </DialogContent>
       </Dialog>
     </WorkbenchShell>
+  );
+}
+
+function SkillDirectionDialog({
+  draft,
+  isSubmitting,
+  onChange,
+  onClose,
+  onConfirm,
+}: {
+  draft: SkillDirectionDraft | null;
+  isSubmitting: boolean;
+  onChange: (draft: SkillDirectionDraft | null) => void;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const disabled = !draft || !draft.title.trim() || !draft.primaryUseCase.trim() || linesToList(draft.expectedInputs).length === 0 || linesToList(draft.expectedOutputs).length === 0;
+  const update = (patch: Partial<SkillDirectionDraft>) => {
+    if (!draft) return;
+    onChange({ ...draft, ...patch });
+  };
+
+  return (
+    <Dialog open={Boolean(draft)} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>确认 Skill 方向</DialogTitle>
+          <DialogDescription>
+            生成前先确认方向，之后交给本地 Codex 完善并写入 Skill 库。
+          </DialogDescription>
+        </DialogHeader>
+        {draft && (
+          <div className="grid max-h-[65vh] gap-4 overflow-y-auto pr-1">
+            <div className="rounded-md border bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
+              <div className="font-medium text-foreground">平台自动评估</div>
+              <div className="mt-1">
+                这个收藏页有较高复用信号，适合先做成候选 Skill。请确认它真正要服务的重复任务，避免生成成泛泛摘要。
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="skill-direction-title">Skill 名称</Label>
+              <Input
+                id="skill-direction-title"
+                value={draft.title}
+                onChange={(event) => update({ title: event.target.value })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="skill-direction-use-case">主要用途</Label>
+              <Textarea
+                id="skill-direction-use-case"
+                value={draft.primaryUseCase}
+                onChange={(event) => update({ primaryUseCase: event.target.value })}
+                className="min-h-20 resize-none text-sm"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="skill-direction-capability">能力描述</Label>
+              <Textarea
+                id="skill-direction-capability"
+                value={draft.capability}
+                onChange={(event) => update({ capability: event.target.value })}
+                className="min-h-20 resize-none text-sm"
+              />
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="skill-direction-inputs">必要输入</Label>
+                <Textarea
+                  id="skill-direction-inputs"
+                  value={draft.expectedInputs}
+                  onChange={(event) => update({ expectedInputs: event.target.value })}
+                  className="min-h-24 resize-none text-sm"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="skill-direction-outputs">期望输出</Label>
+                <Textarea
+                  id="skill-direction-outputs"
+                  value={draft.expectedOutputs}
+                  onChange={(event) => update({ expectedOutputs: event.target.value })}
+                  className="min-h-24 resize-none text-sm"
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="skill-direction-triggers">触发说法</Label>
+              <Textarea
+                id="skill-direction-triggers"
+                value={draft.triggerExamples}
+                onChange={(event) => update({ triggerExamples: event.target.value })}
+                className="min-h-20 resize-none text-sm"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="skill-direction-boundaries">边界和不要做</Label>
+              <Textarea
+                id="skill-direction-boundaries"
+                value={draft.boundaries}
+                onChange={(event) => update({ boundaries: event.target.value })}
+                className="min-h-20 resize-none text-sm"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="skill-direction-notes">补充说明</Label>
+              <Textarea
+                id="skill-direction-notes"
+                value={draft.notes}
+                onChange={(event) => update({ notes: event.target.value })}
+                className="min-h-16 resize-none text-sm"
+              />
+            </div>
+          </div>
+        )}
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>取消</Button>
+          <Button type="button" onClick={onConfirm} disabled={disabled || isSubmitting}>
+            {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+            {isSubmitting ? "提交中" : "交给 Codex 生成"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -627,6 +784,54 @@ function buildBrowserCaptureSkillMap(skills: SkillSummary[] | undefined, workspa
     });
   }
   return map;
+}
+
+function buildSkillDirectionDraft(item: AiInboxInput): SkillDirectionDraft {
+  const opportunity = item.skillOpportunity;
+  return {
+    item,
+    title: opportunity?.proposedTitle ?? `${item.title} 助手`,
+    capability: opportunity?.proposedCapability ?? "把收藏网页沉淀成可重复使用的操作流程。",
+    primaryUseCase: opportunity?.proposedCapability ?? "把收藏网页沉淀成以后可以反复调用的个人工作流。",
+    triggerExamples: listToText(opportunity?.triggerExamples ?? [`使用 ${item.title} 处理当前任务`]),
+    expectedInputs: listToText(opportunity?.expectedInputs ?? ["任务背景", "当前上下文"]),
+    expectedOutputs: listToText(opportunity?.expectedOutputs ?? ["执行步骤", "检查清单", "风险提示"]),
+    boundaries: defaultSkillDirectionBoundaries(opportunity),
+    notes: "",
+  };
+}
+
+function skillDirectionFromDraft(draft: SkillDirectionDraft): BrowserCaptureSkillDirection {
+  return {
+    title: draft.title.trim(),
+    capability: draft.capability.trim(),
+    primaryUseCase: draft.primaryUseCase.trim(),
+    triggerExamples: linesToList(draft.triggerExamples),
+    expectedInputs: linesToList(draft.expectedInputs),
+    expectedOutputs: linesToList(draft.expectedOutputs),
+    boundaries: draft.boundaries.trim(),
+    notes: draft.notes.trim() || undefined,
+  };
+}
+
+function defaultSkillDirectionBoundaries(opportunity: SkillOpportunity | null | undefined): string {
+  const riskNotes = opportunity?.riskNotes ?? [];
+  return [
+    "不要只总结网页内容；要沉淀成 agent 可执行、可复用的 Skill。",
+    "必须保留来源 URL 和需要刷新来源信息的步骤。",
+    ...riskNotes,
+  ].join("\n");
+}
+
+function listToText(values: string[]): string {
+  return values.map((value) => value.trim()).filter(Boolean).join("\n");
+}
+
+function linesToList(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^[-*]\s*/, "").trim())
+    .filter(Boolean);
 }
 
 function skillOriginCaptureId(skill: SkillSummary): string | null {

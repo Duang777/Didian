@@ -280,7 +280,7 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
-    expect(screen.getByText("可生成个人 Skill")).toBeInTheDocument();
+    expect(screen.getByText("Skill 候选")).toBeInTheDocument();
     expect(screen.getByText("Stripe Checkout 接入助手")).toBeInTheDocument();
     expect(screen.getByText(/接入步骤、请求示例/)).toBeInTheDocument();
     expect(screen.getByText("Docs")).toBeInTheDocument();
@@ -289,8 +289,26 @@ describe("AiInboxPage browser captures", () => {
 
     await user.click(screen.getByRole("button", { name: "生成 Skill" }));
 
+    expect(screen.getByRole("dialog", { name: "确认 Skill 方向" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 接入助手");
+    expect(screen.getByLabelText("主要用途")).toHaveValue("根据项目栈生成接入步骤、请求示例、环境变量清单和常见错误排查。");
+    expect(screen.getByText("生成前先确认方向，之后交给本地 Codex 完善并写入 Skill 库。")).toBeInTheDocument();
+    expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
+
+    await user.clear(screen.getByLabelText("主要用途"));
+    await user.type(screen.getByLabelText("主要用途"), "帮我把 Stripe Checkout 文档沉淀成项目接入和 webhook 排障流程。");
+    await user.click(screen.getByRole("button", { name: "交给 Codex 生成" }));
+
     await waitFor(() => expect(createBrowserCaptureSkillGenerationMission.mock.calls[0]?.[0]).toBe("capture-1"));
-    expect(toastSuccess).toHaveBeenCalledWith("Skill 生成任务已创建，本地 agent 会生成并写入 Skill 库。");
+    expect(createBrowserCaptureSkillGenerationMission.mock.calls[0]?.[1]).toEqual(expect.objectContaining({
+      direction: expect.objectContaining({
+        title: "Stripe Checkout 接入助手",
+        primaryUseCase: "帮我把 Stripe Checkout 文档沉淀成项目接入和 webhook 排障流程。",
+        expectedInputs: ["项目栈", "集成目标", "错误信息或现有代码"],
+        expectedOutputs: ["接入步骤", "示例代码", "错误排查清单"],
+      }),
+    }));
+    expect(toastSuccess).toHaveBeenCalledWith("Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。");
     expect(screen.getByRole("status")).toHaveTextContent("Skill 已写入库");
     expect(screen.getByRole("link", { name: "打开 Skill：Stripe Checkout 接入助手" })).toHaveAttribute("href", "/acme/skills/skill-1");
     expect(screen.getByRole("link", { name: "打开 Mission" })).toHaveAttribute("href", "/acme/issues/skill-mission-1");

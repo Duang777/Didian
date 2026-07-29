@@ -144,6 +144,7 @@ import type {
   BrowserCapture,
   CreateAiInboxMissionRequest,
   CreateAiInboxMissionResponse,
+  CreateBrowserCaptureSkillGenerationMissionRequest,
   CreateBrowserCaptureSkillGenerationMissionResponse,
   CreateBrowserCaptureRequest,
   CreateBrowserCaptureResponse,
@@ -1603,8 +1604,14 @@ export class ApiClient {
     });
   }
 
-  async createBrowserCaptureSkillGenerationMission(id: string): Promise<CreateBrowserCaptureSkillGenerationMissionResponse> {
-    return this.fetch(`/api/browser-captures/${id}/skill-generation-mission`, { method: "POST" });
+  async createBrowserCaptureSkillGenerationMission(
+    id: string,
+    data: CreateBrowserCaptureSkillGenerationMissionRequest,
+  ): Promise<CreateBrowserCaptureSkillGenerationMissionResponse> {
+    return this.fetch(`/api/browser-captures/${id}/skill-generation-mission`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 
   async archiveBrowserCapture(id: string): Promise<BrowserCapture> {
