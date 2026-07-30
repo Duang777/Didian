@@ -1,5 +1,58 @@
 # 实施计划：AI 资源工作台
 
+## 2026-07-30 Skill Operating Loop
+
+### 概览
+
+本阶段以 `docs/ai-resource-workbench/06-skill-operating-loop-prd.md` 为准，目标是把当前已能生成/绑定的 Skill 流程打磨成可操作闭环：内部分析不污染 Mission 列表、Skill 能被 Mission 清楚选择和审计、生成后的 Skill 可删除/重试，并逐步提升网页到 Skill 的方向分析质量。
+
+### 架构决策
+
+- Skill 方向分析继续复用 task/issue 执行底座，但 `didian_internal = true` 的记录不能进入普通 Mission 列表或前端实时缓存。
+- Skill usage 仍然使用 `issue_skill_usage`，保持 Mission 级临时选择和 agent 默认 Skills 分离。
+- 前端列表缓存必须有防御性过滤，不能只依赖后端默认查询。
+- 规则初筛只做候选提示；具体方向由本地 Codex 在弹窗内分析，用户确认后才生成。
+
+### Phase 1: Make The Current Loop Less Weird
+
+- [ ] Task SOL-1: 前端缓存层过滤 internal Skill direction Missions。
+- [ ] Task SOL-2: AI Inbox Skill 方向弹窗补充更明确的“后台分析中”状态和失败原因。
+- [ ] Task SOL-3: 删除 generated Skill 后，capture card、Skill 列表、Mission planned usage 都能正确刷新。
+
+### Checkpoint: Phase 1
+
+- [ ] `pnpm --filter @didian/core exec vitest run issues/cache-helpers.test.ts issues/ws-updaters.test.ts`
+- [ ] `pnpm --filter @didian/views exec vitest run ai-workbench/ai-inbox/ai-inbox-page.test.tsx`
+- [ ] `pnpm --filter @didian/core typecheck`
+- [ ] `pnpm --filter @didian/views typecheck`
+
+### Phase 2: Make Skills Feel Used
+
+- [ ] Task SOL-4: Mission detail 的 Skills 区块展示更清晰的 planned/injected/used/skipped/failed 说明。
+- [ ] Task SOL-5: claim prompt 明确列出 Mission selected Skills 和选择原因。
+- [ ] Task SOL-6: 后端测试覆盖 prompt 文案和 planned -> injected 审计记录。
+
+### Phase 3: Make Skills Operable
+
+- [ ] Task SOL-7: Skill detail 展示来源 capture、方向草稿、生成 Mission 和使用 Mission。
+- [ ] Task SOL-8: 支持从 Skill detail 重新生成/更新 Skill。
+- [ ] Task SOL-9: Skill 删除策略区分未使用 hard delete 和已使用 archive。
+
+### Phase 4: Smarter Recommendations
+
+- [ ] Task SOL-10: GitHub repo / docs / paper / blog/tutorial / product page 分类型提取信号。
+- [ ] Task SOL-11: 移除用户可见百分比分数，统一为定性信号和证据片段。
+- [ ] Task SOL-12: 本地 Codex 推荐 2-3 个具体 Skill 方向，用户选择后生成。
+
+### Risks
+
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+| internal 分析任务继续出现在列表 | High | 后端默认过滤 + 前端缓存层过滤 + 测试覆盖 WS created/update。 |
+| Skill 变成泛泛网页摘要 | High | 方向确认表单强制输入用途、输入、输出、边界、成功标准。 |
+| Mission Skill usage 和 agent default skills 混淆 | High | `issue_skill_usage` 和 `agent_skill` 分离，UI 文案强调“本 Mission 使用”。 |
+| 删除 Skill 破坏历史审计 | Medium | 已使用 Skill 后续转 archive，未使用才 hard delete。 |
+
 ## 2026-07-28 Mission Skill Runtime 闭环
 
 ### 概览

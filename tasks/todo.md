@@ -1,5 +1,64 @@
 # 任务清单：AI 资源工作台
 
+## 2026-07-30 Skill Operating Loop
+
+### Task SOL-1：前端缓存层过滤 internal Skill direction Missions
+
+**描述：** 后端默认隐藏 `metadata.didian_internal = true` 的内部任务，但实时事件或缓存写入仍可能把 Skill 方向分析任务塞进普通 Mission 列表。把过滤规则集中放进 core cache helper，保护列表、看板和 My Missions 缓存。
+
+**验收标准：**
+- [ ] `addIssueToBuckets` 不会把 internal issue 加入普通列表缓存。
+- [ ] `patchIssueInBuckets` 收到 `metadata.didian_internal = true` 时会从普通列表缓存移除该 issue。
+- [ ] WebSocket `issue:created` 不会把 internal Skill direction issue 插入列表。
+- [ ] 详情页仍可通过 direct issue detail/comment polling 读取 internal analysis result。
+
+**验证：**
+- [ ] `pnpm --filter @didian/core exec vitest run issues/cache-helpers.test.ts issues/ws-updaters.test.ts`
+- [ ] `pnpm --filter @didian/core typecheck`
+
+**依赖：** 无
+
+**可能触及文件：**
+- `packages/core/issues/cache-helpers.ts`
+- `packages/core/issues/cache-helpers.test.ts`
+- `packages/core/issues/ws-updaters.test.ts`
+
+**规模预估：** S
+
+### Task SOL-2：AI Inbox Skill 方向弹窗状态和错误诊断
+
+**描述：** 让 `做成 Skill` 弹窗清楚表达平台初筛、本地 Codex 推荐方向、用户确认草稿和生成 Skill 的阶段。错误需要区分 backend offline、Codex Local offline、来源抓取失败和已生成 Skill。
+
+**验收标准：**
+- [ ] 弹窗中有清晰阶段状态，不要求用户进入 Mission 查看分析。
+- [ ] 无 Codex Local 时给出可继续填写草稿的路径。
+- [ ] backend offline 时提示启动后端，而不是泛泛 `Failed to fetch`。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views exec vitest run ai-workbench/ai-inbox/ai-inbox-page.test.tsx`
+- [ ] `pnpm --filter @didian/views typecheck`
+
+**依赖：** SOL-1
+
+**规模预估：** M
+
+### Task SOL-3：Generated Skill 删除和重试闭环
+
+**描述：** 用户可以从收藏卡片或 Skill library 删除 generated Skill，删除后 capture card 回到可重新生成状态；如果 Skill 已有 usage history，后续改为 archive 方案。
+
+**验收标准：**
+- [ ] 收藏卡片删除 generated Skill 后不再显示 `已生成`。
+- [ ] Skill library 删除后列表刷新。
+- [ ] 删除失败时提示原因，不吞掉错误。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views exec vitest run ai-workbench/ai-inbox/ai-inbox-page.test.tsx skills`
+- [ ] `pnpm --filter @didian/views typecheck`
+
+**依赖：** SOL-1
+
+**规模预估：** M
+
 ## 2026-07-28 Mission Skill Runtime 闭环
 
 ### Task MS-1：新增 Mission Skill Usage 数据基础
