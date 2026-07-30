@@ -311,11 +311,11 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
-    expect(screen.getByText("Skill 候选")).toBeInTheDocument();
+    expect(screen.getByText("可做成 Skill")).toBeInTheDocument();
     expect(screen.getByText("Stripe Checkout 接入助手")).toBeInTheDocument();
     expect(screen.getByText(/接入步骤、请求示例/)).toBeInTheDocument();
     expect(screen.getByText("Docs")).toBeInTheDocument();
-    expect(screen.getByText("规则初筛")).toBeInTheDocument();
+    expect(screen.getByText("平台发现")).toBeInTheDocument();
     expect(screen.queryByText("86%")).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "做成 Skill" })).toHaveLength(2);
     expect(screen.getByText("My opinion about AI tools")).toBeInTheDocument();
@@ -449,7 +449,7 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("AI workflow notes")).toBeInTheDocument());
-    expect(screen.queryByText("Skill 候选")).not.toBeInTheDocument();
+    expect(screen.queryByText("可做成 Skill")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "做成 Skill" }));
 

@@ -34,7 +34,7 @@ Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Ski
 - 用户确认优先。自动推荐可以高置信显示，但第一版不静默注入。
 - 推荐不是生成。平台推荐阶段只说明“这个网页可能适合沉淀成 Skill”；草稿阶段由本地 Codex 给出具体能力方向；生成阶段必须先让用户确认草稿。
 - 方向分析不应该表现为普通 Mission。即使底层复用 issue/task 队列，也必须在产品上隐藏为后台任务，结果回到 AI Inbox 智能弹窗；用户不需要去 Mission 列表找这次分析。
-- 用户界面只保留一个主要入口：`做成 Skill`。平台强推荐时可以显示 `Skill 候选` 证据，但 CTA 仍然进入同一个 Skill 草稿弹窗。
+- 用户界面只保留一个主要入口：`做成 Skill`。平台发现可复用线索时可以显示 `可做成 Skill` 证据，但 CTA 仍然进入同一个 Skill 草稿弹窗。
 - 生成 Skill 前必须问清楚：用户要解决的重复任务、触发场景、必要输入、期望输出、边界和命名偏好。
 - 每条 Skill 使用记录必须可回溯来源网页、Skill 版本、agent、runtime、task。
 
@@ -216,7 +216,7 @@ This keeps the first UX intentionally simple: users decide which Skill a Mission
 
 Capture card has four phases:
 
-1. **Skill 候选**：系统用规则初筛网页是否适合沉淀成 Skill，并展示页面类型、定性信号和原因；不展示伪精确百分比。
+1. **可做成 Skill**：系统先发现网页里是否有可复用线索，并展示页面类型、定性信号和原因；不展示伪精确百分比。
 2. **Skill 草稿**：用户点击 `做成 Skill` 后，AI Inbox 打开单个智能弹窗。用户可以先补充可选需求，再让本地 Codex 阅读收藏链接并推荐 2-3 个具体 Skill 方向。该分析任务不出现在普通 Mission 列表。
 3. **草稿确认**：同一个弹窗展示 Codex 建议和可编辑草稿。用户确认 Skill 名称、用途、触发场景、输入、输出和边界；提交后才创建本地 Codex 生成 Mission。
 4. **已生成/可使用**：一旦 Skill 入库，卡片展示 Skill 库链接和“用 Skill 创建 Mission”。
@@ -276,7 +276,7 @@ This block is trusted platform metadata. Skill file contents remain user/workspa
 
 - The card CTA is always `做成 Skill`; `让 Codex 推荐方向` only appears inside the modal.
 - The modal title is `做成 Skill` and should not mention internal Mission/task implementation.
-- The modal labels platform assessment as `规则初筛`, not `AI 判断`; exact confidence and sub-score percentages stay internal.
+- The modal labels platform assessment as `平台发现`, not `AI 判断`; exact confidence and sub-score percentages stay internal.
 - If no local Codex agent is available, the modal keeps the editable draft visible and clearly says the user can continue with the platform default direction.
 - If Codex has not returned a comment yet, the user can still edit a default draft; the UI should not block on background analysis forever.
 - The generated state on the card should be compact: status text, `用 Skill 创建 Mission`, `打开 Skill`, and icon-only delete.

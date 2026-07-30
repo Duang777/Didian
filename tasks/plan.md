@@ -11,7 +11,7 @@
 - Skill 方向分析继续复用 task/issue 执行底座，但 `didian_internal = true` 的记录不能进入普通 Mission 列表或前端实时缓存。
 - Skill usage 仍然使用 `issue_skill_usage`，保持 Mission 级临时选择和 agent 默认 Skills 分离。
 - 前端列表缓存必须有防御性过滤，不能只依赖后端默认查询。
-- 规则初筛只做候选提示；具体方向由本地 Codex 在弹窗内分析，用户确认后才生成。
+- 平台发现只做候选提示；具体方向由本地 Codex 在弹窗内分析，用户确认后才生成。
 
 ### Phase 1: Make The Current Loop Less Weird
 

@@ -29,7 +29,7 @@ import { Markdown } from "../../common/markdown";
 const createMissionLabel = "创建 Mission";
 const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
-const personalSkillSuggestionLabel = "Skill 候选";
+const personalSkillSuggestionLabel = "可做成 Skill";
 const generateSkillLabel = "生成 Skill";
 const recommendSkillDirectionLabel = "让 Codex 推荐方向";
 const keepAsKnowledgeLabel = "收藏为知识";
@@ -1051,7 +1051,7 @@ function SkillOpportunityPanel({
               {formatSkillOpportunityPageType(opportunity.pageType)}
             </Badge>
             <Badge variant="secondary" className="h-5 rounded-sm bg-primary/10 px-1.5 text-[10px] text-primary">
-              规则初筛
+              平台发现
             </Badge>
             {mission && (
               <Badge variant="secondary" className="h-5 rounded-sm px-1.5 text-[10px] text-muted-foreground">
@@ -1240,7 +1240,7 @@ function skillOpportunityAssessmentText(opportunity: SkillOpportunity | null | u
   if (!opportunity.shouldSuggest) {
     return `${opportunity.whyUseful} 请确认它真正要服务的重复任务，避免生成成泛泛摘要。`;
   }
-  return `规则初筛：这个收藏被识别为 ${formatSkillOpportunityPageType(opportunity.pageType)}，具备可复用信号。具体 Skill 方向会由本地 Codex 阅读链接后推荐。${opportunity.whyUseful}`;
+  return `平台发现这个 ${formatSkillOpportunityPageType(opportunity.pageType)} 里有可复用线索。具体 Skill 方向会由本地 Codex 阅读链接后推荐。${opportunity.whyUseful}`;
 }
 
 function qualitativeSkillSignal(value: number): string {
