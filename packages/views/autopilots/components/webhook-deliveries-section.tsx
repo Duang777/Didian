@@ -50,7 +50,7 @@ type StatusVisual = {
 };
 
 const STATUS_VISUAL: Record<WebhookDeliveryStatus, StatusVisual> = {
-  queued: { color: "text-blue-500", icon: Loader2, spin: true },
+  queued: { color: "text-primary", icon: Loader2, spin: true },
   dispatched: { color: "text-emerald-500", icon: CheckCircle2 },
   // Signature failures and pre-flight bouncebacks land here. Read as a
   // failure visually, the dialog footer explains the reason.

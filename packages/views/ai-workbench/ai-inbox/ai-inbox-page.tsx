@@ -442,16 +442,15 @@ export function AiInboxPage() {
       icon={Inbox}
       title="AI Inbox"
       description="把链接、文本或一个想法丢进来创建 Mission。已有收藏会在下方展示，但不会默认进入这次任务。"
-      className="bg-success/5 dark:bg-background"
-      headerClassName="border-success/20 bg-background/80"
-      iconClassName="text-success"
+      headerClassName="bg-background/80"
+      iconClassName="text-primary"
       descriptionClassName="text-foreground/70"
     >
       <div className="grid gap-4">
         <WorkbenchSection
           title="输入"
           description="把这次想交给 Agent 的需求写在这里。只有这里的文本和链接会进入新 Mission。"
-          className="border-success/15 bg-background/95 shadow-sm shadow-success/5"
+          className="bg-card/95 shadow-sm"
         >
           <Textarea
             aria-label="AI Inbox input"
@@ -463,7 +462,6 @@ export function AiInboxPage() {
             <Button
               size="sm"
               type="button"
-              className="bg-success text-white hover:bg-success/90"
               disabled={!canCreateMission || createMission.isPending || createBrowserCapture.isPending || collectPromptUrls.length > 0 || Boolean(createdMission)}
               onClick={() => void handleCreateMission()}
             >
@@ -507,7 +505,7 @@ export function AiInboxPage() {
       <WorkbenchSection
         title="已有收藏"
         description="这里展示你之前收藏过的页面。它们不会默认进入这次新 Mission，除非你在输入框里明确引用它们。"
-        className="border-success/15 bg-background/95 shadow-sm shadow-success/5"
+        className="bg-card/95 shadow-sm"
       >
         <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div className="relative min-w-0 flex-1 md:max-w-sm">
@@ -524,7 +522,7 @@ export function AiInboxPage() {
           <div className="flex shrink-0 items-center gap-2">
             <a
               href={paths.workspace(workspaceSlug).skills()}
-              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-success/20 bg-success/10 px-3 text-xs font-medium text-success transition-colors hover:bg-success/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/40 focus-visible:ring-offset-2"
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border bg-accent px-3 text-xs font-medium text-accent-foreground transition-colors hover:bg-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Sparkles className="size-3.5" />
               Skill 库
@@ -533,14 +531,14 @@ export function AiInboxPage() {
               <button
                 type="button"
                 onClick={() => setCaptureState("active")}
-                className={captureState === "active" ? "rounded-md bg-success/10 px-3 text-xs font-medium text-success" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
+                className={captureState === "active" ? "rounded-md bg-accent px-3 text-xs font-medium text-accent-foreground" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
               >
                 Active
               </button>
               <button
                 type="button"
                 onClick={() => setCaptureState("archived")}
-                className={captureState === "archived" ? "rounded-md bg-success/10 px-3 text-xs font-medium text-success" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
+                className={captureState === "archived" ? "rounded-md bg-accent px-3 text-xs font-medium text-accent-foreground" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
               >
                 Archived
               </button>
@@ -686,7 +684,7 @@ function SkillDraftFlowDialog({
 
   return (
     <Dialog open={Boolean(flow)} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="border-success/20 sm:max-w-3xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>做成 Skill</DialogTitle>
           <DialogDescription>
@@ -695,7 +693,7 @@ function SkillDraftFlowDialog({
         </DialogHeader>
         {flow && (
           <div className="grid max-h-[68vh] gap-4 overflow-y-auto pr-1">
-            <div className="rounded-md border border-success/15 bg-success/5 p-3 text-xs leading-5 text-muted-foreground">
+            <div className="rounded-md border bg-accent/40 p-3 text-xs leading-5 text-muted-foreground">
               <div className="font-medium text-foreground">{flow.item.title}</div>
               <a href={flow.item.sourceUrl} target="_blank" rel="noreferrer" className="mt-1 block truncate font-mono underline underline-offset-2">
                 {flow.item.sourceUrl}
@@ -717,7 +715,7 @@ function SkillDraftFlowDialog({
             </div>
 
             {flow.analysis && (
-              <div className="rounded-md border border-success/15 bg-background p-3">
+              <div className="rounded-md border bg-background p-3">
                 <div className="mb-2 flex items-center gap-2 text-xs font-medium text-foreground">
                   {noAgent ? <AlertCircle className="size-3.5 text-amber-600" /> : hasCodexResult ? <CheckCircle2 className="size-3.5 text-emerald-600" /> : <Loader2 className="size-3.5 animate-spin text-muted-foreground" />}
                   Codex 推荐
@@ -823,13 +821,13 @@ function SkillDraftFlowDialog({
             </Button>
           )}
           {flow && !flow.analysis && (
-            <Button type="button" className="bg-success text-white hover:bg-success/90" onClick={() => onAnalyze(flow.item, flow.userNeed)} disabled={isAnalyzing || isSubmitting}>
+            <Button type="button" onClick={() => onAnalyze(flow.item, flow.userNeed)} disabled={isAnalyzing || isSubmitting}>
               {isAnalyzing ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
               {isAnalyzing ? "推荐中" : recommendSkillDirectionLabel}
             </Button>
           )}
           {draft && (
-            <Button type="button" className="bg-success text-white hover:bg-success/90" onClick={onConfirm} disabled={!canGenerate || isAnalyzing || isSubmitting}>
+            <Button type="button" onClick={onConfirm} disabled={!canGenerate || isAnalyzing || isSubmitting}>
               {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
               {isSubmitting ? "提交中" : "交给 Codex 生成"}
             </Button>
@@ -914,7 +912,7 @@ function BrowserCaptureCard({
   const opportunity = item.skillOpportunity ?? (skillDirectionAnalysis || skillGenerationMission ? manualSkillOpportunityForItem(item) : undefined);
   const canRequestManualSkill = Boolean(captureId && !archivedView && !opportunity && !skillDirectionAnalysis && !skillGenerationMission);
   return (
-    <article className="overflow-hidden rounded-md border border-success/15 bg-background transition-colors hover:border-success/30 hover:bg-success/5">
+    <article className="overflow-hidden rounded-md border bg-card transition-colors hover:border-primary/30 hover:bg-accent/30">
       <a
         href={item.sourceUrl}
         target="_blank"
@@ -1037,9 +1035,9 @@ function SkillOpportunityPanel({
   const canDeleteGeneratedSkill = Boolean(mission?.skillId && onDeleteGeneratedSkill);
   const hasGeneratedSkill = Boolean(mission);
   return (
-    <div className="border-t border-success/15 bg-success/5 px-3 py-3">
+    <div className="border-t bg-accent/30 px-3 py-3">
       <div className="flex items-start gap-2">
-        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-success/20 bg-success/10 text-success">
+        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
           <Sparkles className="size-3.5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -1048,7 +1046,7 @@ function SkillOpportunityPanel({
             <Badge variant="outline" className="h-5 rounded-sm px-1.5 text-[10px] uppercase text-muted-foreground">
               {formatSkillOpportunityPageType(opportunity.pageType)}
             </Badge>
-            <Badge variant="secondary" className="h-5 rounded-sm bg-success/10 px-1.5 text-[10px] text-success">
+            <Badge variant="secondary" className="h-5 rounded-sm bg-primary/10 px-1.5 text-[10px] text-primary">
               规则初筛
             </Badge>
             {mission && (
@@ -1066,7 +1064,7 @@ function SkillOpportunityPanel({
               <Button
                 type="button"
                 size="sm"
-                className="h-7 bg-success px-2 text-xs text-white hover:bg-success/90"
+                className="h-7 px-2 text-xs"
                 disabled={isAnalyzingDirection}
                 onClick={onOpenSkillDraft}
               >
@@ -1143,7 +1141,7 @@ function SkillOpportunityPanel({
           </div>
           {directionAnalysis && !mission && (
             <div className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-muted-foreground" role="status">
-              <Clock3 className="mt-0.5 size-3.5 shrink-0 text-success" />
+              <Clock3 className="mt-0.5 size-3.5 shrink-0 text-primary" />
               <span>
                 {directionAnalysis.planningStatus === "queued" ? "Codex 正在分析 Skill 方向" : "方向分析已准备好"}
                 <span className="text-muted-foreground">，在弹窗里确认后再生成。</span>

@@ -329,7 +329,7 @@ function runStatusDotClass(status: string | null | undefined): string {
     case "skipped":
       return "bg-amber-500";
     case "running":
-      return "bg-blue-500";
+      return "bg-primary";
     default:
       return "bg-muted-foreground/40";
   }

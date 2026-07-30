@@ -199,7 +199,7 @@ function issueSkillStatusClass(status: IssueSkillUsage["status"]) {
     case "skipped":
       return "border-muted bg-muted text-muted-foreground";
     default:
-      return "border-blue-200 bg-blue-50 text-blue-700";
+      return "border-primary/20 bg-primary/10 text-primary";
   }
 }
 

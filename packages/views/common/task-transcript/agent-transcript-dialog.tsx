@@ -85,7 +85,7 @@ function getEventColor(item: TimelineItem): EventColor {
 const colorClasses: Record<EventColor, { bg: string; bgActive: string; label: string }> = {
   agent: { bg: "bg-emerald-400/60", bgActive: "bg-emerald-500", label: "bg-emerald-500" },
   thinking: { bg: "bg-violet-400/60", bgActive: "bg-violet-500", label: "bg-violet-500/20 text-violet-700 dark:text-violet-300" },
-  tool: { bg: "bg-blue-400/60", bgActive: "bg-blue-500", label: "bg-blue-500/20 text-blue-700 dark:text-blue-300" },
+  tool: { bg: "bg-primary/50", bgActive: "bg-primary", label: "bg-primary/15 text-primary" },
   result: { bg: "bg-slate-300/60 dark:bg-slate-600/60", bgActive: "bg-slate-400 dark:bg-slate-500", label: "bg-muted text-muted-foreground" },
   error: { bg: "bg-red-400/60", bgActive: "bg-red-500", label: "bg-red-500/20 text-red-700 dark:text-red-300" },
 };
@@ -543,14 +543,14 @@ export function AgentTranscriptDialog({
                     className={cn(
                       "flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs transition-colors",
                       activeFilterKeys.length > 0
-                        ? "text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
+                        ? "bg-primary/10 text-primary hover:bg-primary/15"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent",
                     )}
                   >
                     <Filter className="h-3 w-3" />
                     <span className="hidden sm:inline">{t(($) => $.transcript.filter)}</span>
                     {activeFilterKeys.length > 0 && (
-                      <span className="ml-0.5 rounded-full bg-blue-500/20 px-1.5 py-0 text-[10px] font-medium">
+                      <span className="ml-0.5 rounded-full bg-primary/15 px-1.5 py-0 text-[10px] font-medium">
                         {activeFilterKeys.length}
                       </span>
                     )}

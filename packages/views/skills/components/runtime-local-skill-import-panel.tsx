@@ -115,7 +115,7 @@ function ResultIcon({ status }: { status: BulkImportResult["status"] }) {
     case "created":
       return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600" />;
     case "updated":
-      return <RefreshCw className="h-3.5 w-3.5 shrink-0 text-blue-600" />;
+      return <RefreshCw className="h-3.5 w-3.5 shrink-0 text-primary" />;
     case "conflict":
       return <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600" />;
     case "skipped":
@@ -248,8 +248,8 @@ function BulkImportSummary({ results }: { results: BulkImportResult[] }) {
             {t(($) => $.runtime_import.bulk_summary_created)}
           </div>
         </div>
-        <div className="rounded-md bg-blue-50 px-3 py-2 dark:bg-blue-950/30">
-          <div className="text-lg font-semibold text-blue-700 dark:text-blue-400">
+        <div className="rounded-md bg-primary/10 px-3 py-2">
+          <div className="text-lg font-semibold text-primary">
             {updated.length}
           </div>
           <div className="text-xs text-muted-foreground">
