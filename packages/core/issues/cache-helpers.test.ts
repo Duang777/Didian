@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Issue, ListIssuesCache } from "../types";
-import { insertByPosition, patchIssueInBuckets } from "./cache-helpers";
+import { addIssueToBuckets, insertByPosition, patchIssueInBuckets } from "./cache-helpers";
 
 const WS_ID = "ws-1";
 
@@ -145,5 +145,40 @@ describe("patchIssueInBuckets — unknown issue", () => {
   it("returns the cache unchanged when the id is absent", () => {
     const c0 = cache({ todo: { issues: [mk("a", "todo", 1)], total: 1 } });
     expect(patchIssueInBuckets(c0, "ghost", { position: 9 })).toBe(c0);
+  });
+});
+
+describe("internal issues", () => {
+  it("does not add Didian internal issues to normal list buckets", () => {
+    const c0 = cache({ todo: { issues: [mk("a", "todo", 1)], total: 1 } });
+    const internal = {
+      ...mk("internal", "todo", 2),
+      metadata: {
+        didian_internal: true,
+        didian_internal_kind: "skill_direction_analysis",
+      },
+    };
+
+    const next = addIssueToBuckets(c0, internal);
+
+    expect(next).toBe(c0);
+    expect(ids(next, "todo")).toEqual(["a"]);
+    expect(next.byStatus.todo?.total).toBe(1);
+  });
+
+  it("removes a listed issue when metadata marks it internal", () => {
+    const c0 = cache({
+      todo: { issues: [mk("a", "todo", 1), mk("b", "todo", 2)], total: 2 },
+    });
+
+    const next = patchIssueInBuckets(c0, "b", {
+      metadata: {
+        didian_internal: true,
+        didian_internal_kind: "skill_direction_analysis",
+      },
+    });
+
+    expect(ids(next, "todo")).toEqual(["a"]);
+    expect(next.byStatus.todo?.total).toBe(1);
   });
 });

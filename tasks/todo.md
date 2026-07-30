@@ -7,14 +7,14 @@
 **描述：** 后端默认隐藏 `metadata.didian_internal = true` 的内部任务，但实时事件或缓存写入仍可能把 Skill 方向分析任务塞进普通 Mission 列表。把过滤规则集中放进 core cache helper，保护列表、看板和 My Missions 缓存。
 
 **验收标准：**
-- [ ] `addIssueToBuckets` 不会把 internal issue 加入普通列表缓存。
-- [ ] `patchIssueInBuckets` 收到 `metadata.didian_internal = true` 时会从普通列表缓存移除该 issue。
-- [ ] WebSocket `issue:created` 不会把 internal Skill direction issue 插入列表。
-- [ ] 详情页仍可通过 direct issue detail/comment polling 读取 internal analysis result。
+- [x] `addIssueToBuckets` 不会把 internal issue 加入普通列表缓存。
+- [x] `patchIssueInBuckets` 收到 `metadata.didian_internal = true` 时会从普通列表缓存移除该 issue。
+- [x] WebSocket `issue:created` 不会把 internal Skill direction issue 插入列表。
+- [x] 详情页仍可通过 direct issue detail/comment polling 读取 internal analysis result。
 
 **验证：**
-- [ ] `pnpm --filter @didian/core exec vitest run issues/cache-helpers.test.ts issues/ws-updaters.test.ts`
-- [ ] `pnpm --filter @didian/core typecheck`
+- [x] `pnpm --filter @didian/core exec vitest run issues/cache-helpers.test.ts issues/ws-updaters.test.ts`
+- [x] `pnpm --filter @didian/core typecheck`
 
 **依赖：** 无
 

@@ -8,6 +8,10 @@ import { PAGINATED_STATUSES } from "./queries";
 
 const EMPTY_BUCKET: IssueStatusBucket = { issues: [], total: 0 };
 
+export function isInternalIssue(issue: Pick<Issue, "metadata">): boolean {
+  return issue.metadata?.didian_internal === true;
+}
+
 export function getBucket(
   resp: ListIssuesCache,
   status: IssueStatus,
@@ -41,6 +45,7 @@ export function addIssueToBuckets(
   resp: ListIssuesCache,
   issue: Issue,
 ): ListIssuesCache {
+  if (isInternalIssue(issue)) return resp;
   const bucket = getBucket(resp, issue.status);
   if (bucket.issues.some((i) => i.id === issue.id)) return resp;
   return setBucket(resp, issue.status, {
@@ -131,6 +136,7 @@ export function patchIssueInBuckets(
   const loc = findIssueLocation(resp, id);
   if (!loc) return resp;
   const merged: Issue = { ...loc.issue, ...patch };
+  if (isInternalIssue(merged)) return removeIssueFromBuckets(resp, id);
   const nextStatus = patch.status ?? loc.status;
 
   if (nextStatus === loc.status) {

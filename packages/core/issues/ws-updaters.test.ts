@@ -182,6 +182,33 @@ describe("onIssueLabelsChanged", () => {
   });
 });
 
+describe("onIssueCreated", () => {
+  let qc: QueryClient;
+
+  beforeEach(() => {
+    qc = new QueryClient();
+  });
+
+  it("does not insert internal Skill direction analysis issues into normal list caches", () => {
+    qc.setQueryData<ListIssuesCache>(issueKeys.list(WS_ID), makeListCache(baseIssue));
+    const internalIssue: Issue = {
+      ...otherIssue,
+      metadata: {
+        didian_internal: true,
+        didian_internal_kind: "skill_direction_analysis",
+      },
+    };
+
+    onIssueCreated(qc, WS_ID, internalIssue);
+
+    const list = qc.getQueryData<ListIssuesCache>(issueKeys.list(WS_ID));
+    expect(list?.byStatus.todo?.issues.map((issue) => issue.id)).toEqual([
+      ISSUE_ID,
+    ]);
+    expect(list?.byStatus.todo?.total).toBe(1);
+  });
+});
+
 describe("onIssueMetadataChanged", () => {
   let qc: QueryClient;
 
