@@ -5,8 +5,9 @@
 Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Skill 被用户本地连接的 agent runtime 在 Mission 执行时真实使用。成功体验不是“Skill 库里多了一张卡”，也不是系统替用户武断决定 Skill 方向，而是：
 
 ```text
-收藏网页 -> 平台初筛是否适合做 Skill -> 用户点击让本地 Codex 分析具体方向
--> AI Inbox 弹窗展示 Codex 方向建议 -> 用户确认/修改方向问题 -> 本地 Codex 生成/完善 Skill -> Skill 入库
+收藏网页 -> 平台初筛是否适合做 Skill -> 用户点击“做成 Skill”
+-> AI Inbox 单个智能弹窗收集可选需求、让本地 Codex 推荐方向、形成可编辑 Skill 草稿
+-> 用户确认草稿 -> 本地 Codex 生成/完善 Skill -> Skill 入库
 -> 创建 Mission 时推荐使用 -> 用户确认 -> 本地 runtime 注入 Skill
 -> Mission 页面展示使用记录 -> 结果沉淀回 Skill / Atlas
 ```
@@ -31,8 +32,9 @@ Didian 要把用户收藏的网页转化成可复用的 Skill，并让这些 Ski
 - 平台负责发现、保存、推荐、分发、审计；本地 runtime 负责执行和生成结果。
 - Skill 使用默认是 Mission 级临时选择，不默认永久污染 agent 的全局 skill set。
 - 用户确认优先。自动推荐可以高置信显示，但第一版不静默注入。
-- 推荐不是生成。平台推荐阶段只说明“这个网页可能适合沉淀成 Skill”；方向分析阶段由本地 Codex 给出具体能力方向；生成阶段必须先让用户确认方向。
-- 方向分析不应该表现为普通 Mission。即使底层复用 issue/task 队列，也必须在产品上隐藏为后台任务，结果回到 AI Inbox 智能弹窗。
+- 推荐不是生成。平台推荐阶段只说明“这个网页可能适合沉淀成 Skill”；草稿阶段由本地 Codex 给出具体能力方向；生成阶段必须先让用户确认草稿。
+- 方向分析不应该表现为普通 Mission。即使底层复用 issue/task 队列，也必须在产品上隐藏为后台任务，结果回到 AI Inbox 智能弹窗；用户不需要去 Mission 列表找这次分析。
+- 用户界面只保留一个主要入口：`做成 Skill`。平台强推荐时可以显示 `Skill 候选` 证据，但 CTA 仍然进入同一个 Skill 草稿弹窗。
 - 生成 Skill 前必须问清楚：用户要解决的重复任务、触发场景、必要输入、期望输出、边界和命名偏好。
 - 每条 Skill 使用记录必须可回溯来源网页、Skill 版本、agent、runtime、task。
 
@@ -94,9 +96,16 @@ Rationale:
 
 推荐记录后续单独建表。当前 MVP 在 capture 的 `skill_opportunity` JSON 中保存自动评估结果，并在用户确认生成时把方向确认写入 Skill `config.generation.direction`。
 
-### Browser Capture Skill Direction
+### Browser Capture Skill Draft Flow
 
-用户点击 `让 Codex 分析方向` 后，后端创建一个内部 direction-analysis task 给本地 Codex。它底层可以复用 issue/task 队列，但必须打上 `issue.metadata.didian_internal = true` 和 `didian_internal_kind = "skill_direction_analysis"`，普通 Mission 列表默认隐藏。AI Inbox 弹窗通过该任务的评论结果展示 Codex 建议。
+用户点击 `做成 Skill` 后，AI Inbox 打开一个单一 Skill 草稿弹窗。弹窗内部有四个状态：
+
+1. `intent`：展示来源网页、平台初筛结果和可选的用户需求输入。
+2. `analyzing`：创建内部 direction-analysis task 给本地 Codex；弹窗停留在当前上下文中展示进度。
+3. `draft`：展示 Codex 最新建议和可编辑的 Skill 草稿字段。
+4. `generating`：用户确认草稿后创建 Skill 生成任务，生成/更新平台 Skill。
+
+底层 direction-analysis 可以复用 issue/task 队列，但必须打上 `issue.metadata.didian_internal = true` 和 `didian_internal_kind = "skill_direction_analysis"`，普通 Mission 列表默认隐藏。AI Inbox 弹窗通过该任务的评论结果展示 Codex 建议。
 
 之后用户点击“确认方向”时，前端必须先收集方向确认，而不是直接创建 Skill。请求体：
 
@@ -117,7 +126,7 @@ Rules:
 
 - 默认值来自自动评估的 `SkillOpportunity`，但不能把推荐语原样复制成最终方向。
 - 前端必须展示推荐依据：页面类型、置信度、复用流程分、指令密度分、后续复用分和证据片段。
-- 用户必须先看过或跳过 Codex 方向分析，再确认生成方向。MVP 支持四类方向：`选型尽调`、`接入落地`、`排障修复`、`学习上手`。
+- 用户必须先看过或跳过 Codex 方向分析，再确认生成草稿。MVP 支持四类方向：`选型尽调`、`接入落地`、`排障修复`、`学习上手`。
 - 用户可以修改 Skill 名称、主要用途、能力描述、输入、输出、边界、使用场景和成功标准。
 - 至少要有 `primaryUseCase`、`expectedInputs`、`expectedOutputs`。
 - `boundaries` 用来阻止 Codex 把 Skill 做成泛泛总结，例如：“不要只总结 README；要沉淀成接入/排障/尽调流程”。
@@ -208,8 +217,8 @@ This keeps the first UX intentionally simple: users decide which Skill a Mission
 Capture card has four phases:
 
 1. **Skill 候选**：系统自动评估网页是否适合沉淀成 Skill，并展示推荐方向、置信度和原因。
-2. **Codex 方向分析**：用户点击 `让 Codex 分析方向` 后，AI Inbox 打开智能弹窗，后台本地 Codex 阅读收藏链接并给出 2-3 个具体 Skill 方向。该分析任务不出现在普通 Mission 列表。
-3. **方向确认**：用户从弹窗继续后确认 Skill 名称、用途、触发场景、输入、输出和边界；提交后才创建本地 Codex 生成 Mission。
+2. **Skill 草稿**：用户点击 `做成 Skill` 后，AI Inbox 打开单个智能弹窗。用户可以先补充可选需求，再让本地 Codex 阅读收藏链接并推荐 2-3 个具体 Skill 方向。该分析任务不出现在普通 Mission 列表。
+3. **草稿确认**：同一个弹窗展示 Codex 建议和可编辑草稿。用户确认 Skill 名称、用途、触发场景、输入、输出和边界；提交后才创建本地 Codex 生成 Mission。
 4. **已生成/可使用**：一旦 Skill 入库，卡片展示 Skill 库链接和“用 Skill 创建 Mission”。
 
 Once a browser capture has a generated platform Skill, the capture card becomes an entry point into Mission execution:
@@ -256,11 +265,40 @@ This block is trusted platform metadata. Skill file contents remain user/workspa
 - If generated from this capture: allow deleting the generated Skill from the card, then restore the card to `生成 Skill` so the user can retry the full direction-confirmation flow.
 - Generate flow:
   1. Show Skill opportunity only after the platform evaluation passes confidence and evidence thresholds.
-  2. Clicking `让 Codex 分析方向` creates an internal direction-analysis task assigned to the user's local Codex runtime and immediately opens the smart modal.
-  3. The direction-analysis task must ask Codex to read the bookmarked URL/page excerpt and return 2-3 concrete Skill directions with evidence, inputs, outputs, boundaries, and user questions. It must not create or update a Skill.
-  4. The smart modal polls task comments and renders the latest Codex analysis inline. No “open Mission” link is shown for this step.
-  5. After reviewing Codex's direction analysis, the user clicks `确认方向`, edits the final direction fields, and only then creates/updates the Skill draft and queues the local Codex generation Mission.
+  2. Clicking `做成 Skill` opens the smart modal for every capture, including captures with no automatic recommendation.
+  3. The modal lets the user optionally describe the desired Skill. The same modal can then ask local Codex to recommend a direction.
+  4. The direction-analysis task must ask Codex to read the bookmarked URL/page excerpt and return 2-3 concrete Skill directions with evidence, inputs, outputs, boundaries, and user questions. It must not create or update a Skill.
+  5. The smart modal polls task comments and renders the latest Codex analysis inline. No “open Mission” link is shown for this step.
+  6. After reviewing Codex's direction analysis, the same modal shows editable final direction fields and only then creates/updates the Skill draft and queues the local Codex generation Mission.
 - Later: show `已用于 N 个 Mission`.
+
+### Skill Draft UX Contract
+
+- The card CTA is always `做成 Skill`; `让 Codex 推荐方向` only appears inside the modal.
+- The modal title is `做成 Skill` and should not mention internal Mission/task implementation.
+- If no local Codex agent is available, the modal keeps the editable draft visible and clearly says the user can continue with the platform default direction.
+- If Codex has not returned a comment yet, the user can still edit a default draft; the UI should not block on background analysis forever.
+- The generated state on the card should be compact: status text, `用 Skill 创建 Mission`, `打开 Skill`, and icon-only delete.
+
+### Code Standards For This Flow
+
+- Model the modal as a single typed state object instead of several unrelated booleans. Suggested shape:
+
+```ts
+type SkillDraftFlow = {
+  item: AiInboxInput;
+  userNeed: string;
+  analysis?: SkillDirectionAnalysis;
+  draft?: SkillDirectionDraft;
+};
+```
+
+- Keep backend API contracts additive. The existing `POST /api/browser-captures/{id}/skill-direction-mission` accepts optional `userNeed`; future structured draft APIs must add new endpoints instead of changing existing response shapes.
+- Validate and trim user input at both client and server boundaries. `userNeed` is optional and should be bounded before reaching prompts.
+- Do not expose hidden direction-analysis issue links in user-facing UI.
+- Do not pass noisy browser payloads directly into Codex prompts. GitHub/dev SPA payloads, tree JSON and error-page text should be omitted with a clear instruction to reopen the source URL.
+- Do not auto-create a Skill from automatic recommendation alone. User confirmation is mandatory.
+- Tests must cover: recommended capture, no-recommendation manual capture, Codex-result polling in the modal, no-agent fallback, generated Skill state, deletion and regeneration.
 
 ### Skill Library
 
