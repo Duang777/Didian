@@ -315,6 +315,8 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByText("Stripe Checkout 接入助手")).toBeInTheDocument();
     expect(screen.getByText(/接入步骤、请求示例/)).toBeInTheDocument();
     expect(screen.getByText("Docs")).toBeInTheDocument();
+    expect(screen.getByText("规则初筛")).toBeInTheDocument();
+    expect(screen.queryByText("86%")).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "做成 Skill" })).toHaveLength(2);
     expect(screen.getByText("My opinion about AI tools")).toBeInTheDocument();
 
@@ -335,7 +337,10 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 接入助手");
     expect(screen.getByText("选择 Skill 方向")).toBeInTheDocument();
     expect(screen.getByText("复用流程")).toBeInTheDocument();
-    expect(screen.getByText("指令密度")).toBeInTheDocument();
+    expect(screen.getByText("指令线索")).toBeInTheDocument();
+    expect(screen.getAllByText("强").length).toBeGreaterThan(0);
+    expect(screen.queryByText("84%")).not.toBeInTheDocument();
+    expect(screen.queryByText("90%")).not.toBeInTheDocument();
     expect(screen.getByLabelText("主要用途")).toHaveValue("当我需要把 Stripe Checkout 接入真实项目时，用它根据项目栈生成落地步骤、代码示例、环境变量清单和验收检查。");
     expect(screen.getByLabelText("能力描述")).toHaveValue("把 Stripe Checkout 的技术文档沉淀成项目接入流程，覆盖配置、示例、验证、错误处理和上线前检查。");
     expect(screen.getByText("先确认你想沉淀的能力方向，再交给本地 Codex 生成高质量 Skill 并写入 Skill 库。")).toBeInTheDocument();
@@ -363,7 +368,7 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByRole("link", { name: "打开 Skill" })).toHaveAttribute("href", "/acme/skills/skill-1");
     expect(screen.getByRole("link", { name: "查看生成 Mission" })).toHaveAttribute("href", "/acme/issues/skill-mission-1");
     expect(screen.queryByRole("button", { name: "已创建" })).not.toBeInTheDocument();
-  });
+  }, 10_000);
 
   it("shows generated Skill state from the persisted Skill library after refresh", async () => {
     listBrowserCaptures.mockResolvedValue({

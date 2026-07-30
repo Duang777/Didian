@@ -125,7 +125,7 @@ type BrowserCaptureSkillDirection = {
 Rules:
 
 - 默认值来自自动评估的 `SkillOpportunity`，但不能把推荐语原样复制成最终方向。
-- 前端必须展示推荐依据：页面类型、置信度、复用流程分、指令密度分、后续复用分和证据片段。
+- 前端必须展示推荐依据：页面类型、定性复用信号和证据片段。规则分数只作为内部阈值，不以精确百分比展示给用户，避免让启发式初筛看起来像 AI 精准判断。
 - 用户必须先看过或跳过 Codex 方向分析，再确认生成草稿。MVP 支持四类方向：`选型尽调`、`接入落地`、`排障修复`、`学习上手`。
 - 用户可以修改 Skill 名称、主要用途、能力描述、输入、输出、边界、使用场景和成功标准。
 - 至少要有 `primaryUseCase`、`expectedInputs`、`expectedOutputs`。
@@ -216,7 +216,7 @@ This keeps the first UX intentionally simple: users decide which Skill a Mission
 
 Capture card has four phases:
 
-1. **Skill 候选**：系统自动评估网页是否适合沉淀成 Skill，并展示推荐方向、置信度和原因。
+1. **Skill 候选**：系统用规则初筛网页是否适合沉淀成 Skill，并展示页面类型、定性信号和原因；不展示伪精确百分比。
 2. **Skill 草稿**：用户点击 `做成 Skill` 后，AI Inbox 打开单个智能弹窗。用户可以先补充可选需求，再让本地 Codex 阅读收藏链接并推荐 2-3 个具体 Skill 方向。该分析任务不出现在普通 Mission 列表。
 3. **草稿确认**：同一个弹窗展示 Codex 建议和可编辑草稿。用户确认 Skill 名称、用途、触发场景、输入、输出和边界；提交后才创建本地 Codex 生成 Mission。
 4. **已生成/可使用**：一旦 Skill 入库，卡片展示 Skill 库链接和“用 Skill 创建 Mission”。
@@ -276,6 +276,7 @@ This block is trusted platform metadata. Skill file contents remain user/workspa
 
 - The card CTA is always `做成 Skill`; `让 Codex 推荐方向` only appears inside the modal.
 - The modal title is `做成 Skill` and should not mention internal Mission/task implementation.
+- The modal labels platform assessment as `规则初筛`, not `AI 判断`; exact confidence and sub-score percentages stay internal.
 - If no local Codex agent is available, the modal keeps the editable draft visible and clearly says the user can continue with the platform default direction.
 - If Codex has not returned a comment yet, the user can still edit a default draft; the UI should not block on background analysis forever.
 - The generated state on the card should be compact: status text, `用 Skill 创建 Mission`, `打开 Skill`, and icon-only delete.

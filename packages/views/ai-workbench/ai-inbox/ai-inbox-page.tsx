@@ -1031,7 +1031,7 @@ function SkillOpportunityPanel({
               {formatSkillOpportunityPageType(opportunity.pageType)}
             </Badge>
             <Badge variant="secondary" className="h-5 rounded-sm px-1.5 text-[10px] text-muted-foreground">
-              {Math.round(opportunity.confidence * 100)}%
+              规则初筛
             </Badge>
             {mission && (
               <Badge variant="secondary" className="h-5 rounded-sm px-1.5 text-[10px] text-muted-foreground">
@@ -1183,9 +1183,9 @@ function latestSkillDirectionAnalysisComment(comments: Comment[] | undefined): C
 function SkillOpportunityEvidence({ opportunity }: { opportunity: SkillOpportunity | null | undefined }) {
   if (!opportunity) return null;
   const scores = [
-    { label: "复用流程", value: opportunity.reusableWorkflowScore },
-    { label: "指令密度", value: opportunity.instructionDensityScore },
-    { label: "后续复用", value: opportunity.futureUseScore },
+    { label: "复用流程", value: qualitativeSkillSignal(opportunity.reusableWorkflowScore) },
+    { label: "指令线索", value: qualitativeSkillSignal(opportunity.instructionDensityScore) },
+    { label: "后续复用", value: qualitativeSkillSignal(opportunity.futureUseScore) },
   ];
   return (
     <div className="mt-3 grid gap-3">
@@ -1193,7 +1193,7 @@ function SkillOpportunityEvidence({ opportunity }: { opportunity: SkillOpportuni
         {scores.map((score) => (
           <div key={score.label} className="rounded-md border bg-background px-2.5 py-2">
             <div className="text-[11px] text-muted-foreground">{score.label}</div>
-            <div className="mt-0.5 font-medium text-foreground">{Math.round(score.value * 100)}%</div>
+            <div className="mt-0.5 font-medium text-foreground">{score.value}</div>
           </div>
         ))}
       </div>
@@ -1220,7 +1220,13 @@ function skillOpportunityAssessmentText(opportunity: SkillOpportunity | null | u
   if (!opportunity.shouldSuggest) {
     return `${opportunity.whyUseful} 请确认它真正要服务的重复任务，避免生成成泛泛摘要。`;
   }
-  return `这个收藏被识别为 ${formatSkillOpportunityPageType(opportunity.pageType)}，推荐置信度 ${Math.round(opportunity.confidence * 100)}%。${opportunity.whyUseful}`;
+  return `规则初筛：这个收藏被识别为 ${formatSkillOpportunityPageType(opportunity.pageType)}，具备可复用信号。具体 Skill 方向会由本地 Codex 阅读链接后推荐。${opportunity.whyUseful}`;
+}
+
+function qualitativeSkillSignal(value: number): string {
+  if (value >= 0.85) return "强";
+  if (value >= 0.7) return "中";
+  return "弱";
 }
 
 function skillDirectionModeOptions(item: AiInboxInput): Array<{ mode: SkillDirectionMode; label: string; description: string }> {
