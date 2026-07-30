@@ -322,6 +322,10 @@ describe("AiInboxPage browser captures", () => {
 
     await user.click(screen.getAllByRole("button", { name: "做成 Skill" })[0]!);
     const draftDialog = screen.getByRole("dialog", { name: "做成 Skill" });
+    const stageBar = within(draftDialog).getByLabelText("Skill 生成阶段");
+    expect(within(stageBar).getByText("补充意图")).toBeInTheDocument();
+    expect(within(stageBar).getByText("Codex 推荐")).toBeInTheDocument();
+    expect(within(stageBar).getByText("确认生成")).toBeInTheDocument();
     expect(within(draftDialog).getByText("让 Codex 推荐方向")).toBeInTheDocument();
     expect(within(draftDialog).queryByText("Skill 方向分析")).not.toBeInTheDocument();
     await user.click(within(draftDialog).getByRole("button", { name: "让 Codex 推荐方向" }));
@@ -330,7 +334,7 @@ describe("AiInboxPage browser captures", () => {
     expect(toastSuccess).toHaveBeenCalledWith("已交给本地 Codex 分析，结果会在弹窗中更新。");
     expect(screen.getByRole("dialog", { name: "做成 Skill" })).toBeInTheDocument();
     await waitFor(() => expect(listComments).toHaveBeenCalledWith("skill-direction-mission-1"));
-    expect(screen.getByText("Codex 推荐")).toBeInTheDocument();
+    expect(screen.getAllByText("Codex 推荐").length).toBeGreaterThan(0);
     expect(screen.getByText(/推荐方向 1：接入落地/)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /打开方向分析 Mission/ })).not.toBeInTheDocument();
 

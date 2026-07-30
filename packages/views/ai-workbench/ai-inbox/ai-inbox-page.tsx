@@ -706,6 +706,13 @@ function SkillDraftFlowDialog({
               <SkillOpportunityEvidence opportunity={flow.item.skillOpportunity} />
             </div>
 
+            <SkillDraftStageBar
+              hasAnalysis={Boolean(flow.analysis)}
+              hasDraft={Boolean(draft)}
+              hasCodexResult={hasCodexResult}
+              noAgent={noAgent}
+            />
+
             <div className="grid gap-2">
               <Label htmlFor="skill-draft-user-need">你的需求（选填）</Label>
               <Textarea
@@ -840,6 +847,55 @@ function SkillDraftFlowDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+function SkillDraftStageBar({
+  hasAnalysis,
+  hasDraft,
+  hasCodexResult,
+  noAgent,
+}: {
+  hasAnalysis: boolean;
+  hasDraft: boolean;
+  hasCodexResult: boolean;
+  noAgent: boolean;
+}) {
+  const stages = [
+    {
+      label: "补充意图",
+      state: hasAnalysis || hasDraft ? "done" : "active",
+    },
+    {
+      label: "Codex 推荐",
+      state: !hasAnalysis ? "pending" : hasCodexResult || noAgent ? "done" : "active",
+    },
+    {
+      label: "确认生成",
+      state: hasDraft ? "active" : "pending",
+    },
+  ];
+  return (
+    <div aria-label="Skill 生成阶段" className="grid gap-2 rounded-md border bg-background px-3 py-2 sm:grid-cols-3">
+      {stages.map((stage, index) => (
+        <div key={stage.label} className={skillDraftStageClass(stage.state)}>
+          <span className="flex size-5 shrink-0 items-center justify-center rounded-full border text-[11px]">
+            {stage.state === "done" ? <CheckCircle2 className="size-3" /> : index + 1}
+          </span>
+          <span className="min-w-0 truncate">{stage.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function skillDraftStageClass(state: string): string {
+  if (state === "done") {
+    return "flex min-w-0 items-center gap-2 rounded-md bg-emerald-500/10 px-2 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300";
+  }
+  if (state === "active") {
+    return "flex min-w-0 items-center gap-2 rounded-md bg-primary/10 px-2 py-1.5 text-xs font-medium text-primary";
+  }
+  return "flex min-w-0 items-center gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground";
 }
 
 function DeleteGeneratedSkillDialog({

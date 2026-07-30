@@ -30,7 +30,7 @@
 **描述：** 让 `做成 Skill` 弹窗清楚表达平台初筛、本地 Codex 推荐方向、用户确认草稿和生成 Skill 的阶段。错误需要区分 backend offline、Codex Local offline、来源抓取失败和已生成 Skill。
 
 **验收标准：**
-- [ ] 弹窗中有清晰阶段状态，不要求用户进入 Mission 查看分析。
+- [x] 弹窗中有清晰阶段状态，不要求用户进入 Mission 查看分析。
 - [x] 无 Codex Local 时给出可继续填写草稿的路径。
 - [x] backend offline 时提示启动后端，而不是泛泛 `Failed to fetch`。
 
