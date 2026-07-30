@@ -31,9 +31,7 @@ const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
 const personalSkillSuggestionLabel = "Skill 候选";
 const generateSkillLabel = "生成 Skill";
-const analyzeSkillDirectionLabel = "让 Codex 分析方向";
-const viewSkillDirectionLabel = "查看方向";
-const confirmSkillDirectionLabel = "确认方向";
+const recommendSkillDirectionLabel = "让 Codex 推荐方向";
 const keepAsKnowledgeLabel = "收藏为知识";
 const reduceSkillSuggestionsLabel = "少推荐";
 const makeBookmarkSkillLabel = "做成 Skill";
@@ -48,10 +46,8 @@ type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
 type SkillDirectionAnalysis = { id: string; title: string; state: "created" | "duplicate"; planningStatus: string; userNeed?: string };
-type ActiveSkillDirectionAnalysis = { item: AiInboxInput; analysis: SkillDirectionAnalysis };
 type SkillUsageMission = { id: string; href: string; title: string };
 type SkillDeleteTarget = { captureId: string; mission: SkillGenerationMission };
-type ManualSkillIntentDraft = { item: AiInboxInput; userNeed: string };
 type SkillDirectionMode = "adoption_review" | "integration_setup" | "troubleshooting" | "learning_runbook";
 type SkillDirectionDraft = {
   item: AiInboxInput;
@@ -67,6 +63,12 @@ type SkillDirectionDraft = {
   successCriteria: string;
   notes: string;
 };
+type SkillDraftFlow = {
+  item: AiInboxInput;
+  userNeed: string;
+  analysis?: SkillDirectionAnalysis;
+  draft?: SkillDirectionDraft;
+};
 
 export function AiInboxPage() {
   const wsId = useWorkspaceId();
@@ -77,13 +79,11 @@ export function AiInboxPage() {
   const [captureQuery, setCaptureQuery] = useState("");
   const [createdMission, setCreatedMission] = useState<{ id: string; href: string; title: string; state: "created" | "duplicate" } | null>(null);
   const [skillDirectionAnalyses, setSkillDirectionAnalyses] = useState<Record<string, SkillDirectionAnalysis>>({});
-  const [activeSkillDirectionAnalysis, setActiveSkillDirectionAnalysis] = useState<ActiveSkillDirectionAnalysis | null>(null);
   const [skillGenerationMissions, setSkillGenerationMissions] = useState<Record<string, SkillGenerationMission>>({});
   const [skillUsageMissions, setSkillUsageMissions] = useState<Record<string, SkillUsageMission>>({});
   const [deletedSkillCaptureIds, setDeletedSkillCaptureIds] = useState<ReadonlySet<string>>(() => new Set());
   const [skillDeleteTarget, setSkillDeleteTarget] = useState<SkillDeleteTarget | null>(null);
-  const [manualSkillIntentDraft, setManualSkillIntentDraft] = useState<ManualSkillIntentDraft | null>(null);
-  const [skillDirectionDraft, setSkillDirectionDraft] = useState<SkillDirectionDraft | null>(null);
+  const [skillDraftFlow, setSkillDraftFlow] = useState<SkillDraftFlow | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [collectPromptUrls, setCollectPromptUrls] = useState<string[]>([]);
   const trimmedCaptureQuery = captureQuery.trim();
@@ -119,10 +119,10 @@ export function AiInboxPage() {
     mutationFn: ({ captureId, userNeed }: { captureId: string; userNeed?: string }) => api.createBrowserCaptureSkillDirectionMission(captureId, userNeed?.trim() ? { userNeed: userNeed.trim() } : {}),
   });
   const skillDirectionCommentsQuery = useQuery({
-    queryKey: ["skill-direction-analysis-comments", wsId, activeSkillDirectionAnalysis?.analysis.id],
-    queryFn: () => activeSkillDirectionAnalysis ? api.listComments(activeSkillDirectionAnalysis.analysis.id) : Promise.resolve([]),
-    enabled: Boolean(activeSkillDirectionAnalysis?.analysis.id),
-    refetchInterval: activeSkillDirectionAnalysis ? 3_000 : false,
+    queryKey: ["skill-direction-analysis-comments", wsId, skillDraftFlow?.analysis?.id],
+    queryFn: () => skillDraftFlow?.analysis ? api.listComments(skillDraftFlow.analysis.id) : Promise.resolve([]),
+    enabled: Boolean(skillDraftFlow?.analysis?.id),
+    refetchInterval: skillDraftFlow?.analysis ? 3_000 : false,
     refetchOnWindowFocus: "always",
   });
   const deleteGeneratedSkill = useMutation({
@@ -202,6 +202,26 @@ export function AiInboxPage() {
     queryClient.invalidateQueries({ queryKey: issueKeys.all(wsId) });
   }
 
+  function openSkillDraftFlow(item: AiInboxInput, analysis?: SkillDirectionAnalysis) {
+    const userNeed = analysis?.userNeed ?? "";
+    setSkillDraftFlow({
+      item,
+      userNeed,
+      analysis,
+      draft: analysis ? buildSkillDirectionDraft(item, userNeed) : undefined,
+    });
+  }
+
+  function startSkillDraftWithoutCodex() {
+    setSkillDraftFlow((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        draft: current.draft ?? buildSkillDirectionDraft(current.item, current.userNeed),
+      };
+    });
+  }
+
   async function handleAnalyzeSkillDirection(item: AiInboxInput, userNeed = "") {
     if (!item.captureId || createSkillDirectionMission.isPending) return;
     const trimmedUserNeed = userNeed.trim();
@@ -224,8 +244,15 @@ export function AiInboxPage() {
         ...prev,
         [item.captureId!]: analysis,
       }));
-      setManualSkillIntentDraft(null);
-      setActiveSkillDirectionAnalysis({ item, analysis });
+      setSkillDraftFlow((current) => {
+        const existingDraft = current && current.item.captureId === item.captureId ? current.draft : undefined;
+        return {
+          item,
+          userNeed: trimmedUserNeed,
+          analysis,
+          draft: existingDraft ?? buildSkillDirectionDraft(item, trimmedUserNeed),
+        };
+      });
       toast.success(mission.planningStatus === "queued" ? skillDirectionQueuedToast : mission.planningStatus === "existing" ? "方向分析已存在，已在弹窗中打开。" : skillDirectionNoAgentToast);
     } catch (err) {
       const duplicate = parseDuplicateIssueError(err);
@@ -241,8 +268,15 @@ export function AiInboxPage() {
           ...prev,
           [item.captureId!]: analysis,
         }));
-        setManualSkillIntentDraft(null);
-        setActiveSkillDirectionAnalysis({ item, analysis });
+        setSkillDraftFlow((current) => {
+          const existingDraft = current && current.item.captureId === item.captureId ? current.draft : undefined;
+          return {
+            item,
+            userNeed: trimmedUserNeed,
+            analysis,
+            draft: existingDraft ?? buildSkillDirectionDraft(item, trimmedUserNeed),
+          };
+        });
         toast.success("方向分析已存在，已在弹窗中打开。");
         return;
       }
@@ -251,19 +285,15 @@ export function AiInboxPage() {
     }
   }
 
-  function handleGenerateSkill(item: AiInboxInput, userNeed = "") {
-    if (!item.captureId || createSkillGenerationMission.isPending) return;
-    setSkillDirectionDraft(buildSkillDirectionDraft(item, userNeed));
-  }
-
   async function handleConfirmSkillDirection() {
-    const captureId = skillDirectionDraft?.item.captureId;
-    if (!skillDirectionDraft || !captureId || createSkillGenerationMission.isPending) return;
-    const item = skillDirectionDraft.item;
+    const draft = skillDraftFlow?.draft;
+    const captureId = draft?.item.captureId;
+    if (!draft || !captureId || createSkillGenerationMission.isPending) return;
+    const item = draft.item;
     try {
       const mission = await createSkillGenerationMission.mutateAsync({
         captureId,
-        direction: skillDirectionFromDraft(skillDirectionDraft),
+        direction: skillDirectionFromDraft(draft),
       });
       if (!mission.issue.id) {
         throw new Error("创建 Skill 生成任务失败：服务端没有返回 Mission ID");
@@ -288,7 +318,7 @@ export function AiInboxPage() {
           state: mission.planningStatus === "existing" ? skillGenerationStateForSkill(mission.skill) : "created",
         },
       }));
-      setSkillDirectionDraft(null);
+      setSkillDraftFlow(null);
       toast.success(mission.planningStatus === "queued" ? skillGenerationQueuedToast : mission.planningStatus === "existing" ? "Skill 已在 Skill 库中，已打开现有生成任务入口。" : skillGenerationNoAgentToast);
     } catch (err) {
       const duplicate = parseDuplicateIssueError(err);
@@ -306,7 +336,7 @@ export function AiInboxPage() {
             state: "duplicate",
           },
         }));
-        setSkillDirectionDraft(null);
+        setSkillDraftFlow(null);
         toast.error("已有相同的 active Skill 生成任务，可从卡片打开。");
         return;
       }
@@ -533,10 +563,9 @@ export function AiInboxPage() {
 	                    isGeneratingSkill={createSkillGenerationMission.isPending && createSkillGenerationMission.variables?.captureId === item.captureId}
 	                    isCreatingSkillMission={createSkillUsageMission.isPending && createSkillUsageMission.variables?.item.captureId === item.captureId}
 	                    isDeletingSkill={deleteGeneratedSkill.isPending && deleteGeneratedSkill.variables?.captureId === item.captureId}
-	                    onAnalyzeSkillDirection={handleAnalyzeSkillDirection}
-	                    onViewSkillDirectionAnalysis={(analysis) => setActiveSkillDirectionAnalysis({ item, analysis })}
-	                    onGenerateSkill={handleGenerateSkill}
-	                    onRequestSkillFromBookmark={(target) => setManualSkillIntentDraft({ item: target, userNeed: "" })}
+	                    onOpenSkillDraft={openSkillDraftFlow}
+	                    onViewSkillDirectionAnalysis={(analysis) => openSkillDraftFlow(item, analysis)}
+	                    onRequestSkillFromBookmark={openSkillDraftFlow}
 	                    onUseGeneratedSkill={handleUseGeneratedSkill}
 	                    onDeleteGeneratedSkill={handleRequestDeleteGeneratedSkill}
 	                  />
@@ -546,31 +575,18 @@ export function AiInboxPage() {
           </div>
         )}
       </WorkbenchSection>
-      <SkillDirectionAnalysisDialog
-        active={activeSkillDirectionAnalysis}
+      <SkillDraftFlowDialog
+        flow={skillDraftFlow}
         comments={skillDirectionCommentsQuery.data}
         isLoading={skillDirectionCommentsQuery.isLoading || skillDirectionCommentsQuery.isFetching}
         isError={skillDirectionCommentsQuery.isError}
-        onRetry={() => void skillDirectionCommentsQuery.refetch()}
-        onClose={() => setActiveSkillDirectionAnalysis(null)}
-        onConfirmDirection={(item) => {
-          const userNeed = activeSkillDirectionAnalysis?.analysis.userNeed ?? "";
-          setActiveSkillDirectionAnalysis(null);
-          handleGenerateSkill(item, userNeed);
-        }}
-      />
-      <ManualSkillIntentDialog
-        draft={manualSkillIntentDraft}
-        isSubmitting={createSkillDirectionMission.isPending}
-        onChange={setManualSkillIntentDraft}
-        onClose={() => setManualSkillIntentDraft(null)}
-        onConfirm={(draft) => void handleAnalyzeSkillDirection(draft.item, draft.userNeed)}
-      />
-      <SkillDirectionDialog
-        draft={skillDirectionDraft}
+        isAnalyzing={createSkillDirectionMission.isPending}
         isSubmitting={createSkillGenerationMission.isPending}
-        onChange={setSkillDirectionDraft}
-        onClose={() => setSkillDirectionDraft(null)}
+        onRetry={() => void skillDirectionCommentsQuery.refetch()}
+        onClose={() => setSkillDraftFlow(null)}
+        onChange={setSkillDraftFlow}
+        onAnalyze={(item, userNeed) => void handleAnalyzeSkillDirection(item, userNeed)}
+        onSkipAnalysis={startSkillDraftWithoutCodex}
         onConfirm={() => void handleConfirmSkillDirection()}
       />
       <DeleteGeneratedSkillDialog
@@ -609,222 +625,197 @@ export function AiInboxPage() {
   );
 }
 
-function SkillDirectionDialog({
-  draft,
+function SkillDraftFlowDialog({
+  flow,
+  comments,
+  isLoading,
+  isError,
+  isAnalyzing,
   isSubmitting,
-  onChange,
+  onRetry,
   onClose,
+  onChange,
+  onAnalyze,
+  onSkipAnalysis,
   onConfirm,
 }: {
-  draft: SkillDirectionDraft | null;
+  flow: SkillDraftFlow | null;
+  comments: Comment[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  isAnalyzing: boolean;
   isSubmitting: boolean;
-  onChange: (draft: SkillDirectionDraft | null) => void;
+  onRetry: () => void;
   onClose: () => void;
+  onChange: (flow: SkillDraftFlow | null) => void;
+  onAnalyze: (item: AiInboxInput, userNeed: string) => void;
+  onSkipAnalysis: () => void;
   onConfirm: () => void;
 }) {
-  const disabled = !draft || !draft.title.trim() || !draft.primaryUseCase.trim() || linesToList(draft.expectedInputs).length === 0 || linesToList(draft.expectedOutputs).length === 0;
-  const update = (patch: Partial<SkillDirectionDraft>) => {
-    if (!draft) return;
-    onChange({ ...draft, ...patch });
+  const draft = flow?.draft;
+  const latestComment = latestSkillDirectionAnalysisComment(comments);
+  const hasCodexResult = Boolean(latestComment?.content.trim());
+  const noAgent = flow?.analysis?.planningStatus === "no_codex_agent";
+  const canGenerate = Boolean(draft?.title.trim() && draft.primaryUseCase.trim() && linesToList(draft.expectedInputs).length > 0 && linesToList(draft.expectedOutputs).length > 0);
+  const updateFlow = (patch: Partial<SkillDraftFlow>) => {
+    if (!flow) return;
+    onChange({ ...flow, ...patch });
+  };
+  const updateDraft = (patch: Partial<SkillDirectionDraft>) => {
+    if (!flow?.draft) return;
+    onChange({ ...flow, draft: { ...flow.draft, ...patch } });
   };
 
   return (
-    <Dialog open={Boolean(draft)} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-2xl">
+    <Dialog open={Boolean(flow)} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>确认 Skill 方向</DialogTitle>
+          <DialogTitle>做成 Skill</DialogTitle>
           <DialogDescription>
-            生成前先确认方向，之后交给本地 Codex 完善并写入 Skill 库。
+            先确认你想沉淀的能力方向，再交给本地 Codex 生成高质量 Skill 并写入 Skill 库。
           </DialogDescription>
         </DialogHeader>
-        {draft && (
-          <div className="grid max-h-[65vh] gap-4 overflow-y-auto pr-1">
+        {flow && (
+          <div className="grid max-h-[68vh] gap-4 overflow-y-auto pr-1">
             <div className="rounded-md border bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
-              <div className="font-medium text-foreground">平台自动评估</div>
-              <div className="mt-1">{skillOpportunityAssessmentText(draft.item.skillOpportunity)}</div>
-              <SkillOpportunityEvidence opportunity={draft.item.skillOpportunity} />
-            </div>
-            <div className="grid gap-2">
-              <Label>先定 Skill 方向</Label>
-              <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Skill 方向">
-                {skillDirectionModeOptions(draft.item).map((option) => (
-                  <Button
-                    key={option.mode}
-                    type="button"
-                    variant={draft.mode === option.mode ? "default" : "outline"}
-                    className="h-auto justify-start whitespace-normal px-3 py-2 text-left"
-                    onClick={() => onChange(applySkillDirectionMode(draft, option.mode))}
-                  >
-                    <span className="grid gap-0.5">
-                      <span className="text-xs font-medium">{option.label}</span>
-                      <span className={draft.mode === option.mode ? "text-[11px] font-normal text-primary-foreground/80" : "text-[11px] font-normal text-muted-foreground"}>
-                        {option.description}
-                      </span>
-                    </span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="skill-direction-title">Skill 名称</Label>
-              <Input
-                id="skill-direction-title"
-                value={draft.title}
-                onChange={(event) => update({ title: event.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="skill-direction-use-case">主要用途</Label>
-              <Textarea
-                id="skill-direction-use-case"
-                value={draft.primaryUseCase}
-                onChange={(event) => update({ primaryUseCase: event.target.value })}
-                className="min-h-20 resize-none text-sm"
-              />
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="skill-direction-context">使用场景</Label>
-                <Textarea
-                  id="skill-direction-context"
-                  value={draft.targetContext}
-                  onChange={(event) => update({ targetContext: event.target.value })}
-                  className="min-h-20 resize-none text-sm"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="skill-direction-success">成功标准</Label>
-                <Textarea
-                  id="skill-direction-success"
-                  value={draft.successCriteria}
-                  onChange={(event) => update({ successCriteria: event.target.value })}
-                  className="min-h-20 resize-none text-sm"
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="skill-direction-capability">能力描述</Label>
-              <Textarea
-                id="skill-direction-capability"
-                value={draft.capability}
-                onChange={(event) => update({ capability: event.target.value })}
-                className="min-h-20 resize-none text-sm"
-              />
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="skill-direction-inputs">必要输入</Label>
-                <Textarea
-                  id="skill-direction-inputs"
-                  value={draft.expectedInputs}
-                  onChange={(event) => update({ expectedInputs: event.target.value })}
-                  className="min-h-24 resize-none text-sm"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="skill-direction-outputs">期望输出</Label>
-                <Textarea
-                  id="skill-direction-outputs"
-                  value={draft.expectedOutputs}
-                  onChange={(event) => update({ expectedOutputs: event.target.value })}
-                  className="min-h-24 resize-none text-sm"
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="skill-direction-triggers">触发说法</Label>
-              <Textarea
-                id="skill-direction-triggers"
-                value={draft.triggerExamples}
-                onChange={(event) => update({ triggerExamples: event.target.value })}
-                className="min-h-20 resize-none text-sm"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="skill-direction-boundaries">边界和不要做</Label>
-              <Textarea
-                id="skill-direction-boundaries"
-                value={draft.boundaries}
-                onChange={(event) => update({ boundaries: event.target.value })}
-                className="min-h-20 resize-none text-sm"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="skill-direction-notes">补充说明</Label>
-              <Textarea
-                id="skill-direction-notes"
-                value={draft.notes}
-                onChange={(event) => update({ notes: event.target.value })}
-                className="min-h-16 resize-none text-sm"
-              />
-            </div>
-          </div>
-        )}
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>取消</Button>
-          <Button type="button" onClick={onConfirm} disabled={disabled || isSubmitting}>
-            {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-            {isSubmitting ? "提交中" : "交给 Codex 生成"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ManualSkillIntentDialog({
-  draft,
-  isSubmitting,
-  onChange,
-  onClose,
-  onConfirm,
-}: {
-  draft: ManualSkillIntentDraft | null;
-  isSubmitting: boolean;
-  onChange: (draft: ManualSkillIntentDraft | null) => void;
-  onClose: () => void;
-  onConfirm: (draft: ManualSkillIntentDraft) => void;
-}) {
-  const updateUserNeed = (userNeed: string) => {
-    if (!draft) return;
-    onChange({ ...draft, userNeed });
-  };
-
-  return (
-    <Dialog open={Boolean(draft)} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>想把这个收藏做成什么 Skill？</DialogTitle>
-          <DialogDescription>
-            先给 Codex 一个方向就行；也可以不填，让它阅读链接后推荐。
-          </DialogDescription>
-        </DialogHeader>
-        {draft && (
-          <div className="grid gap-4">
-            <div className="rounded-md border bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
-              <div className="line-clamp-1 font-medium text-foreground">{draft.item.title}</div>
-              <a href={draft.item.sourceUrl} target="_blank" rel="noreferrer" className="mt-1 block truncate font-mono underline underline-offset-2">
-                {draft.item.sourceUrl}
+              <div className="font-medium text-foreground">{flow.item.title}</div>
+              <a href={flow.item.sourceUrl} target="_blank" rel="noreferrer" className="mt-1 block truncate font-mono underline underline-offset-2">
+                {flow.item.sourceUrl}
               </a>
+              <div className="mt-2">{skillOpportunityAssessmentText(flow.item.skillOpportunity)}</div>
+              <SkillOpportunityEvidence opportunity={flow.item.skillOpportunity} />
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="manual-skill-user-need">你的需求（选填）</Label>
+              <Label htmlFor="skill-draft-user-need">你的需求（选填）</Label>
               <Textarea
-                id="manual-skill-user-need"
-                value={draft.userNeed}
-                onChange={(event) => updateUserNeed(event.target.value)}
+                id="skill-draft-user-need"
+                value={flow.userNeed}
+                onChange={(event) => updateFlow({ userNeed: event.target.value })}
                 placeholder="例如：我想把它做成一个 API 接入助手 / 论文阅读助手 / 排障助手。"
-                className="min-h-28 resize-none text-sm"
+                className="min-h-20 resize-none text-sm"
+                disabled={Boolean(flow.analysis) || isAnalyzing || isSubmitting}
               />
             </div>
+
+            {flow.analysis && (
+              <div className="rounded-md border bg-background p-3">
+                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-foreground">
+                  {noAgent ? <AlertCircle className="size-3.5 text-amber-600" /> : hasCodexResult ? <CheckCircle2 className="size-3.5 text-emerald-600" /> : <Loader2 className="size-3.5 animate-spin text-muted-foreground" />}
+                  Codex 推荐
+                </div>
+                {noAgent ? (
+                  <p className="text-xs leading-5 text-amber-900 dark:text-amber-200">
+                    当前没有可用 Codex agent。你可以先用平台默认草稿继续，之后再让本地 Codex 完善。
+                  </p>
+                ) : hasCodexResult ? (
+                  <Markdown className="text-sm leading-6">{latestComment?.content ?? ""}</Markdown>
+                ) : isError ? (
+                  <div className="flex items-center justify-between gap-3 text-xs text-destructive">
+                    <span>暂时读取不到 Codex 推荐结果。</span>
+                    <Button type="button" size="sm" variant="outline" onClick={onRetry}>
+                      <RefreshCw className="size-3.5" />
+                      重试
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-xs leading-5 text-muted-foreground" role="status">
+                    {isLoading ? "正在读取 Codex 推荐…" : "Codex 正在阅读链接并推荐 Skill 方向…"}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {draft && (
+              <div className="grid gap-4 border-t pt-4">
+                <div className="grid gap-2">
+                  <Label>选择 Skill 方向</Label>
+                  <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Skill 方向">
+                    {skillDirectionModeOptions(draft.item).map((option) => (
+                      <Button
+                        key={option.mode}
+                        type="button"
+                        variant={draft.mode === option.mode ? "default" : "outline"}
+                        className="h-auto justify-start whitespace-normal px-3 py-2 text-left"
+                        onClick={() => onChange({ ...flow, draft: applySkillDirectionMode(draft, option.mode) })}
+                      >
+                        <span className="grid gap-0.5">
+                          <span className="text-xs font-medium">{option.label}</span>
+                          <span className={draft.mode === option.mode ? "text-[11px] font-normal text-primary-foreground/80" : "text-[11px] font-normal text-muted-foreground"}>
+                            {option.description}
+                          </span>
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="skill-direction-title">Skill 名称</Label>
+                  <Input id="skill-direction-title" value={draft.title} onChange={(event) => updateDraft({ title: event.target.value })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="skill-direction-use-case">主要用途</Label>
+                  <Textarea id="skill-direction-use-case" value={draft.primaryUseCase} onChange={(event) => updateDraft({ primaryUseCase: event.target.value })} className="min-h-20 resize-none text-sm" />
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="skill-direction-context">使用场景</Label>
+                    <Textarea id="skill-direction-context" value={draft.targetContext} onChange={(event) => updateDraft({ targetContext: event.target.value })} className="min-h-20 resize-none text-sm" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="skill-direction-success">成功标准</Label>
+                    <Textarea id="skill-direction-success" value={draft.successCriteria} onChange={(event) => updateDraft({ successCriteria: event.target.value })} className="min-h-20 resize-none text-sm" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="skill-direction-capability">能力描述</Label>
+                  <Textarea id="skill-direction-capability" value={draft.capability} onChange={(event) => updateDraft({ capability: event.target.value })} className="min-h-20 resize-none text-sm" />
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="skill-direction-inputs">必要输入</Label>
+                    <Textarea id="skill-direction-inputs" value={draft.expectedInputs} onChange={(event) => updateDraft({ expectedInputs: event.target.value })} className="min-h-24 resize-none text-sm" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="skill-direction-outputs">期望输出</Label>
+                    <Textarea id="skill-direction-outputs" value={draft.expectedOutputs} onChange={(event) => updateDraft({ expectedOutputs: event.target.value })} className="min-h-24 resize-none text-sm" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="skill-direction-triggers">触发说法</Label>
+                  <Textarea id="skill-direction-triggers" value={draft.triggerExamples} onChange={(event) => updateDraft({ triggerExamples: event.target.value })} className="min-h-20 resize-none text-sm" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="skill-direction-boundaries">边界和不要做</Label>
+                  <Textarea id="skill-direction-boundaries" value={draft.boundaries} onChange={(event) => updateDraft({ boundaries: event.target.value })} className="min-h-20 resize-none text-sm" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="skill-direction-notes">补充说明</Label>
+                  <Textarea id="skill-direction-notes" value={draft.notes} onChange={(event) => updateDraft({ notes: event.target.value })} className="min-h-16 resize-none text-sm" />
+                </div>
+              </div>
+            )}
           </div>
         )}
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>取消</Button>
-          <Button type="button" onClick={() => draft && onConfirm(draft)} disabled={!draft || isSubmitting}>
-            {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-            {isSubmitting ? "分析中" : "让 Codex 推荐方向"}
-          </Button>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isAnalyzing || isSubmitting}>取消</Button>
+          {flow && !draft && (
+            <Button type="button" variant="outline" onClick={onSkipAnalysis} disabled={isAnalyzing || isSubmitting}>
+              直接填草稿
+            </Button>
+          )}
+          {flow && !flow.analysis && (
+            <Button type="button" onClick={() => onAnalyze(flow.item, flow.userNeed)} disabled={isAnalyzing || isSubmitting}>
+              {isAnalyzing ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+              {isAnalyzing ? "推荐中" : recommendSkillDirectionLabel}
+            </Button>
+          )}
+          {draft && (
+            <Button type="button" onClick={onConfirm} disabled={!canGenerate || isAnalyzing || isSubmitting}>
+              {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+              {isSubmitting ? "提交中" : "交给 Codex 生成"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -866,91 +857,6 @@ function DeleteGeneratedSkillDialog({
   );
 }
 
-function SkillDirectionAnalysisDialog({
-  active,
-  comments,
-  isLoading,
-  isError,
-  onRetry,
-  onClose,
-  onConfirmDirection,
-}: {
-  active: ActiveSkillDirectionAnalysis | null;
-  comments: Comment[] | undefined;
-  isLoading: boolean;
-  isError: boolean;
-  onRetry: () => void;
-  onClose: () => void;
-  onConfirmDirection: (item: AiInboxInput) => void;
-}) {
-  const latestComment = latestSkillDirectionAnalysisComment(comments);
-  const hasCodexResult = Boolean(latestComment?.content.trim());
-  const noAgent = active?.analysis.planningStatus === "no_codex_agent";
-
-  return (
-    <Dialog open={Boolean(active)} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Skill 方向分析</DialogTitle>
-          <DialogDescription>
-            本地 Codex 会先阅读收藏链接，判断它适不适合沉淀成 Skill，并给出具体方向。
-          </DialogDescription>
-        </DialogHeader>
-        {active && (
-          <div className="grid max-h-[68vh] gap-4 overflow-y-auto pr-1">
-            <div className="rounded-md border bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
-              <div className="font-medium text-foreground">{active.item.title}</div>
-              <a href={active.item.sourceUrl} target="_blank" rel="noreferrer" className="mt-1 block truncate font-mono underline underline-offset-2">
-                {active.item.sourceUrl}
-              </a>
-              <div className="mt-2">{skillOpportunityAssessmentText(active.item.skillOpportunity)}</div>
-              {!active.item.skillOpportunity?.shouldSuggest && (
-                <div className="mt-2 rounded-sm bg-background px-2 py-1.5">
-                  <span className="font-medium text-foreground">用户主动发起</span>
-                  {active.analysis.userNeed ? <span>：{active.analysis.userNeed}</span> : <span>，请 Codex 先判断是否值得做成 Skill。</span>}
-                </div>
-              )}
-            </div>
-            {noAgent ? (
-              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-5 text-amber-900 dark:text-amber-200">
-                当前没有可用 Codex agent。你仍然可以基于平台初筛结果先确认方向，之后再交给本地 Codex 生成。
-              </div>
-            ) : hasCodexResult ? (
-              <div className="rounded-md border bg-background p-3">
-                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-foreground">
-                  <CheckCircle2 className="size-3.5 text-emerald-600" />
-                  Codex 建议
-                </div>
-                <Markdown className="text-sm leading-6">{latestComment?.content ?? ""}</Markdown>
-              </div>
-            ) : isError ? (
-              <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/30 bg-background p-3 text-xs text-destructive">
-                <span>暂时读取不到 Codex 分析结果。</span>
-                <Button type="button" size="sm" variant="outline" onClick={onRetry}>
-                  <RefreshCw className="size-3.5" />
-                  重试
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 rounded-md border bg-background p-3 text-xs text-muted-foreground" role="status">
-                <Loader2 className="size-3.5 animate-spin" />
-                {isLoading ? "正在读取 Codex 分析…" : "Codex 正在阅读链接并分析 Skill 方向…"}
-              </div>
-            )}
-          </div>
-        )}
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose}>关闭</Button>
-          <Button type="button" onClick={() => active && onConfirmDirection(active.item)} disabled={!active}>
-            <Sparkles className="size-3.5" />
-            {hasCodexResult ? "根据分析确认方向" : "先用默认方向确认"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 function BrowserCaptureCard({
   item,
   archivedView,
@@ -961,9 +867,8 @@ function BrowserCaptureCard({
   isGeneratingSkill,
   isCreatingSkillMission,
   isDeletingSkill,
-  onAnalyzeSkillDirection,
+  onOpenSkillDraft,
   onViewSkillDirectionAnalysis,
-  onGenerateSkill,
   onRequestSkillFromBookmark,
   onUseGeneratedSkill,
   onDeleteGeneratedSkill,
@@ -977,9 +882,8 @@ function BrowserCaptureCard({
   isGeneratingSkill: boolean;
   isCreatingSkillMission: boolean;
   isDeletingSkill: boolean;
-  onAnalyzeSkillDirection: (item: AiInboxInput) => void;
+  onOpenSkillDraft: (item: AiInboxInput) => void;
   onViewSkillDirectionAnalysis: (analysis: SkillDirectionAnalysis) => void;
-  onGenerateSkill: (item: AiInboxInput, userNeed?: string) => void;
   onRequestSkillFromBookmark: (item: AiInboxInput) => void;
   onUseGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
   onDeleteGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
@@ -1046,9 +950,8 @@ function BrowserCaptureCard({
           isGenerating={isGeneratingSkill}
           isCreatingSkillMission={isCreatingSkillMission}
           isDeletingSkill={isDeletingSkill}
-          onAnalyzeDirection={() => onAnalyzeSkillDirection(item)}
+          onOpenSkillDraft={() => onOpenSkillDraft(item)}
           onViewDirectionAnalysis={skillDirectionAnalysis ? () => onViewSkillDirectionAnalysis(skillDirectionAnalysis) : undefined}
-          onGenerate={skillDirectionAnalysis ? () => onGenerateSkill(item, skillDirectionAnalysis.userNeed) : undefined}
           onUseGeneratedSkill={skillGenerationMission ? () => onUseGeneratedSkill(item, skillGenerationMission) : undefined}
           onDeleteGeneratedSkill={skillGenerationMission ? () => onDeleteGeneratedSkill(item, skillGenerationMission) : undefined}
         />
@@ -1094,9 +997,8 @@ function SkillOpportunityPanel({
   isGenerating,
   isCreatingSkillMission,
   isDeletingSkill,
-  onAnalyzeDirection,
+  onOpenSkillDraft,
   onViewDirectionAnalysis,
-  onGenerate,
   onUseGeneratedSkill,
   onDeleteGeneratedSkill,
 }: {
@@ -1108,15 +1010,13 @@ function SkillOpportunityPanel({
   isGenerating: boolean;
   isCreatingSkillMission: boolean;
   isDeletingSkill: boolean;
-  onAnalyzeDirection: () => void;
+  onOpenSkillDraft: () => void;
   onViewDirectionAnalysis?: () => void;
-  onGenerate?: () => void;
   onUseGeneratedSkill?: () => void;
   onDeleteGeneratedSkill?: () => void;
 }) {
   const canUseGeneratedSkill = Boolean(mission?.skillId && onUseGeneratedSkill);
   const canDeleteGeneratedSkill = Boolean(mission?.skillId && onDeleteGeneratedSkill);
-  const canConfirmDirection = Boolean(directionAnalysis && !mission && onGenerate);
   const hasGeneratedSkill = Boolean(mission);
   return (
     <div className="border-t bg-muted/10 px-3 py-3">
@@ -1150,10 +1050,10 @@ function SkillOpportunityPanel({
                 size="sm"
                 className="h-7 px-2 text-xs"
                 disabled={isAnalyzingDirection}
-                onClick={onAnalyzeDirection}
+                onClick={onOpenSkillDraft}
               >
                 {isAnalyzingDirection ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-                {isAnalyzingDirection ? "分析中" : analyzeSkillDirectionLabel}
+                {isAnalyzingDirection ? "推荐中" : makeBookmarkSkillLabel}
               </Button>
             )}
             {directionAnalysis && !mission && onViewDirectionAnalysis && (
@@ -1165,19 +1065,7 @@ function SkillOpportunityPanel({
                 onClick={onViewDirectionAnalysis}
               >
                 <Sparkles className="size-3.5" />
-                {viewSkillDirectionLabel}
-              </Button>
-            )}
-            {canConfirmDirection && (
-              <Button
-                type="button"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                disabled={isGenerating}
-                onClick={onGenerate}
-              >
-                {isGenerating ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-                {isGenerating ? "创建中" : confirmSkillDirectionLabel}
+                继续做 Skill
               </Button>
             )}
             {canUseGeneratedSkill && (
