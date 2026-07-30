@@ -47,8 +47,8 @@ const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
 type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
-type SkillDirectionAnalysis = { id: string; title: string; state: "created" | "duplicate"; planningStatus: string };
-type ActiveSkillDirectionAnalysis = { item: AiInboxInput; analysis: SkillDirectionAnalysis; userNeed?: string };
+type SkillDirectionAnalysis = { id: string; title: string; state: "created" | "duplicate"; planningStatus: string; userNeed?: string };
+type ActiveSkillDirectionAnalysis = { item: AiInboxInput; analysis: SkillDirectionAnalysis };
 type SkillUsageMission = { id: string; href: string; title: string };
 type SkillDeleteTarget = { captureId: string; mission: SkillGenerationMission };
 type ManualSkillIntentDraft = { item: AiInboxInput; userNeed: string };
@@ -218,13 +218,14 @@ export function AiInboxPage() {
         title: mission.issue.title,
         state: mission.planningStatus === "existing" ? "duplicate" : "created",
         planningStatus: mission.planningStatus,
+        userNeed: trimmedUserNeed || undefined,
       };
       setSkillDirectionAnalyses((prev) => ({
         ...prev,
         [item.captureId!]: analysis,
       }));
       setManualSkillIntentDraft(null);
-      setActiveSkillDirectionAnalysis({ item, analysis, userNeed: trimmedUserNeed || undefined });
+      setActiveSkillDirectionAnalysis({ item, analysis });
       toast.success(mission.planningStatus === "queued" ? skillDirectionQueuedToast : mission.planningStatus === "existing" ? "方向分析已存在，已在弹窗中打开。" : skillDirectionNoAgentToast);
     } catch (err) {
       const duplicate = parseDuplicateIssueError(err);
@@ -234,13 +235,14 @@ export function AiInboxPage() {
           title: duplicate.issue.title,
           state: "duplicate",
           planningStatus: "existing",
+          userNeed: trimmedUserNeed || undefined,
         };
         setSkillDirectionAnalyses((prev) => ({
           ...prev,
           [item.captureId!]: analysis,
         }));
         setManualSkillIntentDraft(null);
-        setActiveSkillDirectionAnalysis({ item, analysis, userNeed: trimmedUserNeed || undefined });
+        setActiveSkillDirectionAnalysis({ item, analysis });
         toast.success("方向分析已存在，已在弹窗中打开。");
         return;
       }
@@ -552,7 +554,7 @@ export function AiInboxPage() {
         onRetry={() => void skillDirectionCommentsQuery.refetch()}
         onClose={() => setActiveSkillDirectionAnalysis(null)}
         onConfirmDirection={(item) => {
-          const userNeed = activeSkillDirectionAnalysis?.userNeed ?? "";
+          const userNeed = activeSkillDirectionAnalysis?.analysis.userNeed ?? "";
           setActiveSkillDirectionAnalysis(null);
           handleGenerateSkill(item, userNeed);
         }}
@@ -905,7 +907,7 @@ function SkillDirectionAnalysisDialog({
               {!active.item.skillOpportunity?.shouldSuggest && (
                 <div className="mt-2 rounded-sm bg-background px-2 py-1.5">
                   <span className="font-medium text-foreground">用户主动发起</span>
-                  {active.userNeed ? <span>：{active.userNeed}</span> : <span>，请 Codex 先判断是否值得做成 Skill。</span>}
+                  {active.analysis.userNeed ? <span>：{active.analysis.userNeed}</span> : <span>，请 Codex 先判断是否值得做成 Skill。</span>}
                 </div>
               )}
             </div>
@@ -977,7 +979,7 @@ function BrowserCaptureCard({
   isDeletingSkill: boolean;
   onAnalyzeSkillDirection: (item: AiInboxInput) => void;
   onViewSkillDirectionAnalysis: (analysis: SkillDirectionAnalysis) => void;
-  onGenerateSkill: (item: AiInboxInput) => void;
+  onGenerateSkill: (item: AiInboxInput, userNeed?: string) => void;
   onRequestSkillFromBookmark: (item: AiInboxInput) => void;
   onUseGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
   onDeleteGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
@@ -1046,7 +1048,7 @@ function BrowserCaptureCard({
           isDeletingSkill={isDeletingSkill}
           onAnalyzeDirection={() => onAnalyzeSkillDirection(item)}
           onViewDirectionAnalysis={skillDirectionAnalysis ? () => onViewSkillDirectionAnalysis(skillDirectionAnalysis) : undefined}
-          onGenerate={skillDirectionAnalysis ? () => onGenerateSkill(item) : undefined}
+          onGenerate={skillDirectionAnalysis ? () => onGenerateSkill(item, skillDirectionAnalysis.userNeed) : undefined}
           onUseGeneratedSkill={skillGenerationMission ? () => onUseGeneratedSkill(item, skillGenerationMission) : undefined}
           onDeleteGeneratedSkill={skillGenerationMission ? () => onDeleteGeneratedSkill(item, skillGenerationMission) : undefined}
         />

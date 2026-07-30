@@ -457,6 +457,12 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByRole("dialog", { name: "Skill 方向分析" })).toBeInTheDocument();
     expect(screen.getByText("用户主动发起")).toBeInTheDocument();
     expect(screen.getByText(/我想把它做成一个 AI 输出质量复盘助手/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "关闭" }));
+    await user.click(screen.getByRole("button", { name: "确认方向" }));
+
+    expect(screen.getByRole("dialog", { name: "确认 Skill 方向" })).toBeInTheDocument();
+    expect(screen.getByLabelText("补充说明")).toHaveValue("用户主动需求：我想把它做成一个 AI 输出质量复盘助手。");
   });
 
   it("deletes a generated Skill from its bookmark card and allows regeneration", async () => {
