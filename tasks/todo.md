@@ -31,7 +31,7 @@
 
 **验收标准：**
 - [ ] 弹窗中有清晰阶段状态，不要求用户进入 Mission 查看分析。
-- [ ] 无 Codex Local 时给出可继续填写草稿的路径。
+- [x] 无 Codex Local 时给出可继续填写草稿的路径。
 - [x] backend offline 时提示启动后端，而不是泛泛 `Failed to fetch`。
 
 **验证：**

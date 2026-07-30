@@ -466,6 +466,50 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByLabelText("补充说明")).toHaveValue("用户主动需求：我想把它做成一个 AI 输出质量复盘助手。");
   });
 
+  it("keeps an editable Skill draft available when Codex Local is unavailable", async () => {
+    const user = userEvent.setup();
+    createBrowserCaptureSkillDirectionMission.mockResolvedValue({
+      issue: { id: "skill-direction-mission-no-agent", title: "分析 Skill 方向：Stripe Checkout documentation" },
+      planningStatus: "no_codex_agent",
+      planningAgentId: null,
+    });
+    listBrowserCaptures.mockResolvedValue({
+      captures: [
+        captureFixture({
+          url: "https://docs.stripe.com/payments/checkout",
+          normalized_url: "https://docs.stripe.com/payments/checkout",
+          title: "Stripe Checkout documentation",
+          domain: "docs.stripe.com",
+          description: "Use Checkout to accept payments with API parameters, webhooks, and error handling.",
+          readable_text: "Install the SDK, configure API keys, create a checkout session, handle webhooks, and test common errors.",
+          memory: memoryFixture({
+            summary: "Technical documentation for integrating Stripe Checkout with API parameters, SDK setup, and webhook troubleshooting.",
+            one_line_takeaway: "Stripe Checkout integration guide with API setup and error handling.",
+            key_points: ["Create a checkout session with API parameters.", "Handle webhooks and common errors."],
+            topics: ["api", "payments", "checkout"],
+            entities: ["Stripe"],
+            keywords: ["api", "sdk", "webhook", "error"],
+            status: "ready",
+          }),
+        }),
+      ],
+      total: 1,
+    });
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "做成 Skill" }));
+    await user.click(screen.getByRole("button", { name: "让 Codex 推荐方向" }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith("当前没有可用 Codex agent，可先用平台默认方向确认。"));
+    const dialog = screen.getByRole("dialog", { name: "做成 Skill" });
+    expect(within(dialog).getByText("当前没有可用 Codex agent。你可以先用平台默认草稿继续，之后再让本地 Codex 完善。")).toBeInTheDocument();
+    expect(within(dialog).getByText("选择 Skill 方向")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 接入助手");
+    expect(within(dialog).getByRole("button", { name: "交给 Codex 生成" })).toBeEnabled();
+  });
+
   it("deletes a generated Skill from its bookmark card and allows regeneration", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({
