@@ -42,6 +42,10 @@ const skillGenerationNoAgentToast = "Skill 生成任务已创建，当前没有�
 const deleteGeneratedSkillToast = "Skill 已删除，可以重新生成。";
 const keepAsKnowledgeToast = "已保留为知识卡片";
 const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
+const backendOfflineMessage = "后端暂时不可用。请先在本地终端启动后端：make start-worktree，然后刷新页面。";
+const codexOfflineMessage = "当前没有可用 Codex agent。你可以先直接填写草稿，或启动本地 Codex 后再让它推荐方向。";
+const noSkillOpportunityMessage = "这个收藏暂时没有足够的可复用线索。你可以在弹窗里补充想要的 Skill 方向，再让 Codex 重新判断。";
+const sourceFetchFailedMessage = "来源页面暂时读取失败。你可以刷新收藏，或先手动填写 Skill 方向。";
 type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
@@ -192,7 +196,7 @@ export function AiInboxPage() {
         toast.error("已有相同的 active Mission，可从下方打开。");
         return;
       }
-      const message = err instanceof Error && err.message ? err.message : "创建 Mission 失败";
+      const message = userFacingErrorMessage(err, "创建 Mission 失败");
       setCreateError(message);
       toast.error(message);
     }
@@ -280,7 +284,7 @@ export function AiInboxPage() {
         toast.success("方向分析已存在，已在弹窗中打开。");
         return;
       }
-      const message = err instanceof Error && err.message ? err.message : "创建方向分析任务失败";
+      const message = userFacingErrorMessage(err, "创建方向分析任务失败");
       toast.error(message);
     }
   }
@@ -340,7 +344,7 @@ export function AiInboxPage() {
         toast.error("已有相同的 active Skill 生成任务，可从卡片打开。");
         return;
       }
-      const message = err instanceof Error && err.message ? err.message : "创建 Skill 生成任务失败";
+      const message = userFacingErrorMessage(err, "创建 Skill 生成任务失败");
       toast.error(message);
     }
   }
@@ -375,7 +379,7 @@ export function AiInboxPage() {
         toast.error("已有相同的 active Mission，可从卡片打开。");
         return;
       }
-      const message = err instanceof Error && err.message ? err.message : "创建 Mission 失败";
+      const message = userFacingErrorMessage(err, "创建 Mission 失败");
       toast.error(message);
     }
   }
@@ -412,7 +416,7 @@ export function AiInboxPage() {
       setSkillDeleteTarget(null);
       toast.success(deleteGeneratedSkillToast);
     } catch (err) {
-      const message = err instanceof Error && err.message ? err.message : "删除 Skill 失败";
+      const message = userFacingErrorMessage(err, "删除 Skill 失败");
       toast.error(message);
     }
   }
@@ -426,7 +430,7 @@ export function AiInboxPage() {
       toast.success("输入链接已加入收藏");
       await createMissionFromInput("saved");
     } catch (err) {
-      const message = err instanceof Error && err.message ? err.message : "收藏链接失败";
+      const message = userFacingErrorMessage(err, "收藏链接失败");
       toast.error(message);
     }
   }
@@ -549,7 +553,7 @@ export function AiInboxPage() {
           <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground" role="status">正在读取浏览器收藏…</div>
         ) : capturesQuery.isError ? (
           <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-background p-3 text-sm text-muted-foreground" role="alert">
-            <span>浏览器收藏暂时读取失败，请稍后重试。</span>
+            <span>{userFacingErrorMessage(capturesQuery.error, "浏览器收藏暂时读取失败，请稍后重试。")}</span>
             <Button size="sm" variant="outline" type="button" onClick={() => void capturesQuery.refetch()}>
               <RefreshCw className="size-3.5" />
               刷新
@@ -1560,6 +1564,32 @@ function browserCaptureStatusView(item: AiInboxInput) {
         iconClassName: "",
       };
   }
+}
+
+function userFacingErrorMessage(err: unknown, fallback: string): string {
+  if (isNetworkFetchError(err)) return backendOfflineMessage;
+
+  const message = err instanceof Error ? err.message.trim() : "";
+  if (!message) return fallback;
+
+  const normalized = message.toLowerCase();
+  if (normalized.includes("browser capture has no skill opportunity")) {
+    return noSkillOpportunityMessage;
+  }
+  if (normalized.includes("no available codex agent") || normalized.includes("no codex agent")) {
+    return codexOfflineMessage;
+  }
+  if (normalized.includes("source") && (normalized.includes("fetch") || normalized.includes("read") || normalized.includes("scrape"))) {
+    return sourceFetchFailedMessage;
+  }
+
+  return message;
+}
+
+function isNetworkFetchError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const message = err.message.trim().toLowerCase();
+  return message === "failed to fetch" || message === "load failed" || message.includes("networkerror");
 }
 
 function parseDuplicateIssueError(err: unknown): DuplicateIssueErrorBody | null {

@@ -779,6 +779,21 @@ describe("AiInboxPage browser captures", () => {
     expect(navigationPush).not.toHaveBeenCalled();
   });
 
+  it("explains backend offline network failures instead of showing the raw fetch error", async () => {
+    const user = userEvent.setup();
+    listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
+    createAiInboxMission.mockRejectedValue(new TypeError("Failed to fetch"));
+
+    renderPage();
+
+    await user.type(screen.getByLabelText("AI Inbox input"), "帮我整理这些 AI Agent 学习资料");
+    await user.click(await screen.findByRole("button", { name: "创建 Mission" }));
+
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.stringContaining("后端暂时不可用")));
+    expect(screen.getByRole("alert")).toHaveTextContent("make start-worktree");
+    expect(screen.getByRole("alert")).not.toHaveTextContent("Failed to fetch");
+  });
+
   it("locks the create button while creating and after success to prevent duplicate missions", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
