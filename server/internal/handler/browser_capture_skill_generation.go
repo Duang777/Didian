@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -32,6 +33,10 @@ type CreateBrowserCaptureSkillDirectionMissionResponse struct {
 	Issue           IssueResponse `json:"issue"`
 	PlanningStatus  string        `json:"planningStatus"`
 	PlanningAgentID *string       `json:"planningAgentId,omitempty"`
+}
+
+type CreateBrowserCaptureSkillDirectionMissionRequest struct {
+	UserNeed string `json:"userNeed,omitempty"`
 }
 
 type CreateBrowserCaptureSkillGenerationMissionRequest struct {
@@ -83,13 +88,15 @@ func (h *Handler) CreateBrowserCaptureSkillDirectionMission(w http.ResponseWrite
 		return
 	}
 
-	opportunity := skillOpportunityForCapture(capture)
-	if opportunity == nil || !opportunity.ShouldSuggest {
-		writeError(w, http.StatusUnprocessableEntity, "browser capture has no skill opportunity")
+	var req CreateBrowserCaptureSkillDirectionMissionRequest
+	if err := decodeOptionalJSONBody(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+	userNeed := truncateTrimmed(req.UserNeed, 2000)
 
-	description := buildBrowserCaptureSkillDirectionMissionDescription(capture, opportunity)
+	opportunity, manual := skillOpportunityForCaptureOrManual(capture)
+	description := buildBrowserCaptureSkillDirectionMissionDescription(capture, opportunity, userNeed, manual)
 	if utf8.RuneCountInString(description) > maxAIInboxInputRunes {
 		description = truncateTrimmed(description, maxAIInboxInputRunes)
 	}
@@ -237,11 +244,7 @@ func (h *Handler) CreateBrowserCaptureSkillGenerationMission(w http.ResponseWrit
 		return
 	}
 
-	opportunity := skillOpportunityForCapture(capture)
-	if opportunity == nil || !opportunity.ShouldSuggest {
-		writeError(w, http.StatusUnprocessableEntity, "browser capture has no skill opportunity")
-		return
-	}
+	opportunity, _ := skillOpportunityForCaptureOrManual(capture)
 	direction, err := normalizeBrowserCaptureSkillDirection(req.Direction, opportunity)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
@@ -433,6 +436,22 @@ func (h *Handler) ensureBrowserCaptureSkillDraft(r *http.Request, workspaceID, c
 	return created.SkillResponse, true, nil
 }
 
+func decodeOptionalJSONBody(r *http.Request, v any) error {
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(v); err != nil && !errors.Is(err, io.EOF) {
+		return err
+	}
+	return nil
+}
+
+func skillOpportunityForCaptureOrManual(capture db.CapturedSource) (*SkillOpportunityResponse, bool) {
+	if opportunity := skillOpportunityForCapture(capture); opportunity != nil {
+		return opportunity, false
+	}
+	return manualSkillOpportunityForCapture(capture), true
+}
+
 func skillOpportunityForCapture(capture db.CapturedSource) *SkillOpportunityResponse {
 	if len(capture.SkillOpportunity) > 0 {
 		var opportunity SkillOpportunityResponse
@@ -449,6 +468,35 @@ func skillOpportunityForCapture(capture db.CapturedSource) *SkillOpportunityResp
 		SelectedText: textToString(capture.SelectedText),
 		ReadableText: textToString(capture.ReadableText),
 	})
+}
+
+func manualSkillOpportunityForCapture(capture db.CapturedSource) *SkillOpportunityResponse {
+	req := CreateBrowserCaptureRequest{
+		URL:          capture.Url,
+		Title:        capture.Title,
+		Domain:       capture.Domain,
+		Description:  textToString(capture.Description),
+		SelectedText: textToString(capture.SelectedText),
+		ReadableText: textToString(capture.ReadableText),
+	}
+	pageType := inferSkillOpportunityPageType(req)
+	subject := deriveSkillOpportunitySubject(req)
+	return &SkillOpportunityResponse{
+		ShouldSuggest:           false,
+		Confidence:              0.5,
+		PageType:                pageType,
+		ProposedTitle:           subject + " 助手",
+		ProposedCapability:      "根据用户指定的目标，把这个收藏网页沉淀成可复用的个人 Skill。",
+		WhyUseful:               "用户主动选择把这个收藏做成 Skill，需要本地 Codex 先阅读来源并判断最合适的能力方向。",
+		TriggerExamples:         []string{"基于这个收藏帮我完成相关任务", "按这个收藏沉淀的流程处理我的问题"},
+		ExpectedInputs:          []string{"用户目标", "使用场景", "当前上下文"},
+		ExpectedOutputs:         []string{"可执行步骤", "检查清单", "注意事项"},
+		ReusableWorkflowScore:   0.5,
+		InstructionDensityScore: 0.5,
+		FutureUseScore:          0.5,
+		EvidenceSnippets:        collectSkillOpportunityEvidence(req),
+		RiskNotes:               []string{"这是用户主动发起的 Skill 方向分析，生成前需要 Codex 判断网页是否适合沉淀为可复用能力。"},
+	}
 }
 
 func normalizeBrowserCaptureSkillDirection(direction BrowserCaptureSkillDirectionRequest, opportunity *SkillOpportunityResponse) (BrowserCaptureSkillDirectionRequest, error) {
@@ -518,7 +566,7 @@ func skillDirectionConfig(direction BrowserCaptureSkillDirectionRequest) map[str
 	}
 }
 
-func buildBrowserCaptureSkillDirectionMissionDescription(capture db.CapturedSource, opportunity *SkillOpportunityResponse) string {
+func buildBrowserCaptureSkillDirectionMissionDescription(capture db.CapturedSource, opportunity *SkillOpportunityResponse, userNeed string, manual bool) string {
 	var b strings.Builder
 	b.WriteString("请阅读这个收藏链接，判断它最适合沉淀成哪些具体的 Didian Skill 方向。此任务只做方向分析，不要创建或更新 Skill。\n")
 	b.WriteString("如果页面正文摘录缺失或提示被清洗，请优先打开 URL 重新读取来源页面，不要把 GitHub/dev 的前端 payload、tree JSON 或错误页文本当作真实网页内容。\n\n")
@@ -527,8 +575,17 @@ func buildBrowserCaptureSkillDirectionMissionDescription(capture db.CapturedSour
 	b.WriteString(fmt.Sprintf("- 标题：%s\n", capture.Title))
 	b.WriteString(fmt.Sprintf("- URL：%s\n", capture.Url))
 	b.WriteString(fmt.Sprintf("- 页面类型：%s\n", opportunity.PageType))
-	b.WriteString(fmt.Sprintf("- 平台初筛置信度：%.0f%%\n", opportunity.Confidence*100))
-	b.WriteString(fmt.Sprintf("- 平台初筛理由：%s\n\n", opportunity.WhyUseful))
+	if manual {
+		b.WriteString("- 触发方式：用户主动选择把这个收藏做成 Skill，平台没有自动强推荐。\n")
+		b.WriteString("- 判断要求：请先判断它是否真的适合沉淀为 Skill；如果不适合，要明确说明不建议生成以及原因。\n")
+	} else {
+		b.WriteString(fmt.Sprintf("- 平台初筛置信度：%.0f%%\n", opportunity.Confidence*100))
+		b.WriteString(fmt.Sprintf("- 平台初筛理由：%s\n", opportunity.WhyUseful))
+	}
+	if userNeed != "" {
+		b.WriteString(fmt.Sprintf("- 用户需求：%s\n", userNeed))
+	}
+	b.WriteString("\n")
 
 	appendSkillMissionExcerpt(&b, "页面描述", textToString(capture.Description), 700)
 	appendSkillMissionExcerpt(&b, "用户选中内容", textToString(capture.SelectedText), 1200)

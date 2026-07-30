@@ -36,6 +36,7 @@ const viewSkillDirectionLabel = "查看方向";
 const confirmSkillDirectionLabel = "确认方向";
 const keepAsKnowledgeLabel = "收藏为知识";
 const reduceSkillSuggestionsLabel = "少推荐";
+const makeBookmarkSkillLabel = "做成 Skill";
 const skillDirectionQueuedToast = "已交给本地 Codex 分析，结果会在弹窗中更新。";
 const skillDirectionNoAgentToast = "当前没有可用 Codex agent，可先用平台默认方向确认。";
 const skillGenerationQueuedToast = "Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。";
@@ -47,9 +48,10 @@ type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
 type SkillDirectionAnalysis = { id: string; title: string; state: "created" | "duplicate"; planningStatus: string };
-type ActiveSkillDirectionAnalysis = { item: AiInboxInput; analysis: SkillDirectionAnalysis };
+type ActiveSkillDirectionAnalysis = { item: AiInboxInput; analysis: SkillDirectionAnalysis; userNeed?: string };
 type SkillUsageMission = { id: string; href: string; title: string };
 type SkillDeleteTarget = { captureId: string; mission: SkillGenerationMission };
+type ManualSkillIntentDraft = { item: AiInboxInput; userNeed: string };
 type SkillDirectionMode = "adoption_review" | "integration_setup" | "troubleshooting" | "learning_runbook";
 type SkillDirectionDraft = {
   item: AiInboxInput;
@@ -80,6 +82,7 @@ export function AiInboxPage() {
   const [skillUsageMissions, setSkillUsageMissions] = useState<Record<string, SkillUsageMission>>({});
   const [deletedSkillCaptureIds, setDeletedSkillCaptureIds] = useState<ReadonlySet<string>>(() => new Set());
   const [skillDeleteTarget, setSkillDeleteTarget] = useState<SkillDeleteTarget | null>(null);
+  const [manualSkillIntentDraft, setManualSkillIntentDraft] = useState<ManualSkillIntentDraft | null>(null);
   const [skillDirectionDraft, setSkillDirectionDraft] = useState<SkillDirectionDraft | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [collectPromptUrls, setCollectPromptUrls] = useState<string[]>([]);
@@ -113,7 +116,7 @@ export function AiInboxPage() {
     mutationFn: ({ captureId, direction }: { captureId: string; direction: BrowserCaptureSkillDirection }) => api.createBrowserCaptureSkillGenerationMission(captureId, { direction }),
   });
   const createSkillDirectionMission = useMutation({
-    mutationFn: ({ captureId }: { captureId: string }) => api.createBrowserCaptureSkillDirectionMission(captureId),
+    mutationFn: ({ captureId, userNeed }: { captureId: string; userNeed?: string }) => api.createBrowserCaptureSkillDirectionMission(captureId, userNeed?.trim() ? { userNeed: userNeed.trim() } : {}),
   });
   const skillDirectionCommentsQuery = useQuery({
     queryKey: ["skill-direction-analysis-comments", wsId, activeSkillDirectionAnalysis?.analysis.id],
@@ -199,10 +202,14 @@ export function AiInboxPage() {
     queryClient.invalidateQueries({ queryKey: issueKeys.all(wsId) });
   }
 
-  async function handleAnalyzeSkillDirection(item: AiInboxInput) {
-    if (!item.captureId || !item.skillOpportunity || createSkillDirectionMission.isPending) return;
+  async function handleAnalyzeSkillDirection(item: AiInboxInput, userNeed = "") {
+    if (!item.captureId || createSkillDirectionMission.isPending) return;
+    const trimmedUserNeed = userNeed.trim();
     try {
-      const mission = await createSkillDirectionMission.mutateAsync({ captureId: item.captureId });
+      const mission = await createSkillDirectionMission.mutateAsync({
+        captureId: item.captureId,
+        userNeed: trimmedUserNeed,
+      });
       if (!mission.issue.id) {
         throw new Error("创建方向分析任务失败：服务端没有返回 Mission ID");
       }
@@ -216,7 +223,8 @@ export function AiInboxPage() {
         ...prev,
         [item.captureId!]: analysis,
       }));
-      setActiveSkillDirectionAnalysis({ item, analysis });
+      setManualSkillIntentDraft(null);
+      setActiveSkillDirectionAnalysis({ item, analysis, userNeed: trimmedUserNeed || undefined });
       toast.success(mission.planningStatus === "queued" ? skillDirectionQueuedToast : mission.planningStatus === "existing" ? "方向分析已存在，已在弹窗中打开。" : skillDirectionNoAgentToast);
     } catch (err) {
       const duplicate = parseDuplicateIssueError(err);
@@ -231,7 +239,8 @@ export function AiInboxPage() {
           ...prev,
           [item.captureId!]: analysis,
         }));
-        setActiveSkillDirectionAnalysis({ item, analysis });
+        setManualSkillIntentDraft(null);
+        setActiveSkillDirectionAnalysis({ item, analysis, userNeed: trimmedUserNeed || undefined });
         toast.success("方向分析已存在，已在弹窗中打开。");
         return;
       }
@@ -240,9 +249,9 @@ export function AiInboxPage() {
     }
   }
 
-  function handleGenerateSkill(item: AiInboxInput) {
-    if (!item.captureId || !item.skillOpportunity || createSkillGenerationMission.isPending) return;
-    setSkillDirectionDraft(buildSkillDirectionDraft(item));
+  function handleGenerateSkill(item: AiInboxInput, userNeed = "") {
+    if (!item.captureId || createSkillGenerationMission.isPending) return;
+    setSkillDirectionDraft(buildSkillDirectionDraft(item, userNeed));
   }
 
   async function handleConfirmSkillDirection() {
@@ -525,6 +534,7 @@ export function AiInboxPage() {
 	                    onAnalyzeSkillDirection={handleAnalyzeSkillDirection}
 	                    onViewSkillDirectionAnalysis={(analysis) => setActiveSkillDirectionAnalysis({ item, analysis })}
 	                    onGenerateSkill={handleGenerateSkill}
+	                    onRequestSkillFromBookmark={(target) => setManualSkillIntentDraft({ item: target, userNeed: "" })}
 	                    onUseGeneratedSkill={handleUseGeneratedSkill}
 	                    onDeleteGeneratedSkill={handleRequestDeleteGeneratedSkill}
 	                  />
@@ -542,9 +552,17 @@ export function AiInboxPage() {
         onRetry={() => void skillDirectionCommentsQuery.refetch()}
         onClose={() => setActiveSkillDirectionAnalysis(null)}
         onConfirmDirection={(item) => {
+          const userNeed = activeSkillDirectionAnalysis?.userNeed ?? "";
           setActiveSkillDirectionAnalysis(null);
-          handleGenerateSkill(item);
+          handleGenerateSkill(item, userNeed);
         }}
+      />
+      <ManualSkillIntentDialog
+        draft={manualSkillIntentDraft}
+        isSubmitting={createSkillDirectionMission.isPending}
+        onChange={setManualSkillIntentDraft}
+        onClose={() => setManualSkillIntentDraft(null)}
+        onConfirm={(draft) => void handleAnalyzeSkillDirection(draft.item, draft.userNeed)}
       />
       <SkillDirectionDialog
         draft={skillDirectionDraft}
@@ -752,6 +770,65 @@ function SkillDirectionDialog({
   );
 }
 
+function ManualSkillIntentDialog({
+  draft,
+  isSubmitting,
+  onChange,
+  onClose,
+  onConfirm,
+}: {
+  draft: ManualSkillIntentDraft | null;
+  isSubmitting: boolean;
+  onChange: (draft: ManualSkillIntentDraft | null) => void;
+  onClose: () => void;
+  onConfirm: (draft: ManualSkillIntentDraft) => void;
+}) {
+  const updateUserNeed = (userNeed: string) => {
+    if (!draft) return;
+    onChange({ ...draft, userNeed });
+  };
+
+  return (
+    <Dialog open={Boolean(draft)} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>想把这个收藏做成什么 Skill？</DialogTitle>
+          <DialogDescription>
+            先给 Codex 一个方向就行；也可以不填，让它阅读链接后推荐。
+          </DialogDescription>
+        </DialogHeader>
+        {draft && (
+          <div className="grid gap-4">
+            <div className="rounded-md border bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
+              <div className="line-clamp-1 font-medium text-foreground">{draft.item.title}</div>
+              <a href={draft.item.sourceUrl} target="_blank" rel="noreferrer" className="mt-1 block truncate font-mono underline underline-offset-2">
+                {draft.item.sourceUrl}
+              </a>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="manual-skill-user-need">你的需求（选填）</Label>
+              <Textarea
+                id="manual-skill-user-need"
+                value={draft.userNeed}
+                onChange={(event) => updateUserNeed(event.target.value)}
+                placeholder="例如：我想把它做成一个 API 接入助手 / 论文阅读助手 / 排障助手。"
+                className="min-h-28 resize-none text-sm"
+              />
+            </div>
+          </div>
+        )}
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>取消</Button>
+          <Button type="button" onClick={() => draft && onConfirm(draft)} disabled={!draft || isSubmitting}>
+            {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+            {isSubmitting ? "分析中" : "让 Codex 推荐方向"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function DeleteGeneratedSkillDialog({
   target,
   isDeleting,
@@ -825,6 +902,12 @@ function SkillDirectionAnalysisDialog({
                 {active.item.sourceUrl}
               </a>
               <div className="mt-2">{skillOpportunityAssessmentText(active.item.skillOpportunity)}</div>
+              {!active.item.skillOpportunity?.shouldSuggest && (
+                <div className="mt-2 rounded-sm bg-background px-2 py-1.5">
+                  <span className="font-medium text-foreground">用户主动发起</span>
+                  {active.userNeed ? <span>：{active.userNeed}</span> : <span>，请 Codex 先判断是否值得做成 Skill。</span>}
+                </div>
+              )}
             </div>
             {noAgent ? (
               <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-5 text-amber-900 dark:text-amber-200">
@@ -879,6 +962,7 @@ function BrowserCaptureCard({
   onAnalyzeSkillDirection,
   onViewSkillDirectionAnalysis,
   onGenerateSkill,
+  onRequestSkillFromBookmark,
   onUseGeneratedSkill,
   onDeleteGeneratedSkill,
 }: {
@@ -894,6 +978,7 @@ function BrowserCaptureCard({
   onAnalyzeSkillDirection: (item: AiInboxInput) => void;
   onViewSkillDirectionAnalysis: (analysis: SkillDirectionAnalysis) => void;
   onGenerateSkill: (item: AiInboxInput) => void;
+  onRequestSkillFromBookmark: (item: AiInboxInput) => void;
   onUseGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
   onDeleteGeneratedSkill: (item: AiInboxInput, mission: SkillGenerationMission) => void;
 }) {
@@ -902,6 +987,8 @@ function BrowserCaptureCard({
   const archiveMutation = useArchiveBrowserCapture();
   const restoreMutation = useRestoreBrowserCapture();
   const captureId = item.captureId;
+  const opportunity = item.skillOpportunity ?? (skillDirectionAnalysis || skillGenerationMission ? manualSkillOpportunityForItem(item) : undefined);
+  const canRequestManualSkill = Boolean(captureId && !archivedView && !opportunity && !skillDirectionAnalysis && !skillGenerationMission);
   return (
     <article className="overflow-hidden rounded-md border bg-background transition-colors hover:border-foreground/20 hover:bg-muted/20">
       <a
@@ -947,9 +1034,9 @@ function BrowserCaptureCard({
           </div>
         )}
       </a>
-      {item.skillOpportunity?.shouldSuggest && (
+      {opportunity && (
         <SkillOpportunityPanel
-          opportunity={item.skillOpportunity}
+          opportunity={opportunity}
           mission={skillGenerationMission}
           directionAnalysis={skillDirectionAnalysis}
           skillUsageMission={skillUsageMission}
@@ -965,7 +1052,20 @@ function BrowserCaptureCard({
         />
       )}
       {captureId && (
-        <div className="border-t px-3 py-2">
+        <div className="flex items-center gap-1.5 border-t px-3 py-2">
+          {canRequestManualSkill && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-xs"
+              disabled={isAnalyzingSkillDirection}
+              onClick={() => onRequestSkillFromBookmark(item)}
+            >
+              {isAnalyzingSkillDirection ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+              {makeBookmarkSkillLabel}
+            </Button>
+          )}
           <Button
             type="button"
             size="sm"
@@ -1225,7 +1325,10 @@ function SkillOpportunityEvidence({ opportunity }: { opportunity: SkillOpportuni
 
 function skillOpportunityAssessmentText(opportunity: SkillOpportunity | null | undefined): string {
   if (!opportunity) {
-    return "这个收藏页有一定复用信号。请确认它真正要服务的重复任务，避免生成成泛泛摘要。";
+    return "平台没有自动强推荐这个收藏做 Skill。你可以主动发起，让本地 Codex 先判断是否适合，并给出具体方向。";
+  }
+  if (!opportunity.shouldSuggest) {
+    return `${opportunity.whyUseful} 请确认它真正要服务的重复任务，避免生成成泛泛摘要。`;
   }
   return `这个收藏被识别为 ${formatSkillOpportunityPageType(opportunity.pageType)}，推荐置信度 ${Math.round(opportunity.confidence * 100)}%。${opportunity.whyUseful}`;
 }
@@ -1256,9 +1359,10 @@ function skillDirectionModeOptions(item: AiInboxInput): Array<{ mode: SkillDirec
   ];
 }
 
-function buildSkillDirectionDraft(item: AiInboxInput): SkillDirectionDraft {
+function buildSkillDirectionDraft(item: AiInboxInput, userNeed = ""): SkillDirectionDraft {
   const mode = defaultSkillDirectionMode(item.skillOpportunity?.pageType);
   const direction = skillDirectionPreset(item, mode);
+  const trimmedUserNeed = userNeed.trim();
   return {
     item,
     mode,
@@ -1266,7 +1370,7 @@ function buildSkillDirectionDraft(item: AiInboxInput): SkillDirectionDraft {
     boundaries: defaultSkillDirectionBoundaries(item.skillOpportunity, mode),
     targetContext: defaultSkillTargetContext(mode),
     successCriteria: defaultSkillSuccessCriteria(mode),
-    notes: "",
+    notes: trimmedUserNeed ? `用户主动需求：${trimmedUserNeed}` : "",
   };
 }
 
@@ -1355,6 +1459,25 @@ function skillDirectionSubject(item: AiInboxInput): string {
     .replace(/\s+(尽调|接入|配置|排障|上手|学习)助手(?:\s+\S+)?$/u, "")
     .replace(/\s+/g, " ")
     .trim() || item.title || "网页";
+}
+
+function manualSkillOpportunityForItem(item: AiInboxInput): SkillOpportunity {
+  return {
+    shouldSuggest: false,
+    confidence: 0.5,
+    pageType: "unknown",
+    proposedTitle: `${item.title || "收藏网页"} 助手`,
+    proposedCapability: "根据用户指定的目标，把这个收藏网页沉淀成可复用的个人 Skill。",
+    whyUseful: "用户主动选择把这个收藏做成 Skill，需要本地 Codex 先阅读来源并判断最合适的能力方向。",
+    triggerExamples: ["基于这个收藏帮我完成相关任务", "按这个收藏沉淀的流程处理我的问题"],
+    expectedInputs: ["用户目标", "使用场景", "当前上下文"],
+    expectedOutputs: ["可执行步骤", "检查清单", "注意事项"],
+    reusableWorkflowScore: 0.5,
+    instructionDensityScore: 0.5,
+    futureUseScore: 0.5,
+    evidenceSnippets: [item.preview].filter(Boolean),
+    riskNotes: ["这是用户主动发起的 Skill 方向分析，生成前需要 Codex 判断网页是否适合沉淀为可复用能力。"],
+  };
 }
 
 function skillDirectionModeLabel(mode: SkillDirectionMode): string {

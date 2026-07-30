@@ -320,7 +320,7 @@ describe("AiInboxPage browser captures", () => {
 
     await user.click(screen.getByRole("button", { name: "让 Codex 分析方向" }));
 
-    await waitFor(() => expect(createBrowserCaptureSkillDirectionMission).toHaveBeenCalledWith("capture-1"));
+    await waitFor(() => expect(createBrowserCaptureSkillDirectionMission).toHaveBeenCalledWith("capture-1", {}));
     expect(toastSuccess).toHaveBeenCalledWith("已交给本地 Codex 分析，结果会在弹窗中更新。");
     expect(screen.getByRole("dialog", { name: "Skill 方向分析" })).toBeInTheDocument();
     await waitFor(() => expect(listComments).toHaveBeenCalledWith("skill-direction-mission-1"));
@@ -414,6 +414,49 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.queryByRole("button", { name: "生成 Skill" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "已生成" })).not.toBeInTheDocument();
     expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
+  });
+
+  it("lets users request a Skill from a bookmark without an automatic recommendation", async () => {
+    const user = userEvent.setup();
+    listBrowserCaptures.mockResolvedValue({
+      captures: [
+        captureFixture({
+          id: "capture-manual",
+          url: "https://example.com/blog/ai-workflow-notes",
+          normalized_url: "https://example.com/blog/ai-workflow-notes",
+          title: "AI workflow notes",
+          domain: "example.com",
+          description: "A personal article about a workflow the user wants to reuse.",
+          readable_text: "This page is useful to me, but the platform did not classify it as a reusable technical workflow.",
+          memory: memoryFixture({
+            summary: "Personal workflow notes for reviewing AI generated work.",
+            one_line_takeaway: "A reusable review habit, but not an automatic Skill recommendation.",
+            key_points: ["Review output quality", "Track assumptions"],
+            topics: ["workflow"],
+            status: "ready",
+          }),
+        }),
+      ],
+      total: 1,
+    });
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("AI workflow notes")).toBeInTheDocument());
+    expect(screen.queryByText("Skill 候选")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "做成 Skill" }));
+
+    const intentDialog = screen.getByRole("dialog", { name: "想把这个收藏做成什么 Skill？" });
+    await user.type(within(intentDialog).getByLabelText("你的需求（选填）"), "我想把它做成一个 AI 输出质量复盘助手。");
+    await user.click(within(intentDialog).getByRole("button", { name: "让 Codex 推荐方向" }));
+
+    await waitFor(() => expect(createBrowserCaptureSkillDirectionMission).toHaveBeenCalledWith("capture-manual", {
+      userNeed: "我想把它做成一个 AI 输出质量复盘助手。",
+    }));
+    expect(screen.getByRole("dialog", { name: "Skill 方向分析" })).toBeInTheDocument();
+    expect(screen.getByText("用户主动发起")).toBeInTheDocument();
+    expect(screen.getByText(/我想把它做成一个 AI 输出质量复盘助手/)).toBeInTheDocument();
   });
 
   it("deletes a generated Skill from its bookmark card and allows regeneration", async () => {

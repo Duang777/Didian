@@ -586,6 +586,97 @@ func TestCreateBrowserCaptureSkillDirectionMissionQueuesCodexWithoutCreatingSkil
 	})
 }
 
+func TestManualBrowserCaptureSkillFlowAllowsNoAutomaticOpportunity(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not available")
+	}
+
+	_, agentID := seedOwnedCodexBrowserMemoryAgent(t)
+	suffix := time.Now().UnixNano()
+	body := map[string]any{
+		"source":       "extension",
+		"sourceType":   "link",
+		"captureScope": "page",
+		"url":          fmt.Sprintf("https://example.com/blog/manual-skill-%d", suffix),
+		"title":        "Manual skill workflow note",
+		"domain":       "example.com",
+		"description":  "A personal article that is useful to this user but is not an automatic platform Skill recommendation.",
+		"readableText": "The page describes a personal workflow for reviewing AI output quality and tracking assumptions.",
+		"capturedAt":   "2026-07-14T10:00:00Z",
+	}
+
+	w := httptest.NewRecorder()
+	testHandler.CreateBrowserCapture(w, newRequest(http.MethodPost, "/api/browser-captures", body))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCapture: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var created CreateBrowserCaptureResponse
+	if err := json.NewDecoder(w.Body).Decode(&created); err != nil {
+		t.Fatalf("decode create response: %v", err)
+	}
+	if created.Capture.SkillOpportunity != nil {
+		t.Fatalf("manual test capture should not have automatic skill opportunity: %+v", created.Capture.SkillOpportunity)
+	}
+
+	w = httptest.NewRecorder()
+	directionReq := map[string]any{"userNeed": "我想把它做成一个 AI 输出质量复盘助手。"}
+	req := withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-direction-mission", directionReq), "id", created.CaptureID)
+	testHandler.CreateBrowserCaptureSkillDirectionMission(w, req)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCaptureSkillDirectionMission: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var directionResp CreateBrowserCaptureSkillDirectionMissionResponse
+	if err := json.NewDecoder(w.Body).Decode(&directionResp); err != nil {
+		t.Fatalf("decode direction response: %v", err)
+	}
+	if directionResp.PlanningStatus != "queued" || directionResp.PlanningAgentID == nil || *directionResp.PlanningAgentID != agentID {
+		t.Fatalf("direction planning status/agent = %q/%v, want queued/%s", directionResp.PlanningStatus, directionResp.PlanningAgentID, agentID)
+	}
+	if directionResp.Issue.Description == nil ||
+		!strings.Contains(*directionResp.Issue.Description, "用户主动选择把这个收藏做成 Skill") ||
+		!strings.Contains(*directionResp.Issue.Description, "我想把它做成一个 AI 输出质量复盘助手") ||
+		!strings.Contains(*directionResp.Issue.Description, "如果不适合，要明确说明不建议生成") {
+		t.Fatalf("manual direction description missing user intent: %v", directionResp.Issue.Description)
+	}
+
+	w = httptest.NewRecorder()
+	generationReq := map[string]any{
+		"direction": map[string]any{
+			"title":           fmt.Sprintf("AI 输出质量复盘助手 %d", suffix),
+			"capability":      "把收藏页面沉淀成 AI 输出质量复盘流程，检查目标、证据、假设和改进动作。",
+			"primaryUseCase":  "当我想复盘一次 AI 输出质量时，用它生成检查清单和改进建议。",
+			"triggerExamples": []string{"帮我复盘这次 AI 输出", "按收藏里的方法检查这份回答"},
+			"expectedInputs":  []string{"AI 输出", "任务目标", "用户反馈"},
+			"expectedOutputs": []string{"复盘清单", "问题归因", "改进动作"},
+			"boundaries":      "不要只总结网页内容；必须沉淀成可执行复盘流程。",
+			"notes":           "用户主动需求：我想把它做成一个 AI 输出质量复盘助手。",
+		},
+	}
+	req = withURLParam(newRequest(http.MethodPost, "/api/browser-captures/"+created.CaptureID+"/skill-generation-mission", generationReq), "id", created.CaptureID)
+	testHandler.CreateBrowserCaptureSkillGenerationMission(w, req)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCaptureSkillGenerationMission: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var generationResp CreateBrowserCaptureSkillGenerationMissionResponse
+	if err := json.NewDecoder(w.Body).Decode(&generationResp); err != nil {
+		t.Fatalf("decode generation response: %v", err)
+	}
+	if generationResp.Skill.ID == "" || generationResp.Issue.ID == "" {
+		t.Fatalf("generation response missing skill or issue: %+v", generationResp)
+	}
+	if generationResp.Issue.Description == nil || !strings.Contains(*generationResp.Issue.Description, "用户主动需求") {
+		t.Fatalf("generation description missing manual user need: %v", generationResp.Issue.Description)
+	}
+
+	t.Cleanup(func() {
+		ctx := context.Background()
+		testPool.Exec(ctx, `DELETE FROM agent_task_queue WHERE issue_id = $1 OR issue_id = $2`, directionResp.Issue.ID, generationResp.Issue.ID)
+		testPool.Exec(ctx, `DELETE FROM issue WHERE id = $1 OR id = $2`, directionResp.Issue.ID, generationResp.Issue.ID)
+		testPool.Exec(ctx, `DELETE FROM skill WHERE id = $1`, generationResp.Skill.ID)
+		testPool.Exec(ctx, `DELETE FROM captured_source WHERE id = $1`, created.CaptureID)
+	})
+}
+
 func TestCreateBrowserCaptureSkillGenerationMissionQueuesExistingUnassignedMission(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("handler test fixture not available")

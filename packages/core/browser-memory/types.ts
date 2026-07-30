@@ -160,6 +160,10 @@ export interface CreateAiInboxMissionResponse {
 
 export type CreateBrowserCaptureSkillDirectionMissionResponse = CreateAiInboxMissionResponse;
 
+export interface CreateBrowserCaptureSkillDirectionMissionRequest {
+  userNeed?: string;
+}
+
 export interface BrowserCaptureSkillDirection {
   title: string;
   capability: string;

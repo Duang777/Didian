@@ -144,6 +144,7 @@ import type {
   BrowserCapture,
   CreateAiInboxMissionRequest,
   CreateAiInboxMissionResponse,
+  CreateBrowserCaptureSkillDirectionMissionRequest,
   CreateBrowserCaptureSkillDirectionMissionResponse,
   CreateBrowserCaptureSkillGenerationMissionRequest,
   CreateBrowserCaptureSkillGenerationMissionResponse,
@@ -1615,10 +1616,13 @@ export class ApiClient {
     });
   }
 
-  async createBrowserCaptureSkillDirectionMission(id: string): Promise<CreateBrowserCaptureSkillDirectionMissionResponse> {
+  async createBrowserCaptureSkillDirectionMission(
+    id: string,
+    data: CreateBrowserCaptureSkillDirectionMissionRequest = {},
+  ): Promise<CreateBrowserCaptureSkillDirectionMissionResponse> {
     const raw = await this.fetch<unknown>(`/api/browser-captures/${id}/skill-direction-mission`, {
       method: "POST",
-      body: JSON.stringify({}),
+      body: JSON.stringify(data),
     });
     return parseWithFallback(raw, CreateAiInboxMissionResponseSchema, EMPTY_CREATE_AI_INBOX_MISSION_RESPONSE, {
       endpoint: "POST /api/browser-captures/:id/skill-direction-mission",
