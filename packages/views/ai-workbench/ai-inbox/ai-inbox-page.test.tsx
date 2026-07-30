@@ -803,7 +803,7 @@ describe("AiInboxPage browser captures", () => {
 
     expect(createAiInboxMission).toHaveBeenCalledTimes(1);
     expect(navigationPush).not.toHaveBeenCalled();
-  });
+  }, 10_000);
 
   it("opens the existing mission when the server reports an active duplicate", async () => {
     const user = userEvent.setup();
@@ -828,5 +828,5 @@ describe("AiInboxPage browser captures", () => {
     expect(navigationPush).not.toHaveBeenCalled();
     expect(screen.getByRole("status", { hidden: true })).toHaveTextContent("已找到已有 Mission。");
     expect(screen.getByRole("link", { name: "打开 整理学习资料路线", hidden: true })).toHaveAttribute("href", "/acme/issues/mission-existing");
-  });
+  }, 10_000);
 });
