@@ -4,7 +4,7 @@
 
 ### Task SOL-1：前端缓存层过滤 internal Skill direction Missions
 
-**描述：** 后端默认隐藏 `metadata.didian_internal = true` 的内部任务，但实时事件或缓存写入仍可能把 Skill 方向分析任务塞进普通 Mission 列表。把过滤规则集中放进 core cache helper，保护列表、看板和 My Missions 缓存。
+**描述：** 后端默认隐藏 `metadata.didian_internal = true` 的内部任务，但实时事件或缓存写入仍可能把能力方向分析任务塞进普通 Mission 列表。把过滤规则集中放进 core cache helper，保护列表、看板和 My Missions 缓存。
 
 **验收标准：**
 - [x] `addIssueToBuckets` 不会把 internal issue 加入普通列表缓存。
@@ -25,9 +25,9 @@
 
 **规模预估：** S
 
-### Task SOL-2：AI Inbox Skill 方向弹窗状态和错误诊断
+### Task SOL-2：AI Inbox 能力方向弹窗状态和错误诊断
 
-**描述：** 让 `做成 Skill` 弹窗清楚表达平台初筛、本地 Codex 推荐方向、用户确认草稿和生成 Skill 的阶段。错误需要区分 backend offline、Codex Local offline、来源抓取失败和已生成 Skill。
+**描述：** 让 `做成能力` 弹窗清楚表达平台初筛、本地 Codex 推荐方向、用户确认草稿和生成能力的阶段。错误需要区分 backend offline、Codex Local offline、来源抓取失败和已生成能力。
 
 **验收标准：**
 - [x] 弹窗中有清晰阶段状态，不要求用户进入 Mission 查看分析。
@@ -42,13 +42,13 @@
 
 **规模预估：** M
 
-### Task SOL-3：Generated Skill 删除和重试闭环
+### Task SOL-3：Generated ability 删除和重试闭环
 
-**描述：** 用户可以从收藏卡片或 Skill library 删除 generated Skill，删除后 capture card 回到可重新生成状态；如果 Skill 已有 usage history，后续改为 archive 方案。
+**描述：** 用户可以从收藏卡片或能力库删除 generated Skill，删除后 capture card 回到可重新生成状态；如果 Skill 已有 usage history，后续改为 archive 方案。
 
 **验收标准：**
 - [ ] 收藏卡片删除 generated Skill 后不再显示 `已生成`。
-- [ ] Skill library 删除后列表刷新。
+- [ ] 能力库删除后列表刷新。
 - [ ] 删除失败时提示原因，不吞掉错误。
 
 **验证：**
@@ -56,6 +56,26 @@
 - [ ] `pnpm --filter @didian/views typecheck`
 
 **依赖：** SOL-1
+
+**规模预估：** M
+
+### Task SOL-13：收藏页后端 AI 初判和“能力”产品文案
+
+**描述：** 收藏页面不要只靠前端预制规则判断是否推荐生成。后端 enrichment 成功后需要把 AI summary / key points / topics 等信号写回 `skill_opportunity`；AI Inbox 对用户统一叫“能力/能力库”，内部 API、DB、runtime 继续沿用 `skill`。
+
+**验收标准：**
+- [x] `memory_enrichment` 成功后刷新 capture 的 `skill_opportunity`。
+- [x] Codex browser memory completion 成功后刷新 capture 的 `skill_opportunity`。
+- [x] AI Inbox 按“能力/能力库”展示候选、弹窗、删除、生成和使用入口。
+- [x] 用户仍可从没有自动推荐的收藏主动发起“做成能力”。
+
+**验证：**
+- [x] `go test ./internal/service -run 'TestMemoryEnrichmentServiceWritesSkillOpportunityFromAIEnrichment|TestMemoryEnrichmentServiceEnrichesPendingCapture|TestCompleteTaskWritesBrowserMemoryEnrichment' -count=1`
+- [x] `go test ./internal/handler -run 'Test.*BrowserCapture|TestCreateBrowserCapture' -count=1`
+- [x] `pnpm --filter @didian/views exec vitest run ai-workbench/ai-inbox/ai-inbox-page.test.tsx`
+- [x] `pnpm --filter @didian/views typecheck`
+
+**依赖：** SOL-2
 
 **规模预估：** M
 
@@ -174,13 +194,13 @@
 
 **规模预估：** M
 
-### Task MS-6：收藏卡片用已生成 Skill 创建 Mission
+### Task MS-6：收藏卡片用已生成能力创建 Mission
 
-**描述：** 当收藏网页已经沉淀为平台 Skill 后，在收藏卡片提供 `用 Skill 创建 Mission`，创建 Mission 后立即把该 Skill 以 `capture_origin` 绑定到 Mission。
+**描述：** 当收藏网页已经沉淀为平台能力后，在收藏卡片提供 `用能力创建 Mission`，创建 Mission 后立即把底层 Skill 以 `capture_origin` 绑定到 Mission。
 
 **验收标准：**
-- [x] 已生成 Skill 的收藏卡片显示 `打开 Skill`。
-- [x] 已生成 Skill 不再重复触发生成任务。
+- [x] 已生成能力的收藏卡片显示 `打开能力`。
+- [x] 已生成能力不再重复触发生成任务。
 - [x] 用户能从收藏卡片创建 Mission。
 - [x] 创建成功后调用 Mission Skill Usage API 绑定 Skill。
 - [x] 卡片展示已创建并绑定的 Mission 链接。

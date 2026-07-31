@@ -29,23 +29,23 @@ import { Markdown } from "../../common/markdown";
 const createMissionLabel = "创建 Mission";
 const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
-const personalSkillSuggestionLabel = "可做成 Skill";
-const generateSkillLabel = "生成 Skill";
-const recommendSkillDirectionLabel = "让 Codex 推荐方向";
+const personalSkillSuggestionLabel = "可沉淀为能力";
+const generateSkillLabel = "生成能力";
+const recommendSkillDirectionLabel = "让 Codex 推荐能力方向";
 const keepAsKnowledgeLabel = "收藏为知识";
 const reduceSkillSuggestionsLabel = "少推荐";
-const makeBookmarkSkillLabel = "做成 Skill";
-const skillDirectionQueuedToast = "已交给本地 Codex 分析，结果会在弹窗中更新。";
+const makeBookmarkSkillLabel = "做成能力";
+const skillDirectionQueuedToast = "已交给本地 Codex 分析能力方向，结果会在弹窗中更新。";
 const skillDirectionNoAgentToast = "当前没有可用 Codex agent，可先用平台默认方向确认。";
-const skillGenerationQueuedToast = "Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。";
-const skillGenerationNoAgentToast = "Skill 生成任务已创建，当前没有可用 Codex agent。";
-const deleteGeneratedSkillToast = "Skill 已删除，可以重新生成。";
+const skillGenerationQueuedToast = "能力生成任务已创建，本地 Codex 会按你确认的方向生成并写入能力库。";
+const skillGenerationNoAgentToast = "能力生成任务已创建，当前没有可用 Codex agent。";
+const deleteGeneratedSkillToast = "能力已删除，可以重新生成。";
 const keepAsKnowledgeToast = "已保留为知识卡片";
-const reduceSkillSuggestionsToast = "后续会减少这类 Skill 推荐";
+const reduceSkillSuggestionsToast = "后续会减少这类能力推荐";
 const backendOfflineMessage = "后端暂时不可用。请先在本地终端启动后端：make start-worktree，然后刷新页面。";
 const codexOfflineMessage = "当前没有可用 Codex agent。你可以先直接填写草稿，或启动本地 Codex 后再让它推荐方向。";
-const noSkillOpportunityMessage = "这个收藏暂时没有足够的可复用线索。你可以在弹窗里补充想要的 Skill 方向，再让 Codex 重新判断。";
-const sourceFetchFailedMessage = "来源页面暂时读取失败。你可以刷新收藏，或先手动填写 Skill 方向。";
+const noSkillOpportunityMessage = "这个收藏暂时没有足够的可复用线索。你可以在弹窗里补充想要的能力方向，再让 Codex 重新判断。";
+const sourceFetchFailedMessage = "来源页面暂时读取失败。你可以刷新收藏，或先手动填写能力方向。";
 type InputUrlCollectionDecision = "saved" | "skipped";
 type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
@@ -98,7 +98,7 @@ export function AiInboxPage() {
   const createSkillUsageMission = useMutation({
     mutationFn: async ({ item, mission }: { item: AiInboxInput; mission: SkillGenerationMission }) => {
       if (!item.captureId || !mission.skillId) {
-        throw new Error("缺少收藏或 Skill 信息");
+        throw new Error("缺少收藏或能力信息");
       }
       const created = await api.createAiInboxMission({
         title: skillUsageMissionTitle(item, mission),
@@ -300,7 +300,7 @@ export function AiInboxPage() {
         direction: skillDirectionFromDraft(draft),
       });
       if (!mission.issue.id) {
-        throw new Error("创建 Skill 生成任务失败：服务端没有返回 Mission ID");
+        throw new Error("创建能力生成任务失败：服务端没有返回 Mission ID");
       }
       refreshMissionQueries();
       queryClient.invalidateQueries({ queryKey: workspaceKeys.skills(wsId) });
@@ -323,7 +323,7 @@ export function AiInboxPage() {
         },
       }));
       setSkillDraftFlow(null);
-      toast.success(mission.planningStatus === "queued" ? skillGenerationQueuedToast : mission.planningStatus === "existing" ? "Skill 已在 Skill 库中，已打开现有生成任务入口。" : skillGenerationNoAgentToast);
+      toast.success(mission.planningStatus === "queued" ? skillGenerationQueuedToast : mission.planningStatus === "existing" ? "能力已在能力库中，已打开现有生成任务入口。" : skillGenerationNoAgentToast);
     } catch (err) {
       const duplicate = parseDuplicateIssueError(err);
       if (duplicate) {
@@ -336,15 +336,15 @@ export function AiInboxPage() {
             title: duplicate.issue.title,
             skillId: undefined,
             skillHref: paths.workspace(workspaceSlug).skills(),
-            skillName: item.skillOpportunity?.proposedTitle ?? "Skill",
+            skillName: item.skillOpportunity?.proposedTitle ?? "能力",
             state: "duplicate",
           },
         }));
         setSkillDraftFlow(null);
-        toast.error("已有相同的 active Skill 生成任务，可从卡片打开。");
+        toast.error("已有相同的 active 能力生成任务，可从卡片打开。");
         return;
       }
-      const message = userFacingErrorMessage(err, "创建 Skill 生成任务失败");
+      const message = userFacingErrorMessage(err, "创建能力生成任务失败");
       toast.error(message);
     }
   }
@@ -363,7 +363,7 @@ export function AiInboxPage() {
           title: issue.title,
         },
       }));
-      toast.success("Mission 已创建，并已绑定这个 Skill");
+      toast.success("Mission 已创建，并已绑定这个能力");
     } catch (err) {
       const duplicate = parseDuplicateIssueError(err);
       if (duplicate && item.captureId) {
@@ -416,7 +416,7 @@ export function AiInboxPage() {
       setSkillDeleteTarget(null);
       toast.success(deleteGeneratedSkillToast);
     } catch (err) {
-      const message = userFacingErrorMessage(err, "删除 Skill 失败");
+      const message = userFacingErrorMessage(err, "删除能力失败");
       toast.error(message);
     }
   }
@@ -529,7 +529,7 @@ export function AiInboxPage() {
               className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border bg-accent px-3 text-xs font-medium text-accent-foreground transition-colors hover:bg-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Sparkles className="size-3.5" />
-              Skill 库
+              能力库
             </a>
             <div className="inline-flex h-8 overflow-hidden rounded-lg border bg-background p-0.5">
               <button
@@ -690,9 +690,9 @@ function SkillDraftFlowDialog({
     <Dialog open={Boolean(flow)} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>做成 Skill</DialogTitle>
+          <DialogTitle>做成能力</DialogTitle>
           <DialogDescription>
-            先确认你想沉淀的能力方向，再交给本地 Codex 生成高质量 Skill 并写入 Skill 库。
+            先确认你想沉淀的能力方向，再交给本地 Codex 生成可复用能力并写入能力库。
           </DialogDescription>
         </DialogHeader>
         {flow && (
@@ -747,7 +747,7 @@ function SkillDraftFlowDialog({
                   </div>
                 ) : (
                   <p className="text-xs leading-5 text-muted-foreground" role="status">
-                    {isLoading ? "正在读取 Codex 推荐…" : "Codex 正在阅读链接并推荐 Skill 方向…"}
+                    {isLoading ? "正在读取 Codex 推荐…" : "Codex 正在阅读链接并推荐能力方向…"}
                   </p>
                 )}
               </div>
@@ -756,8 +756,8 @@ function SkillDraftFlowDialog({
             {draft && (
               <div className="grid gap-4 border-t pt-4">
                 <div className="grid gap-2">
-                  <Label>选择 Skill 方向</Label>
-                  <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Skill 方向">
+                  <Label>选择能力方向</Label>
+                  <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="能力方向">
                     {skillDirectionModeOptions(draft.item).map((option) => (
                       <Button
                         key={option.mode}
@@ -777,7 +777,7 @@ function SkillDraftFlowDialog({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="skill-direction-title">Skill 名称</Label>
+                  <Label htmlFor="skill-direction-title">能力名称</Label>
                   <Input id="skill-direction-title" value={draft.title} onChange={(event) => updateDraft({ title: event.target.value })} />
                 </div>
                 <div className="grid gap-2">
@@ -840,7 +840,7 @@ function SkillDraftFlowDialog({
           {draft && (
             <Button type="button" onClick={onConfirm} disabled={!canGenerate || isAnalyzing || isSubmitting}>
               {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-              {isSubmitting ? "提交中" : "交给 Codex 生成"}
+              {isSubmitting ? "提交中" : "交给 Codex 生成能力"}
             </Button>
           )}
         </DialogFooter>
@@ -875,7 +875,7 @@ function SkillDraftStageBar({
     },
   ];
   return (
-    <div aria-label="Skill 生成阶段" className="grid gap-2 rounded-md border bg-background px-3 py-2 sm:grid-cols-3">
+    <div aria-label="能力生成阶段" className="grid gap-2 rounded-md border bg-background px-3 py-2 sm:grid-cols-3">
       {stages.map((stage, index) => (
         <div key={stage.label} className={skillDraftStageClass(stage.state)}>
           <span className="flex size-5 shrink-0 items-center justify-center rounded-full border text-[11px]">
@@ -913,9 +913,9 @@ function DeleteGeneratedSkillDialog({
     <Dialog open={Boolean(target)} onOpenChange={(open) => { if (!open && !isDeleting) onClose(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>删除 Skill？</DialogTitle>
+          <DialogTitle>删除能力？</DialogTitle>
           <DialogDescription>
-            这会从 Skill 库删除「{target?.mission.skillName ?? "这个 Skill"}」。收藏卡片会恢复为可重新生成，已创建过的 Mission 记录会作为历史保留。
+            这会从能力库删除「{target?.mission.skillName ?? "这个能力"}」。收藏卡片会恢复为可重新生成，已创建过的 Mission 记录会作为历史保留。
           </DialogDescription>
         </DialogHeader>
         <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs leading-5 text-destructive">
@@ -1141,7 +1141,7 @@ function SkillOpportunityPanel({
                 onClick={onViewDirectionAnalysis}
               >
                 <Sparkles className="size-3.5" />
-                继续做 Skill
+                继续做能力
               </Button>
             )}
             {canUseGeneratedSkill && (
@@ -1154,13 +1154,13 @@ function SkillOpportunityPanel({
                 onClick={onUseGeneratedSkill}
               >
                 {isCreatingSkillMission ? <Loader2 className="size-3.5 animate-spin" /> : <SendHorizontal className="size-3.5" />}
-                {isCreatingSkillMission ? "创建中" : "用 Skill 创建 Mission"}
+                {isCreatingSkillMission ? "创建中" : "用能力创建 Mission"}
               </Button>
             )}
             {mission && (
               <a href={mission.skillHref} className={buttonVariants({ size: "sm", variant: "outline", className: "h-7 px-2 text-xs" })}>
                 <ExternalLink className="size-3.5" />
-                打开 Skill
+                打开能力
               </a>
             )}
             {!hasGeneratedSkill && (
@@ -1193,7 +1193,7 @@ function SkillOpportunityPanel({
                 className="ml-auto size-7 px-0 text-muted-foreground hover:text-destructive"
                 disabled={isDeletingSkill}
                 onClick={onDeleteGeneratedSkill}
-                aria-label="删除 Skill"
+                aria-label="删除能力"
               >
                 {isDeletingSkill ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
               </Button>
@@ -1203,7 +1203,7 @@ function SkillOpportunityPanel({
             <div className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-muted-foreground" role="status">
               <Clock3 className="mt-0.5 size-3.5 shrink-0 text-primary" />
               <span>
-                {directionAnalysis.planningStatus === "queued" ? "Codex 正在分析 Skill 方向" : "方向分析已准备好"}
+                {directionAnalysis.planningStatus === "queued" ? "Codex 正在分析能力方向" : "方向分析已准备好"}
                 <span className="text-muted-foreground">，在弹窗里确认后再生成。</span>
               </span>
             </div>
@@ -1291,12 +1291,12 @@ function SkillOpportunityEvidence({ opportunity }: { opportunity: SkillOpportuni
 
 function skillOpportunityAssessmentText(opportunity: SkillOpportunity | null | undefined): string {
   if (!opportunity) {
-    return "平台没有自动强推荐这个收藏做 Skill。你可以主动发起，让本地 Codex 先判断是否适合，并给出具体方向。";
+    return "平台没有自动强推荐这个收藏沉淀为能力。你可以主动发起，让本地 Codex 先判断是否适合，并给出具体方向。";
   }
   if (!opportunity.shouldSuggest) {
     return `${opportunity.whyUseful} 请确认它真正要服务的重复任务，避免生成成泛泛摘要。`;
   }
-  return `平台发现这个 ${formatSkillOpportunityPageType(opportunity.pageType)} 里有可复用线索。具体 Skill 方向会由本地 Codex 阅读链接后推荐。${opportunity.whyUseful}`;
+  return `平台发现这个 ${formatSkillOpportunityPageType(opportunity.pageType)} 里有可复用线索。具体能力方向会由本地 Codex 阅读链接后推荐。${opportunity.whyUseful}`;
 }
 
 function qualitativeSkillSignal(value: number): string {
@@ -1439,8 +1439,8 @@ function manualSkillOpportunityForItem(item: AiInboxInput): SkillOpportunity {
     confidence: 0.5,
     pageType: "unknown",
     proposedTitle: `${item.title || "收藏网页"} 助手`,
-    proposedCapability: "根据用户指定的目标，把这个收藏网页沉淀成可复用的个人 Skill。",
-    whyUseful: "用户主动选择把这个收藏做成 Skill，需要本地 Codex 先阅读来源并判断最合适的能力方向。",
+    proposedCapability: "根据用户指定的目标，把这个收藏网页沉淀成可复用的个人能力。",
+    whyUseful: "用户主动选择把这个收藏做成能力，需要本地 Codex 先阅读来源并判断最合适的能力方向。",
     triggerExamples: ["基于这个收藏帮我完成相关任务", "按这个收藏沉淀的流程处理我的问题"],
     expectedInputs: ["用户目标", "使用场景", "当前上下文"],
     expectedOutputs: ["可执行步骤", "检查清单", "注意事项"],
@@ -1448,7 +1448,7 @@ function manualSkillOpportunityForItem(item: AiInboxInput): SkillOpportunity {
     instructionDensityScore: 0.5,
     futureUseScore: 0.5,
     evidenceSnippets: [item.preview].filter(Boolean),
-    riskNotes: ["这是用户主动发起的 Skill 方向分析，生成前需要 Codex 判断网页是否适合沉淀为可复用能力。"],
+    riskNotes: ["这是用户主动发起的能力方向分析，生成前需要 Codex 判断网页是否适合沉淀为可复用能力。"],
   };
 }
 
@@ -1476,7 +1476,7 @@ function defaultSkillSuccessCriteria(mode: SkillDirectionMode): string {
 function defaultSkillDirectionBoundaries(opportunity: SkillOpportunity | null | undefined, mode: SkillDirectionMode): string {
   const riskNotes = opportunity?.riskNotes ?? [];
   return [
-    `不要只总结网页内容；要沉淀成 ${skillDirectionModeLabel(mode)} 方向的 agent 可执行、可复用 Skill。`,
+    `不要只总结网页内容；要沉淀成 ${skillDirectionModeLabel(mode)} 方向的 agent 可执行、可复用能力。`,
     "必须保留来源 URL 和需要刷新来源信息的步骤。",
     ...riskNotes,
   ].join("\n");
@@ -1519,10 +1519,10 @@ function skillActionLabel({ isGenerating, mission }: { isGenerating: boolean; mi
 }
 
 function skillStatusText(mission: SkillGenerationMission) {
-  if (mission.state === "generated") return "Skill 已生成并保存在 Skill 库。";
-  if (mission.state === "draft") return "Skill 已创建，等待本地 agent 完善。";
-  if (mission.state === "duplicate") return "Skill 已在库中，并找到已有生成任务。";
-  return "Skill 已写入库，本地 agent 的完善任务已创建。";
+  if (mission.state === "generated") return "能力已生成并保存在能力库。";
+  if (mission.state === "draft") return "能力已创建，等待本地 agent 完善。";
+  if (mission.state === "duplicate") return "能力已在库中，并找到已有生成任务。";
+  return "能力已写入库，本地 agent 的完善任务已创建。";
 }
 
 function skillUsageMissionTitle(item: AiInboxInput, mission: Pick<SkillGenerationMission, "skillName">) {
@@ -1531,19 +1531,19 @@ function skillUsageMissionTitle(item: AiInboxInput, mission: Pick<SkillGeneratio
 
 function skillUsageMissionDescription(item: AiInboxInput, mission: SkillGenerationMission) {
   return [
-    `从收藏网页创建 Mission，并绑定 Skill：${mission.skillName}。`,
+    `从收藏网页创建 Mission，并绑定能力：${mission.skillName}。`,
     "",
     "## 收藏网页",
     `- 标题：${item.title}`,
     `- URL：${item.sourceUrl}`,
     item.preview ? `- 摘要：${item.preview}` : null,
     "",
-    "## 已绑定 Skill",
+    "## 已绑定能力",
     `- ${mission.skillName}`,
-    mission.skillId ? `- Skill ID：${mission.skillId}` : null,
+    mission.skillId ? `- 能力 ID：${mission.skillId}` : null,
     "",
     "## 任务目标",
-    "使用这个 Skill 处理收藏网页里的信息，生成可执行的下一步建议或交付物。",
+    "使用这个能力处理收藏网页里的信息，生成可执行的下一步建议或交付物。",
   ].filter((line): line is string => line !== null).join("\n");
 }
 

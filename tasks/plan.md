@@ -4,27 +4,31 @@
 
 ### 概览
 
-本阶段以 `docs/ai-resource-workbench/06-skill-operating-loop-prd.md` 为准，目标是把当前已能生成/绑定的 Skill 流程打磨成可操作闭环：内部分析不污染 Mission 列表、Skill 能被 Mission 清楚选择和审计、生成后的 Skill 可删除/重试，并逐步提升网页到 Skill 的方向分析质量。
+本阶段以 `docs/ai-resource-workbench/06-skill-operating-loop-prd.md` 为准，目标是把当前已能生成/绑定的 Skill 流程打磨成可操作闭环：内部分析不污染 Mission 列表、能力能被 Mission 清楚选择和审计、生成后的能力可删除/重试，并逐步提升网页到能力的方向分析质量。
 
 ### 架构决策
 
-- Skill 方向分析继续复用 task/issue 执行底座，但 `didian_internal = true` 的记录不能进入普通 Mission 列表或前端实时缓存。
+- 能力方向分析继续复用 task/issue 执行底座，但 `didian_internal = true` 的记录不能进入普通 Mission 列表或前端实时缓存。
 - Skill usage 仍然使用 `issue_skill_usage`，保持 Mission 级临时选择和 agent 默认 Skills 分离。
+- 用户可见文案统一使用“能力/能力库”；后端 API、SQL、runtime payload 暂保留 `skill` 作为兼容实现名。
 - 前端列表缓存必须有防御性过滤，不能只依赖后端默认查询。
-- 平台发现只做候选提示；具体方向由本地 Codex 在弹窗内分析，用户确认后才生成。
+- 平台发现来自后端 AI enrichment 写回的 `skill_opportunity`，只做候选提示；具体方向由本地 Codex 在弹窗内分析，用户确认后才生成。
 
 ### Phase 1: Make The Current Loop Less Weird
 
 - [ ] Task SOL-1: 前端缓存层过滤 internal Skill direction Missions。
-- [ ] Task SOL-2: AI Inbox Skill 方向弹窗补充更明确的“后台分析中”状态和失败原因。
+- [ ] Task SOL-2: AI Inbox 能力方向弹窗补充更明确的“后台分析中”状态和失败原因。
 - [ ] Task SOL-3: 删除 generated Skill 后，capture card、Skill 列表、Mission planned usage 都能正确刷新。
+- [x] Task SOL-13: 收藏 enrichment 成功后刷新 `skill_opportunity`，并把 AI Inbox 用户文案切到“能力”。
 
 ### Checkpoint: Phase 1
 
 - [ ] `pnpm --filter @didian/core exec vitest run issues/cache-helpers.test.ts issues/ws-updaters.test.ts`
-- [ ] `pnpm --filter @didian/views exec vitest run ai-workbench/ai-inbox/ai-inbox-page.test.tsx`
+- [x] `pnpm --filter @didian/views exec vitest run ai-workbench/ai-inbox/ai-inbox-page.test.tsx`
 - [ ] `pnpm --filter @didian/core typecheck`
-- [ ] `pnpm --filter @didian/views typecheck`
+- [x] `pnpm --filter @didian/views typecheck`
+- [x] `go test ./internal/service -run 'TestMemoryEnrichmentServiceWritesSkillOpportunityFromAIEnrichment|TestMemoryEnrichmentServiceEnrichesPendingCapture|TestCompleteTaskWritesBrowserMemoryEnrichment' -count=1`
+- [x] `go test ./internal/handler -run 'Test.*BrowserCapture|TestCreateBrowserCapture' -count=1`
 
 ### Phase 2: Make Skills Feel Used
 
@@ -42,7 +46,7 @@
 
 - [ ] Task SOL-10: GitHub repo / docs / paper / blog/tutorial / product page 分类型提取信号。
 - [ ] Task SOL-11: 移除用户可见百分比分数，统一为定性信号和证据片段。
-- [ ] Task SOL-12: 本地 Codex 推荐 2-3 个具体 Skill 方向，用户选择后生成。
+- [ ] Task SOL-12: 本地 Codex 推荐 2-3 个具体能力方向，用户选择后生成。
 
 ### Risks
 
@@ -51,13 +55,13 @@
 | internal 分析任务继续出现在列表 | High | 后端默认过滤 + 前端缓存层过滤 + 测试覆盖 WS created/update。 |
 | Skill 变成泛泛网页摘要 | High | 方向确认表单强制输入用途、输入、输出、边界、成功标准。 |
 | Mission Skill usage 和 agent default skills 混淆 | High | `issue_skill_usage` 和 `agent_skill` 分离，UI 文案强调“本 Mission 使用”。 |
-| 删除 Skill 破坏历史审计 | Medium | 已使用 Skill 后续转 archive，未使用才 hard delete。 |
+| 删除能力破坏历史审计 | Medium | 已使用能力后续转 archive，未使用才 hard delete。 |
 
 ## 2026-07-28 Mission Skill Runtime 闭环
 
 ### 概览
 
-本阶段以 `docs/ai-resource-workbench/05-mission-skill-runtime-loop.md` 为准，目标是把“收藏网页生成 Skill”推进到“Mission 真实选择、注入、展示 Skill 使用记录”。第一版不做 marketplace、不做跨 workspace 共享、不做 embedding 推荐；先跑通手动选择和 runtime 注入闭环。
+本阶段以 `docs/ai-resource-workbench/05-mission-skill-runtime-loop.md` 为准，目标是把“收藏网页生成能力”推进到“Mission 真实选择、注入、展示能力使用记录”。第一版不做 marketplace、不做跨 workspace 共享、不做 embedding 推荐；先跑通手动选择和 runtime 注入闭环。
 
 ### 架构决策
 
@@ -94,7 +98,7 @@
 - [x] Task 7: core types/client/query hooks。
 - [x] Task 8: Mission detail 渲染 Used Skills。
 - [x] Task 9: Mission detail 支持添加/移除 planned Skill 的第一版入口。
-- [x] Task 10: 已生成 Skill 的收藏卡片支持创建并绑定 Mission。
+- [x] Task 10: 已生成能力的收藏卡片支持创建并绑定 Mission。
 
 ### Checkpoint: Complete
 

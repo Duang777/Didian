@@ -162,12 +162,12 @@ describe("AiInboxPage browser captures", () => {
     listComments.mockResolvedValue([]);
     listSkills.mockResolvedValue([]);
     createBrowserCaptureSkillDirectionMission.mockResolvedValue({
-      issue: { id: "skill-direction-mission-1", title: "分析 Skill 方向：Stripe Checkout documentation" },
+      issue: { id: "skill-direction-mission-1", title: "分析能力方向：Stripe Checkout documentation" },
       planningStatus: "queued",
       planningAgentId: "agent-1",
     });
     createBrowserCaptureSkillGenerationMission.mockResolvedValue({
-      issue: { id: "skill-mission-1", title: "完善 Skill：Stripe Checkout 接入助手" },
+      issue: { id: "skill-mission-1", title: "完善能力：Stripe Checkout 接入助手" },
       skill: { id: "skill-1", name: "Stripe Checkout 接入助手", config: { generation: { status: "draft" } } },
       planningStatus: "queued",
       planningAgentId: "agent-1",
@@ -247,7 +247,7 @@ describe("AiInboxPage browser captures", () => {
     expect(listBrowserCaptures).toHaveBeenCalledWith({ limit: 12, offset: 0, state: "active", q: undefined });
   });
 
-  it("shows personal Skill proposals on high-signal bookmark cards", async () => {
+  it("shows personal capability proposals on high-signal bookmark cards", async () => {
     const user = userEvent.setup();
     listComments.mockResolvedValue([
       {
@@ -255,7 +255,7 @@ describe("AiInboxPage browser captures", () => {
         issue_id: "skill-direction-mission-1",
         author_type: "agent",
         author_id: "agent-1",
-        content: "### 推荐方向 1：接入落地\n- Skill 名称：Stripe Checkout 接入助手\n- 适用场景：项目接入和 webhook 排障。",
+        content: "### 推荐方向 1：接入落地\n- 能力名称：Stripe Checkout 接入助手\n- 适用场景：项目接入和 webhook 排障。",
         type: "comment",
         parent_id: null,
         reactions: [],
@@ -311,35 +311,35 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
-    expect(screen.getByText("可做成 Skill")).toBeInTheDocument();
+    expect(screen.getByText("可沉淀为能力")).toBeInTheDocument();
     expect(screen.getByText("Stripe Checkout 接入助手")).toBeInTheDocument();
     expect(screen.getByText(/接入步骤、请求示例/)).toBeInTheDocument();
     expect(screen.getByText("Docs")).toBeInTheDocument();
     expect(screen.getByText("平台发现")).toBeInTheDocument();
     expect(screen.queryByText("86%")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "做成 Skill" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "做成能力" })).toHaveLength(2);
     expect(screen.getByText("My opinion about AI tools")).toBeInTheDocument();
 
-    await user.click(screen.getAllByRole("button", { name: "做成 Skill" })[0]!);
-    const draftDialog = screen.getByRole("dialog", { name: "做成 Skill" });
-    const stageBar = within(draftDialog).getByLabelText("Skill 生成阶段");
+    await user.click(screen.getAllByRole("button", { name: "做成能力" })[0]!);
+    const draftDialog = screen.getByRole("dialog", { name: "做成能力" });
+    const stageBar = within(draftDialog).getByLabelText("能力生成阶段");
     expect(within(stageBar).getByText("补充意图")).toBeInTheDocument();
     expect(within(stageBar).getByText("Codex 推荐")).toBeInTheDocument();
     expect(within(stageBar).getByText("确认生成")).toBeInTheDocument();
-    expect(within(draftDialog).getByText("让 Codex 推荐方向")).toBeInTheDocument();
-    expect(within(draftDialog).queryByText("Skill 方向分析")).not.toBeInTheDocument();
-    await user.click(within(draftDialog).getByRole("button", { name: "让 Codex 推荐方向" }));
+    expect(within(draftDialog).getByText("让 Codex 推荐能力方向")).toBeInTheDocument();
+    expect(within(draftDialog).queryByText("能力方向分析")).not.toBeInTheDocument();
+    await user.click(within(draftDialog).getByRole("button", { name: "让 Codex 推荐能力方向" }));
 
     await waitFor(() => expect(createBrowserCaptureSkillDirectionMission).toHaveBeenCalledWith("capture-1", {}));
-    expect(toastSuccess).toHaveBeenCalledWith("已交给本地 Codex 分析，结果会在弹窗中更新。");
-    expect(screen.getByRole("dialog", { name: "做成 Skill" })).toBeInTheDocument();
+    expect(toastSuccess).toHaveBeenCalledWith("已交给本地 Codex 分析能力方向，结果会在弹窗中更新。");
+    expect(screen.getByRole("dialog", { name: "做成能力" })).toBeInTheDocument();
     await waitFor(() => expect(listComments).toHaveBeenCalledWith("skill-direction-mission-1"));
     expect(screen.getAllByText("Codex 推荐").length).toBeGreaterThan(0);
     expect(screen.getByText(/推荐方向 1：接入落地/)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /打开方向分析 Mission/ })).not.toBeInTheDocument();
 
-    expect(screen.getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 接入助手");
-    expect(screen.getByText("选择 Skill 方向")).toBeInTheDocument();
+    expect(screen.getByLabelText("能力名称")).toHaveValue("Stripe Checkout 接入助手");
+    expect(screen.getByText("选择能力方向")).toBeInTheDocument();
     expect(screen.getByText("复用流程")).toBeInTheDocument();
     expect(screen.getByText("指令线索")).toBeInTheDocument();
     expect(screen.getAllByText("强").length).toBeGreaterThan(0);
@@ -347,15 +347,15 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.queryByText("90%")).not.toBeInTheDocument();
     expect(screen.getByLabelText("主要用途")).toHaveValue("当我需要把 Stripe Checkout 接入真实项目时，用它根据项目栈生成落地步骤、代码示例、环境变量清单和验收检查。");
     expect(screen.getByLabelText("能力描述")).toHaveValue("把 Stripe Checkout 的技术文档沉淀成项目接入流程，覆盖配置、示例、验证、错误处理和上线前检查。");
-    expect(screen.getByText("先确认你想沉淀的能力方向，再交给本地 Codex 生成高质量 Skill 并写入 Skill 库。")).toBeInTheDocument();
+    expect(screen.getByText("先确认你想沉淀的能力方向，再交给本地 Codex 生成可复用能力并写入能力库。")).toBeInTheDocument();
     expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: /排障修复/ }));
-    expect(screen.getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 排障助手");
+    expect(screen.getByLabelText("能力名称")).toHaveValue("Stripe Checkout 排障助手");
     expect(screen.getByLabelText("期望输出")).toHaveValue("可能原因排序\n验证命令\n修复步骤\n回归检查清单");
     await user.clear(screen.getByLabelText("主要用途"));
     await user.type(screen.getByLabelText("主要用途"), "帮我把 Stripe Checkout 文档沉淀成项目接入和 webhook 排障流程。");
-    await user.click(screen.getByRole("button", { name: "交给 Codex 生成" }));
+    await user.click(screen.getByRole("button", { name: "交给 Codex 生成能力" }));
 
     await waitFor(() => expect(createBrowserCaptureSkillGenerationMission.mock.calls[0]?.[0]).toBe("capture-1"));
     expect(createBrowserCaptureSkillGenerationMission.mock.calls[0]?.[1]).toEqual(expect.objectContaining({
@@ -367,14 +367,14 @@ describe("AiInboxPage browser captures", () => {
         notes: expect.stringContaining("方向：排障修复"),
       }),
     }));
-    expect(toastSuccess).toHaveBeenCalledWith("Skill 生成任务已创建，本地 Codex 会按你确认的方向生成并写入 Skill 库。");
-    expect(screen.getByRole("status")).toHaveTextContent("Skill 已写入库");
-    expect(screen.getByRole("link", { name: "打开 Skill" })).toHaveAttribute("href", "/acme/skills/skill-1");
+    expect(toastSuccess).toHaveBeenCalledWith("能力生成任务已创建，本地 Codex 会按你确认的方向生成并写入能力库。");
+    expect(screen.getByRole("status")).toHaveTextContent("能力已写入库");
+    expect(screen.getByRole("link", { name: "打开能力" })).toHaveAttribute("href", "/acme/skills/skill-1");
     expect(screen.getByRole("link", { name: "查看生成 Mission" })).toHaveAttribute("href", "/acme/issues/skill-mission-1");
     expect(screen.queryByRole("button", { name: "已创建" })).not.toBeInTheDocument();
   }, 10_000);
 
-  it("shows generated Skill state from the persisted Skill library after refresh", async () => {
+  it("shows generated capability state from the persisted capability library after refresh", async () => {
     listBrowserCaptures.mockResolvedValue({
       captures: [
         captureFixture({
@@ -417,16 +417,16 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
-    expect(screen.getByRole("link", { name: "Skill 库" })).toHaveAttribute("href", "/acme/skills");
-    expect(screen.getByRole("status")).toHaveTextContent("Skill 已生成并保存在 Skill 库。");
-    expect(screen.getByRole("link", { name: "打开 Skill" })).toHaveAttribute("href", "/acme/skills/skill-persisted");
+    expect(screen.getByRole("link", { name: "能力库" })).toHaveAttribute("href", "/acme/skills");
+    expect(screen.getByRole("status")).toHaveTextContent("能力已生成并保存在能力库。");
+    expect(screen.getByRole("link", { name: "打开能力" })).toHaveAttribute("href", "/acme/skills/skill-persisted");
     expect(screen.queryByRole("link", { name: "查看生成 Mission" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "生成 Skill" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "生成能力" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "已生成" })).not.toBeInTheDocument();
     expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
   });
 
-  it("lets users request a Skill from a bookmark without an automatic recommendation", async () => {
+  it("lets users request an ability from a bookmark without an automatic recommendation", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({
       captures: [
@@ -440,7 +440,7 @@ describe("AiInboxPage browser captures", () => {
           readable_text: "This page is useful to me, but the platform did not classify it as a reusable technical workflow.",
           memory: memoryFixture({
             summary: "Personal workflow notes for reviewing AI generated work.",
-            one_line_takeaway: "A reusable review habit, but not an automatic Skill recommendation.",
+            one_line_takeaway: "A reusable review habit, but not an automatic capability recommendation.",
             key_points: ["Review output quality", "Track assumptions"],
             topics: ["workflow"],
             status: "ready",
@@ -453,27 +453,27 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("AI workflow notes")).toBeInTheDocument());
-    expect(screen.queryByText("可做成 Skill")).not.toBeInTheDocument();
+    expect(screen.queryByText("可沉淀为能力")).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "做成 Skill" }));
+    await user.click(screen.getByRole("button", { name: "做成能力" }));
 
-    const draftDialog = screen.getByRole("dialog", { name: "做成 Skill" });
+    const draftDialog = screen.getByRole("dialog", { name: "做成能力" });
     await user.type(within(draftDialog).getByLabelText("你的需求（选填）"), "我想把它做成一个 AI 输出质量复盘助手。");
-    await user.click(within(draftDialog).getByRole("button", { name: "让 Codex 推荐方向" }));
+    await user.click(within(draftDialog).getByRole("button", { name: "让 Codex 推荐能力方向" }));
 
     await waitFor(() => expect(createBrowserCaptureSkillDirectionMission).toHaveBeenCalledWith("capture-manual", {
       userNeed: "我想把它做成一个 AI 输出质量复盘助手。",
     }));
-    expect(screen.getByRole("dialog", { name: "做成 Skill" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "做成能力" })).toBeInTheDocument();
     expect(screen.getByLabelText("你的需求（选填）")).toHaveValue("我想把它做成一个 AI 输出质量复盘助手。");
-    expect(screen.getByText("选择 Skill 方向")).toBeInTheDocument();
+    expect(screen.getByText("选择能力方向")).toBeInTheDocument();
     expect(screen.getByLabelText("补充说明")).toHaveValue("用户主动需求：我想把它做成一个 AI 输出质量复盘助手。");
   });
 
-  it("keeps an editable Skill draft available when Codex Local is unavailable", async () => {
+  it("keeps an editable capability draft available when Codex Local is unavailable", async () => {
     const user = userEvent.setup();
     createBrowserCaptureSkillDirectionMission.mockResolvedValue({
-      issue: { id: "skill-direction-mission-no-agent", title: "分析 Skill 方向：Stripe Checkout documentation" },
+      issue: { id: "skill-direction-mission-no-agent", title: "分析能力方向：Stripe Checkout documentation" },
       planningStatus: "no_codex_agent",
       planningAgentId: null,
     });
@@ -503,18 +503,18 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
-    await user.click(screen.getByRole("button", { name: "做成 Skill" }));
-    await user.click(screen.getByRole("button", { name: "让 Codex 推荐方向" }));
+    await user.click(screen.getByRole("button", { name: "做成能力" }));
+    await user.click(screen.getByRole("button", { name: "让 Codex 推荐能力方向" }));
 
     await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith("当前没有可用 Codex agent，可先用平台默认方向确认。"));
-    const dialog = screen.getByRole("dialog", { name: "做成 Skill" });
+    const dialog = screen.getByRole("dialog", { name: "做成能力" });
     expect(within(dialog).getByText("当前没有可用 Codex agent。你可以先用平台默认草稿继续，之后再让本地 Codex 完善。")).toBeInTheDocument();
-    expect(within(dialog).getByText("选择 Skill 方向")).toBeInTheDocument();
-    expect(within(dialog).getByLabelText("Skill 名称")).toHaveValue("Stripe Checkout 接入助手");
-    expect(within(dialog).getByRole("button", { name: "交给 Codex 生成" })).toBeEnabled();
+    expect(within(dialog).getByText("选择能力方向")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("能力名称")).toHaveValue("Stripe Checkout 接入助手");
+    expect(within(dialog).getByRole("button", { name: "交给 Codex 生成能力" })).toBeEnabled();
   });
 
-  it("deletes a generated Skill from its bookmark card and allows regeneration", async () => {
+  it("deletes a generated capability from its bookmark card and allows regeneration", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({
       captures: [
@@ -558,23 +558,23 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
-    expect(screen.getByRole("status")).toHaveTextContent("Skill 已生成并保存在 Skill 库。");
+    expect(screen.getByRole("status")).toHaveTextContent("能力已生成并保存在能力库。");
 
-    await user.click(screen.getByRole("button", { name: "删除 Skill" }));
+    await user.click(screen.getByRole("button", { name: "删除能力" }));
 
-    const dialog = screen.getByRole("dialog", { name: "删除 Skill？" });
+    const dialog = screen.getByRole("dialog", { name: "删除能力？" });
     expect(within(dialog).getByText(/Stripe Checkout 接入助手/)).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("button", { name: "确认删除" }));
 
     await waitFor(() => expect(deleteSkill).toHaveBeenCalledWith("skill-persisted"));
-    expect(toastSuccess).toHaveBeenCalledWith("Skill 已删除，可以重新生成。");
-    expect(screen.queryByText("Skill 已生成并保存在 Skill 库。")).not.toBeInTheDocument();
+    expect(toastSuccess).toHaveBeenCalledWith("能力已删除，可以重新生成。");
+    expect(screen.queryByText("能力已生成并保存在能力库。")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "已生成" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "做成 Skill" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "做成能力" })).toBeEnabled();
   });
 
-  it("creates a Mission and attaches a generated capture Skill", async () => {
+  it("creates a Mission and attaches a generated capture capability", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({
       captures: [
@@ -623,7 +623,7 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
-    await user.click(screen.getByRole("button", { name: "用 Skill 创建 Mission" }));
+    await user.click(screen.getByRole("button", { name: "用能力创建 Mission" }));
 
     await waitFor(() => expect(createAiInboxMission).toHaveBeenCalledTimes(1));
     expect(createAiInboxMission.mock.calls[0]?.[0]).toEqual(expect.objectContaining({
@@ -635,7 +635,7 @@ describe("AiInboxPage browser captures", () => {
       source: "capture_origin",
       reason: "Created from browser capture: Stripe Checkout documentation",
     }));
-    expect(toastSuccess).toHaveBeenCalledWith("Mission 已创建，并已绑定这个 Skill");
+    expect(toastSuccess).toHaveBeenCalledWith("Mission 已创建，并已绑定这个能力");
     expect(screen.getByRole("status")).toHaveTextContent("已创建使用记录");
     expect(screen.getByRole("link", { name: "用 Stripe Checkout 接入助手处理 Stripe Checkout documentation" })).toHaveAttribute("href", "/acme/issues/mission-using-skill");
   });

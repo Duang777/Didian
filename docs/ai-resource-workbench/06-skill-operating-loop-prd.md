@@ -5,19 +5,19 @@ Status: Draft for implementation
 
 ## Objective
 
-Turn Didian Skills from generated cards into an operating layer that local agent runtimes can reliably use, audit, and improve. The user-facing loop should feel like:
+Turn Didian Skills from generated cards into an operating layer that local agent runtimes can reliably use, audit, and improve. User-facing product language should call this a reusable "能力"; engineering contracts can continue to use `skill` until the data model is renamed. The loop should feel like:
 
 ```text
-Save webpage -> Didian detects whether it is Skill-worthy
--> user chooses "做成 Skill" and optionally describes intent
--> local Codex reads the source and proposes concrete Skill directions in-place
+Save webpage -> Didian detects whether it can become a reusable capability
+-> user chooses "做成能力" and optionally describes intent
+-> local Codex reads the source and proposes concrete capability directions in-place
 -> user confirms/edit directions
--> local Codex generates the Skill
--> Skill is stored in Didian
--> Mission can select the Skill
--> local runtime receives the selected Skill
+-> local Codex generates the capability
+-> capability is stored in Didian's skill-backed capability library
+-> Mission can select the capability
+-> local runtime receives the selected capability
 -> Mission shows what was injected, used, skipped, or failed
--> Skill can be edited, regenerated, deleted, or reused
+-> capability can be edited, regenerated, deleted, or reused
 ```
 
 The product promise is not "AI summarized a page". The promise is "this source became a reusable capability that local agents can use again with traceable results".
@@ -30,10 +30,11 @@ The product promise is not "AI summarized a page". The promise is "this source b
 
 ## Product Principles
 
-- One user-facing flow: `做成 Skill`. Automatic recommendations and manual choices both enter the same confirmation dialog.
+- One user-facing flow: `做成能力`. Automatic recommendations and manual choices both enter the same confirmation dialog.
+- Product copy should use `能力` / `能力库`; implementation names, API paths, SQL tables, config keys, and runtime payloads may keep `skill` for compatibility.
 - AI direction analysis is not a normal Mission. It may reuse task infrastructure internally, but must not appear in ordinary Mission lists, boards, or search unless explicitly filtered as internal diagnostics.
 - Platform heuristics are only screening. Do not show precise rule scores as if they are AI confidence. Show qualitative signals and evidence instead.
-- Local Codex decides the concrete Skill direction after reading the source, then the user confirms or edits it.
+- Local Codex decides the concrete capability direction after reading the source, then the user confirms or edits it.
 - Skills are Mission-selectable runtime context, not permanent agent defaults unless the user explicitly binds them to an agent.
 - Mission detail is the audit surface: selected Skills, injection status, runtime, task, and later actual usage feedback all belong there.
 - Deletion must exist everywhere a Skill is surfaced: Skill library, capture card, and Mission planned Skill relation.
@@ -63,28 +64,30 @@ The product promise is not "AI summarized a page". The promise is "this source b
 
 ## Core Flows
 
-### Flow 1: Save Webpage To Candidate Skill
+### Flow 1: Save Webpage To Candidate Capability
 
 1. Browser capture stores title, URL, preview text, favicon, screenshot, and page type.
-2. Platform rule screening decides whether to show a Skill candidate affordance.
-3. Candidate panel displays qualitative reasons:
+2. Backend AI enrichment writes a first-pass `skill_opportunity` assessment on the capture. Rule heuristics may provide an initial fallback before enrichment finishes.
+3. The capture card decides whether to show a capability candidate affordance from the stored assessment.
+4. Candidate panel displays qualitative reasons:
    - reusable workflow
    - instruction density
    - future reuse
    - evidence snippets
-4. User can still choose `做成 Skill` from any saved page even without automatic recommendation.
+5. User can still choose `做成能力` from any saved page even without automatic recommendation.
 
 Acceptance:
 
 - No exact percentage scores in user-facing candidate panel.
-- Manual `做成 Skill` exists for non-recommended captures.
+- Manual `做成能力` exists for non-recommended captures.
+- Capture enrichment refreshes `skill_opportunity` after AI summary/key points are available.
 - No noisy SPA payload, tree JSON, or error-page dump is sent as primary source context.
 
 ### Flow 2: Confirm Direction Before Generation
 
-1. User clicks `做成 Skill`.
+1. User clicks `做成能力`.
 2. Dialog shows source page, qualitative signal, optional "你的需求".
-3. User can click `让 Codex 推荐方向`.
+3. User can click `让 Codex 推荐能力方向`.
 4. Backend creates an internal direction-analysis task with metadata:
    - `didian_internal = true`
    - `didian_internal_kind = "skill_direction_analysis"`
@@ -97,7 +100,7 @@ Acceptance:
 - Dialog does not force users to open Mission detail to read the analysis.
 - Direction fields include name, primary use case, capability, trigger examples, expected inputs, expected outputs, boundaries, and success criteria.
 
-### Flow 3: Generate And Store Skill
+### Flow 3: Generate And Store Capability
 
 1. User confirms a direction draft.
 2. Backend creates a generation Mission for local Codex, with the confirmed direction and cleaned source context.
@@ -108,12 +111,12 @@ Acceptance:
    - generation Mission ID
    - confirmed direction
    - generated by runtime / agent where available
-5. Capture card changes to `已生成` and links to Skill detail.
+5. Capture card changes to `已生成` and links to the ability detail backed by Skill detail.
 
 Acceptance:
 
 - Duplicate generated Skill is not created for the same capture.
-- Capture card exposes `打开 Skill`, `删除 Skill`, and `用 Skill 创建 Mission`.
+- Capture card exposes `打开能力`, `删除能力`, and `用能力创建 Mission`.
 - Deleting generated Skill clears the capture card's generated state after refetch.
 
 ### Flow 4: Use Skill In Mission
