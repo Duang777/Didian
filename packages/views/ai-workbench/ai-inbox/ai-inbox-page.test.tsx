@@ -318,6 +318,7 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByText("平台发现")).toBeInTheDocument();
     expect(screen.queryByText("86%")).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "做成能力" })).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: "收藏为知识" })).not.toBeInTheDocument();
     expect(screen.getByText("My opinion about AI tools")).toBeInTheDocument();
 
     await user.click(screen.getAllByRole("button", { name: "做成能力" })[0]!);

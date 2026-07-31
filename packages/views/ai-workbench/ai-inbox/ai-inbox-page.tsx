@@ -32,7 +32,6 @@ const captureCurrentPageLabel = "使用扩展收藏当前页";
 const personalSkillSuggestionLabel = "可沉淀为能力";
 const generateSkillLabel = "生成能力";
 const recommendSkillDirectionLabel = "让 Codex 推荐能力方向";
-const keepAsKnowledgeLabel = "收藏为知识";
 const reduceSkillSuggestionsLabel = "少推荐";
 const makeBookmarkSkillLabel = "做成能力";
 const skillDirectionQueuedToast = "已交给本地 Codex 分析能力方向，结果会在弹窗中更新。";
@@ -40,7 +39,6 @@ const skillDirectionNoAgentToast = "当前没有可用 Codex agent，可先用�
 const skillGenerationQueuedToast = "能力生成任务已创建，本地 Codex 会按你确认的方向生成并写入能力库。";
 const skillGenerationNoAgentToast = "能力生成任务已创建，当前没有可用 Codex agent。";
 const deleteGeneratedSkillToast = "能力已删除，可以重新生成。";
-const keepAsKnowledgeToast = "已保留为知识卡片";
 const reduceSkillSuggestionsToast = "后续会减少这类能力推荐";
 const backendOfflineMessage = "后端暂时不可用。请先在本地终端启动后端：make start-worktree，然后刷新页面。";
 const codexOfflineMessage = "当前没有可用 Codex agent。你可以先直接填写草稿，或启动本地 Codex 后再让它推荐方向。";
@@ -1164,26 +1162,15 @@ function SkillOpportunityPanel({
               </a>
             )}
             {!hasGeneratedSkill && (
-              <>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => toast.success(keepAsKnowledgeToast)}
-                >
-                  {keepAsKnowledgeLabel}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-xs text-muted-foreground"
-                  onClick={() => toast.success(reduceSkillSuggestionsToast)}
-                >
-                  {reduceSkillSuggestionsLabel}
-                </Button>
-              </>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-xs text-muted-foreground"
+                onClick={() => toast.success(reduceSkillSuggestionsToast)}
+              >
+                {reduceSkillSuggestionsLabel}
+              </Button>
             )}
             {canDeleteGeneratedSkill && (
               <Button
