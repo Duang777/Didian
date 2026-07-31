@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -56,6 +57,51 @@ func TestMemoryEnrichmentServiceEnrichesPendingCapture(t *testing.T) {
 	}
 	if updated.FailureReason.Valid {
 		t.Fatalf("failure_reason = %q, want null", updated.FailureReason.String)
+	}
+}
+
+func TestMemoryEnrichmentServiceWritesSkillOpportunityFromAIEnrichment(t *testing.T) {
+	pool := newHeadShaDedupPool(t)
+	ctx := context.Background()
+	q := db.New(pool)
+	fixture := createMemoryEnrichmentFixture(t, ctx, pool, q)
+
+	svc := NewMemoryEnrichmentService(q, staticPageMemorySummarizer{
+		enrichment: PageMemoryEnrichment{
+			OneLineTakeaway: "Stripe Checkout API setup with SDK configuration and webhook testing.",
+			Summary:         "Use the Stripe Checkout API to create sessions, configure SDK keys, handle webhooks, test errors, and verify integration.",
+			KeyPoints:       []string{"Create Checkout sessions with API parameters.", "Configure SDK keys and webhook endpoints.", "Test common integration errors."},
+			Topics:          []string{"api", "sdk", "webhook"},
+			Entities:        []string{"Stripe"},
+			Keywords:        []string{"api", "sdk", "webhook", "integration", "test"},
+			SearchText:      "Stripe Checkout API SDK webhook integration test",
+			ModelProvider:   "codex",
+			ModelName:       "runtime-enrichment",
+		},
+	})
+	if _, err := svc.EnrichCapture(ctx, fixture.capture); err != nil {
+		t.Fatalf("EnrichCapture: %v", err)
+	}
+
+	updated, err := q.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{
+		ID:          fixture.capture.ID,
+		WorkspaceID: fixture.workspaceID,
+	})
+	if err != nil {
+		t.Fatalf("GetCapturedSourceInWorkspace: %v", err)
+	}
+	if len(updated.SkillOpportunity) == 0 {
+		t.Fatal("skill_opportunity was not written from enrichment")
+	}
+	var opportunity SkillOpportunity
+	if err := json.Unmarshal(updated.SkillOpportunity, &opportunity); err != nil {
+		t.Fatalf("unmarshal skill_opportunity: %v", err)
+	}
+	if !opportunity.ShouldSuggest || opportunity.PageType != "technical_doc" {
+		t.Fatalf("unexpected opportunity: %+v", opportunity)
+	}
+	if !strings.Contains(opportunity.EvidenceSnippets[0], "Stripe Checkout API") {
+		t.Fatalf("evidence snippets = %#v, want AI enrichment text", opportunity.EvidenceSnippets)
 	}
 }
 
@@ -175,4 +221,12 @@ type failingPageMemorySummarizer struct{}
 
 func (failingPageMemorySummarizer) SummarizePageMemory(context.Context, db.CapturedSource) (PageMemoryEnrichment, error) {
 	return PageMemoryEnrichment{}, errors.New("summary unavailable")
+}
+
+type staticPageMemorySummarizer struct {
+	enrichment PageMemoryEnrichment
+}
+
+func (s staticPageMemorySummarizer) SummarizePageMemory(context.Context, db.CapturedSource) (PageMemoryEnrichment, error) {
+	return s.enrichment, nil
 }

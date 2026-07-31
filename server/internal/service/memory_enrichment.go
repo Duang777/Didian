@@ -99,6 +99,13 @@ func (s *MemoryEnrichmentService) EnrichCapture(ctx context.Context, capture db.
 	}); err != nil {
 		return db.PageMemory{}, err
 	}
+	if _, err := s.Queries.UpdateCapturedSourceSkillOpportunity(ctx, db.UpdateCapturedSourceSkillOpportunityParams{
+		ID:               capture.ID,
+		WorkspaceID:      capture.WorkspaceID,
+		SkillOpportunity: BuildSkillOpportunityJSON(BuildSkillOpportunityInput(capture, &enrichment)),
+	}); err != nil {
+		return db.PageMemory{}, err
+	}
 	return memory, nil
 }
 

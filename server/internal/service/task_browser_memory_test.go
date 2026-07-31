@@ -126,6 +126,9 @@ func TestCompleteTaskWritesBrowserMemoryEnrichment(t *testing.T) {
 	if capture.SummaryStatus != "success" || capture.Status != "ready" || capture.FailureReason.Valid {
 		t.Fatalf("unexpected capture enrichment status: status=%q summary=%q failure=%+v", capture.Status, capture.SummaryStatus, capture.FailureReason)
 	}
+	if len(capture.SkillOpportunity) == 0 {
+		t.Fatal("skill_opportunity was not written from Codex browser memory enrichment")
+	}
 }
 
 func TestCompleteTaskMarksBrowserMemoryFailedOnInvalidOutput(t *testing.T) {

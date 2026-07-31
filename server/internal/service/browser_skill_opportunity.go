@@ -1,43 +1,122 @@
-package handler
+package service
 
 import (
+	"encoding/json"
+	"errors"
 	"net/url"
 	"regexp"
 	"strings"
 
-	"github.com/didian-ai/didian/server/internal/service"
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 )
 
-type SkillOpportunityResponse = service.SkillOpportunity
-
-func buildSkillOpportunityJSON(req CreateBrowserCaptureRequest) []byte {
-	return service.BuildSkillOpportunityJSON(browserSkillOpportunityInputFromRequest(req))
+type SkillOpportunity struct {
+	ShouldSuggest           bool     `json:"shouldSuggest"`
+	Confidence              float64  `json:"confidence"`
+	PageType                string   `json:"pageType"`
+	ProposedTitle           string   `json:"proposedTitle"`
+	ProposedCapability      string   `json:"proposedCapability"`
+	WhyUseful               string   `json:"whyUseful"`
+	TriggerExamples         []string `json:"triggerExamples"`
+	ExpectedInputs          []string `json:"expectedInputs"`
+	ExpectedOutputs         []string `json:"expectedOutputs"`
+	ReusableWorkflowScore   float64  `json:"reusableWorkflowScore"`
+	InstructionDensityScore float64  `json:"instructionDensityScore"`
+	FutureUseScore          float64  `json:"futureUseScore"`
+	EvidenceSnippets        []string `json:"evidenceSnippets"`
+	RiskNotes               []string `json:"riskNotes"`
 }
 
-func buildSkillOpportunity(req CreateBrowserCaptureRequest) *SkillOpportunityResponse {
-	return service.BuildSkillOpportunity(browserSkillOpportunityInputFromRequest(req))
+type BrowserSkillOpportunityInput struct {
+	URL             string
+	Title           string
+	Domain          string
+	Description     string
+	SelectedText    string
+	ReadableText    string
+	OneLineTakeaway string
+	Summary         string
+	KeyPoints       []string
+	Topics          []string
+	Entities        []string
+	Keywords        []string
 }
 
-func browserSkillOpportunityInputFromRequest(req CreateBrowserCaptureRequest) service.BrowserSkillOpportunityInput {
-	return service.BrowserSkillOpportunityInput{
-		URL:          req.URL,
-		Title:        req.Title,
-		Domain:       req.Domain,
-		Description:  req.Description,
-		SelectedText: req.SelectedText,
-		ReadableText: req.ReadableText,
+func BuildSkillOpportunityJSON(input BrowserSkillOpportunityInput) []byte {
+	opportunity := BuildSkillOpportunity(input)
+	if opportunity == nil {
+		return nil
+	}
+	payload, err := json.Marshal(opportunity)
+	if err != nil {
+		return nil
+	}
+	return payload
+}
+
+func BuildSkillOpportunity(input BrowserSkillOpportunityInput) *SkillOpportunity {
+	pageType := inferSkillOpportunityPageType(input)
+	if pageType == "unknown" || pageType == "blog" || pageType == "paper" || pageType == "product_page" {
+		return nil
+	}
+
+	reusableWorkflowScore := scoreSkillReusableWorkflow(pageType)
+	instructionDensityScore := scoreSkillInstructionDensity(input)
+	futureUseScore := scoreSkillFutureUse(pageType, input)
+	confidence := roundSkillOpportunityScore((reusableWorkflowScore * 0.35) + (instructionDensityScore * 0.35) + (futureUseScore * 0.3))
+	evidenceSnippets := collectSkillOpportunityEvidence(input)
+
+	if confidence < 0.75 || reusableWorkflowScore < 0.7 || instructionDensityScore < 0.65 || futureUseScore < 0.7 || len(evidenceSnippets) < 2 {
+		return nil
+	}
+
+	return &SkillOpportunity{
+		ShouldSuggest:           true,
+		Confidence:              confidence,
+		PageType:                pageType,
+		ProposedTitle:           proposedSkillTitle(pageType, input),
+		ProposedCapability:      proposedSkillCapability(pageType),
+		WhyUseful:               proposedSkillWhyUseful(pageType),
+		TriggerExamples:         proposedSkillTriggerExamples(pageType, input),
+		ExpectedInputs:          proposedSkillInputs(pageType),
+		ExpectedOutputs:         proposedSkillOutputs(pageType),
+		ReusableWorkflowScore:   reusableWorkflowScore,
+		InstructionDensityScore: instructionDensityScore,
+		FutureUseScore:          futureUseScore,
+		EvidenceSnippets:        evidenceSnippets,
+		RiskNotes:               proposedSkillRiskNotes(pageType),
 	}
 }
 
-func inferSkillOpportunityPageType(req CreateBrowserCaptureRequest) string {
-	parsed, err := parseHTTPURL(req.URL)
+func BuildSkillOpportunityInput(capture db.CapturedSource, enrichment *PageMemoryEnrichment) BrowserSkillOpportunityInput {
+	input := BrowserSkillOpportunityInput{
+		URL:          capture.Url,
+		Title:        capture.Title,
+		Domain:       capture.Domain,
+		Description:  textValue(capture.Description),
+		SelectedText: textValue(capture.SelectedText),
+		ReadableText: textValue(capture.ReadableText),
+	}
+	if enrichment != nil {
+		input.OneLineTakeaway = enrichment.OneLineTakeaway
+		input.Summary = enrichment.Summary
+		input.KeyPoints = enrichment.KeyPoints
+		input.Topics = enrichment.Topics
+		input.Entities = enrichment.Entities
+		input.Keywords = enrichment.Keywords
+	}
+	return input
+}
+
+func inferSkillOpportunityPageType(input BrowserSkillOpportunityInput) string {
+	parsed, err := parseSkillOpportunityURL(input.URL)
 	if err != nil {
 		return "unknown"
 	}
 
 	host := strings.ToLower(parsed.Hostname())
 	path := strings.ToLower(parsed.Path)
-	text := searchableSkillOpportunityText(req)
+	text := searchableSkillOpportunityText(input)
 
 	switch {
 	case isGitHubRepoCapture(host, parsed.Path):
@@ -126,8 +205,8 @@ func scoreSkillReusableWorkflow(pageType string) float64 {
 	}
 }
 
-func scoreSkillInstructionDensity(req CreateBrowserCaptureRequest) float64 {
-	text := searchableSkillOpportunityText(req)
+func scoreSkillInstructionDensity(input BrowserSkillOpportunityInput) float64 {
+	text := searchableSkillOpportunityText(input)
 	count := 0
 	patterns := []*regexp.Regexp{
 		regexp.MustCompile(`(?i)\b(api|sdk|endpoint|parameter|webhook|auth|authentication|authorization)\b`),
@@ -150,14 +229,14 @@ func scoreSkillInstructionDensity(req CreateBrowserCaptureRequest) float64 {
 	}
 }
 
-func scoreSkillFutureUse(pageType string, req CreateBrowserCaptureRequest) float64 {
+func scoreSkillFutureUse(pageType string, input BrowserSkillOpportunityInput) float64 {
 	switch pageType {
 	case "technical_doc":
 		return 0.9
 	case "github_repo":
 		return 0.82
 	case "tutorial":
-		if regexp.MustCompile(`(?i)\b(error|troubleshoot|configure|setup|test)\b`).MatchString(searchableSkillOpportunityText(req)) {
+		if regexp.MustCompile(`(?i)\b(error|troubleshoot|configure|setup|test)\b`).MatchString(searchableSkillOpportunityText(input)) {
 			return 0.78
 		}
 		return 0.7
@@ -166,8 +245,8 @@ func scoreSkillFutureUse(pageType string, req CreateBrowserCaptureRequest) float
 	}
 }
 
-func proposedSkillTitle(pageType string, req CreateBrowserCaptureRequest) string {
-	subject := deriveSkillOpportunitySubject(req)
+func proposedSkillTitle(pageType string, input BrowserSkillOpportunityInput) string {
+	subject := deriveSkillOpportunitySubject(input)
 	switch pageType {
 	case "github_repo":
 		return subject + " 尽调助手"
@@ -200,8 +279,8 @@ func proposedSkillWhyUseful(pageType string) string {
 	}
 }
 
-func proposedSkillTriggerExamples(pageType string, req CreateBrowserCaptureRequest) []string {
-	subject := deriveSkillOpportunitySubject(req)
+func proposedSkillTriggerExamples(pageType string, input BrowserSkillOpportunityInput) []string {
+	subject := deriveSkillOpportunitySubject(input)
 	switch pageType {
 	case "github_repo":
 		return []string{"评估 " + subject + " 是否适合我的项目", "帮我快速上手 " + subject}
@@ -237,25 +316,25 @@ func proposedSkillOutputs(pageType string) []string {
 func proposedSkillRiskNotes(pageType string) []string {
 	switch pageType {
 	case "github_repo":
-		return []string{"仓库维护状态和 license 可能变化，启用 Skill 前需要保留来源回溯。"}
+		return []string{"仓库维护状态和 license 可能变化，启用能力前需要保留来源回溯。"}
 	case "tutorial":
 		return []string{"教程质量不稳定，生成后需要用户审查步骤是否符合当前项目版本。"}
 	default:
-		return []string{"文档版本可能更新，Skill 应保留来源 URL 以便后续重新生成。"}
+		return []string{"文档版本可能更新，能力应保留来源 URL 以便后续重新生成。"}
 	}
 }
 
-func collectSkillOpportunityEvidence(req CreateBrowserCaptureRequest) []string {
+func collectSkillOpportunityEvidence(input BrowserSkillOpportunityInput) []string {
 	candidates := []string{
-		req.Description,
-		req.SelectedText,
-		req.ReadableText,
-		req.Title,
+		input.OneLineTakeaway,
 	}
+	candidates = append(candidates, input.KeyPoints...)
+	candidates = append(candidates, input.Summary, input.Description, input.SelectedText, input.ReadableText, input.Title)
+
 	out := make([]string, 0, 3)
 	seen := map[string]struct{}{}
 	for _, candidate := range candidates {
-		text := truncateTrimmed(normalizeSpace(candidate), 150)
+		text := truncateRunes(normalizeSpace(candidate), 150)
 		if text == "" {
 			continue
 		}
@@ -271,23 +350,39 @@ func collectSkillOpportunityEvidence(req CreateBrowserCaptureRequest) []string {
 	return out
 }
 
-func searchableSkillOpportunityText(req CreateBrowserCaptureRequest) string {
-	parts := []string{req.URL, req.Title, req.Domain, req.Description, req.SelectedText, req.ReadableText}
+func searchableSkillOpportunityText(input BrowserSkillOpportunityInput) string {
+	parts := []string{
+		input.URL,
+		input.Title,
+		input.Domain,
+		input.Description,
+		input.SelectedText,
+		input.ReadableText,
+		input.OneLineTakeaway,
+		input.Summary,
+		strings.Join(input.KeyPoints, " "),
+		strings.Join(input.Topics, " "),
+		strings.Join(input.Entities, " "),
+		strings.Join(input.Keywords, " "),
+	}
 	return strings.Join(parts, " ")
 }
 
-func deriveSkillOpportunitySubject(req CreateBrowserCaptureRequest) string {
-	if repo := githubRepoName(req.URL); repo != "" {
+func deriveSkillOpportunitySubject(input BrowserSkillOpportunityInput) string {
+	if repo := githubRepoName(input.URL); repo != "" {
 		return repo
 	}
-	subject := cleanupSkillOpportunityTitle(req.Title)
+	if entity := firstNonEmpty(input.Entities...); entity != "" {
+		return entity
+	}
+	subject := cleanupSkillOpportunityTitle(input.Title)
 	if subject != "" {
 		return subject
 	}
-	if req.Domain != "" {
-		return req.Domain
+	if input.Domain != "" {
+		return input.Domain
 	}
-	parsed, err := parseHTTPURL(req.URL)
+	parsed, err := parseSkillOpportunityURL(input.URL)
 	if err == nil {
 		return parsed.Hostname()
 	}
@@ -314,6 +409,17 @@ func githubRepoName(rawURL string) string {
 		return ""
 	}
 	return parts[0] + "/" + strings.TrimSuffix(parts[1], ".git")
+}
+
+func parseSkillOpportunityURL(raw string) (*url.URL, error) {
+	parsed, err := url.Parse(raw)
+	if err != nil {
+		return nil, err
+	}
+	if parsed.Host == "" {
+		return nil, errors.New("missing host")
+	}
+	return parsed, nil
 }
 
 func roundSkillOpportunityScore(value float64) float64 {

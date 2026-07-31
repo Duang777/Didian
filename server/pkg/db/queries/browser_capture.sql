@@ -58,6 +58,13 @@ SET favicon_url = COALESCE(sqlc.narg('favicon_url'), favicon_url),
 WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
+-- name: UpdateCapturedSourceSkillOpportunity :one
+UPDATE captured_source
+SET skill_opportunity = sqlc.narg('skill_opportunity'),
+    updated_at = now()
+WHERE id = $1 AND workspace_id = $2
+RETURNING *;
+
 -- name: ListCapturedSources :many
 SELECT * FROM captured_source
 WHERE captured_source.workspace_id = $1

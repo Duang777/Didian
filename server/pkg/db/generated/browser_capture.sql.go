@@ -802,6 +802,58 @@ func (q *Queries) UpdateCapturedSourcePreviewMetadata(ctx context.Context, arg U
 	return i, err
 }
 
+const updateCapturedSourceSkillOpportunity = `-- name: UpdateCapturedSourceSkillOpportunity :one
+UPDATE captured_source
+SET skill_opportunity = $3,
+    updated_at = now()
+WHERE id = $1 AND workspace_id = $2
+RETURNING id, workspace_id, creator_id, source_type, source, capture_scope, source_tab_id, url, normalized_url, title, domain, favicon_url, description, preview_image_url, selected_text, readable_text, links, text_hash, page_hash, status, metadata_status, archive_status, summary_status, embedding_status, memory_state, failure_reason, captured_at, created_at, updated_at, skill_opportunity
+`
+
+type UpdateCapturedSourceSkillOpportunityParams struct {
+	ID               pgtype.UUID `json:"id"`
+	WorkspaceID      pgtype.UUID `json:"workspace_id"`
+	SkillOpportunity []byte      `json:"skill_opportunity"`
+}
+
+func (q *Queries) UpdateCapturedSourceSkillOpportunity(ctx context.Context, arg UpdateCapturedSourceSkillOpportunityParams) (CapturedSource, error) {
+	row := q.db.QueryRow(ctx, updateCapturedSourceSkillOpportunity, arg.ID, arg.WorkspaceID, arg.SkillOpportunity)
+	var i CapturedSource
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.CreatorID,
+		&i.SourceType,
+		&i.Source,
+		&i.CaptureScope,
+		&i.SourceTabID,
+		&i.Url,
+		&i.NormalizedUrl,
+		&i.Title,
+		&i.Domain,
+		&i.FaviconUrl,
+		&i.Description,
+		&i.PreviewImageUrl,
+		&i.SelectedText,
+		&i.ReadableText,
+		&i.Links,
+		&i.TextHash,
+		&i.PageHash,
+		&i.Status,
+		&i.MetadataStatus,
+		&i.ArchiveStatus,
+		&i.SummaryStatus,
+		&i.EmbeddingStatus,
+		&i.MemoryState,
+		&i.FailureReason,
+		&i.CapturedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.SkillOpportunity,
+	)
+	return i, err
+}
+
 const updatePageMemoryEnrichment = `-- name: UpdatePageMemoryEnrichment :one
 UPDATE page_memory
 SET summary = $3,

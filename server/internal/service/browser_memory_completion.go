@@ -67,6 +67,20 @@ func (s *TaskService) completeBrowserMemoryEnrichment(ctx context.Context, qtx *
 	}); err != nil {
 		return fmt.Errorf("update browser capture enrichment status: %w", err)
 	}
+	capture, err := qtx.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{
+		ID:          captureID,
+		WorkspaceID: workspaceID,
+	})
+	if err != nil {
+		return fmt.Errorf("load browser capture for capability assessment: %w", err)
+	}
+	if _, err := qtx.UpdateCapturedSourceSkillOpportunity(ctx, db.UpdateCapturedSourceSkillOpportunityParams{
+		ID:               captureID,
+		WorkspaceID:      workspaceID,
+		SkillOpportunity: BuildSkillOpportunityJSON(BuildSkillOpportunityInput(capture, &enrichment)),
+	}); err != nil {
+		return fmt.Errorf("update browser capture capability assessment: %w", err)
+	}
 	return nil
 }
 
