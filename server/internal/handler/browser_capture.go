@@ -93,6 +93,7 @@ type BrowserCaptureResponse struct {
 	MemoryState     string                      `json:"memory_state"`
 	FailureReason   *string                     `json:"failure_reason"`
 	Memory          *PageMemoryResponse         `json:"memory,omitempty"`
+	SkillOpportunity *SkillOpportunityResponse   `json:"skillOpportunity,omitempty"`
 	CapturedAt      string                      `json:"captured_at"`
 	CreatedAt       string                      `json:"created_at"`
 	UpdatedAt       string                      `json:"updated_at"`
@@ -158,6 +159,7 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	skillOpportunityJSON := buildSkillOpportunityJSON(normalized.req)
 
 	var dedupe BrowserCaptureDedupeResponse
 	existing, err := h.Queries.FindCapturedSourceDuplicate(r.Context(), db.FindCapturedSourceDuplicateParams{
@@ -173,6 +175,7 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 			FaviconUrl:      optionalText(normalized.req.FaviconURL),
 			Description:     optionalText(normalized.req.Description),
 			PreviewImageUrl: optionalText(normalized.req.PreviewImageURL),
+			SkillOpportunity: skillOpportunityJSON,
 		})
 		if updateErr == nil {
 			capture = updated
@@ -230,6 +233,7 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 		FaviconUrl:      optionalText(normalized.req.FaviconURL),
 		Description:     optionalText(normalized.req.Description),
 		PreviewImageUrl: optionalText(normalized.req.PreviewImageURL),
+		SkillOpportunity: skillOpportunityJSON,
 		SelectedText:    optionalText(normalized.req.SelectedText),
 		ReadableText:    optionalText(normalized.req.ReadableText),
 		Links:           normalized.linksJSON,
@@ -630,6 +634,13 @@ func browserCaptureToResponse(c db.CapturedSource) BrowserCaptureResponse {
 	if len(c.Links) > 0 {
 		_ = json.Unmarshal(c.Links, &links)
 	}
+	var skillOpportunity *SkillOpportunityResponse
+	if len(c.SkillOpportunity) > 0 {
+		var parsed SkillOpportunityResponse
+		if err := json.Unmarshal(c.SkillOpportunity, &parsed); err == nil {
+			skillOpportunity = &parsed
+		}
+	}
 	return BrowserCaptureResponse{
 		ID:              uuidToString(c.ID),
 		WorkspaceID:     uuidToString(c.WorkspaceID),
@@ -655,6 +666,7 @@ func browserCaptureToResponse(c db.CapturedSource) BrowserCaptureResponse {
 		EmbeddingStatus: c.EmbeddingStatus,
 		MemoryState:     c.MemoryState,
 		FailureReason:   textToPtr(c.FailureReason),
+		SkillOpportunity: skillOpportunity,
 		CapturedAt:      timestampToString(c.CapturedAt),
 		CreatedAt:       timestampToString(c.CreatedAt),
 		UpdatedAt:       timestampToString(c.UpdatedAt),

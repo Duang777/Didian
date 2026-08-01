@@ -275,7 +275,7 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByText("AI Agent 项目调研")).toBeInTheDocument();
     expect(screen.getByText("mission.md")).toBeInTheDocument();
     expect(screen.getByText("sources/browser-use.md")).toBeInTheDocument();
-    expect(screen.getByText("outputs/项目对比表.md")).toBeInTheDocument();
+    expect(screen.queryByText("outputs/项目对比表.md")).not.toBeInTheDocument();
     expect(screen.getByText("当前 Workspace")).toBeInTheDocument();
   });
 
@@ -328,7 +328,7 @@ describe("AiInboxPage browser captures", () => {
     expect(description).toContain("AI Agent 项目调研/");
     expect(description).toContain("mission.md");
     expect(description).toContain("sources/browser-use.md");
-    expect(description).toContain("outputs/项目对比表.md");
+    expect(description).not.toContain("outputs/项目对比表.md");
     expect(description).toContain("你正在维护一个 Atlas Workspace");
     expect(description).toContain("## 本次输入链接");
     expect(description).not.toContain("Created from AI Inbox.");

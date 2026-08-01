@@ -168,6 +168,46 @@ func TestCreateBrowserCaptureDedupesURLOnlyAndRestoresArchived(t *testing.T) {
 	}
 }
 
+func TestCreateBrowserCapturePersistsSkillOpportunity(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not available")
+	}
+
+	body := map[string]any{
+		"source":          "extension",
+		"sourceType":      "link",
+		"captureScope":    "page",
+		"url":             "https://docs.stripe.com/payments/checkout",
+		"title":           "Stripe Checkout documentation",
+		"domain":          "docs.stripe.com",
+		"description":     "Use Checkout to accept payments with API parameters, webhooks, and error handling.",
+		"readableText":    "Install the SDK, configure API keys, create a checkout session, handle webhooks, and test common errors.",
+		"capturedAt":      "2026-07-14T10:00:00Z",
+	}
+
+	w := httptest.NewRecorder()
+	testHandler.CreateBrowserCapture(w, newRequest(http.MethodPost, "/api/browser-captures", body))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateBrowserCapture: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+	var created CreateBrowserCaptureResponse
+	if err := json.NewDecoder(w.Body).Decode(&created); err != nil {
+		t.Fatalf("decode create response: %v", err)
+	}
+	if created.Capture.SkillOpportunity == nil {
+		t.Fatal("skill_opportunity = nil, want proposal for technical doc")
+	}
+	if created.Capture.SkillOpportunity.PageType != "technical_doc" {
+		t.Fatalf("skill_opportunity.pageType = %q, want technical_doc", created.Capture.SkillOpportunity.PageType)
+	}
+	if created.Capture.SkillOpportunity.ProposedTitle != "Stripe Checkout 接入助手" {
+		t.Fatalf("skill_opportunity.proposedTitle = %q", created.Capture.SkillOpportunity.ProposedTitle)
+	}
+	if len(created.Capture.SkillOpportunity.EvidenceSnippets) < 2 {
+		t.Fatalf("skill_opportunity.evidenceSnippets = %+v, want at least 2 snippets", created.Capture.SkillOpportunity.EvidenceSnippets)
+	}
+}
+
 func TestCreateBrowserCaptureURLOnlyUsesLocalMemoryWhenCodexAvailable(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("handler test fixture not available")

@@ -49,6 +49,16 @@ export function proxy(req: NextRequest) {
   const hasSession = req.cookies.has("didian_logged_in");
   const lastSlug = req.cookies.get("last_workspace_slug")?.value;
 
+  if (pathname === "/atlas-preview") {
+    const url = req.nextUrl.clone();
+    if (lastSlug && /^[a-zA-Z0-9-]+$/.test(lastSlug)) {
+      url.pathname = `/${lastSlug}/atlas`;
+      return NextResponse.redirect(url);
+    }
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
   // --- Legacy URL redirect: /issues/... → /{slug}/issues/... ---
   // Old bookmarks and clients that hit us before the slug migration would
   // otherwise 404 since the route moved under [workspaceSlug].

@@ -1,4 +1,4 @@
-import type { BrowserCapture as CoreBrowserCapture } from "@didian/core/browser-memory";
+import type { BrowserCapture as CoreBrowserCapture, SkillOpportunity } from "@didian/core/browser-memory";
 
 export type MissionState =
   | "understanding"
@@ -25,6 +25,7 @@ export type AiInboxInput = {
   enrichmentLabel?: string;
   enrichmentDescription?: string;
   failureReason?: string | null;
+  skillOpportunity?: SkillOpportunity | null;
   confidence: number;
 };
 

@@ -10,6 +10,15 @@ import { demoAtlasWorkspaces, demoMissions } from "../fixtures";
 import type { AtlasContextScope, AtlasWorkspaceFile, MissionArtifact } from "../types";
 import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
 
+const MISSION_DETAIL_COPY = {
+  openExistingMission: "请从 Missions 队列进入一个已有 Mission。",
+  workspacePending: "后续 Codex Run 完成后会在这里生成文档工作区。",
+  readonly: "readonly",
+  noDocument: "没有可打开的文档。",
+  decisionsWriteback: "等待确认的动作会写入 `decisions.md`。",
+  writeBack: "写回",
+} as const;
+
 export function MissionDetailPage({ missionId }: { missionId: string }) {
   const mission = demoMissions.find((item) => item.id === missionId) ?? demoMissions[0];
 
@@ -21,7 +30,7 @@ export function MissionDetailPage({ missionId }: { missionId: string }) {
         description="Mission 是 AI 规划和执行工作的核心单元。"
       >
         <WorkbenchSection title="未找到 Mission" description="当前 fixture 中没有可展示的 Mission。">
-          <p className="text-sm text-muted-foreground">请从 Missions 队列进入一个已有 Mission。</p>
+          <p className="text-sm text-muted-foreground">{MISSION_DETAIL_COPY.openExistingMission}</p>
         </WorkbenchSection>
       </WorkbenchShell>
     );
@@ -33,7 +42,7 @@ export function MissionDetailPage({ missionId }: { missionId: string }) {
     return (
       <WorkbenchShell icon={ListChecks} title={mission.title} description={mission.goal}>
         <WorkbenchSection title="暂无 Workspace" description="这个 Mission 还没有生成 Atlas Workspace。">
-          <p className="text-sm text-muted-foreground">后续 Codex Run 完成后会在这里生成文档工作区。</p>
+          <p className="text-sm text-muted-foreground">{MISSION_DETAIL_COPY.workspacePending}</p>
         </WorkbenchSection>
       </WorkbenchShell>
     );
@@ -73,7 +82,23 @@ function MissionWorkspace({
       "## 写回说明",
       "这一步模拟 Flowix 式 Agent 输出写回文档。后续接入真实持久化后，这里会更新 Local Drive 或 Mock Drive workspace。",
     ].join("\n");
-    setFiles((current) => current.map((file) => file.path === targetPath ? { ...file, content: nextContent, updatedAt: "刚刚" } : file));
+    setFiles((current) => {
+      const existingFile = current.find((file) => file.path === targetPath);
+      if (existingFile) {
+        return current.map((file) => file.path === targetPath ? { ...file, content: nextContent, updatedAt: "刚刚" } : file);
+      }
+      return [
+        ...current,
+        {
+          id: `generated-${artifact.id}`,
+          path: targetPath,
+          title: targetPath.split("/").at(-1) ?? targetPath,
+          kind: "output",
+          content: nextContent,
+          updatedAt: "刚刚",
+        },
+      ];
+    });
     setSelectedPath(targetPath);
   }
 
@@ -120,7 +145,7 @@ function MissionWorkspace({
               <h2 className="truncate text-sm font-medium">{initialWorkspace.rootPath}</h2>
               <p className="truncate text-xs text-muted-foreground">{selectedFile?.path}</p>
             </div>
-            {selectedFile?.readonly ? <span className="rounded-md border px-2 py-1 text-xs text-muted-foreground">readonly</span> : null}
+            {selectedFile?.readonly ? <span className="rounded-md border px-2 py-1 text-xs text-muted-foreground">{MISSION_DETAIL_COPY.readonly}</span> : null}
           </div>
           <div className="min-h-[520px] overflow-auto p-4">
             {selectedFile ? (
@@ -128,7 +153,7 @@ function MissionWorkspace({
                 {selectedFile.content}
               </Markdown>
             ) : (
-              <p className="text-sm text-muted-foreground">没有可打开的文档。</p>
+              <p className="text-sm text-muted-foreground">{MISSION_DETAIL_COPY.noDocument}</p>
             )}
           </div>
         </section>
@@ -152,7 +177,7 @@ function MissionWorkspace({
             <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-2 text-foreground">
                 <CheckCircle2 className="size-4 text-emerald-600" />
-                等待确认的动作会写入 `decisions.md`。
+                {MISSION_DETAIL_COPY.decisionsWriteback}
               </div>
             </div>
           </WorkbenchSection>
@@ -165,7 +190,7 @@ function MissionWorkspace({
                   <p className="mt-1 text-xs text-muted-foreground">{artifact.description}</p>
                   <Button className="mt-3" size="sm" variant="outline" type="button" onClick={() => writeArtifactToOutput(artifact)}>
                     <PencilLine className="size-3.5" />
-                    写回 {artifact.name}
+                    {MISSION_DETAIL_COPY.writeBack} {artifact.name}
                   </Button>
                 </div>
               ))}

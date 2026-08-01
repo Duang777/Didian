@@ -269,7 +269,6 @@ export const demoMissions: MissionView[] = [
 
 export function missionToAtlasWorkspace(mission: MissionView): AtlasWorkspace {
   const sourceFiles = mission.inputs.map((input) => sourceInputToWorkspaceFile(input));
-  const outputFiles = defaultWorkspaceOutputFiles(mission);
   const files: AtlasWorkspaceFile[] = [
     {
       id: `${mission.id}-mission-md`,
@@ -297,7 +296,6 @@ export function missionToAtlasWorkspace(mission: MissionView): AtlasWorkspace {
       content: decisionsDocumentContent(mission),
       updatedAt: mission.updatedAt,
     },
-    ...outputFiles,
     {
       id: `${mission.id}-agent-log-md`,
       path: "agent-log.md",
@@ -323,7 +321,7 @@ export function missionToAtlasWorkspace(mission: MissionView): AtlasWorkspace {
 
 function workspaceRootPath(mission: MissionView) {
   if (mission.id === "mission-ai-agent-pack") return "AI Agent 项目调研";
-  return mission.title.replace(/[\\/:*?\"<>|]/g, " ").replace(/\s+/g, " ").trim() || "Mission Workspace";
+  return mission.title.replace(/[\\/:*?"<>|]/g, " ").replace(/\s+/g, " ").trim() || "Mission Workspace";
 }
 
 function sourceInputToWorkspaceFile(input: MissionView["inputs"][number]): AtlasWorkspaceFile {
@@ -367,7 +365,7 @@ function sourceFileBasename(input: MissionView["inputs"][number]) {
 }
 
 function sanitizeWorkspaceBasename(value: string) {
-  return value.replace(/\.md$/i, "").replace(/[\\/:*?\"<>|#\[\]()]/g, " ").replace(/\s+/g, " ").trim() || "source";
+  return value.replace(/\.md$/i, "").replace(/[\\/:*?"<>|#()[\]]/g, " ").replace(/\s+/g, " ").trim() || "source";
 }
 
 function missionDocumentContent(mission: MissionView) {
@@ -385,14 +383,14 @@ function missionDocumentContent(mission: MissionView) {
     "## Workspace 使用方式",
     "- 先阅读 `sources/` 和 `evidence.md`。",
     "- 需要用户确认的动作写入 `decisions.md`。",
-    "- 可交付内容写入 `outputs/`。",
+    "- 可交付内容由用户或 AI 明确生成后再写入新的 Markdown 文档。",
     "- 所有结论保留来源引用，不要把聊天回答停留在临时对话里。",
     "",
     "## Mission Plan",
     ...mission.plan.map((step, index) => `${index + 1}. ${step.title} - ${step.description}`),
     "",
     "## 预期产出",
-    ...workspaceOutputNames().map((name) => `- outputs/${name}.md`),
+    ...mission.understanding.suggestedOutputs.map((name) => `- ${name}`),
   ].join("\n");
 }
 
@@ -431,44 +429,6 @@ function agentLogDocumentContent(mission: MissionView) {
   ].join("\n");
 }
 
-function defaultWorkspaceOutputFiles(mission: MissionView): AtlasWorkspaceFile[] {
-  return workspaceOutputNames().map((name) => ({
-    id: `${mission.id}-output-${name}`,
-    path: `outputs/${name}.md`,
-    title: `${name}.md`,
-    kind: "output",
-    content: outputDocumentContent(name, mission),
-    updatedAt: mission.updatedAt,
-  }));
-}
-
-function workspaceOutputNames() {
-  return ["资源索引", "项目对比表", "可复用清单", "下一步行动"];
-}
-
-function outputDocumentContent(name: string, mission: MissionView) {
-  if (name === "资源索引") {
-    return [
-      "# 资源索引",
-      "",
-      ...mission.inputs.map((input) => `- [${input.title}](${input.sourceUrl ?? input.source ?? "#"}) - ${input.preview}`),
-    ].join("\n");
-  }
-  if (name === "项目对比表") {
-    return [
-      "# 项目对比表",
-      "",
-      "| 项目 | 类型 | 可复用点 | 来源 |",
-      "| --- | --- | --- | --- |",
-      ...mission.inputs.filter((input) => input.kind !== "text").map((input) => `| ${input.title} | ${input.kind} | 待 Agent 补充 | ${input.sourceUrl ?? input.source ?? "-"} |`),
-    ].join("\n");
-  }
-  if (name === "可复用清单") {
-    return "# 可复用清单\n\n- [ ] 提取可复用前端组件。\n- [ ] 提取可复用浏览器自动化方案。\n- [ ] 标记许可证和商业化风险。";
-  }
-  return "# 下一步行动\n\n1. 补齐每个来源的证据引用。\n2. 完成项目对比表。\n3. 根据 Review 结果写入 Atlas。";
-}
-
 function defaultWorkspaceContextScopes(files: AtlasWorkspaceFile[]): AtlasContextScope[] {
   const sourcePaths = files.filter((file) => file.kind === "source").map((file) => file.path);
   const outputPaths = files.filter((file) => file.kind === "output").map((file) => file.path);
@@ -476,7 +436,7 @@ function defaultWorkspaceContextScopes(files: AtlasWorkspaceFile[]): AtlasContex
     { id: "current_document", label: "当前文档", description: "只把当前打开的 Markdown 交给 Agent。", enabled: true, filePaths: ["mission.md"] },
     { id: "current_workspace", label: "当前 Workspace", description: "包含 Mission、证据、决策、日志和产物。", enabled: true, filePaths: files.map((file) => file.path) },
     { id: "captured_sources", label: "已捕获来源", description: "允许 Agent 使用 sources/ 下的网页、文档和用户目标。", enabled: true, filePaths: sourcePaths },
-    { id: "workspace_outputs", label: "Workspace Outputs", description: "允许 Agent 读取和更新 outputs/ 下的产物。", enabled: true, filePaths: outputPaths },
+    { id: "workspace_outputs", label: "Workspace Outputs", description: "允许 Agent 读取和更新用户明确生成的产物。", enabled: outputPaths.length > 0, filePaths: outputPaths },
     { id: "entire_atlas", label: "整个 Atlas", description: "允许 Agent 参考其它 Collection 和历史 Mission。", enabled: false, filePaths: [] },
     { id: "local_downloads", label: "本地下载目录", description: "允许 Agent 读取用户授权的本地下载目录。", enabled: false, filePaths: [] },
     { id: "cloud_drive_resources", label: "云盘已有资源", description: "允许 Agent 和云盘 Adapter 比对已有资源。", enabled: false, filePaths: [] },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { CoreProvider } from "@didian/core/platform";
 import { createBrowserCookieLocaleAdapter } from "@didian/core/i18n/browser";
 import type { LocaleResources, SupportedLocale } from "@didian/core/i18n";
@@ -52,7 +53,9 @@ export function WebProviders({
   locale: SupportedLocale;
   resources: Record<string, LocaleResources>;
 }) {
+  const pathname = usePathname();
   const cookieAuth = !hasLegacyToken();
+  const skipAuthInit = pathname === "/atlas-preview";
   // Stable identity reference so downstream effects keyed on it don't see a
   // new object on every parent render.
   const identity = useMemo(
@@ -77,6 +80,7 @@ export function WebProviders({
         clearLoggedInCookie();
       }}
       identity={identity}
+      skipAuthInit={skipAuthInit}
       locale={locale}
       resources={resources}
       localeAdapter={localeAdapter}

@@ -31,7 +31,7 @@ import {
 import { useEditorState } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 import { posToDOMRect } from "@tiptap/core";
-import { NodeSelection } from "@tiptap/pm/state";
+import { TextSelection } from "@tiptap/pm/state";
 import { toast } from "sonner";
 import { useCreateIssue } from "@didian/core/issues/mutations";
 import { useT } from "../i18n";
@@ -82,9 +82,9 @@ function shouldShowBubbleMenu(editor: Editor): boolean {
   if (!editor.isEditable) return false;
   const { selection } = editor.state;
   if (selection.empty) return false;
+  if (!(selection instanceof TextSelection)) return false;
   const { from, to } = selection;
   if (!editor.state.doc.textBetween(from, to).trim().length) return false;
-  if (selection instanceof NodeSelection) return false;
   const $from = editor.state.doc.resolve(from);
   if ($from.parent.type.name === "codeBlock") return false;
   return true;
@@ -562,18 +562,20 @@ function EditorBubbleMenu({
     return cleanup;
   }, [visible, editor, virtualRef]);
 
-  // Close on outside click
+  // Close on any click outside the menu. A click inside the editor should also
+  // hide the old selection toolbar immediately; the next selectionUpdate will
+  // reopen it only if the user creates a fresh non-empty text selection.
   useEffect(() => {
     if (!visible) return;
     const handle = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (editor.view.dom.contains(target)) return;
       if (floatingRef.current?.contains(target)) return;
       setVisible(false);
+      setMode("toolbar");
     };
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
-  }, [visible, editor]);
+  }, [visible]);
 
   // Reset mode on selection change
   useEffect(() => {

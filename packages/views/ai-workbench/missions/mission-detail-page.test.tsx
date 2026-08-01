@@ -17,15 +17,14 @@ describe("MissionDetailPage workspace", () => {
     expect(screen.getByText("当前 Workspace")).toBeInTheDocument();
   });
 
-  it("switches between source and output workspace files", () => {
+  it("opens captured source files without pre-created output documents", () => {
     render(<MissionDetailPage missionId="mission-ai-agent-pack" />);
 
     fireEvent.click(screen.getByRole("button", { name: "sources/stagehand.md" }));
     expect(screen.getByTestId("markdown-preview")).toHaveTextContent("Stagehand documentation");
     expect(screen.getByTestId("markdown-preview")).toHaveTextContent("docs.stagehand.dev");
-
-    fireEvent.click(screen.getByRole("button", { name: "outputs/项目对比表.md" }));
-    expect(screen.getByTestId("markdown-preview")).toHaveTextContent("# 项目对比表");
+    expect(screen.queryByRole("button", { name: "outputs/项目对比表.md" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "outputs/资源索引.md" })).not.toBeInTheDocument();
   });
 
   it("toggles Agent context scopes", () => {
@@ -41,6 +40,8 @@ describe("MissionDetailPage workspace", () => {
 
   it("simulates writing an artifact back into an output file", () => {
     render(<MissionDetailPage missionId="mission-ai-agent-pack" />);
+
+    expect(screen.queryByRole("button", { name: "outputs/资源索引.md" })).not.toBeInTheDocument();
 
     const outputs = screen.getByLabelText("Workspace outputs");
     fireEvent.click(within(outputs).getByRole("button", { name: "写回 资源索引" }));

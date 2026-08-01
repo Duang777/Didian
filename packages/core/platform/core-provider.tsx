@@ -72,6 +72,7 @@ export function CoreProvider({
   onLogin,
   onLogout,
   identity,
+  skipAuthInit = false,
   locale,
   resources,
   localeAdapter,
@@ -87,30 +88,37 @@ export function CoreProvider({
     installFreezeWatchdog();
   }, []);
 
+  useEffect(() => {
+    if (!skipAuthInit) return;
+    authStore.setState({ user: null, isLoading: false });
+  }, [skipAuthInit]);
+
   // I18nProvider wraps everything else: server and client must use the same
   // (locale, resources) to avoid hydration mismatch. Language switching goes
   // through window.location.reload(), never client-side changeLanguage.
-  const tree = (
-    <QueryProvider>
-      <AuthInitializer
-        onLogin={onLogin}
-        onLogout={onLogout}
+  const appTree = skipAuthInit ? (
+    children
+  ) : (
+    <AuthInitializer
+      onLogin={onLogin}
+      onLogout={onLogout}
+      storage={storage}
+      cookieAuth={cookieAuth}
+      identity={identity}
+    >
+      <WSProvider
+        wsUrl={wsUrl}
+        authStore={authStore}
         storage={storage}
         cookieAuth={cookieAuth}
         identity={identity}
       >
-        <WSProvider
-          wsUrl={wsUrl}
-          authStore={authStore}
-          storage={storage}
-          cookieAuth={cookieAuth}
-          identity={identity}
-        >
-          {children}
-        </WSProvider>
-      </AuthInitializer>
-    </QueryProvider>
+        {children}
+      </WSProvider>
+    </AuthInitializer>
   );
+
+  const tree = <QueryProvider>{appTree}</QueryProvider>;
 
   // UserLocaleSync requires a LocaleAdapter to persist; only mount it when
   // the host app provides one (web layout + desktop App both do).

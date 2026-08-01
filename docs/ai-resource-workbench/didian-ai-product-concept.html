@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Didian AI 产品创意方案</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f8f9;
+        --surface: #ffffff;
+        --surface-2: #eef3f5;
+        --text: #182126;
+        --muted: #66737b;
+        --line: #d8e1e5;
+        --line-strong: #bcc9cf;
+        --blue: #1d5f8f;
+        --blue-soft: #dcecf5;
+        --teal: #0f766e;
+        --teal-soft: #d9f1ed;
+        --amber: #9a5b12;
+        --amber-soft: #f6ead7;
+        --rose: #a23b4d;
+        --rose-soft: #f5dfe4;
+        --shadow: 0 18px 45px rgba(16, 34, 45, 0.10);
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        letter-spacing: 0;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 28px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(246, 248, 249, 0.94);
+        backdrop-filter: blur(12px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .mark {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: #16232b;
+        color: #ffffff;
+        font-weight: 760;
+      }
+
+      .brand strong,
+      .brand span {
+        display: block;
+        white-space: nowrap;
+      }
+
+      .brand span {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .nav {
+        display: flex;
+        gap: 6px;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .nav a {
+        padding: 8px 10px;
+        border-radius: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      .nav a[aria-current="page"] {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+        min-height: 0;
+      }
+
+      .rail {
+        padding: 22px;
+        border-right: 1px solid var(--line);
+        background: #fbfcfc;
+      }
+
+      .rail-title {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+        text-transform: uppercase;
+      }
+
+      .step-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 10px;
+        align-items: start;
+        padding: 11px;
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+      }
+
+      .step.active {
+        border-color: var(--line);
+        background: var(--surface);
+        box-shadow: 0 8px 20px rgba(16, 34, 45, 0.06);
+      }
+
+      .step-index {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--surface-2);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .step.active .step-index {
+        background: var(--teal);
+        color: white;
+      }
+
+      .step strong {
+        display: block;
+        font-size: 14px;
+      }
+
+      .step span {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .main {
+        min-width: 0;
+        padding: 28px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+        gap: 24px;
+        align-items: stretch;
+        margin-bottom: 24px;
+      }
+
+      .intro {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 360px;
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--teal);
+        font-size: 13px;
+        font-weight: 760;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 740px;
+        font-size: clamp(34px, 4vw, 58px);
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 650px;
+        margin: 18px 0 0;
+        color: #3f4c54;
+        font-size: 17px;
+        line-height: 1.75;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 0 14px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 720;
+        text-decoration: none;
+      }
+
+      .button.primary {
+        border-color: #173542;
+        background: #173542;
+        color: white;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 26px;
+      }
+
+      .metric {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface-2);
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .shot {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #dfe6e9;
+        box-shadow: var(--shadow);
+      }
+
+      .shot img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 360px;
+        object-fit: cover;
+        object-position: center top;
+      }
+
+      .section {
+        margin-top: 24px;
+        scroll-margin-top: 86px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 12px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: 0;
+      }
+
+      .section-head p {
+        max-width: 600px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr) minmax(260px, 0.8fr);
+        gap: 14px;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .panel-head h3 {
+        margin: 0;
+        font-size: 15px;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 9px;
+        border-radius: 999px;
+        background: var(--teal-soft);
+        color: var(--teal);
+        font-size: 12px;
+        font-weight: 750;
+        white-space: nowrap;
+      }
+
+      .status.amber {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+
+      .status.blue {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .panel-body {
+        padding: 14px;
+      }
+
+      .input-list,
+      .file-list,
+      .run-list,
+      .artifact-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .resource-row,
+      .file-row,
+      .run-row,
+      .artifact-row {
+        min-width: 0;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fbfcfc;
+      }
+
+      .resource-row strong,
+      .file-row strong,
+      .run-row strong,
+      .artifact-row strong {
+        display: block;
+        overflow-wrap: anywhere;
+        font-size: 13px;
+      }
+
+      .resource-row span,
+      .file-row span,
+      .run-row span,
+      .artifact-row span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        overflow-wrap: anywhere;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr);
+        min-height: 448px;
+      }
+
+      .file-pane {
+        padding: 12px;
+        border-right: 1px solid var(--line);
+        background: #fbfcfc;
+      }
+
+      .file-row.active {
+        border-color: var(--blue);
+        background: var(--blue-soft);
+      }
+
+      .doc {
+        min-width: 0;
+        padding: 18px;
+      }
+
+      .doc-title {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      .doc p {
+        color: #3c4950;
+        line-height: 1.7;
+      }
+
+      .doc table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+        font-size: 13px;
+      }
+
+      .doc th,
+      .doc td {
+        padding: 10px;
+        border: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .doc th {
+        background: var(--surface-2);
+      }
+
+      .pipeline {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .stage {
+        position: relative;
+        min-height: 160px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+
+      .stage b {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 15px;
+      }
+
+      .stage p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .stage .number {
+        position: absolute;
+        right: 12px;
+        bottom: 10px;
+        color: #c8d2d7;
+        font-size: 34px;
+        font-weight: 780;
+      }
+
+      .review-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .decision {
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+
+      .decision h3 {
+        margin: 12px 0 8px;
+        font-size: 15px;
+      }
+
+      .decision p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .footer {
+        margin: 26px 0 6px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 1100px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .rail {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .step-list {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .hero,
+        .board,
+        .pipeline,
+        .review-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          position: static;
+          align-items: stretch;
+          flex-direction: column;
+          padding: 14px;
+        }
+
+        .nav {
+          overflow-x: auto;
+        }
+
+        .rail,
+        .main,
+        .intro {
+          padding: 16px;
+        }
+
+        .step-list,
+        .metrics {
+          grid-template-columns: 1fr;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .file-pane {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+
+        .section-head {
+          align-items: start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand" aria-label="Didian">
+          <div class="mark">D</div>
+          <div>
+            <strong>Didian AI 资源工作台</strong>
+            <span>浏览器到云盘的 AI 产品创意方案</span>
+          </div>
+        </div>
+        <nav class="nav" aria-label="方案导航">
+          <a href="#concept" aria-current="page">创意主张</a>
+          <a href="#workflow">工作流</a>
+          <a href="#workspace">Workspace</a>
+          <a href="#review">安全边界</a>
+        </nav>
+      </header>
+
+      <div class="shell">
+        <aside class="rail" aria-label="Demo 讲述节奏">
+          <p class="rail-title">5 分钟 Demo</p>
+          <ol class="step-list">
+            <li class="step active">
+              <span class="step-index">1</span>
+              <span><strong>捕获标签组</strong><span>把浏览器里的混乱资料交给 AI Inbox。</span></span>
+            </li>
+            <li class="step">
+              <span class="step-index">2</span>
+              <span><strong>理解成 Mission</strong><span>AI 解释意图、资源类型、建议产物。</span></span>
+            </li>
+            <li class="step">
+              <span class="step-index">3</span>
+              <span><strong>本地 Codex 执行</strong><span>计划、日志、证据和阻塞点都可见。</span></span>
+            </li>
+            <li class="step">
+              <span class="step-index">4</span>
+              <span><strong>沉淀到 Atlas</strong><span>结果进入可追问、可召回的资源记忆。</span></span>
+            </li>
+          </ol>
+        </aside>
+
+        <main class="main">
+          <section class="hero" id="concept">
+            <div class="intro">
+              <div>
+                <p class="eyebrow">Recommended Direction</p>
+                <h1>让浏览器和云盘之间出现一个会工作的 AI 资源处理层</h1>
+                <p class="lead">
+                  Didian 不把 AI 放在云盘文件后的聊天框里，而是在资料进入云盘前完成理解、去重、命名、证据整理、产物生成和确认写入。
+                </p>
+                <div class="actions">
+                  <a class="button primary" href="./06-ai-product-creative-plan.md">查看创意方案</a>
+                  <a class="button" href="./07-demo-storyboard.md">打开 Demo 脚本</a>
+                  <a class="button" href="./08-validation-roadmap.md">查看验证路线</a>
+                </div>
+              </div>
+              <div class="metrics" aria-label="核心指标">
+                <div class="metric"><strong>30s</strong><span>混乱输入到 Mission 建议</span></div>
+                <div class="metric"><strong>4</strong><span>首批 Markdown 产物</span></div>
+                <div class="metric"><strong>0</strong><span>MVP 破坏性云盘操作</span></div>
+              </div>
+            </div>
+            <figure class="shot" aria-label="Didian 产品截图">
+              <img src="../assets/hero-screenshot.png" alt="Didian 工作台界面截图" />
+            </figure>
+          </section>
+
+          <section class="section" id="workflow">
+            <div class="section-head">
+              <h2>AI Inbox 到 Atlas 的闭环</h2>
+              <p>产品第一屏就是可操作的工作台：输入在左，AI 计划在中，Review 和产物在右。评审能直接看到 AI 正在组织资源，而不是看一组管理后台页面。</p>
+            </div>
+            <div class="board">
+              <section class="panel" aria-labelledby="inbox-title">
+                <div class="panel-head">
+                  <h3 id="inbox-title">AI Inbox</h3>
+                  <span class="status blue">已理解</span>
+                </div>
+                <div class="panel-body">
+                  <ul class="input-list">
+                    <li class="resource-row"><strong>browser-use</strong><span>浏览器自动化 Agent 项目，适合验证页面操作模型。</span></li>
+                    <li class="resource-row"><strong>Stagehand Docs</strong><span>可靠浏览器操作框架，适合抽象动作和证据。</span></li>
+                    <li class="resource-row"><strong>OpenCode</strong><span>本地 CLI Agent，用于校准 Runtime 执行体验。</span></li>
+                    <li class="resource-row"><strong>用户备注</strong><span>重点看许可证、可复用前端和 Didian 接入优先级。</span></li>
+                  </ul>
+                </div>
+              </section>
+
+              <section class="panel" aria-labelledby="mission-title">
+                <div class="panel-head">
+                  <h3 id="mission-title">Codex Run Plan</h3>
+                  <span class="status amber">待确认</span>
+                </div>
+                <div class="panel-body">
+                  <ul class="run-list">
+                    <li class="run-row"><strong>扫描输入</strong><span>已读取 5 个来源和 1 条用户备注。</span></li>
+                    <li class="run-row"><strong>提取证据</strong><span>项目用途、许可证、可复用模块、来源 URL。</span></li>
+                    <li class="run-row"><strong>去重匹配</strong><span>未发现完全重复，标记同类浏览器自动化项目。</span></li>
+                    <li class="run-row"><strong>生成产物</strong><span>资源索引、项目对比表、可复用清单、下一步行动。</span></li>
+                  </ul>
+                </div>
+              </section>
+
+              <section class="panel" aria-labelledby="atlas-title">
+                <div class="panel-head">
+                  <h3 id="atlas-title">Atlas Outputs</h3>
+                  <span class="status">可追问</span>
+                </div>
+                <div class="panel-body">
+                  <ul class="artifact-list">
+                    <li class="artifact-row"><strong>资源索引.md</strong><span>每个资源保留来源、摘要和保存理由。</span></li>
+                    <li class="artifact-row"><strong>项目对比表.md</strong><span>按能力、风险、复用价值对比。</span></li>
+                    <li class="artifact-row"><strong>可复用清单.md</strong><span>前端、后端、扩展、Runtime 借鉴点。</span></li>
+                    <li class="artifact-row"><strong>下一步行动.md</strong><span>转化为项目落地任务。</span></li>
+                  </ul>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="section" id="workspace">
+            <div class="section-head">
+              <h2>Mission Workspace</h2>
+              <p>每个 Mission 都是一组 Markdown 文件。Agent 在文档里工作，用户在文档里审阅，Atlas 以后也从这个工作区重新打开上下文。</p>
+            </div>
+            <section class="panel">
+              <div class="workspace">
+                <aside class="file-pane" aria-label="Workspace 文件树">
+                  <ul class="file-list">
+                    <li class="file-row active"><strong>mission.md</strong><span>目标和任务边界</span></li>
+                    <li class="file-row"><strong>sources/browser-use.md</strong><span>来源摘要</span></li>
+                    <li class="file-row"><strong>evidence.md</strong><span>证据和引用</span></li>
+                    <li class="file-row"><strong>decisions.md</strong><span>Review 记录</span></li>
+                    <li class="file-row"><strong>outputs/项目对比表.md</strong><span>确认后生成</span></li>
+                  </ul>
+                </aside>
+                <article class="doc">
+                  <h3 class="doc-title">整理 AI Agent 生态资料到云盘</h3>
+                  <p>
+                    目标是把当前标签组里的 AI Agent 项目资料整理成一个可复用资源包。Codex 需要保留来源引用，避免重复保存，并在写入 Mock Drive 前等待用户确认。
+                  </p>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>项目</th>
+                        <th>主要价值</th>
+                        <th>Didian 复用点</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>browser-use</td>
+                        <td>自然语言浏览器自动化</td>
+                        <td>标签页理解和页面动作模型</td>
+                      </tr>
+                      <tr>
+                        <td>Stagehand</td>
+                        <td>可靠的浏览器操作抽象</td>
+                        <td>可解释操作和证据边界</td>
+                      </tr>
+                      <tr>
+                        <td>OpenCode</td>
+                        <td>本地 CLI Agent 工作流</td>
+                        <td>Runtime 执行和日志回传体验</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </article>
+              </div>
+            </section>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <h2>产品能力拆解</h2>
+              <p>每个阶段都能单独演示，但组合起来才是 Didian 的差异化：保存前理解，本地执行，确认后入库，完成后召回。</p>
+            </div>
+            <div class="pipeline">
+              <div class="stage"><b>Capture</b><p>第一版采集标签页、选区和备注；后续接入收藏、搜索结果、下载完成、RSS 和云盘新增文件。</p><span class="number">01</span></div>
+              <div class="stage"><b>Mission</b><p>第一版由 Codex 整理资料包；后续支持多 Runtime 接力、Workspace 模板和垂直任务流。</p><span class="number">02</span></div>
+              <div class="stage"><b>Review</b><p>第一版确认安全写入；后续扩展到版本变更、证据冲突、许可证风险和 dry-run 自动化。</p><span class="number">03</span></div>
+              <div class="stage"><b>Atlas</b><p>第一版沉淀资源合集；后续做跨应用召回、过期提醒、主题演化和跨合集比较。</p><span class="number">04</span></div>
+            </div>
+          </section>
+
+          <section class="section" id="review">
+            <div class="section-head">
+              <h2>安全边界</h2>
+              <p>Didian 的自动化必须可解释。MVP 只允许安全写入，不做删除、覆盖和批量移动。</p>
+            </div>
+            <div class="review-grid">
+              <article class="decision">
+                <span class="status">可确认</span>
+                <h3>创建文件夹</h3>
+                <p>在 Mock Drive 中创建 `参赛项目/AI Agent 调研/`，操作日志可见。</p>
+              </article>
+              <article class="decision">
+                <span class="status blue">可确认</span>
+                <h3>写入 Markdown</h3>
+                <p>写入资源索引、对比表、复用清单和下一步行动，保留来源引用。</p>
+              </article>
+              <article class="decision">
+                <span class="status amber">禁止</span>
+                <h3>破坏性操作</h3>
+                <p>删除、覆盖、批量移动不进入 MVP，未来也必须经过更强确认。</p>
+              </article>
+            </div>
+          </section>
+
+          <p class="footer">Didian AI 产品创意方案，基于 Runtime-first IA、Mission Workspace、Mock Drive Adapter 和 Atlas 记忆主线。</p>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

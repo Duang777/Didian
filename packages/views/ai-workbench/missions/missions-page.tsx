@@ -11,6 +11,10 @@ const stateLabels: Record<string, string> = {
   needs_attention: "需要介入",
 };
 
+const MISSIONS_COPY = {
+  nextStep: "当前页面是 Mission 队列骨架，已准备好承接 AI Inbox 创建结果。",
+} as const;
+
 export function MissionsPage() {
   return (
     <WorkbenchShell
@@ -49,7 +53,7 @@ export function MissionsPage() {
       </div>
 
       <WorkbenchSection title="下一步" description="后续会把这里接到真实 issue 列表和详情页，同时保留旧 issue route 作为兼容入口。">
-        <p className="text-sm text-muted-foreground">当前页面是 Mission 队列骨架，已准备好承接 AI Inbox 创建结果。</p>
+        <p className="text-sm text-muted-foreground">{MISSIONS_COPY.nextStep}</p>
       </WorkbenchSection>
     </WorkbenchShell>
   );

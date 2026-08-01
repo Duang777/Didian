@@ -25,6 +25,26 @@ import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
 const createMissionLabel = "创建 Mission";
 const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
+const AI_INBOX_COPY = {
+  createPending: "创建中",
+  created: "已创建",
+  duplicateMissionFound: "已找到已有 Mission。",
+  missionCreated: "你的 idea 已创建到 Mission。",
+  openMission: "打开",
+  inputLinks: "本次输入链接",
+  askAfterCreate: "创建后会询问是否收藏",
+  active: "Active",
+  archived: "Archived",
+  loadingCaptures: "正在读取浏览器收藏…",
+  captureLoadFailed: "浏览器收藏暂时读取失败，请稍后重试。",
+  refresh: "刷新",
+  collectInputLinksTitle: "收藏输入链接？",
+  collectInputLinksDescription: "创建 Mission 前，先确认是否把这些链接加入收藏，方便后续搜索和复用。",
+  skipCollectAndCreate: "暂不收藏，继续创建",
+  collectAndCreate: "收藏并创建 Mission",
+  workspacePreview: "Atlas Workspace Preview",
+  workspacePreviewDescription: "创建 Mission 时会作为 Agent 工作区交接",
+} as const;
 type InputUrlCollectionDecision = "saved" | "skipped";
 
 type WorkspacePreview = {
@@ -150,16 +170,16 @@ export function AiInboxPage() {
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" type="button" disabled={!canCreateMission || createMission.isPending || createBrowserCapture.isPending || collectPromptUrls.length > 0 || Boolean(createdMission)} onClick={() => void handleCreateMission()}>
               {createMission.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <SendHorizontal className="size-3.5" />}
-              {createMission.isPending ? "创建中" : createdMission ? "已创建" : createMissionLabel}
+              {createMission.isPending ? AI_INBOX_COPY.createPending : createdMission ? AI_INBOX_COPY.created : createMissionLabel}
             </Button>
             <Button size="sm" variant="outline">{saveToAtlasLabel}</Button>
             <Button size="sm" variant="ghost" type="button">{captureCurrentPageLabel}</Button>
           </div>
           {createdMission && (
             <div className="mt-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-200" role="status">
-              {createdMission.state === "duplicate" ? "已找到已有 Mission。" : "你的 idea 已创建到 Mission。"}
+              {createdMission.state === "duplicate" ? AI_INBOX_COPY.duplicateMissionFound : AI_INBOX_COPY.missionCreated}
               <a href={createdMission.href} className="ml-1 font-medium underline underline-offset-2">
-                打开 {createdMission.title}
+                {AI_INBOX_COPY.openMission} {createdMission.title}
               </a>
             </div>
           )}
@@ -171,10 +191,8 @@ export function AiInboxPage() {
           {inputUrls.length > 0 && (
             <div className="mt-3 rounded-md border bg-background p-3 text-sm">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <span className="font-medium">本次输入链接</span>
-                <span className="text-xs text-muted-foreground">
-                  创建后会询问是否收藏
-                </span>
+                <span className="font-medium">{AI_INBOX_COPY.inputLinks}</span>
+                <span className="text-xs text-muted-foreground">{AI_INBOX_COPY.askAfterCreate}</span>
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {inputUrls.map((url) => (
@@ -206,25 +224,25 @@ export function AiInboxPage() {
               onClick={() => setCaptureState("active")}
               className={captureState === "active" ? "rounded-md bg-muted px-3 text-xs font-medium text-foreground" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
             >
-              Active
+              {AI_INBOX_COPY.active}
             </button>
             <button
               type="button"
               onClick={() => setCaptureState("archived")}
               className={captureState === "archived" ? "rounded-md bg-muted px-3 text-xs font-medium text-foreground" : "rounded-md px-3 text-xs font-medium text-muted-foreground hover:text-foreground"}
             >
-              Archived
+              {AI_INBOX_COPY.archived}
             </button>
           </div>
         </div>
         {capturesQuery.isLoading ? (
-          <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground" role="status">正在读取浏览器收藏…</div>
+          <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground" role="status">{AI_INBOX_COPY.loadingCaptures}</div>
         ) : capturesQuery.isError ? (
           <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-background p-3 text-sm text-muted-foreground" role="alert">
-            <span>浏览器收藏暂时读取失败，请稍后重试。</span>
+            <span>{AI_INBOX_COPY.captureLoadFailed}</span>
             <Button size="sm" variant="outline" type="button" onClick={() => void capturesQuery.refetch()}>
               <RefreshCw className="size-3.5" />
-              刷新
+              {AI_INBOX_COPY.refresh}
             </Button>
           </div>
         ) : inboxInputs.length === 0 ? (
@@ -232,7 +250,7 @@ export function AiInboxPage() {
             <span>{trimmedCaptureQuery ? "没有匹配的浏览器收藏。" : captureState === "archived" ? "Archived 里暂时没有收藏。" : "暂无浏览器收藏。安装 Didian 扩展后，收藏的真实页面会出现在这里。"}</span>
             <Button size="sm" variant="outline" type="button" onClick={() => void capturesQuery.refetch()}>
               <RefreshCw className="size-3.5" />
-              刷新
+              {AI_INBOX_COPY.refresh}
             </Button>
           </div>
         ) : (
@@ -250,10 +268,8 @@ export function AiInboxPage() {
       <Dialog open={collectPromptUrls.length > 0} onOpenChange={(open) => { if (!open) setCollectPromptUrls([]); }}>
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>收藏输入链接？</DialogTitle>
-            <DialogDescription>
-              创建 Mission 前，先确认是否把这些链接加入收藏，方便后续搜索和复用。
-            </DialogDescription>
+            <DialogTitle>{AI_INBOX_COPY.collectInputLinksTitle}</DialogTitle>
+            <DialogDescription>{AI_INBOX_COPY.collectInputLinksDescription}</DialogDescription>
           </DialogHeader>
           <div className="max-h-48 overflow-auto rounded-md border bg-muted/20 p-2">
             <div className="flex flex-wrap gap-1.5">
@@ -265,10 +281,10 @@ export function AiInboxPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => void handleCollectPromptSkip()} disabled={createBrowserCapture.isPending || createMission.isPending}>暂不收藏，继续创建</Button>
+            <Button type="button" variant="outline" onClick={() => void handleCollectPromptSkip()} disabled={createBrowserCapture.isPending || createMission.isPending}>{AI_INBOX_COPY.skipCollectAndCreate}</Button>
             <Button type="button" onClick={() => void handleCollectPromptConfirm()} disabled={createBrowserCapture.isPending || createMission.isPending}>
               {createBrowserCapture.isPending || createMission.isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-              收藏并创建 Mission
+              {AI_INBOX_COPY.collectAndCreate}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -379,9 +395,9 @@ function WorkspacePreviewPanel({ preview }: { preview: WorkspacePreview }) {
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 font-medium">
           <Folder className="size-4 text-muted-foreground" />
-          Atlas Workspace Preview
+          {AI_INBOX_COPY.workspacePreview}
         </div>
-        <span className="text-xs text-muted-foreground">创建 Mission 时会作为 Agent 工作区交接</span>
+        <span className="text-xs text-muted-foreground">{AI_INBOX_COPY.workspacePreviewDescription}</span>
       </div>
       <div className="mt-3 rounded-md border bg-muted/20 p-3">
         <div className="text-sm font-medium">{preview.rootPath}</div>
@@ -613,16 +629,12 @@ function workspacePreviewForInput(input: string, inputUrls: string[], understand
     ...(inputUrls.length === 0 && input ? ["sources/用户输入.md"] : []),
     "evidence.md",
     "decisions.md",
-    "outputs/资源索引.md",
-    "outputs/项目对比表.md",
-    "outputs/可复用清单.md",
-    "outputs/下一步行动.md",
     "agent-log.md",
   ];
   return {
     rootPath: workspaceRootPathForInput(inputUrls, understanding),
     files: Array.from(new Set(files)),
-    contextScopes: ["当前文档", "当前 Workspace", "已捕获来源", "Workspace Outputs"],
+    contextScopes: ["当前文档", "当前 Workspace", "已捕获来源"],
   };
 }
 
@@ -630,7 +642,7 @@ function workspaceRootPathForInput(inputUrls: string[], understanding: AiUnderst
   if (understanding.intent === "learning_plan" || inputUrls.some((url) => /agent|browser-use|stagehand/i.test(url))) {
     return "AI Agent 项目调研";
   }
-  return understanding.suggestedMissionTitle.replace(/[\\/:*?\"<>|]/g, " ").replace(/\s+/g, " ").trim() || "Mission Workspace";
+  return understanding.suggestedMissionTitle.replace(/[\\/:*?"<>|]/g, " ").replace(/\s+/g, " ").trim() || "Mission Workspace";
 }
 
 function workspaceSourceFileName(url: string) {
@@ -657,7 +669,7 @@ function workspaceHandoffCopy(preview: WorkspacePreview) {
     "Agent context 默认使用：",
     ...preview.contextScopes.map((scope) => `- ${scope}`),
     "",
-    "写作约束：所有结论保留来源引用；需要用户确认的动作写入 decisions.md；可交付内容写入 outputs/。",
+    "写作约束：所有结论保留来源引用；需要用户确认的动作写入 decisions.md；可交付内容由用户或 AI 明确生成后再写入新的 Markdown 文档。",
   ].join("\n");
 }
 

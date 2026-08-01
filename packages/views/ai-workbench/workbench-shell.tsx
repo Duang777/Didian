@@ -6,11 +6,12 @@ import { cn } from "@didian/ui/lib/utils";
 type WorkbenchShellProps = {
   icon: LucideIcon;
   title: string;
-  description: string;
+  description?: string;
+  fullBleed?: boolean;
   children: React.ReactNode;
 };
 
-export function WorkbenchShell({ icon: Icon, title, description, children }: WorkbenchShellProps) {
+export function WorkbenchShell({ icon: Icon, title, description, fullBleed = false, children }: WorkbenchShellProps) {
   return (
     <div className="flex flex-1 min-h-0 flex-col bg-background">
       <PageHeader className="gap-2">
@@ -19,9 +20,9 @@ export function WorkbenchShell({ icon: Icon, title, description, children }: Wor
           <h1 className="truncate text-sm font-medium">{title}</h1>
         </div>
       </PageHeader>
-      <main className="min-h-0 flex-1 overflow-auto">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4 md:p-6">
-          <p className="max-w-3xl text-sm text-muted-foreground">{description}</p>
+      <main className={cn("min-h-0 flex-1", fullBleed ? "overflow-hidden" : "overflow-auto")}>
+        <div className={cn("flex w-full flex-col", fullBleed ? "h-full min-w-0 gap-0" : "mx-auto max-w-6xl gap-4 p-4 md:p-6")}>
+          {description ? <p className="max-w-3xl text-sm text-muted-foreground">{description}</p> : null}
           {children}
         </div>
       </main>
