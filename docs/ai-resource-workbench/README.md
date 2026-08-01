@@ -8,6 +8,9 @@
 2. [02-technical-plan.md](./02-technical-plan.md)：技术落地策略、旧模型复用、新路由兼容、view model 和分模块方案。
 3. [03-implementation-review.md](./03-implementation-review.md)：方案审核结论、实施顺序、风险提醒和第一阶段任务拆分。
 4. [04-browser-memory-bookmarks.md](./04-browser-memory-bookmarks.md)：浏览器收藏记忆、页面摘要、搜索召回提示的功能可行性和实施方案。
+5. [05-mission-skill-runtime-loop.md](./05-mission-skill-runtime-loop.md)：收藏网页到 Mission Skill 使用闭环。
+6. [06-skill-operating-loop-prd.md](./06-skill-operating-loop-prd.md)：Skill 从生成卡片到使用、审计、删除、再生成的操作闭环。
+7. [07-atlas-native-capabilities-prd.md](./07-atlas-native-capabilities-prd.md)：Atlas 作为知识图谱与内置能力发射台的产品方向。
 
 ## 当前实施状态
 
