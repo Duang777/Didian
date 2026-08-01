@@ -29,17 +29,15 @@ import { Markdown } from "../../common/markdown";
 const createMissionLabel = "创建 Mission";
 const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
-const personalSkillSuggestionLabel = "可沉淀为能力";
+const personalSkillSuggestionLabel = "能力候选";
 const generateSkillLabel = "生成能力";
-const recommendSkillDirectionLabel = "让 Codex 推荐能力方向";
-const reduceSkillSuggestionsLabel = "少推荐";
-const makeBookmarkSkillLabel = "做成能力";
-const skillDirectionQueuedToast = "已交给本地 Codex 分析能力方向，结果会在弹窗中更新。";
+const recommendSkillDirectionLabel = "让 Codex 判断";
+const makeBookmarkSkillLabel = "先让 Codex 判断";
+const skillDirectionQueuedToast = "已交给本地 Codex 判断能力方向，结果会在弹窗中更新。";
 const skillDirectionNoAgentToast = "当前没有可用 Codex agent，可先用平台默认方向确认。";
 const skillGenerationQueuedToast = "能力生成任务已创建，本地 Codex 会按你确认的方向生成并写入能力库。";
 const skillGenerationNoAgentToast = "能力生成任务已创建，当前没有可用 Codex agent。";
 const deleteGeneratedSkillToast = "能力已删除，可以重新生成。";
-const reduceSkillSuggestionsToast = "后续会减少这类能力推荐";
 const backendOfflineMessage = "后端暂时不可用。请先在本地终端启动后端：make start-worktree，然后刷新页面。";
 const codexOfflineMessage = "当前没有可用 Codex agent。你可以先直接填写草稿，或启动本地 Codex 后再让它推荐方向。";
 const noSkillOpportunityMessage = "这个收藏暂时没有足够的可复用线索。你可以在弹窗里补充想要的能力方向，再让 Codex 重新判断。";
@@ -688,9 +686,9 @@ function SkillDraftFlowDialog({
     <Dialog open={Boolean(flow)} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>做成能力</DialogTitle>
+          <DialogTitle>确认能力方向</DialogTitle>
           <DialogDescription>
-            先确认你想沉淀的能力方向，再交给本地 Codex 生成可复用能力并写入能力库。
+            先让本地 Codex 看链接，再确认你想沉淀的能力方向，最后生成可复用能力并写入能力库。
           </DialogDescription>
         </DialogHeader>
         {flow && (
@@ -712,7 +710,7 @@ function SkillDraftFlowDialog({
             />
 
             <div className="grid gap-2">
-              <Label htmlFor="skill-draft-user-need">你的需求（选填）</Label>
+              <Label htmlFor="skill-draft-user-need">你的补充需求（选填）</Label>
               <Textarea
                 id="skill-draft-user-need"
                 value={flow.userNeed}
@@ -727,7 +725,7 @@ function SkillDraftFlowDialog({
               <div className="rounded-md border bg-background p-3">
                 <div className="mb-2 flex items-center gap-2 text-xs font-medium text-foreground">
                   {noAgent ? <AlertCircle className="size-3.5 text-amber-600" /> : hasCodexResult ? <CheckCircle2 className="size-3.5 text-emerald-600" /> : <Loader2 className="size-3.5 animate-spin text-muted-foreground" />}
-                  Codex 推荐
+                  Codex 判断
                 </div>
                 {noAgent ? (
                   <p className="text-xs leading-5 text-amber-900 dark:text-amber-200">
@@ -737,7 +735,7 @@ function SkillDraftFlowDialog({
                   <Markdown className="text-sm leading-6">{latestComment?.content ?? ""}</Markdown>
                 ) : isError ? (
                   <div className="flex items-center justify-between gap-3 text-xs text-destructive">
-                    <span>暂时读取不到 Codex 推荐结果。</span>
+                    <span>暂时读取不到 Codex 判断结果。</span>
                     <Button type="button" size="sm" variant="outline" onClick={onRetry}>
                       <RefreshCw className="size-3.5" />
                       重试
@@ -745,7 +743,7 @@ function SkillDraftFlowDialog({
                   </div>
                 ) : (
                   <p className="text-xs leading-5 text-muted-foreground" role="status">
-                    {isLoading ? "正在读取 Codex 推荐…" : "Codex 正在阅读链接并推荐能力方向…"}
+                    {isLoading ? "正在读取 Codex 判断…" : "Codex 正在阅读链接并判断能力方向…"}
                   </p>
                 )}
               </div>
@@ -832,7 +830,7 @@ function SkillDraftFlowDialog({
           {flow && !flow.analysis && (
             <Button type="button" onClick={() => onAnalyze(flow.item, flow.userNeed)} disabled={isAnalyzing || isSubmitting}>
               {isAnalyzing ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-              {isAnalyzing ? "推荐中" : recommendSkillDirectionLabel}
+              {isAnalyzing ? "判断中" : recommendSkillDirectionLabel}
             </Button>
           )}
           {draft && (
@@ -859,18 +857,9 @@ function SkillDraftStageBar({
   noAgent: boolean;
 }) {
   const stages = [
-    {
-      label: "补充意图",
-      state: hasAnalysis || hasDraft ? "done" : "active",
-    },
-    {
-      label: "Codex 推荐",
-      state: !hasAnalysis ? "pending" : hasCodexResult || noAgent ? "done" : "active",
-    },
-    {
-      label: "确认生成",
-      state: hasDraft ? "active" : "pending",
-    },
+    { label: "判断适合度", state: hasAnalysis || hasDraft ? "done" : "active" },
+    { label: "确认方向", state: !hasAnalysis ? "pending" : hasCodexResult || noAgent ? "done" : "active" },
+    { label: "生成入库", state: hasDraft ? "active" : "pending" },
   ];
   return (
     <div aria-label="能力生成阶段" className="grid gap-2 rounded-md border bg-background px-3 py-2 sm:grid-cols-3">
@@ -1091,9 +1080,8 @@ function SkillOpportunityPanel({
 }) {
   const canUseGeneratedSkill = Boolean(mission?.skillId && onUseGeneratedSkill);
   const canDeleteGeneratedSkill = Boolean(mission?.skillId && onDeleteGeneratedSkill);
-  const hasGeneratedSkill = Boolean(mission);
   return (
-    <div className="border-t bg-accent/30 px-3 py-3">
+    <div className="border-t bg-accent/25 px-3 py-3">
       <div className="flex items-start gap-2">
         <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
           <Sparkles className="size-3.5" />
@@ -1105,7 +1093,7 @@ function SkillOpportunityPanel({
               {formatSkillOpportunityPageType(opportunity.pageType)}
             </Badge>
             <Badge variant="secondary" className="h-5 rounded-sm bg-primary/10 px-1.5 text-[10px] text-primary">
-              平台发现
+              AI 评估
             </Badge>
             {mission && (
               <Badge variant="secondary" className="h-5 rounded-sm px-1.5 text-[10px] text-muted-foreground">
@@ -1117,6 +1105,7 @@ function SkillOpportunityPanel({
           <h4 className="mt-1 line-clamp-1 text-sm font-medium">{opportunity.proposedTitle}</h4>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{opportunity.proposedCapability}</p>
           <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{opportunity.whyUseful}</p>
+          <SkillOpportunityEvidence opportunity={opportunity} />
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {!directionAnalysis && !mission && (
               <Button
@@ -1127,7 +1116,7 @@ function SkillOpportunityPanel({
                 onClick={onOpenSkillDraft}
               >
                 {isAnalyzingDirection ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-                {isAnalyzingDirection ? "推荐中" : makeBookmarkSkillLabel}
+                {isAnalyzingDirection ? "判断中" : makeBookmarkSkillLabel}
               </Button>
             )}
             {directionAnalysis && !mission && onViewDirectionAnalysis && (
@@ -1139,7 +1128,7 @@ function SkillOpportunityPanel({
                 onClick={onViewDirectionAnalysis}
               >
                 <Sparkles className="size-3.5" />
-                继续做能力
+                继续确认方向
               </Button>
             )}
             {canUseGeneratedSkill && (
@@ -1161,17 +1150,6 @@ function SkillOpportunityPanel({
                 打开能力
               </a>
             )}
-            {!hasGeneratedSkill && (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-7 px-2 text-xs text-muted-foreground"
-                onClick={() => toast.success(reduceSkillSuggestionsToast)}
-              >
-                {reduceSkillSuggestionsLabel}
-              </Button>
-            )}
             {canDeleteGeneratedSkill && (
               <Button
                 type="button"
@@ -1190,7 +1168,7 @@ function SkillOpportunityPanel({
             <div className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-muted-foreground" role="status">
               <Clock3 className="mt-0.5 size-3.5 shrink-0 text-primary" />
               <span>
-                {directionAnalysis.planningStatus === "queued" ? "Codex 正在分析能力方向" : "方向分析已准备好"}
+                {directionAnalysis.planningStatus === "queued" ? "Codex 正在判断能力方向" : "方向判断已准备好"}
                 <span className="text-muted-foreground">，在弹窗里确认后再生成。</span>
               </span>
             </div>
@@ -1245,32 +1223,26 @@ function latestSkillDirectionAnalysisComment(comments: Comment[] | undefined): C
 
 function SkillOpportunityEvidence({ opportunity }: { opportunity: SkillOpportunity | null | undefined }) {
   if (!opportunity) return null;
-  const scores = [
-    { label: "复用流程", value: qualitativeSkillSignal(opportunity.reusableWorkflowScore) },
-    { label: "指令线索", value: qualitativeSkillSignal(opportunity.instructionDensityScore) },
-    { label: "后续复用", value: qualitativeSkillSignal(opportunity.futureUseScore) },
-  ];
   return (
-    <div className="mt-3 grid gap-3">
-      <div className="grid gap-1.5 sm:grid-cols-3">
-        {scores.map((score) => (
-          <div key={score.label} className="rounded-md border bg-background px-2.5 py-2">
-            <div className="text-[11px] text-muted-foreground">{score.label}</div>
-            <div className="mt-0.5 font-medium text-foreground">{score.value}</div>
-          </div>
-        ))}
-      </div>
-      {opportunity.evidenceSnippets.length > 0 && (
-        <div className="grid gap-1">
-          <div className="text-[11px] font-medium text-foreground">证据片段</div>
-          <ul className="grid gap-1">
-            {opportunity.evidenceSnippets.slice(0, 3).map((snippet, index) => (
-              <li key={`${index}-${snippet}`} className="line-clamp-2 text-[11px] leading-5">
-                {snippet}
-              </li>
-            ))}
-          </ul>
-        </div>
+    <div className="mt-3 grid gap-1.5 rounded-md border bg-background px-3 py-2">
+      <div className="text-[11px] font-medium text-foreground">判断依据</div>
+      {opportunity.evidenceSnippets.length > 0 ? (
+        <ul className="grid gap-1">
+          {opportunity.evidenceSnippets.slice(0, 3).map((snippet, index) => (
+            <li key={`${index}-${snippet}`} className="line-clamp-2 text-[11px] leading-5 text-muted-foreground">
+              {snippet}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-[11px] leading-5 text-muted-foreground">
+          先让 Codex 读一下来源，再补上具体的判断依据。
+        </p>
+      )}
+      {opportunity.riskNotes.length > 0 && (
+        <p className="text-[11px] leading-5 text-muted-foreground">
+          风险提示：{opportunity.riskNotes[0]}
+        </p>
       )}
     </div>
   );
@@ -1278,18 +1250,12 @@ function SkillOpportunityEvidence({ opportunity }: { opportunity: SkillOpportuni
 
 function skillOpportunityAssessmentText(opportunity: SkillOpportunity | null | undefined): string {
   if (!opportunity) {
-    return "平台没有自动强推荐这个收藏沉淀为能力。你可以主动发起，让本地 Codex 先判断是否适合，并给出具体方向。";
+    return "这个收藏暂时还没有足够强的自动线索。你可以主动让 Codex 先判断是否适合沉淀成能力，再确认方向。";
   }
   if (!opportunity.shouldSuggest) {
-    return `${opportunity.whyUseful} 请确认它真正要服务的重复任务，避免生成成泛泛摘要。`;
+    return `${opportunity.whyUseful} 先确认它真正要服务的重复任务，避免生成成泛泛摘要。`;
   }
-  return `平台发现这个 ${formatSkillOpportunityPageType(opportunity.pageType)} 里有可复用线索。具体能力方向会由本地 Codex 阅读链接后推荐。${opportunity.whyUseful}`;
-}
-
-function qualitativeSkillSignal(value: number): string {
-  if (value >= 0.85) return "强";
-  if (value >= 0.7) return "中";
-  return "弱";
+  return `这个 ${formatSkillOpportunityPageType(opportunity.pageType)} 看起来有可复用线索。先让本地 Codex 阅读链接，再确认最适合沉淀成什么能力。${opportunity.whyUseful}`;
 }
 
 function skillDirectionModeOptions(item: AiInboxInput): Array<{ mode: SkillDirectionMode; label: string; description: string }> {
@@ -1427,7 +1393,7 @@ function manualSkillOpportunityForItem(item: AiInboxInput): SkillOpportunity {
     pageType: "unknown",
     proposedTitle: `${item.title || "收藏网页"} 助手`,
     proposedCapability: "根据用户指定的目标，把这个收藏网页沉淀成可复用的个人能力。",
-    whyUseful: "用户主动选择把这个收藏做成能力，需要本地 Codex 先阅读来源并判断最合适的能力方向。",
+    whyUseful: "用户主动想把这个收藏沉淀成能力，先让本地 Codex 读一下来源，再判断是否值得做成可复用能力。",
     triggerExamples: ["基于这个收藏帮我完成相关任务", "按这个收藏沉淀的流程处理我的问题"],
     expectedInputs: ["用户目标", "使用场景", "当前上下文"],
     expectedOutputs: ["可执行步骤", "检查清单", "注意事项"],
