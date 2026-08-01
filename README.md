@@ -55,7 +55,7 @@ make start
 When working from a git worktree, use the worktree-specific targets so this checkout gets its own `.env.worktree`, database name, backend port, and frontend port:
 
 ```bash
-cd /path/to/your-didian-worktree
+cd /Users/duang777/Developer/work/xunlei/multica-resource-workbench-remove-discord-card
 make setup-worktree
 make start-worktree
 ```

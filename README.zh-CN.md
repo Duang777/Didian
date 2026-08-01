@@ -55,7 +55,7 @@ make start
 如果你是在 git worktree 目录里开发，请使用 worktree 专用命令，这样当前目录会使用独立的 `.env.worktree`、数据库名、后端端口和前端端口：
 
 ```bash
-cd /path/to/your-didian-worktree
+cd /Users/duang777/Developer/work/xunlei/multica-resource-workbench-remove-discord-card
 make setup-worktree
 make start-worktree
 ```
