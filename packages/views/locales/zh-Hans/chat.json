@@ -3,6 +3,28 @@
     "title": "聊天",
     "select_prompt": "选择一个对话，或点 + 新建"
   },
+  "console": {
+    "title": "本地 Agent 控制台",
+    "status_online": "{{name}} 在线",
+    "status_unstable": "{{name}} 状态不稳定",
+    "status_offline": "{{name}} 离线",
+    "status_archived": "{{name}} 已归档",
+    "status_unknown": "{{name}} 同步中",
+    "context_ready": "工作区上下文已连接",
+    "ability_library": "能力库 {{count}}",
+    "actions": {
+      "inspect_mission": "查 Mission",
+      "create_mission": "创建 Mission",
+      "work_on_code": "处理代码",
+      "use_ability": "使用能力"
+    },
+    "prompts": {
+      "inspect_mission": "帮我查一下 DID-，说明状态、最近进展和下一步。",
+      "create_mission": "帮我创建一个 Mission：",
+      "work_on_code": "请查看当前代码库，定位并修复：",
+      "use_ability": "请从能力库里选择合适能力，帮我处理："
+    }
+  },
   "fab": {
     "running": "Didian 正在工作...",
     "unread_other": "{{count}} 条未读对话",

@@ -3,6 +3,28 @@
     "title": "Chat",
     "select_prompt": "Pick a conversation, or start a new one with +"
   },
+  "console": {
+    "title": "Local agent console",
+    "status_online": "{{name}} online",
+    "status_unstable": "{{name}} unstable",
+    "status_offline": "{{name}} offline",
+    "status_archived": "{{name}} archived",
+    "status_unknown": "{{name}} syncing",
+    "context_ready": "Workspace context connected",
+    "ability_library": "Capabilities {{count}}",
+    "actions": {
+      "inspect_mission": "Inspect Mission",
+      "create_mission": "Create Mission",
+      "work_on_code": "Work on code",
+      "use_ability": "Use capability"
+    },
+    "prompts": {
+      "inspect_mission": "Help me inspect DID-, including its status, recent progress, and next step.",
+      "create_mission": "Help me create a Mission:",
+      "work_on_code": "Please inspect the current codebase, locate the issue, and fix:",
+      "use_ability": "Please choose a suitable capability from the library and help me with:"
+    }
+  },
   "fab": {
     "running": "Didian is working...",
     "unread_one": "{{count}} unread chat",
