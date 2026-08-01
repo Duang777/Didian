@@ -50,6 +50,33 @@ make setup
 make start
 ```
 
+### Worktree Development
+
+When working from a git worktree, use the worktree-specific targets so this checkout gets its own `.env.worktree`, database name, backend port, and frontend port:
+
+```bash
+cd /path/to/your-didian-worktree
+make setup-worktree
+make start-worktree
+```
+
+`make setup-worktree` creates `.env.worktree` if it does not exist, installs dependencies, ensures the shared local PostgreSQL container is running, creates this worktree's database, and runs migrations.
+
+`make start-worktree` reads `.env.worktree`, runs migrations, then starts both the Go backend and Next.js frontend. The command prints the exact local URLs, for example:
+
+```text
+Backend: http://localhost:18957
+Frontend: http://localhost:13877
+```
+
+To stop the app processes for this worktree without stopping the shared PostgreSQL container:
+
+```bash
+make stop-worktree
+```
+
+If a port is already occupied, run `make stop-worktree` in the same worktree. If you started another checkout, run its matching `make stop`/`make stop-main`/`make stop-worktree` command from that checkout.
+
 Useful checks:
 
 ```bash

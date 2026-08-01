@@ -50,6 +50,33 @@ make setup
 make start
 ```
 
+### Worktree 开发启动
+
+如果你是在 git worktree 目录里开发，请使用 worktree 专用命令，这样当前目录会使用独立的 `.env.worktree`、数据库名、后端端口和前端端口：
+
+```bash
+cd /path/to/your-didian-worktree
+make setup-worktree
+make start-worktree
+```
+
+`make setup-worktree` 会在缺少 `.env.worktree` 时自动创建它，安装依赖，确保共享的本地 PostgreSQL 容器已启动，创建当前 worktree 对应的数据库，并执行 migrations。
+
+`make start-worktree` 会读取 `.env.worktree`，先跑 migrations，然后同时启动 Go 后端和 Next.js 前端。启动时会打印准确的本地访问地址，例如：
+
+```text
+Backend: http://localhost:18957
+Frontend: http://localhost:13877
+```
+
+停止当前 worktree 的前后端进程，但保留共享 PostgreSQL 容器：
+
+```bash
+make stop-worktree
+```
+
+如果提示端口被占用，先在同一个 worktree 目录执行 `make stop-worktree`。如果占用端口的是另一个 checkout，请进入那个 checkout 执行对应的 `make stop`、`make stop-main` 或 `make stop-worktree`。
+
 常用检查：
 
 ```bash
