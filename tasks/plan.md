@@ -1,5 +1,67 @@
 # 实施计划：AI 资源工作台
 
+## 2026-08-01 Atlas Native Capabilities
+
+### 概览
+
+本阶段以 `docs/ai-resource-workbench/07-atlas-native-capabilities-prd.md` 为准，目标是把 Atlas 从“资源/收藏展示页”推进成 Didian 的知识图谱 + 能力发射台 + 证据问答面板。第一版不追求完整图数据库，而是先把 Collection / Resource / Evidence / Mission / Skill 的关系讲清楚，并把 Analyze / Plan / Compare / Connect / Summarize / Generate / Inspect 这些内置能力做成真正可点、可追问、可继续行动的入口。
+
+### 架构决策
+
+- Atlas 以现有资源、Mission 和 Skill 资料为底座，优先消费 fixture / view model / 现有 artifacts，不先引入重型图数据库。
+- 内置能力优先做成显式 UI 入口，不依赖用户先创建 Skill 才能触发。
+- 问答必须优先返回引用和证据，不允许只有一段不可追溯摘要。
+- Atlas 页面要同时兼顾“资源图谱”“能力入口”“证据问答”三种角色，但首屏仍保持单页可扫描，不做图表堆砌。
+- 用户可见命名继续使用 Atlas / 能力 / 收藏 / Mission，内部实现名可继续复用现有 `skill`、`issue`、`resource` 结构。
+
+### Phase 1: Atlas 壳与内置能力入口
+
+- [ ] Task AT-1: Atlas 首页壳展示 Collection / Resource 卡片、顶部问 Atlas 输入和内置能力区。
+- [ ] Task AT-2: 内置能力区接入 Analyze / Plan / Compare / Connect / Summarize / Generate / Inspect 的显式入口和空状态。
+
+### Checkpoint: Phase 1
+
+- [ ] Atlas 首屏不再像普通资源列表。
+- [ ] 用户可直接点内置能力发起分析、规划或比较。
+- [ ] `pnpm --filter @didian/views typecheck`
+
+### Phase 2: 证据、关系和问答
+
+- [ ] Task AT-3: Atlas 资源卡补上来源、摘要、关键证据和关联 Mission / Skill 的展示。
+- [ ] Task AT-4: Ask Atlas fixture / 轻量问答返回带引用答案，并支持至少三类预设问题。
+
+### Checkpoint: Phase 2
+
+- [ ] Atlas 能回答“这是什么 / 和什么有关 / 下一步做什么”。
+- [ ] 任何 Atlas 结论都能追溯到来源或证据。
+- [ ] `pnpm --filter @didian/views exec vitest run ai-workbench/atlas/**/*`
+
+### Phase 3: 能力和 Mission 关系闭环
+
+- [ ] Task AT-5: Atlas 能从资源跳转到相关 Mission / Skill，并展示使用记录或生成来源。
+- [ ] Task AT-6: Atlas 关系建议区能展示重复、相似、版本或来源关系，且默认只建议不自动合并。
+
+### Checkpoint: Phase 3
+
+- [ ] 用户能从 Atlas 走到 Mission 或 Skill。
+- [ ] 关系建议不会替用户静默改写内容。
+- [ ] Atlas 与 Skill / Mission 闭环在 UI 上是可见的。
+
+### Risks
+
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+| Atlas 变成普通资源列表 | High | 首屏必须有内置能力入口、关系和证据，不只显示收藏卡。 |
+| 问答变成无引用 chat | High | Ask Atlas 默认返回引用和来源，不展示纯空泛答案。 |
+| 内置能力和已生成 Skill 混淆 | Medium | 内置能力与已生成能力视觉分层，后者强调来源和入库状态。 |
+| 首版过度依赖图谱模型 | High | 先用 fixture / view model / 关系标签，图数据库后置。 |
+
+### Open Questions
+
+- Atlas 首页首屏更适合“能力卡片 + 证据流”，还是“关系图 + 右侧问答”？
+- 内置能力区是固定 7 个入口，还是按最近使用动态排序？
+- Ask Atlas 的第一版是否直接复用现有 browser memory / Mission artifacts 作为证据源？
+
 ## 2026-07-30 Skill Operating Loop
 
 ### 概览

@@ -1,5 +1,148 @@
 # 任务清单：AI 资源工作台
 
+## 2026-08-01 Atlas Native Capabilities
+
+### Task AT-1：Atlas 首页壳和内置能力入口
+
+**描述：** 创建 Atlas 首页的首屏骨架，包含 Collection / Resource 卡片区域、顶部问 Atlas 输入和一组显式内置能力入口，让 Atlas 第一眼像知识与能力工作台，而不是普通资源列表。
+
+**验收标准：**
+- [ ] Atlas 首屏能看见 Collection / Resource 卡片，不是纯列表。
+- [ ] 顶部有可输入的 Ask Atlas 区域。
+- [ ] 页面上能直接看到 Analyze / Plan / Compare / Connect / Summarize / Generate / Inspect 的入口或入口占位。
+- [ ] 空状态不是“无内容”，而是有能力入口和下一步提示。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] `pnpm --filter @didian/views exec vitest run ai-workbench/atlas/**/*`
+- [ ] 手动检查 1440px 和 768px 下首屏是否仍保留行动入口。
+
+**依赖：** 无
+
+**可能触及文件：**
+- `packages/views/ai-workbench/atlas/**/*`
+- `apps/web/app/[workspace]/atlas/**/*`
+- `packages/views/ai-workbench/index.ts`
+- `packages/views/locales/*/*.json`
+
+**规模预估：** M
+
+### Task AT-2：内置能力动作和空状态文案
+
+**描述：** 为 Atlas 的内置能力入口接上真实动作或稳定 fixture，包括 Analyze、Plan、Compare、Connect、Summarize、Generate、Inspect 的卡片状态、加载状态和空状态文案。
+
+**验收标准：**
+- [ ] 每个内置能力都有明确用途描述。
+- [ ] 入口点击后能打开对应的 Atlas 侧边内容、弹窗或草稿态。
+- [ ] 空状态能告诉用户这类能力可以拿来做什么。
+- [ ] 视觉上与已生成 Skill 做出区分。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动点击每个能力入口检查状态和文案。
+
+**依赖：** AT-1
+
+**可能触及文件：**
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/resources/**/*`
+- `packages/views/locales/*/*.json`
+
+**规模预估：** M
+
+### Task AT-3：Atlas 资源证据和关系标签
+
+**描述：** 让 Atlas 的 Resource 卡片展示来源、摘要、关键证据、相关 Mission、相关 Skill 和关系标签，避免只是把收藏重新排版。
+
+**验收标准：**
+- [ ] 资源卡能看到来源 URL、摘要和至少一条证据。
+- [ ] 卡片能展示和 Mission / Skill 的关联或来源关系。
+- [ ] 关系标签至少能表达重复、相似、引用或包含之一。
+- [ ] 缺少摘要或证据时有清晰降级。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] `pnpm --filter @didian/views exec vitest run ai-workbench/atlas/**/*`
+
+**依赖：** AT-1
+
+**可能触及文件：**
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/resources/**/*`
+- `packages/views/ai-workbench/fixtures.ts`
+- `packages/views/ai-workbench/types.ts`
+
+**规模预估：** M
+
+### Task AT-4：Ask Atlas 引用式问答
+
+**描述：** 为 Atlas 增加可问可答的 fixture / 轻量问答入口，能基于 Collection 或证据返回带引用的答案，并在无证据时给出明确空答案。
+
+**验收标准：**
+- [ ] 至少支持 3 个预设问题。
+- [ ] 每个答案都带来源或引用片段。
+- [ ] 没有证据时返回“暂无证据”或等价空答案。
+- [ ] 问答结果不只是摘要，而是可继续追问的结构化回复。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views exec vitest run ai-workbench/atlas/**/*`
+- [ ] 手动检查引用显示和空答案。
+
+**依赖：** AT-3
+
+**可能触及文件：**
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/resources/**/*`
+- `packages/views/ai-workbench/fixtures.ts`
+
+**规模预估：** M
+
+### Task AT-5：Atlas 跳转到 Mission 和 Skill
+
+**描述：** 让 Atlas 的资源、集合和能力卡能跳到相关 Mission / Skill，并展示来源、最近使用和生成记录，形成从 Atlas 到执行现场的闭环。
+
+**验收标准：**
+- [ ] Atlas 中能跳到相关 Mission 详情。
+- [ ] Atlas 中能跳到相关 Skill 详情。
+- [ ] 能看到至少一种使用记录或生成来源。
+- [ ] 关系和跳转不要求用户先离开 Atlas 搜索。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动从 Atlas 跳到 Mission / Skill 并返回。
+
+**依赖：** AT-2、AT-4
+
+**可能触及文件：**
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/issues/components/issue-detail.tsx`
+- `packages/views/skills/**/*`
+
+**规模预估：** M
+
+### Task AT-6：Atlas 关系建议与重复提示
+
+**描述：** 为 Atlas 增加重复、相似、版本、来源等关系建议区块，默认只建议不自动合并，帮助用户逐步把收藏变成可理解的知识线。
+
+**验收标准：**
+- [ ] 用户能看到重复 / 相似 / 版本 / 来源等关系提示。
+- [ ] 建议区不会自动删除或合并资源。
+- [ ] 缺少关系时也有可理解的降级状态。
+- [ ] 关系提示在视觉上和普通资源卡区分开。
+
+**验证：**
+- [ ] `pnpm --filter @didian/views typecheck`
+- [ ] 手动检查关系建议和空状态。
+
+**依赖：** AT-3
+
+**可能触及文件：**
+- `packages/views/ai-workbench/atlas/**/*`
+- `packages/views/resources/**/*`
+- `packages/views/ai-workbench/fixtures.ts`
+
+**规模预估：** M
+
 ## 2026-07-30 Skill Operating Loop
 
 ### Task SOL-1：前端缓存层过滤 internal Skill direction Missions
