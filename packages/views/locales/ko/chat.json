@@ -3,28 +3,6 @@
     "title": "채팅",
     "select_prompt": "대화를 선택하거나 +로 새로 시작하세요"
   },
-  "console": {
-    "title": "로컬 Agent 콘솔",
-    "status_online": "{{name}} 온라인",
-    "status_unstable": "{{name}} 상태 불안정",
-    "status_offline": "{{name}} 오프라인",
-    "status_archived": "{{name}} 보관됨",
-    "status_unknown": "{{name}} 동기화 중",
-    "context_ready": "워크스페이스 컨텍스트 연결됨",
-    "ability_library": "능력 라이브러리 {{count}}",
-    "actions": {
-      "inspect_mission": "Mission 확인",
-      "create_mission": "Mission 만들기",
-      "work_on_code": "코드 처리",
-      "use_ability": "능력 사용"
-    },
-    "prompts": {
-      "inspect_mission": "DID-를 확인하고 상태, 최근 진행 상황, 다음 단계를 알려 주세요.",
-      "create_mission": "Mission을 만들어 주세요:",
-      "work_on_code": "현재 코드베이스를 확인하고 문제를 찾아 수정해 주세요:",
-      "use_ability": "능력 라이브러리에서 적절한 능력을 선택해 다음을 도와주세요:"
-    }
-  },
   "fab": {
     "running": "Didian가 작업 중입니다...",
     "unread_other": "읽지 않은 채팅 {{count}}개",

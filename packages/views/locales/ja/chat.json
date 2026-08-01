@@ -3,28 +3,6 @@
     "title": "チャット",
     "select_prompt": "会話を選ぶか、＋ で新規作成してください"
   },
-  "console": {
-    "title": "ローカル Agent コンソール",
-    "status_online": "{{name}} オンライン",
-    "status_unstable": "{{name}} 不安定",
-    "status_offline": "{{name}} オフライン",
-    "status_archived": "{{name}} はアーカイブ済み",
-    "status_unknown": "{{name}} 同期中",
-    "context_ready": "ワークスペースのコンテキストに接続済み",
-    "ability_library": "能力ライブラリ {{count}}",
-    "actions": {
-      "inspect_mission": "Mission を確認",
-      "create_mission": "Mission 作成",
-      "work_on_code": "コード対応",
-      "use_ability": "能力を使う"
-    },
-    "prompts": {
-      "inspect_mission": "DID- を確認し、ステータス、最近の進捗、次のステップを教えてください。",
-      "create_mission": "Mission を作成してください：",
-      "work_on_code": "現在のコードベースを確認し、問題を特定して修正してください：",
-      "use_ability": "能力ライブラリから適切な能力を選び、次を手伝ってください："
-    }
-  },
   "fab": {
     "running": "Didian が作業中です...",
     "unread_other": "未読のチャット {{count}}件",

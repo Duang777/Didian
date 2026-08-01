@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
-import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 import { Button } from "@didian/ui/components/ui/button";
 import {
@@ -12,8 +11,7 @@ import {
 } from "@didian/ui/components/ui/resizable";
 import { useIsMobile } from "@didian/ui/hooks/use-mobile";
 import { useWorkspacePaths } from "@didian/core/paths";
-import { newSessionDraftKey, useChatStore } from "@didian/core/chat";
-import { skillListOptions } from "@didian/core/workspace/queries";
+import { useChatStore } from "@didian/core/chat";
 import type { Agent, ChatSession } from "@didian/core/types";
 import { PageHeader } from "../layout/page-header";
 import { useNavigation } from "../navigation";
@@ -28,7 +26,6 @@ import { useChatController } from "./components/use-chat-controller";
 import { OfflineBanner } from "./components/offline-banner";
 import { NoAgentBanner } from "./components/no-agent-banner";
 import { ArchivedAgentBanner } from "./components/archived-agent-banner";
-import { ChatAgentConsole } from "./components/agent-console";
 
 /**
  * Chat tab — the first-class two-pane surface (thread list on the left,
@@ -55,15 +52,12 @@ export function ChatPage() {
 
   const c = useChatController({ isActive: true });
   const urlSession = searchParams.get("session") || null;
-  const setInputDraft = useChatStore((s) => s.setInputDraft);
-  const skillsQuery = useQuery(skillListOptions(c.wsId));
 
   // "Composing a brand-new chat" — the user hit ⊕ but hasn't sent yet, so no
   // session exists. On mobile this decides list-vs-conversation; on desktop the
   // conversation pane is always mounted so it only needs to reset itself once a
   // real session takes over.
   const [composingNew, setComposingNew] = useState(false);
-  const [consoleFocusRequest, setConsoleFocusRequest] = useState(0);
   useEffect(() => {
     if (c.activeSessionId) setComposingNew(false);
   }, [c.activeSessionId]);
@@ -129,15 +123,6 @@ export function ChatPage() {
     setComposingNew(true);
   };
 
-  const handleConsolePrompt = useCallback(
-    (prompt: string) => {
-      const draftKey = c.activeSessionId ?? newSessionDraftKey(c.selectedAgentId);
-      setInputDraft(draftKey, prompt);
-      setConsoleFocusRequest((value) => value + 1);
-    },
-    [c.activeSessionId, c.selectedAgentId, setInputDraft],
-  );
-
   const newChatButton = (
     <NewChatButton
       agents={c.availableAgents}
@@ -181,16 +166,6 @@ export function ChatPage() {
           onArchive={handleArchive}
         />
       )}
-      {c.activeAgent && (
-        <ChatAgentConsole
-          agent={c.activeAgent}
-          availability={c.availability}
-          capabilityCount={skillsQuery.data?.length ?? 0}
-          capabilityHref={wsPaths.skills()}
-          disabled={c.isSessionArchived || c.isAgentArchived || c.noAgent}
-          onPrompt={handleConsolePrompt}
-        />
-      )}
       {c.showSkeleton ? (
         <ChatMessageSkeleton />
       ) : c.hasMessages ? (
@@ -227,7 +202,7 @@ export function ChatPage() {
         noAgent={c.noAgent}
         agentArchived={c.isAgentArchived}
         agentName={c.activeAgent?.name}
-        focusRequest={c.focusInputRequest + consoleFocusRequest}
+        focusRequest={c.focusInputRequest}
       />
     </div>
   );
