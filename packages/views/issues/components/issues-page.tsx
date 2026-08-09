@@ -72,7 +72,7 @@ export function IssuesPage({ title }: { title?: string } = {}) {
       </PageHeader>
 
       <main className="min-h-0 flex-1 overflow-hidden">
-        <div className="mx-auto grid h-full w-full max-w-[1800px] gap-4 p-4 xl:grid-cols-[250px_minmax(0,1fr)_250px]">
+        <div className="mx-auto grid h-full w-full max-w-[1800px] gap-4 p-4 xl:grid-cols-[240px_minmax(0,1fr)_240px]">
           <aside className="hidden min-h-0 xl:flex xl:flex-col xl:gap-4">
             <div className="rounded-3xl border border-slate-200/80 bg-white/85 p-4 shadow-sm shadow-slate-900/5">
               <div className="space-y-1">
@@ -93,19 +93,7 @@ export function IssuesPage({ title }: { title?: string } = {}) {
             </div>
           </aside>
 
-          <section className="flex min-h-0 flex-col gap-3">
-            <div className="rounded-3xl border border-slate-200/80 bg-white/88 px-4 py-3 shadow-sm shadow-slate-900/5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Mission board</p>
-                  <h2 className="truncate text-sm font-medium tracking-tight">当前任务流</h2>
-                </div>
-                <div className="rounded-full border border-slate-200/80 bg-slate-50/85 px-3 py-1 text-xs text-slate-600">
-                  Workspace
-                </div>
-              </div>
-            </div>
-
+          <section className="flex min-h-0 flex-col">
             <div className="flex min-h-0 flex-1 overflow-hidden rounded-3xl border border-slate-200/80 bg-white/85 shadow-sm shadow-slate-900/5">
               <IssueSurface
                 scope={{ type: "workspace", actorKind: scope }}
@@ -142,7 +130,7 @@ export function IssuesPage({ title }: { title?: string } = {}) {
             <div className="rounded-3xl border border-slate-200/80 bg-white/75 p-4 shadow-sm shadow-slate-900/5">
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Panel note</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                左侧看上下文，中间做操作，右侧切面板。功能不变，只换成横向浏览的工作台。
+                左边看上下文，中间做操作，右边切面板。功能不变，只换成横向浏览的工作台。
               </p>
             </div>
           </aside>
