@@ -1,13 +1,17 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import Page from "./page";
 
+vi.mock("@didian/views/issues/components", () => ({
+  IssuesPage: ({ title }: { title?: string }) => (
+    <div data-testid="issues-page">{title}</div>
+  ),
+}));
+
 describe("missions route page", () => {
-  it("renders the redesigned missions surface", () => {
+  it("renders the shared issues page as Missions", () => {
     render(<Page />);
 
-    expect(screen.getAllByText("Mission command center").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Stage map").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Mission context").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("issues-page")).toHaveTextContent("Missions");
   });
 });
