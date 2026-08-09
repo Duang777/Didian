@@ -523,6 +523,7 @@ describe("IssuesPage (shared)", () => {
 
     expect(screen.getByText("Mission workspace")).toBeInTheDocument();
     expect(screen.getByText("Mission board")).toBeInTheDocument();
+    expect(screen.getByText("Flow rail")).toBeInTheDocument();
     await screen.findByText("Backlog");
     expect(screen.getAllByText("Todo").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("In Progress").length).toBeGreaterThanOrEqual(1);

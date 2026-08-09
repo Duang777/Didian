@@ -63,8 +63,8 @@ export function IssuesPage({ title }: { title?: string } = {}) {
   const pageTitle = title ?? t(($) => $.page.breadcrumb_title);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-background via-background to-amber-50/30">
-      <PageHeader className="gap-2 border-b bg-background/70 backdrop-blur">
+    <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-br from-slate-50 via-background to-cyan-50/35">
+      <PageHeader className="gap-2 border-b bg-background/80 backdrop-blur">
         <ListTodo className="h-4 w-4 text-muted-foreground" />
         <div className="min-w-0">
           <h1 className="truncate text-sm font-medium">{pageTitle}</h1>
@@ -72,42 +72,41 @@ export function IssuesPage({ title }: { title?: string } = {}) {
       </PageHeader>
 
       <main className="min-h-0 flex-1 overflow-hidden">
-        <div className="mx-auto grid h-full w-full max-w-[1720px] gap-4 p-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="mx-auto grid h-full w-full max-w-[1800px] gap-4 p-4 xl:grid-cols-[250px_minmax(0,1fr)_250px]">
           <aside className="hidden min-h-0 xl:flex xl:flex-col xl:gap-4">
-            <div className="rounded-3xl border border-border/70 bg-card/90 p-4 shadow-sm">
+            <div className="rounded-3xl border border-slate-200/80 bg-white/85 p-4 shadow-sm shadow-slate-900/5">
               <div className="space-y-1">
-                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Workspace overview</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Workspace overview</p>
                 <h2 className="text-sm font-medium tracking-tight">任务工作台</h2>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">Board</span>
-                <span className="rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">List</span>
-                <span className="rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">Swimlane</span>
+              <div className="mt-4 grid gap-2">
+                <span className="rounded-full border border-sky-200/80 bg-sky-50/80 px-3 py-1 text-xs text-sky-700">横向面板流</span>
+                <span className="rounded-full border border-slate-200/80 bg-slate-50/80 px-3 py-1 text-xs text-slate-600">Board / List / Swimlane</span>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-border/70 bg-card/75 p-4 shadow-sm">
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Current scope</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <div className="rounded-3xl border border-slate-200/80 bg-white/75 p-4 shadow-sm shadow-slate-900/5">
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Current scope</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
                 {scope === "all" ? "All members and agents" : scope === "members" ? "Members only" : "Agents only"}
               </p>
             </div>
           </aside>
 
           <section className="flex min-h-0 flex-col gap-3">
-            <div className="rounded-3xl border border-border/70 bg-card/90 px-4 py-3 shadow-sm">
+            <div className="rounded-3xl border border-slate-200/80 bg-white/88 px-4 py-3 shadow-sm shadow-slate-900/5">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Mission board</p>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Mission board</p>
                   <h2 className="truncate text-sm font-medium tracking-tight">当前任务流</h2>
                 </div>
-                <div className="rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">
+                <div className="rounded-full border border-slate-200/80 bg-slate-50/85 px-3 py-1 text-xs text-slate-600">
                   Workspace
                 </div>
               </div>
             </div>
 
-            <div className="flex min-h-0 flex-1 overflow-hidden rounded-3xl border border-border/70 bg-card/85 shadow-sm">
+            <div className="flex min-h-0 flex-1 overflow-hidden rounded-3xl border border-slate-200/80 bg-white/85 shadow-sm shadow-slate-900/5">
               <IssueSurface
                 scope={{ type: "workspace", actorKind: scope }}
                 modes={["board", "list", "swimlane"]}
@@ -130,6 +129,23 @@ export function IssuesPage({ title }: { title?: string } = {}) {
             </div>
           </section>
 
+          <aside className="hidden min-h-0 xl:flex xl:flex-col xl:gap-4">
+            <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4 shadow-sm shadow-slate-900/5">
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Flow rail</p>
+              <div className="mt-3 space-y-2">
+                <span className="block rounded-2xl border border-sky-200/80 bg-sky-50/80 px-3 py-2 text-sm text-sky-800">Board</span>
+                <span className="block rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm text-slate-600">List</span>
+                <span className="block rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm text-slate-600">Swimlane</span>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200/80 bg-white/75 p-4 shadow-sm shadow-slate-900/5">
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Panel note</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                左侧看上下文，中间做操作，右侧切面板。功能不变，只换成横向浏览的工作台。
+              </p>
+            </div>
+          </aside>
         </div>
       </main>
     </div>
@@ -138,7 +154,7 @@ export function IssuesPage({ title }: { title?: string } = {}) {
 
 function MetricChip({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="min-w-[112px] rounded-xl border bg-background/85 px-3 py-2">
+    <div className="min-w-[112px] rounded-xl border border-slate-200/80 bg-white/85 px-3 py-2">
       <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         <Icon className="size-3.5" />
         {label}
