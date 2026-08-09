@@ -1,12 +1,12 @@
 "use client";
 
-import { IssuesPage } from "@didian/views/issues/components";
+import { MissionsPage } from "@didian/views/ai-workbench";
 import { ErrorBoundary } from "@didian/ui/components/common/error-boundary";
 
 export default function Page() {
   return (
     <ErrorBoundary>
-      <IssuesPage title="Missions" />
+      <MissionsPage />
     </ErrorBoundary>
   );
 }
