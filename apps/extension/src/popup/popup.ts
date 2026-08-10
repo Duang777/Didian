@@ -266,6 +266,14 @@ function buildWorkbenchUrl(): string | null {
   return `${base}/${encodeURIComponent(workspaceSlug)}/ai-inbox`;
 }
 
+// 精确深链：有 captureId 时直接跳到 /captures/{id} 详情页，否则回退到 AI Inbox。
+function buildCaptureUrl(captureId: string): string | null {
+  const { apiBaseUrl, workspaceSlug } = readSettings();
+  if (!apiBaseUrl || !workspaceSlug) return null;
+  const base = apiBaseUrl.replace(/\/+$/, "");
+  return `${base}/${encodeURIComponent(workspaceSlug)}/captures/${encodeURIComponent(captureId)}`;
+}
+
 async function loadHistory(): Promise<HistoryItem[]> {
   return (await getLocal<HistoryItem[]>(HISTORY_KEY)) ?? [];
 }
@@ -278,6 +286,8 @@ function renderHistory(items: HistoryItem[]): void {
   }
   const workbenchUrl = buildWorkbenchUrl();
   for (const item of items) {
+    const captureUrl = item.captureId ? buildCaptureUrl(item.captureId) : null;
+    const primaryUrl = captureUrl ?? workbenchUrl;
     const main = el("div", { class: "history-item-main" }, [
       el("div", { class: "history-item-title", text: item.title, title: item.title }),
       el("div", {
@@ -305,10 +315,10 @@ function renderHistory(items: HistoryItem[]): void {
       });
     }
 
-    if (workbenchUrl) {
+    if (primaryUrl) {
       li.style.cursor = "pointer";
       li.title = t("history.openWorkbench");
-      li.addEventListener("click", () => void chrome.tabs.create({ url: workbenchUrl }));
+      li.addEventListener("click", () => void chrome.tabs.create({ url: primaryUrl }));
     } else if (sourceBtn) {
       li.style.cursor = "pointer";
       li.addEventListener("click", () => void chrome.tabs.create({ url: item.url! }));

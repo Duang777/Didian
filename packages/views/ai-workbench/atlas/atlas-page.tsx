@@ -44,6 +44,9 @@ import { ContentEditor, ReadonlyContent } from "../../editor";
 import { demoAtlasCollections, demoAtlasWorkspaces } from "../fixtures";
 import type { AtlasWorkspaceFile } from "../types";
 import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
+import { paths } from "@didian/core/paths";
+import { useArchiveBrowserCapture, useRestoreBrowserCapture, type BrowserCapture } from "@didian/core/browser-memory";
+import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 import {
   addWorkspaceFile,
   canDeleteWorkspaceFile,
@@ -86,6 +89,7 @@ const ATLAS_COPY = {
   evidence: "Evidence",
   markdownFirst: "Markdown-first Atlas",
   sources: "Sources",
+  captures: "Captures",
   selectedSuffix: "selected",
   saveDocument: "保存文档",
   saved: "已保存",
@@ -129,9 +133,13 @@ type AtlasAiEdit = (request: AtlasAiEditRequest) => Promise<AtlasAiEditResult>;
 export function AtlasPage({
   localStore = memoryAtlasLocalStore,
   aiEdit = defaultAtlasAiEdit,
+  remoteCaptures,
+  workspaceSlug,
 }: {
   localStore?: AtlasLocalStore;
   aiEdit?: AtlasAiEdit;
+  remoteCaptures?: BrowserCapture[];
+  workspaceSlug?: string;
 } = {}) {
   const isMobile = useIsMobile();
   const [snapshot, setSnapshot] = useState(() => localStore.load(demoAtlasWorkspaces));
@@ -381,6 +389,8 @@ export function AtlasPage({
                 onSelectPath={openDocument}
                 onCreateNote={handleCreateNote}
                 onCollapse={() => setNotebookCollapsed(true)}
+                captures={remoteCaptures}
+                workspaceSlug={workspaceSlug}
               />
             </ResizablePanel>
             <ResizableHandle />
@@ -635,6 +645,8 @@ function NotebookTree({
   onSelectPath,
   onCreateNote,
   onCollapse,
+  captures,
+  workspaceSlug,
 }: {
   workspaceTitle: string;
   rootPath: string;
@@ -649,6 +661,8 @@ function NotebookTree({
   onSelectPath: (path: string) => void;
   onCreateNote: () => void;
   onCollapse: () => void;
+  captures?: BrowserCapture[];
+  workspaceSlug?: string;
 }) {
   return (
     <aside className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden bg-card/80 p-1.5" aria-label="Notebook">
@@ -735,6 +749,16 @@ function NotebookTree({
             ))}
           </div>
         </div>
+        {captures && captures.length > 0 && workspaceSlug ? (
+          <div className="mt-2 border-t px-1.5 pt-2">
+            <div className="text-xs font-medium text-muted-foreground">{ATLAS_COPY.captures}</div>
+            <div className="mt-1.5 space-y-0.5">
+              {captures.map((capture) => (
+                <NotebookCaptureButton key={capture.id} capture={capture} workspaceSlug={workspaceSlug} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </aside>
   );
@@ -774,6 +798,63 @@ function NotebookFileButton({
       <span className="min-w-0 flex-1 truncate">{compact ? file.path : documentTabLabel(file)}</span>
       {selected && !compact ? <PencilLine className="size-3.5 shrink-0" /> : null}
     </button>
+  );
+}
+
+function NotebookCaptureButton({
+  capture,
+  workspaceSlug,
+}: {
+  capture: BrowserCapture;
+  workspaceSlug: string;
+}) {
+  const archiveMutation = useArchiveBrowserCapture();
+  const restoreMutation = useRestoreBrowserCapture();
+  const isArchived = capture.memory_state === "archived";
+  const pending = archiveMutation.isPending || restoreMutation.isPending;
+  const href = paths.workspace(workspaceSlug).captureDetail(capture.id);
+  return (
+    <div className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs">
+      <CaptureFavicon src={capture.favicon_url} />
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="min-w-0 flex-1 truncate text-muted-foreground hover:text-foreground hover:underline"
+      >
+        {capture.title}
+      </a>
+      <button
+        type="button"
+        aria-label={isArchived ? "恢复" : "归档"}
+        disabled={pending}
+        onClick={() => (isArchived ? restoreMutation.mutate(capture.id) : archiveMutation.mutate(capture.id))}
+        className="shrink-0 rounded-md border px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+      >
+        {isArchived ? "恢复" : "归档"}
+      </button>
+    </div>
+  );
+}
+
+function CaptureFavicon({ src }: { src?: string | null }) {
+  const [failed, setFailed] = useState(false);
+  const showFallback = !src || failed;
+  return (
+    <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center overflow-hidden rounded-sm border bg-background text-foreground">
+      {showFallback ? (
+        <DidianIcon className="size-3" noSpin />
+      ) : (
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="size-3.5 object-contain"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </span>
   );
 }
 

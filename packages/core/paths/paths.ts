@@ -47,6 +47,7 @@ function workspaceScoped(slug: string) {
     skillDetail: (id: string) => `${ws}/skills/${encode(id)}`,
     settings: () => `${ws}/settings`,
     attachmentPreview: (id: string) => `${ws}/attachments/${encode(id)}/preview`,
+    captureDetail: (id: string) => `${ws}/captures/${encode(id)}`,
   };
 }
 
