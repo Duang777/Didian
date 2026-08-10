@@ -254,6 +254,18 @@ function renderResultCard(result: CaptureResult): void {
 }
 
 // ---------- History ----------
+const EXTERNAL_GLYPH = "↗";
+
+// Browser captures surface in the workspace AI Inbox. The web app has no
+// per-capture detail route yet, so we deep-link there; when one lands this
+// becomes `${base}/${ws}/ai-inbox?focus=${captureId}` (or /captures/:id).
+function buildWorkbenchUrl(): string | null {
+  const { apiBaseUrl, workspaceSlug } = readSettings();
+  if (!apiBaseUrl || !workspaceSlug) return null;
+  const base = apiBaseUrl.replace(/\/+$/, "");
+  return `${base}/${encodeURIComponent(workspaceSlug)}/ai-inbox`;
+}
+
 async function loadHistory(): Promise<HistoryItem[]> {
   return (await getLocal<HistoryItem[]>(HISTORY_KEY)) ?? [];
 }
@@ -264,6 +276,7 @@ function renderHistory(items: HistoryItem[]): void {
     els.historyList.append(el("li", { class: "history-empty", text: t("history.empty") }));
     return;
   }
+  const workbenchUrl = buildWorkbenchUrl();
   for (const item of items) {
     const main = el("div", { class: "history-item-main" }, [
       el("div", { class: "history-item-title", text: item.title, title: item.title }),
@@ -275,11 +288,33 @@ function renderHistory(items: HistoryItem[]): void {
     const tone = item.duplicate ? "duplicate" : (item.memoryStatus ?? "ready");
     const dot = el("span", { class: "history-dot", dataset: { tone } });
     const li = el("li", { class: "history-item" }, [faviconImg(item.faviconUrl, item.title, 16), main, dot]);
-    if (item.url && /^https?:\/\//i.test(item.url)) {
+
+    const hasSource = Boolean(item.url) && /^https?:\/\//i.test(item.url ?? "");
+    const sourceBtn = hasSource
+      ? el("button", {
+          class: "history-source-link",
+          attrs: { type: "button", "aria-label": t("history.openSource"), title: t("history.openSource") },
+          text: EXTERNAL_GLYPH,
+        })
+      : null;
+    if (sourceBtn && item.url) {
       const target = item.url;
-      li.style.cursor = "pointer";
-      li.addEventListener("click", () => void chrome.tabs.create({ url: target }));
+      sourceBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        void chrome.tabs.create({ url: target });
+      });
     }
+
+    if (workbenchUrl) {
+      li.style.cursor = "pointer";
+      li.title = t("history.openWorkbench");
+      li.addEventListener("click", () => void chrome.tabs.create({ url: workbenchUrl }));
+    } else if (sourceBtn) {
+      li.style.cursor = "pointer";
+      li.addEventListener("click", () => void chrome.tabs.create({ url: item.url! }));
+    }
+
+    if (sourceBtn) li.append(sourceBtn);
     els.historyList.append(li);
   }
 }

@@ -491,7 +491,7 @@ button:focus-visible {
 
 .history-item {
   display: grid;
-  grid-template-columns: 18px 1fr auto;
+  grid-template-columns: 18px 1fr auto auto;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
@@ -504,6 +504,33 @@ button:focus-visible {
 
 .history-item:hover {
   border-color: var(--border-strong);
+}
+
+.history-source-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.history-item:hover .history-source-link {
+  opacity: 1;
+}
+
+.history-source-link:hover {
+  background: color-mix(in oklab, var(--brand-link) 14%, transparent);
+  color: var(--brand-link);
 }
 
 .history-item .favicon {

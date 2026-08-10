@@ -183,5 +183,6 @@ shell
 - [x] `i18n.ts` 双语字典 + 默认中文、可切英文、持久化于 `chrome.storage.local`
 - [x] `index.html` 加 `data-i18n` 标记与 `#lang-toggle` 按钮；`popup.ts` 接 `applyI18n()`，动态文案改为 `t()`
 - [x] **采集前选区检测提示**：popup 打开时通过 `detect-selection` 消息（background 用 `chrome.scripting.executeScript` 注入选区判断）查询当前页面是否含选区，在主按钮上方显示「将捕获整页 / 将捕获选中内容」；`chrome.d.ts` 扩展 `executeScript` 以支持 `func` 重载；中英双语文案走 i18n
+- [x] **历史条目深链到工作台**：点击历史条目用 `buildWorkbenchUrl()` 打开 `{apiBaseUrl}/{workspaceSlug}/ai-inbox`（浏览器采集在 web 端落在 AI Inbox；当前 web 端无单条 capture 详情路由，故深链到 AI Inbox，后续可收紧为 `/captures/{captureId}`）；每条历史保留「打开原始网页」副操作按钮（`history-source-link`，hover 显现、`stopPropagation`）。`HistoryItem.captureId` 已在 `pushHistory` 持久化，供未来精确深链使用
 - [x] typecheck（`tsc --noEmit`）+ build（esbuild → `dist/`）验证通过
 - [x] 提交到 `buddy/captured-source-skill-opportunity` 分支（含本设计文档更新）
