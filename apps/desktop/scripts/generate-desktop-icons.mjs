@@ -21,26 +21,34 @@ const DIDIAN_PATH =
   "M51 8c5 0 9 4 9 9v46c0 5-4 9-9 9H35C18.5 72 7 59 7 40S18.5 8 35 8h16Zm-16 17c-8.2 0-13.5 6-13.5 15S26.8 55 35 55h10V25H35Z";
 
 function brandIconSvg(size) {
+  const markBounds = {
+    left: 7,
+    right: 60,
+    top: 8,
+    bottom: 72,
+  };
+  const markScale = size * 0.00915;
+  const markCenterX = (markBounds.left + markBounds.right) / 2;
+  const markCenterY = (markBounds.top + markBounds.bottom) / 2;
+  const markX = size / 2 - markCenterX * markScale;
+  const markY = size / 2 - markCenterY * markScale;
+
   return `
 <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
   <defs>
     <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#3b2d24"/>
-      <stop offset="0.55" stop-color="#241b16"/>
-      <stop offset="1" stop-color="#17120f"/>
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.62" stop-color="#f7f6f2"/>
+      <stop offset="1" stop-color="#ece9e2"/>
     </linearGradient>
-    <linearGradient id="mark" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff7ea"/>
-      <stop offset="1" stop-color="#dcc5a8"/>
-    </linearGradient>
-    <filter id="lift" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="${size * 0.02}" stdDeviation="${size * 0.025}" flood-color="#000000" flood-opacity="0.28"/>
+    <filter id="tileShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="${size * 0.018}" stdDeviation="${size * 0.026}" flood-color="#000000" flood-opacity="0.16"/>
     </filter>
   </defs>
-  <rect x="${size * 0.055}" y="${size * 0.055}" width="${size * 0.89}" height="${size * 0.89}" rx="${size * 0.205}" fill="url(#tile)"/>
-  <rect x="${size * 0.078}" y="${size * 0.078}" width="${size * 0.844}" height="${size * 0.844}" rx="${size * 0.18}" fill="none" stroke="#6d5646" stroke-opacity="0.5" stroke-width="${Math.max(2, size * 0.011)}"/>
-  <g transform="translate(${size * 0.185} ${size * 0.165}) scale(${size * 0.0079})" filter="url(#lift)">
-    <path d="${DIDIAN_PATH}" fill="url(#mark)" fill-rule="evenodd" clip-rule="evenodd"/>
+  <rect x="${size * 0.07}" y="${size * 0.07}" width="${size * 0.86}" height="${size * 0.86}" rx="${size * 0.19}" fill="url(#tile)" filter="url(#tileShadow)"/>
+  <rect x="${size * 0.088}" y="${size * 0.088}" width="${size * 0.824}" height="${size * 0.824}" rx="${size * 0.168}" fill="none" stroke="#d9d6ce" stroke-width="${Math.max(1.5, size * 0.008)}"/>
+  <g transform="translate(${markX} ${markY}) scale(${markScale})">
+    <path d="${DIDIAN_PATH}" fill="#111111" fill-rule="evenodd" clip-rule="evenodd"/>
   </g>
 </svg>`;
 }
