@@ -90,6 +90,7 @@ const ATLAS_COPY = {
   markdownFirst: "Markdown-first Atlas",
   sources: "Sources",
   captures: "Captures",
+  capturesEmpty: "暂无采集，用浏览器扩展捕获网页后会出现在这里。",
   selectedSuffix: "selected",
   saveDocument: "保存文档",
   saved: "已保存",
@@ -749,14 +750,18 @@ function NotebookTree({
             ))}
           </div>
         </div>
-        {captures && captures.length > 0 && workspaceSlug ? (
+        {captures && workspaceSlug ? (
           <div className="mt-2 border-t px-1.5 pt-2">
             <div className="text-xs font-medium text-muted-foreground">{ATLAS_COPY.captures}</div>
-            <div className="mt-1.5 space-y-0.5">
-              {captures.map((capture) => (
-                <NotebookCaptureButton key={capture.id} capture={capture} workspaceSlug={workspaceSlug} />
-              ))}
-            </div>
+            {captures.length > 0 ? (
+              <div className="mt-1.5 space-y-0.5">
+                {captures.map((capture) => (
+                  <NotebookCaptureButton key={capture.id} capture={capture} workspaceSlug={workspaceSlug} />
+                ))}
+              </div>
+            ) : (
+              <p className="mt-1.5 text-xs text-muted-foreground">{ATLAS_COPY.capturesEmpty}</p>
+            )}
           </div>
         ) : null}
       </div>

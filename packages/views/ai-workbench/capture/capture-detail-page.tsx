@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Archive,
@@ -18,6 +20,8 @@ import { useWorkspaceId } from "@didian/core/hooks";
 import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
 import { Badge } from "@didian/ui/components/ui/badge";
 import { Button } from "@didian/ui/components/ui/button";
+import { Skeleton } from "@didian/ui/components/ui/skeleton";
+import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 import { toast } from "sonner";
 import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
 
@@ -42,6 +46,8 @@ const COPY = {
   preview: "页面截图",
   failure: "处理失败",
   notFound: "找不到这条收藏，它可能已被删除。",
+  related: "相关收藏",
+  relatedEmpty: "还没有其他收藏。",
 } as const;
 
 export function CaptureDetailPage({ captureId }: { captureId: string }) {
@@ -55,10 +61,26 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
   });
   const archiveMutation = useArchiveBrowserCapture();
   const restoreMutation = useRestoreBrowserCapture();
+  const relatedQuery = useQuery({
+    queryKey: ["browser-memory", wsId, "related-captures", captureId],
+    queryFn: () => api.listBrowserCaptures({ limit: 12 }),
+    enabled: Boolean(wsId),
+  });
 
   const capture = captureQuery.data;
   const isArchived = capture?.memory_state === "archived";
   const pendingMutation = archiveMutation.isPending || restoreMutation.isPending;
+  const relatedCaptures = useMemo(() => {
+    const all = relatedQuery.data?.captures ?? [];
+    return all
+      .filter((item) => item.id !== captureId)
+      .sort((a, b) => {
+        const aSame = a.domain === capture?.domain ? 0 : 1;
+        const bSame = b.domain === capture?.domain ? 0 : 1;
+        return aSame - bSame;
+      })
+      .slice(0, 5);
+  }, [relatedQuery.data, captureId, capture?.domain]);
 
   async function handleToggleMemoryState() {
     if (!capture) return;
@@ -88,9 +110,7 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
         </a>
 
         {captureQuery.isLoading ? (
-          <div className="rounded-md border bg-background p-4 text-sm text-muted-foreground" role="status">
-            {COPY.loading}
-          </div>
+          <CaptureDetailSkeleton />
         ) : captureQuery.isError || !capture ? (
           <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-background p-4 text-sm text-muted-foreground" role="alert">
             <span>{captureQuery.isError ? COPY.loadFailed : COPY.notFound}</span>
@@ -207,6 +227,36 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
                 <p className="text-sm text-destructive">{capture.failure_reason}</p>
               </WorkbenchSection>
             )}
+
+            <WorkbenchSection title={COPY.related}>
+              {relatedQuery.isLoading ? (
+                <div className="space-y-2">
+                  {[0, 1, 2].map((index) => (
+                    <Skeleton key={index} className="h-10 w-full rounded-md" />
+                  ))}
+                </div>
+              ) : relatedCaptures.length > 0 ? (
+                <ul className="grid gap-1.5">
+                  {relatedCaptures.map((rel) => (
+                    <li key={rel.id}>
+                      <Link
+                        href={paths.workspace(workspaceSlug).captureDetail(rel.id)}
+                        className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-2 text-sm transition-colors hover:bg-muted"
+                      >
+                        <RelatedFavicon src={rel.favicon_url} />
+                        <span className="min-w-0 flex-1 truncate text-foreground/90">{rel.title}</span>
+                        {rel.domain === capture?.domain ? (
+                          <span className="shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] text-muted-foreground">同域</span>
+                        ) : null}
+                        <span className="hidden shrink-0 truncate text-xs text-muted-foreground sm:inline">{rel.domain}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">{COPY.relatedEmpty}</p>
+              )}
+            </WorkbenchSection>
           </>
         )}
       </div>
@@ -271,4 +321,43 @@ function statusView(value: string): {
     default:
       return { label: value || "Unknown", variant: "outline", className: "text-muted-foreground" };
   }
+}
+
+function CaptureDetailSkeleton() {
+  return (
+    <div className="grid gap-4" aria-hidden="true">
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-6 w-20" />
+        <Skeleton className="h-6 w-16" />
+        <Skeleton className="h-6 w-16" />
+      </div>
+      <Skeleton className="h-44 w-full rounded-md" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+      </div>
+    </div>
+  );
+}
+
+function RelatedFavicon({ src }: { src?: string | null }) {
+  const [failed, setFailed] = useState(false);
+  const showFallback = !src || failed;
+  return (
+    <span className="flex size-4 shrink-0 items-center justify-center overflow-hidden rounded-sm border bg-background text-foreground">
+      {showFallback ? (
+        <DidianIcon className="size-3" noSpin />
+      ) : (
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="size-3.5 object-contain"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </span>
+  );
 }
