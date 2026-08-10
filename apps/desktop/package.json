@@ -18,6 +18,7 @@
   "main": "./out/main/index.js",
   "scripts": {
     "bundle-cli": "node scripts/bundle-cli.mjs",
+    "brand:icons": "node scripts/generate-desktop-icons.mjs",
     "brand-dev-electron": "node scripts/brand-dev-electron.mjs",
     "dev": "node scripts/dev.mjs",
     "dev:staging": "node scripts/dev.mjs --mode staging",
