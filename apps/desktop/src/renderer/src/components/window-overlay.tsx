@@ -49,7 +49,7 @@ function WindowOverlayInner() {
     <div className="fixed inset-0 z-50 flex flex-col overflow-auto bg-background">
       {overlay.type === "new-workspace" && (
         <NewWorkspacePage
-          onSuccess={(ws) => push(paths.workspace(ws.slug).issues())}
+          onSuccess={(ws) => push(paths.workspace(ws.slug).missions())}
           onBack={onBack}
         />
       )}

@@ -132,6 +132,9 @@ interface TabStore {
 // ---------------------------------------------------------------------------
 
 const ROUTE_ICONS: Record<string, string> = {
+  "ai-inbox": "Inbox",
+  missions: "ListTodo",
+  atlas: "Network",
   inbox: "Inbox",
   "my-issues": "CircleUser",
   issues: "ListTodo",
@@ -140,6 +143,7 @@ const ROUTE_ICONS: Record<string, string> = {
   agents: "Bot",
   runtimes: "Monitor",
   skills: "BookOpenText",
+  system: "Settings",
   settings: "Settings",
 };
 
@@ -233,14 +237,14 @@ function pinnedBoundary(tabs: Tab[]): number {
   return i;
 }
 
-/** Default entry point for a workspace — its issues list. */
+/** Default entry point for a workspace — the Didian mission workbench. */
 function defaultPathFor(slug: string): string {
-  return `/${slug}/issues`;
+  return `/${slug}/missions`;
 }
 
 function defaultTabFor(slug: string): Tab {
   const path = defaultPathFor(slug);
-  return makeTab(path, "Issues", resolveRouteIcon(path));
+  return makeTab(path, "Missions", resolveRouteIcon(path));
 }
 
 // ---------------------------------------------------------------------------

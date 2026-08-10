@@ -47,7 +47,7 @@ export function DesktopRouteErrorPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const workspaceSlug = location.pathname.split("/").filter(Boolean)[0];
-  const safeRoute = workspaceSlug ? `/${workspaceSlug}/issues` : null;
+  const safeRoute = workspaceSlug ? `/${workspaceSlug}/missions` : null;
   const report = useMemo(
     () =>
       formatRouteErrorReport({
@@ -90,7 +90,7 @@ export function DesktopRouteErrorPage() {
         </Button>
         {safeRoute ? (
           <Button type="button" variant="outline" onClick={() => navigate(safeRoute, { replace: true })}>
-            Go to issues
+            Go to Missions
           </Button>
         ) : null}
         <Button

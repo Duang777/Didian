@@ -66,6 +66,7 @@ vi.mock("@/stores/tab-store", () => {
 vi.mock("@didian/core/paths", () => ({
   paths: {
     workspace: (slug: string) => ({
+      missions: () => `/${slug}/missions`,
       issues: () => `/${slug}/issues`,
     }),
   },

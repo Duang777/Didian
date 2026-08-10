@@ -4,6 +4,7 @@ import {
   Navigate,
   Outlet,
   useMatches,
+  useParams,
 } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import { IssueDetailPage } from "./pages/issue-detail-page";
@@ -26,6 +27,12 @@ import { SquadsPage, SquadDetailPage as SquadDetailPageView } from "@didian/view
 import { InboxPage } from "@didian/views/inbox";
 import { ChatPage } from "@didian/views/chat";
 import { SettingsPage } from "@didian/views/settings";
+import {
+  AiInboxPage,
+  AtlasPage,
+  MissionDetailPage,
+  SystemPage,
+} from "@didian/views/ai-workbench";
 import { useT } from "@didian/views/i18n";
 import { Download, Server } from "lucide-react";
 import { DaemonSettingsTab } from "./components/daemon-settings-tab";
@@ -90,6 +97,11 @@ function PageShell() {
   );
 }
 
+function DesktopMissionDetailRoute() {
+  const { id } = useParams<{ id: string }>();
+  return <MissionDetailPage missionId={id ?? ""} />;
+}
+
 /**
  * Route definitions shared by all tabs.
  *
@@ -117,7 +129,27 @@ export const appRoutes: RouteObject[] = [
         path: ":workspaceSlug",
         element: <WorkspaceRouteLayout />,
         children: [
-          { index: true, element: <Navigate to="issues" replace /> },
+          { index: true, element: <Navigate to="missions" replace /> },
+          {
+            path: "ai-inbox",
+            element: <AiInboxPage />,
+            handle: { title: "AI Inbox" },
+          },
+          {
+            path: "missions",
+            element: <IssuesPage title="Missions" />,
+            handle: { title: "Missions" },
+          },
+          {
+            path: "missions/:id",
+            element: <DesktopMissionDetailRoute />,
+            handle: { title: "Mission" },
+          },
+          {
+            path: "atlas",
+            element: <AtlasPage />,
+            handle: { title: "Atlas" },
+          },
           {
             path: "issues",
             element: <IssuesPage />,
@@ -202,6 +234,11 @@ export const appRoutes: RouteObject[] = [
             path: "settings",
             element: <DesktopSettingsRoute />,
             handle: { title: "Settings" },
+          },
+          {
+            path: "system",
+            element: <SystemPage />,
+            handle: { title: "System" },
           },
         ],
       },
