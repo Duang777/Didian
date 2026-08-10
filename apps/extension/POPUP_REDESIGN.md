@@ -133,8 +133,9 @@ shell
 | `src/background.ts` | `captureCurrentTab` 回填 `summary` |
 | `src/popup/index.html` | 结构重做（见 §4） |
 | `src/popup/popup.css` | 设计系统（见 §5） |
-| `src/popup/popup.ts` | 主题持久化/切换、设置折叠、空状态、结果卡片渲染、本地历史读写 |
+| `src/popup/popup.ts` | 主题持久化/切换、设置折叠、空状态、结果卡片渲染、本地历史读写、i18n 切换 |
 | `src/popup/dom.ts` | 新增：安全的 DOM 构建 helper（防 XSS，统一用 `textContent`/属性，禁止 `innerHTML` 拼接用户数据） |
+| `src/popup/i18n.ts` | 新增：双语字典 + `t()` 插值函数（默认中文，可切英文） |
 | `src/content/capture-page.test.ts` | 不动（协议不变） |
 
 ## 8. 安全与规范
@@ -152,7 +153,26 @@ shell
 - 纯函数（如有抽取）补单测。
 - 手动：Chrome 加载 `dist/`，验证 采集 / 历史 / 主题 / 设置 / 空状态 五条路径。
 
-## 10. 实施状态
+## 10. 国际化（i18n）
+
+默认中文，支持一键切换英文，语言偏好持久化于 `chrome.storage.local`（key `lang`）。
+
+**设计约束**
+- 零依赖、零框架：独立于项目其余代码（不引 React/i18n 库），与扩展「原生 TS」风格一致。
+- 静态文案走 `data-i18n` / `data-i18n-aria` 标记，`popup.ts` 的 `applyI18n()` 统一刷新；动态文案（状态、标签、徽章、历史开关）走 `t(key, vars)` 插值函数。
+- 字典集中在 `src/popup/i18n.ts`（`zh` / `en` 两张表），新增语言只需加一张表。
+- 切换语言时：刷新 `document.documentElement.lang`、所有 `[data-i18n]` 文本、`[data-i18n-aria]` 无障碍标签，并重绘历史开关文案；语言选择写入 storage，下次打开直接恢复。
+- 品牌名 `Didian` 始终不翻译；占位文案（如 `go.dev · 2h ago`）属演示数据，不进入字典。
+
+**文件改动**
+| 文件 | 改动 |
+|---|---|
+| `src/popup/i18n.ts` | 新增：双语字典 + `t()` / `getLang()` / `setLang()` |
+| `src/popup/index.html` | 静态文案加 `data-i18n`；头部新增 `#lang-toggle` 语言切换按钮（包进 `.header-actions`） |
+| `src/popup/popup.ts` | `initLang()` 读/写 `lang`；`applyI18n()` 刷新文案；动态文本全部改为 `t()`；头部加 `.header-actions` 容器样式 |
+| `src/popup/popup.css` | 新增 `.header-actions` 与 `#lang-toggle` 样式 |
+
+## 11. 实施状态
 
 - [x] 数据层增强（`types.ts` 加 `CaptureSummary`/`HistoryItem`/`url`，`background.ts` 回填 `summary`）
 - [x] 新增 `dom.ts` 安全 helper（XSS 防护，`http(s)` 图标校验 + 首字母回退）
@@ -160,5 +180,7 @@ shell
 - [x] `popup.css` 设计系统（light·dark·system 主题 token、玻璃拟态、状态色、动效）
 - [x] `popup.ts` 逻辑（主题持久化与切换、设置折叠、空状态引导、结果卡片渲染、本地历史读写与跳回）
 - [x] `chrome.d.ts` 补齐 `storage.local` 与 `tabs.create` 声明
+- [x] `i18n.ts` 双语字典 + 默认中文、可切英文、持久化于 `chrome.storage.local`
+- [x] `index.html` 加 `data-i18n` 标记与 `#lang-toggle` 按钮；`popup.ts` 接 `applyI18n()`，动态文案改为 `t()`
 - [x] typecheck（`tsc --noEmit`）+ build（esbuild → `dist/`）验证通过
-- [ ] （待办）README / 本文件状态提交到 `buddy/` 分支
+- [x] 提交到 `buddy/captured-source-skill-opportunity` 分支（含本设计文档更新）

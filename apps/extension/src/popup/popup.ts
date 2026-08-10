@@ -1,14 +1,18 @@
 import type { CaptureResult, ExtensionSettings, HistoryItem } from "../shared/types";
 import { el, clear, faviconImg, formatRelativeTime } from "./dom";
+import { t, getLang, setLang, type Lang } from "./i18n";
 
 type ThemePref = "light" | "dark" | "system";
 type MessageTone = "neutral" | "success" | "error" | "pending" | "processing";
 
 const MAX_HISTORY = 8;
 const THEME_KEY = "theme";
+const LANG_KEY = "lang";
 const HISTORY_KEY = "history";
 const THEME_ORDER: ThemePref[] = ["light", "dark", "system"];
 const THEME_GLYPH: Record<ThemePref, string> = { light: "☀", dark: "☾", system: "◐" };
+
+let historyVisible = true;
 
 function ref<T extends HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -34,6 +38,7 @@ const els = {
   statusDot: ref<HTMLSpanElement>("status-dot"),
   message: ref<HTMLSpanElement>("message"),
   settingsToggle: ref<HTMLButtonElement>("settings-toggle"),
+  langToggle: ref<HTMLButtonElement>("lang-toggle"),
 };
 
 function sendMessage<T>(payload: unknown): Promise<T> {
@@ -58,7 +63,7 @@ function applyTheme(pref: ThemePref): void {
   document.documentElement.dataset.theme = resolveTheme(pref);
   els.themeToggle.textContent = THEME_GLYPH[pref];
   els.themeToggle.dataset.theme = pref;
-  els.themeToggle.setAttribute("aria-label", `Theme: ${pref}`);
+  els.themeToggle.setAttribute("aria-label", t("theme.toggle"));
 }
 
 async function initTheme(): Promise<void> {
@@ -74,6 +79,42 @@ async function initTheme(): Promise<void> {
     const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length] ?? "system";
     await setLocal(THEME_KEY, next);
     applyTheme(next);
+  });
+}
+
+// ---------- i18n ----------
+function applyLangButton(): void {
+  els.langToggle.textContent = getLang() === "zh" ? "EN" : "中";
+}
+
+function applyI18n(): void {
+  document.documentElement.lang = getLang();
+  document.querySelectorAll<HTMLElement>("[data-i18n]").forEach((node) => {
+    const key = node.dataset.i18n;
+    if (key) node.textContent = t(key);
+  });
+  document.querySelectorAll<HTMLElement>("[data-i18n-aria]").forEach((node) => {
+    const key = node.dataset.i18nAria;
+    if (key) node.setAttribute("aria-label", t(key));
+  });
+  renderHistoryToggle();
+}
+
+function renderHistoryToggle(): void {
+  els.historyToggle.textContent = t(historyVisible ? "history.hide" : "history.show");
+  els.historyToggle.setAttribute("aria-expanded", String(historyVisible));
+}
+
+async function initLang(): Promise<void> {
+  const lang = (await getLocal<Lang>(LANG_KEY)) ?? "zh";
+  setLang(lang);
+  applyLangButton();
+  els.langToggle.addEventListener("click", async () => {
+    const next: Lang = getLang() === "zh" ? "en" : "zh";
+    setLang(next);
+    await setLocal(LANG_KEY, next);
+    applyLangButton();
+    applyI18n();
   });
 }
 
@@ -111,7 +152,7 @@ function refreshConnectionState(): void {
 async function loadSettings(): Promise<void> {
   const res = await sendMessage<{ ok: boolean; settings?: ExtensionSettings; error?: string }>({ type: "load-settings" });
   if (!res.ok || !res.settings) {
-    setStatus(res.error || "Failed to load settings", "error");
+    setStatus(res.error || t("status.loadError"), "error");
     return;
   }
   els.apiBaseUrl.value = res.settings.apiBaseUrl;
@@ -125,10 +166,10 @@ async function saveSettings(): Promise<void> {
     settings: readSettings(),
   });
   if (!res.ok) {
-    setStatus(res.error || "Failed to save settings", "error");
+    setStatus(res.error || t("status.saveError"), "error");
     return;
   }
-  setStatus("Settings saved", "success");
+  setStatus(t("status.saved"), "success");
   closeSettings();
   refreshConnectionState();
 }
@@ -142,19 +183,24 @@ function memoryTone(status?: string): MessageTone {
 }
 
 function statusLabel(result: CaptureResult): { text: string; tone: MessageTone } {
-  const base = result.duplicate ? "Already saved." : "Captured.";
-  switch (result.memoryStatus) {
-    case "ready":
-      return { text: `${base} AI enrichment ready.`, tone: "success" };
-    case "processing":
-      return { text: `${base} AI is organizing it.`, tone: "processing" };
-    case "failed":
-      return { text: result.failureReason ? `${base} Failed: ${result.failureReason}` : `${base} Failed.`, tone: "error" };
-    case "pending":
-      return { text: `${base} Waiting for AI.`, tone: "pending" };
-    default:
-      return { text: result.duplicate ? "Already saved in Didian." : "Captured in Didian.", tone: "success" };
-  }
+  const base = t(result.duplicate ? "capture.base.saved" : "capture.base.captured");
+  const map: Record<string, { text: string; tone: MessageTone }> = {
+    ready: { text: t("capture.ready", { base }), tone: "success" },
+    processing: { text: t("capture.processing", { base }), tone: "processing" },
+    failed: {
+      text: result.failureReason
+        ? t("capture.failedReason", { base, reason: result.failureReason })
+        : t("capture.failed", { base }),
+      tone: "error",
+    },
+    pending: { text: t("capture.pending", { base }), tone: "pending" },
+  };
+  const matched = result.memoryStatus ? map[result.memoryStatus] : undefined;
+  if (matched) return matched;
+  return {
+    text: t(result.duplicate ? "capture.default.duplicate" : "capture.default.normal"),
+    tone: "success",
+  };
 }
 
 function safeThumb(url: string | undefined): HTMLElement {
@@ -176,11 +222,13 @@ function renderResultCard(result: CaptureResult): void {
   const body = el("div", { class: "result-body" }, [title, meta]);
 
   const tags = el("div", { class: "result-tags" });
-  tags.append(el("span", { class: "tag", text: s.scope === "selection" ? "Selection" : "Page" }));
-  if (typeof s.linkCount === "number") tags.append(el("span", { class: "tag", text: `${s.linkCount} links` }));
+  tags.append(el("span", { class: "tag", text: s.scope === "selection" ? t("tag.selection") : t("tag.page") }));
+  if (typeof s.linkCount === "number") tags.append(el("span", { class: "tag", text: t("tag.links", { n: s.linkCount }) }));
   const tone = result.duplicate ? "duplicate" : memoryTone(result.memoryStatus);
-  const toneText = result.duplicate ? "Saved" : (result.memoryStatus ?? "done");
-  tags.append(el("span", { class: "status-badge", dataset: { tone }, text: toneText }));
+  const toneKey = result.duplicate
+    ? "badge.saved"
+    : ({ ready: "badge.ready", processing: "badge.processing", pending: "badge.pending", failed: "badge.failed" }[result.memoryStatus ?? ""] ?? "badge.done");
+  tags.append(el("span", { class: "status-badge", dataset: { tone }, text: t(toneKey) }));
   body.append(tags);
 
   const card = el("div", { class: "result-card" }, [safeThumb(s.previewImageUrl), body]);
@@ -196,7 +244,7 @@ async function loadHistory(): Promise<HistoryItem[]> {
 function renderHistory(items: HistoryItem[]): void {
   clear(els.historyList);
   if (items.length === 0) {
-    els.historyList.append(el("li", { class: "history-empty", text: "No captures yet." }));
+    els.historyList.append(el("li", { class: "history-empty", text: t("history.empty") }));
     return;
   }
   for (const item of items) {
@@ -253,15 +301,14 @@ function wireEvents(): void {
     else closeSettings();
   });
   els.historyToggle.addEventListener("click", () => {
-    const willHide = !els.historyList.hidden;
-    els.historyList.hidden = willHide;
-    els.historyToggle.textContent = willHide ? "Show" : "Hide";
-    els.historyToggle.setAttribute("aria-expanded", String(!willHide));
+    historyVisible = els.historyList.hidden;
+    els.historyList.hidden = !historyVisible;
+    renderHistoryToggle();
   });
   els.captureButton.addEventListener("click", () => {
     els.captureButton.classList.add("is-loading");
     els.captureButton.append(el("span", { class: "spinner" }));
-    setStatus("Capturing…", "processing");
+    setStatus(t("status.capturing"), "processing");
     void (async () => {
       const result = await sendMessage<CaptureResult>({ type: "capture-current-tab" });
       if (!result.ok) throw new Error(result.error || "Capture failed");
@@ -279,6 +326,8 @@ function wireEvents(): void {
 }
 
 async function init(): Promise<void> {
+  await initLang();
+  applyI18n();
   await initTheme();
   await loadSettings();
   const history = await loadHistory();
@@ -286,4 +335,4 @@ async function init(): Promise<void> {
   wireEvents();
 }
 
-void init().catch((err) => setStatus(err instanceof Error ? err.message : "Initialization failed", "error"));
+void init().catch((err) => setStatus(err instanceof Error ? err.message : t("status.initError"), "error"));

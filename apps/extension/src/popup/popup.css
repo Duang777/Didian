@@ -1,45 +1,57 @@
+/* Didian popup — redesigned to match the actual product visual language:
+   warm off-white background, white cards, dark charcoal primary action,
+   warm semantic tints, and the real Didian "D" logo mark. */
+
 :root {
   color-scheme: light;
-  --bg: #f6f7f9;
-  --surface: rgba(255, 255, 255, 0.72);
-  --surface-solid: #ffffff;
-  --border: rgba(15, 23, 42, 0.08);
-  --border-strong: rgba(15, 23, 42, 0.14);
-  --text: #15181d;
-  --muted: #6b7280;
-  --accent: #4f46e5;
-  --accent-strong: #4338ca;
-  --accent-contrast: #ffffff;
-  --shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.25);
-  --radius: 16px;
-  --radius-sm: 10px;
+  /* Warm neutral surfaces (matches hero-screenshot warm grays) */
+  --bg: oklch(0.98 0.003 80);
+  --surface: oklch(1 0 0);
+  --surface-solid: oklch(1 0 0);
+  --border: oklch(0.9 0.005 80);
+  --border-strong: oklch(0.82 0.008 80);
+  /* Text */
+  --text: oklch(0.22 0.01 60);
+  --muted: oklch(0.55 0.015 70);
+  /* Primary action: dark charcoal like the product "New Issue" button */
+  --accent: oklch(0.22 0.01 60);
+  --accent-strong: oklch(0.1 0.005 60);
+  --accent-contrast: oklch(0.99 0 0);
+  /* Brand blue reserved for links, focus rings, and subtle accents */
+  --brand-link: oklch(0.55 0.16 255);
+  /* Geometry + motion */
+  --radius: 10px;
+  --radius-sm: 8px;
+  --radius-lg: 14px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --tone-pending: #b45309;
-  --tone-processing: #1d4ed8;
-  --tone-ready: #15803d;
-  --tone-failed: #b91c1c;
-  --tone-duplicate: #6b7280;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Semantic tones (warm, from product screenshot) */
+  --tone-pending: oklch(0.72 0.14 75);
+  --tone-processing: oklch(0.72 0.14 75);
+  --tone-ready: oklch(0.55 0.14 145);
+  --tone-failed: oklch(0.58 0.2 27);
+  --tone-duplicate: oklch(0.62 0.01 70);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0e1014;
-  --surface: rgba(28, 31, 38, 0.66);
-  --surface-solid: #181b21;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --text: #eef1f5;
-  --muted: #9aa3af;
-  --accent: #818cf8;
-  --accent-strong: #a5b4fc;
-  --accent-contrast: #0e1014;
-  --shadow: 0 14px 40px -12px rgba(0, 0, 0, 0.6);
-  --tone-pending: #fbbf24;
-  --tone-processing: #60a5fa;
-  --tone-ready: #4ade80;
-  --tone-failed: #f87171;
-  --tone-duplicate: #9aa3af;
+  --bg: oklch(0.18 0.005 80);
+  --surface: oklch(0.24 0.006 80);
+  --surface-solid: oklch(0.24 0.006 80);
+  --border: oklch(1 0 0 / 10%);
+  --border-strong: oklch(1 0 0 / 18%);
+  --text: oklch(0.96 0.002 80);
+  --muted: oklch(0.68 0.01 80);
+  --accent: oklch(0.95 0.003 80);
+  --accent-strong: oklch(0.99 0 0);
+  --accent-contrast: oklch(0.18 0.005 80);
+  --brand-link: oklch(0.65 0.16 255);
+  --tone-pending: oklch(0.78 0.14 75);
+  --tone-processing: oklch(0.78 0.14 75);
+  --tone-ready: oklch(0.65 0.14 145);
+  --tone-failed: oklch(0.68 0.18 27);
+  --tone-duplicate: oklch(0.72 0.01 80);
 }
 
 * {
@@ -52,16 +64,18 @@ body {
 }
 
 body {
-  width: 340px;
+  width: 348px;
   background: var(--bg);
   color: var(--text);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
   transition: background 0.3s var(--ease), color 0.3s var(--ease);
 }
 
 .shell {
   display: grid;
-  gap: 14px;
-  padding: 16px;
+  gap: 16px;
+  padding: 20px;
 }
 
 /* ---------- Header ---------- */
@@ -72,6 +86,19 @@ body {
   gap: 12px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#lang-toggle {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  min-width: 34px;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -79,11 +106,16 @@ body {
 }
 
 .brand-mark {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--accent), #06b6d4);
-  box-shadow: 0 4px 12px -4px var(--accent);
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+}
+
+.brand-mark svg {
+  width: 100%;
+  height: 100%;
 }
 
 .brand-text h1 {
@@ -105,12 +137,13 @@ button {
   cursor: pointer;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  transition: transform 0.18s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease),
-    border-color 0.2s var(--ease);
+  transition: transform 0.18s var(--ease), background 0.2s var(--ease),
+    box-shadow 0.2s var(--ease), border-color 0.2s var(--ease),
+    color 0.2s var(--ease);
 }
 
 button:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand-link);
   outline-offset: 2px;
 }
 
@@ -123,7 +156,7 @@ button:focus-visible {
 .primary:hover {
   background: var(--accent-strong);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px -8px var(--accent);
+  box-shadow: 0 4px 12px -6px oklch(0 0 0 / 0.25);
 }
 
 .primary:active {
@@ -139,7 +172,7 @@ button:focus-visible {
 
 .secondary:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  background: var(--surface-solid);
 }
 
 .capture-btn {
@@ -150,6 +183,7 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  border-radius: var(--radius);
 }
 
 .capture-btn.is-loading {
@@ -177,32 +211,33 @@ button:focus-visible {
 }
 
 .icon-btn {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: inline-grid;
   place-items: center;
   background: var(--surface);
   border-color: var(--border);
   color: var(--muted);
-  border-radius: 10px;
+  border-radius: 9px;
 }
 
 .icon-btn:hover {
   color: var(--text);
   border-color: var(--border-strong);
+  background: var(--surface-solid);
   transform: translateY(-1px);
 }
 
 .gear-icon::before {
   content: "\2699";
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1;
 }
 
 .link-btn {
   background: none;
   border: none;
-  color: var(--accent);
+  color: var(--brand-link);
   font-size: 12px;
   font-weight: 600;
   padding: 2px 4px;
@@ -215,37 +250,49 @@ button:focus-visible {
 /* ---------- Empty state ---------- */
 .empty-state {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   justify-items: center;
   text-align: center;
-  padding: 18px 12px;
+  padding: 28px 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  backdrop-filter: blur(12px) saturate(160%);
 }
 
 .empty-badge {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), #06b6d4);
-  opacity: 0.9;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.empty-badge::before {
+  content: "\002B";
 }
 
 .empty-state h2 {
   margin: 0;
   font-size: 14px;
+  font-weight: 600;
 }
 
 .empty-state p {
   margin: 0;
   font-size: 12px;
   color: var(--muted);
+  line-height: 1.5;
+  max-width: 220px;
 }
 
 .empty-state .primary {
   margin-top: 4px;
+  padding: 8px 16px;
 }
 
 /* ---------- Result card ---------- */
@@ -256,14 +303,12 @@ button:focus-visible {
 
 .result-card {
   display: grid;
-  grid-template-columns: 40px 1fr;
-  gap: 10px;
-  padding: 12px;
+  grid-template-columns: 44px 1fr;
+  gap: 12px;
+  padding: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  backdrop-filter: blur(12px) saturate(160%);
-  box-shadow: var(--shadow);
   animation: rise 0.35s var(--ease);
 }
 
@@ -279,8 +324,8 @@ button:focus-visible {
 }
 
 .result-thumb {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
   object-fit: cover;
   background: var(--surface-solid);
@@ -296,7 +341,7 @@ button:focus-visible {
 .result-title {
   font-size: 13px;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -347,29 +392,39 @@ button:focus-visible {
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
-  color: #fff;
+  border: 1px solid transparent;
 }
 
 .status-badge[data-tone="pending"] {
-  background: var(--tone-pending);
+  background: color-mix(in oklab, var(--tone-pending) 14%, transparent);
+  color: var(--tone-pending);
+  border-color: color-mix(in oklab, var(--tone-pending) 28%, transparent);
 }
 .status-badge[data-tone="processing"] {
-  background: var(--tone-processing);
+  background: color-mix(in oklab, var(--tone-processing) 14%, transparent);
+  color: var(--tone-processing);
+  border-color: color-mix(in oklab, var(--tone-processing) 28%, transparent);
 }
 .status-badge[data-tone="ready"] {
-  background: var(--tone-ready);
+  background: color-mix(in oklab, var(--tone-ready) 14%, transparent);
+  color: var(--tone-ready);
+  border-color: color-mix(in oklab, var(--tone-ready) 28%, transparent);
 }
 .status-badge[data-tone="failed"] {
-  background: var(--tone-failed);
+  background: color-mix(in oklab, var(--tone-failed) 14%, transparent);
+  color: var(--tone-failed);
+  border-color: color-mix(in oklab, var(--tone-failed) 28%, transparent);
 }
 .status-badge[data-tone="duplicate"] {
-  background: var(--tone-duplicate);
+  background: color-mix(in oklab, var(--tone-duplicate) 14%, transparent);
+  color: var(--tone-duplicate);
+  border-color: color-mix(in oklab, var(--tone-duplicate) 28%, transparent);
 }
 
 /* ---------- History ---------- */
 .history {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .history-head {
@@ -380,11 +435,11 @@ button:focus-visible {
 
 .history-head h2 {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .history-list {
@@ -393,7 +448,7 @@ button:focus-visible {
   padding: 0;
   display: grid;
   gap: 6px;
-  max-height: 220px;
+  max-height: 224px;
   overflow-y: auto;
 }
 
@@ -412,11 +467,16 @@ button:focus-visible {
   grid-template-columns: 18px 1fr auto;
   align-items: center;
   gap: 8px;
-  padding: 8px;
+  padding: 8px 10px;
   border-radius: var(--radius-sm);
   background: var(--surface);
   border: 1px solid var(--border);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
   animation: rise 0.3s var(--ease);
+}
+
+.history-item:hover {
+  border-color: var(--border-strong);
 }
 
 .history-item .favicon {
@@ -470,8 +530,7 @@ button:focus-visible {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px;
-  backdrop-filter: blur(12px) saturate(160%);
+  padding: 14px;
   animation: rise 0.3s var(--ease);
 }
 
@@ -505,8 +564,8 @@ input {
 
 input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--brand-link);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-link) 16%, transparent);
 }
 
 /* ---------- Status bar ---------- */

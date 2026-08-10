@@ -10,27 +10,39 @@
     <main class="shell">
       <header class="header">
         <div class="brand">
-          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 80 80" aria-hidden="true">
+              <path
+                d="M51 8c5 0 9 4 9 9v46c0 5-4 9-9 9H35C18.5 72 7 59 7 40S18.5 8 35 8h16Zm-16 17c-8.2 0-13.5 6-13.5 15S26.8 55 35 55h10V25H35Z"
+                fill="currentColor"
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </span>
           <div class="brand-text">
             <h1>Didian</h1>
-            <p>Browser Capture</p>
+            <p data-i18n="brand.tagline">浏览器采集</p>
           </div>
         </div>
-        <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle theme">
-          <span class="theme-icon" aria-hidden="true"></span>
-        </button>
+        <div class="header-actions">
+          <button id="lang-toggle" class="icon-btn" type="button" data-i18n-aria="lang.toggle">EN</button>
+          <button id="theme-toggle" class="icon-btn" type="button" data-i18n-aria="theme.toggle">
+            <span class="theme-icon" aria-hidden="true"></span>
+          </button>
+        </div>
       </header>
 
       <section id="empty-state" class="empty-state" hidden>
         <span class="empty-badge" aria-hidden="true"></span>
-        <h2>Connect Didian</h2>
-        <p>Set your workspace to start capturing pages into memory.</p>
-        <button id="empty-settings" type="button" class="primary">Open settings</button>
+        <h2 data-i18n="connect.title">连接 Didian</h2>
+        <p data-i18n="connect.desc">设置工作区，即可把网页采集进记忆。</p>
+        <button id="empty-settings" type="button" class="primary" data-i18n="connect.action">打开设置</button>
       </section>
 
       <section id="capture-zone" class="capture-zone">
         <button id="capture-current-tab" type="button" class="primary capture-btn">
-          <span class="capture-label">Capture Current Page</span>
+          <span class="capture-label" data-i18n="capture.label">采集当前页面</span>
         </button>
       </section>
 
@@ -38,8 +50,8 @@
 
       <section id="history" class="history">
         <div class="history-head">
-          <h2>Recent</h2>
-          <button id="history-toggle" class="link-btn" type="button" aria-expanded="true">Hide</button>
+          <h2 data-i18n="history.title">最近</h2>
+          <button id="history-toggle" class="link-btn" type="button" aria-expanded="true" data-i18n="history.hide">收起</button>
         </div>
         <ul id="history-list" class="history-list"></ul>
       </section>
@@ -47,21 +59,21 @@
       <section id="settings-drawer" class="settings" hidden>
         <form id="settings-form" class="form">
           <label>
-            <span>API URL</span>
+            <span data-i18n="settings.api">API 地址</span>
             <input id="api-base-url" name="apiBaseUrl" type="url" required spellcheck="false" />
           </label>
           <label>
-            <span>Workspace</span>
+            <span data-i18n="settings.workspace">工作区</span>
             <input id="workspace-slug" name="workspaceSlug" type="text" required spellcheck="false" />
           </label>
-          <button id="save-settings" type="submit" class="secondary">Save settings</button>
+          <button id="save-settings" type="submit" class="secondary" data-i18n="settings.save">保存设置</button>
         </form>
       </section>
 
       <footer class="status-bar">
         <span id="status-dot" class="status-dot" data-tone="ready" aria-hidden="true"></span>
         <span id="message" class="message" role="status"></span>
-        <button id="settings-toggle" class="icon-btn gear" type="button" aria-label="Settings">
+        <button id="settings-toggle" class="icon-btn gear" type="button" data-i18n-aria="settings.toggle">
           <span class="gear-icon" aria-hidden="true"></span>
         </button>
       </footer>
