@@ -178,7 +178,7 @@ function IssueSurfaceContent({
             </div>
           )
         ) : (
-          <div className={cn("flex flex-col flex-1 min-h-0 min-w-0", contentClassName)}>
+          <div className={cn("flex flex-col flex-1 min-h-0", contentClassName)}>
             {controller.viewMode === "board" && (
               <BoardView
                 issues={
