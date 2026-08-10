@@ -72,7 +72,7 @@ export function IssuesPage({ title }: { title?: string } = {}) {
       </PageHeader>
 
       <main className="min-h-0 flex-1 overflow-hidden">
-        <div className="mx-auto grid h-full w-full max-w-[1800px] gap-4 p-4 xl:grid-cols-[240px_minmax(0,1fr)_240px]">
+        <div className="mx-auto grid h-full w-full max-w-[1800px] gap-4 p-4 xl:grid-cols-[220px_minmax(0,1fr)_220px]">
           <aside className="hidden min-h-0 xl:flex xl:flex-col xl:gap-4">
             <div className="rounded-3xl border border-slate-200/80 bg-white/85 p-4 shadow-sm shadow-slate-900/5">
               <div className="space-y-1">
@@ -93,7 +93,7 @@ export function IssuesPage({ title }: { title?: string } = {}) {
             </div>
           </aside>
 
-          <section className="flex min-h-0 flex-col">
+          <section className="flex min-h-0 min-w-0 flex-col">
             <div className="flex min-h-0 flex-1 overflow-hidden rounded-3xl border border-slate-200/80 bg-white/85 shadow-sm shadow-slate-900/5">
               <IssueSurface
                 scope={{ type: "workspace", actorKind: scope }}

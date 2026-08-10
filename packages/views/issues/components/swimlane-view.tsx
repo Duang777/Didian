@@ -1135,7 +1135,7 @@ export function SwimLaneView({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-1 min-h-0 gap-4 overflow-auto p-4">
+      <div className="flex flex-1 min-h-0 min-w-0 gap-4 overflow-auto p-4">
         <div className="flex shrink-0 flex-col" style={{ width: `${trackWidth}px` }}>
         {/* Sticky status header row — visually matches the top of a BoardColumn */}
         <div className="sticky top-0 z-10 mb-2 bg-background/95 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/75">
