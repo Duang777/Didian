@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,27 +9,62 @@
   <body>
     <main class="shell">
       <header class="header">
-        <div>
-          <h1>Didian</h1>
-          <p>Browser Capture</p>
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div class="brand-text">
+            <h1>Didian</h1>
+            <p>Browser Capture</p>
+          </div>
         </div>
-        <span id="status-pill" class="pill">Ready</span>
+        <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle theme">
+          <span class="theme-icon" aria-hidden="true"></span>
+        </button>
       </header>
 
-      <form id="settings-form" class="form">
-        <label>
-          <span>API URL</span>
-          <input id="api-base-url" name="apiBaseUrl" type="url" required />
-        </label>
-        <label>
-          <span>Workspace</span>
-          <input id="workspace-slug" name="workspaceSlug" type="text" required />
-        </label>
-        <button id="save-settings" type="submit" class="secondary">Save</button>
-      </form>
+      <section id="empty-state" class="empty-state" hidden>
+        <span class="empty-badge" aria-hidden="true"></span>
+        <h2>Connect Didian</h2>
+        <p>Set your workspace to start capturing pages into memory.</p>
+        <button id="empty-settings" type="button" class="primary">Open settings</button>
+      </section>
 
-      <button id="capture-current-tab" type="button" class="primary">Capture Current Page</button>
-      <p id="message" class="message" role="status"></p>
+      <section id="capture-zone" class="capture-zone">
+        <button id="capture-current-tab" type="button" class="primary capture-btn">
+          <span class="capture-label">Capture Current Page</span>
+        </button>
+      </section>
+
+      <section id="result-slot" class="result-slot" aria-live="polite"></section>
+
+      <section id="history" class="history">
+        <div class="history-head">
+          <h2>Recent</h2>
+          <button id="history-toggle" class="link-btn" type="button" aria-expanded="true">Hide</button>
+        </div>
+        <ul id="history-list" class="history-list"></ul>
+      </section>
+
+      <section id="settings-drawer" class="settings" hidden>
+        <form id="settings-form" class="form">
+          <label>
+            <span>API URL</span>
+            <input id="api-base-url" name="apiBaseUrl" type="url" required spellcheck="false" />
+          </label>
+          <label>
+            <span>Workspace</span>
+            <input id="workspace-slug" name="workspaceSlug" type="text" required spellcheck="false" />
+          </label>
+          <button id="save-settings" type="submit" class="secondary">Save settings</button>
+        </form>
+      </section>
+
+      <footer class="status-bar">
+        <span id="status-dot" class="status-dot" data-tone="ready" aria-hidden="true"></span>
+        <span id="message" class="message" role="status"></span>
+        <button id="settings-toggle" class="icon-btn gear" type="button" aria-label="Settings">
+          <span class="gear-icon" aria-hidden="true"></span>
+        </button>
+      </footer>
     </main>
     <script type="module" src="./popup.js"></script>
   </body>

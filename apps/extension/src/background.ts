@@ -94,7 +94,22 @@ async function captureCurrentTab(): Promise<CaptureResult> {
   }) as ContentCaptureResponse;
 
   if (!captured.ok) return { ok: false, error: captured.error || "Page capture failed" };
-  return postCapture(captured.payload, await loadSettings());
+  const result = await postCapture(captured.payload, await loadSettings());
+  return {
+    ...result,
+    summary: result.ok
+      ? {
+          title: captured.payload.title,
+          url: captured.payload.url,
+          domain: captured.payload.domain,
+          faviconUrl: captured.payload.faviconUrl,
+          previewImageUrl: captured.payload.previewImageUrl,
+          scope: captured.payload.captureScope,
+          linkCount: captured.payload.links?.length,
+          capturedAt: captured.payload.capturedAt,
+        }
+      : undefined,
+  };
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {

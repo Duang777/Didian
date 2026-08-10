@@ -25,6 +25,7 @@ interface ChromeRuntime {
 interface ChromeTabs {
   query(queryInfo: { active?: boolean; currentWindow?: boolean }): Promise<ChromeTab[]>;
   sendMessage(tabId: number, message: unknown): Promise<unknown>;
+  create(createProperties: { url: string }): Promise<ChromeTab>;
 }
 
 interface ChromeScripting {
@@ -38,6 +39,7 @@ interface ChromeStorageArea {
 
 interface ChromeStorage {
   sync: ChromeStorageArea;
+  local: ChromeStorageArea;
 }
 
 interface ChromeCookie {
