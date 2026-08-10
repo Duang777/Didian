@@ -186,8 +186,17 @@ function rendererRecoveryDetail(payload: ReloadPromptPayload) {
   ].join("\n");
 }
 
+let defaultDevLogWritable = true;
+
 function defaultDevLog(tag: string, ...args: unknown[]) {
-  process.stderr.write(`[renderer ${tag}] ${args.map(String).join(" ")}\n`);
+  if (!defaultDevLogWritable) return;
+  try {
+    process.stderr.write(`[renderer ${tag}] ${args.map(String).join(" ")}\n`);
+  } catch {
+    // The dev log stream is diagnostic-only. Ignore broken stderr pipes so a
+    // disconnected launcher/terminal cannot crash the Electron main process.
+    defaultDevLogWritable = false;
+  }
 }
 
 function readDiagnosticContext(

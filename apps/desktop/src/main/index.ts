@@ -100,6 +100,19 @@ let runtimeConfigResult: RuntimeConfigResult = {
   ok: false,
   error: { message: "Runtime config has not loaded yet" },
 };
+let devRendererDiagnosticsWritable = true;
+
+function writeDevRendererDiagnostic(line: string): void {
+  if (!devRendererDiagnosticsWritable) return;
+  try {
+    process.stderr.write(line);
+  } catch {
+    // Dev diagnostics are best-effort. When Electron outlives the terminal or
+    // parent process that spawned it, stderr can close with EPIPE; logging must
+    // not crash the desktop app.
+    devRendererDiagnosticsWritable = false;
+  }
+}
 
 // --- Deep link helpers ---------------------------------------------------
 
@@ -268,7 +281,7 @@ function createWindow(): void {
   // don't have a terminal anyway, and we ship to crash-reporting separately.
   if (is.dev) {
     const log = (tag: string, ...args: unknown[]) =>
-      process.stderr.write(`[renderer ${tag}] ${args.map(String).join(" ")}\n`);
+      writeDevRendererDiagnostic(`[renderer ${tag}] ${args.map(String).join(" ")}\n`);
 
     // Forward every renderer-side console.* call. The detail object also
     // carries source URL + line — included so a thrown stack trace from
