@@ -177,10 +177,11 @@ shell
 - [x] 数据层增强（`types.ts` 加 `CaptureSummary`/`HistoryItem`/`url`，`background.ts` 回填 `summary`）
 - [x] 新增 `dom.ts` 安全 helper（XSS 防护，`http(s)` 图标校验 + 首字母回退）
 - [x] `index.html` 结构重做（品牌头/主题/空状态/主操作/结果卡/历史/设置抽屉/状态栏）
-- [x] `popup.css` 设计系统（light·dark·system 主题 token、玻璃拟态、状态色、动效）
+- [x] `popup.css` 设计系统（light·dark·system 三主题 token、暖中性面 + 深炭灰主按钮 + 品牌蓝点缀、克制留白、状态色 tinted pill、动效曲线）
 - [x] `popup.ts` 逻辑（主题持久化与切换、设置折叠、空状态引导、结果卡片渲染、本地历史读写与跳回）
 - [x] `chrome.d.ts` 补齐 `storage.local` 与 `tabs.create` 声明
 - [x] `i18n.ts` 双语字典 + 默认中文、可切英文、持久化于 `chrome.storage.local`
 - [x] `index.html` 加 `data-i18n` 标记与 `#lang-toggle` 按钮；`popup.ts` 接 `applyI18n()`，动态文案改为 `t()`
+- [x] **采集前选区检测提示**：popup 打开时通过 `detect-selection` 消息（background 用 `chrome.scripting.executeScript` 注入选区判断）查询当前页面是否含选区，在主按钮上方显示「将捕获整页 / 将捕获选中内容」；`chrome.d.ts` 扩展 `executeScript` 以支持 `func` 重载；中英双语文案走 i18n
 - [x] typecheck（`tsc --noEmit`）+ build（esbuild → `dist/`）验证通过
 - [x] 提交到 `buddy/captured-source-skill-opportunity` 分支（含本设计文档更新）
