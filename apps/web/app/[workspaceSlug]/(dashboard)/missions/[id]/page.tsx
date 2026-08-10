@@ -1,7 +1,7 @@
 "use client";
 
 import { use } from "react";
-import { MissionDetailPage } from "@didian/views/ai-workbench";
+import { IssueDetail } from "@didian/views/issues/components";
 import { ErrorBoundary } from "@didian/ui/components/common/error-boundary";
 
 export default function Page({
@@ -10,10 +10,9 @@ export default function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-
   return (
     <ErrorBoundary resetKeys={[id]}>
-      <MissionDetailPage missionId={id} />
+      <IssueDetail issueId={id} />
     </ErrorBoundary>
   );
 }

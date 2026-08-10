@@ -1,6 +1,4 @@
 export { AiInboxPage } from "./ai-inbox/ai-inbox-page";
-export { MissionsPage } from "./missions/missions-page";
-export { MissionDetailPage } from "./missions/mission-detail-page";
 export { AtlasPage } from "./atlas/atlas-page";
 export { CaptureDetailPage } from "./capture/capture-detail-page";
 export { createAtlasLocalStore } from "./atlas/atlas-local-store";
