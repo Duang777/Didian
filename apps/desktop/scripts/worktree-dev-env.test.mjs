@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   appSuffixForPath,
+  applyDesktopRuntimeEnv,
   applyWorktreeDevEnv,
   cksum,
   offsetForPath,
@@ -97,5 +98,44 @@ describe("worktree-dev-env", () => {
     applyWorktreeDevEnv(env, { root });
     expect(env.DESKTOP_RENDERER_PORT).toBe("9999");
     expect(env.DESKTOP_APP_SUFFIX).toBe(appSuffixForPath(root));
+  });
+
+  it("loads desktop runtime URLs from .env.worktree", () => {
+    const root = mkdtempSync(join(tmpdir(), "wt-env-"));
+    cleanups.push(() => rmSync(root, { recursive: true, force: true }));
+    writeFileSync(
+      join(root, ".env.worktree"),
+      [
+        "PORT=18957",
+        "NEXT_PUBLIC_API_URL=http://localhost:18957",
+        "NEXT_PUBLIC_WS_URL=ws://localhost:18957/ws",
+        "DIDIAN_APP_URL=http://localhost:13877",
+      ].join("\n"),
+    );
+
+    const env = {};
+    applyDesktopRuntimeEnv(env, { root });
+    expect(env.VITE_API_URL).toBe("http://localhost:18957");
+    expect(env.VITE_WS_URL).toBe("ws://localhost:18957/ws");
+    expect(env.VITE_APP_URL).toBe("http://localhost:13877");
+  });
+
+  it("keeps explicit runtime URLs when they are already set", () => {
+    const root = mkdtempSync(join(tmpdir(), "wt-env-explicit-"));
+    cleanups.push(() => rmSync(root, { recursive: true, force: true }));
+    writeFileSync(
+      join(root, ".env.worktree"),
+      "NEXT_PUBLIC_API_URL=http://localhost:18957\nDIDIAN_APP_URL=http://localhost:13877\n",
+    );
+
+    const env = {
+      VITE_API_URL: "http://localhost:29999",
+      VITE_WS_URL: "ws://localhost:29999/ws",
+      VITE_APP_URL: "http://localhost:39999",
+    };
+    applyDesktopRuntimeEnv(env, { root });
+    expect(env.VITE_API_URL).toBe("http://localhost:29999");
+    expect(env.VITE_WS_URL).toBe("ws://localhost:29999/ws");
+    expect(env.VITE_APP_URL).toBe("http://localhost:39999");
   });
 });

@@ -16,12 +16,18 @@ import { fileURLToPath } from "node:url";
 import { envWithLocalBins } from "./package.mjs";
 import {
   applyWorktreeDevEnv,
+  applyDesktopRuntimeEnv,
   repoRootFromScriptDir,
 } from "./worktree-dev-env.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
 applyWorktreeDevEnv(process.env, {
+  root: repoRootFromScriptDir(here),
+  log: true,
+});
+
+applyDesktopRuntimeEnv(process.env, {
   root: repoRootFromScriptDir(here),
   log: true,
 });

@@ -8,12 +8,11 @@
 // values per worktree. This module does, mirroring the offset scheme that
 // scripts/init-worktree-env.sh already uses for backend/frontend ports.
 //
-// Backend targeting is deliberately NOT touched here: which backend the desktop
-// connects to stays driven by apps/desktop/.env* (VITE_API_URL / VITE_WS_URL),
-// exactly as documented. This module only adds the two knobs needed for two
-// Electron processes to coexist.
+// Runtime URLs are loaded separately from `.env.worktree` by the desktop dev
+// launcher. This module only adds the per-worktree Electron isolation knobs
+// needed for two processes to coexist.
 
-import { statSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
 
 // Worktree renderer ports start at 5174 so they never reuse 5173 — the primary
@@ -113,4 +112,88 @@ export function applyWorktreeDevEnv(env, { root, log = false } = {}) {
     );
   }
   return env;
+}
+
+export function applyDesktopRuntimeEnv(env, { root, log = false } = {}) {
+  const filePath = join(root, ".env.worktree");
+  let fileEnv = {};
+  try {
+    fileEnv = parseEnvFile(readFileSync(filePath, "utf8"));
+  } catch {
+    fileEnv = {};
+  }
+
+  const apiUrl =
+    env.VITE_API_URL ||
+    fileEnv.VITE_API_URL ||
+    fileEnv.NEXT_PUBLIC_API_URL ||
+    fileEnv.REMOTE_API_URL ||
+    (fileEnv.PORT ? `http://localhost:${fileEnv.PORT}` : undefined);
+  const wsUrl =
+    env.VITE_WS_URL ||
+    fileEnv.VITE_WS_URL ||
+    fileEnv.NEXT_PUBLIC_WS_URL ||
+    fileEnv.DIDIAN_SERVER_URL ||
+    (apiUrl ? deriveWsUrlFromHttp(apiUrl) : undefined);
+  const appUrl =
+    env.VITE_APP_URL ||
+    fileEnv.VITE_APP_URL ||
+    fileEnv.DIDIAN_APP_URL ||
+    fileEnv.FRONTEND_ORIGIN ||
+    (apiUrl ? deriveAppUrlFromHttp(apiUrl) : undefined);
+
+  if (apiUrl) env.VITE_API_URL = apiUrl;
+  if (wsUrl) env.VITE_WS_URL = wsUrl;
+  if (appUrl) env.VITE_APP_URL = appUrl;
+
+  if (log) {
+    console.log(
+      `[dev:desktop] runtime URLs → api ${env.VITE_API_URL ?? "unset"}, ` +
+        `ws ${env.VITE_WS_URL ?? "unset"}, app ${env.VITE_APP_URL ?? "unset"}`,
+    );
+  }
+  return env;
+}
+
+function parseEnvFile(contents) {
+  const out = {};
+  for (const rawLine of contents.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const normalized = line.startsWith("export ") ? line.slice(7).trim() : line;
+    const eq = normalized.indexOf("=");
+    if (eq <= 0) continue;
+    const key = normalized.slice(0, eq).trim();
+    let value = normalized.slice(eq + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    out[key] = value;
+  }
+  return out;
+}
+
+function deriveWsUrlFromHttp(apiUrl) {
+  const url = new URL(apiUrl);
+  if (url.protocol === "https:") url.protocol = "wss:";
+  else if (url.protocol === "http:") url.protocol = "ws:";
+  else return apiUrl;
+  url.pathname = url.pathname.replace(/\/$/, "") + "/ws";
+  url.search = "";
+  url.hash = "";
+  return url.toString().replace(/\/+$/, "");
+}
+
+function deriveAppUrlFromHttp(apiUrl) {
+  const url = new URL(apiUrl);
+  url.pathname = "";
+  url.search = "";
+  url.hash = "";
+  if (url.hostname.startsWith("api.") && url.hostname.split(".").length >= 3) {
+    url.hostname = url.hostname.slice("api.".length);
+  }
+  return url.toString().replace(/\/+$/, "");
 }
