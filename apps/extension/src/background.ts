@@ -112,6 +112,22 @@ async function captureCurrentTab(): Promise<CaptureResult> {
   };
 }
 
+async function detectSelection(tabId: number): Promise<boolean> {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        const sel = (window.getSelection?.()?.toString() ?? "").trim();
+        return sel.length > 0;
+      },
+    });
+    const first = results?.[0];
+    return typeof first?.result === "boolean" ? first.result : false;
+  } catch {
+    return false;
+  }
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   const request = message as PopupToBackgroundMessage;
 
@@ -133,6 +149,15 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     void captureCurrentTab().then(sendResponse).catch((error) => {
       sendResponse({ ok: false, error: error instanceof Error ? error.message : "Capture failed" });
     });
+    return true;
+  }
+
+  if (request.type === "detect-selection") {
+    void (async () => {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const hasSelection = tab?.id ? await detectSelection(tab.id) : false;
+      sendResponse({ hasSelection });
+    })();
     return true;
   }
 

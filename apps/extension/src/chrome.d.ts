@@ -28,8 +28,20 @@ interface ChromeTabs {
   create(createProperties: { url: string }): Promise<ChromeTab>;
 }
 
+interface ChromeInjectionTarget {
+  tabId: number;
+}
+interface ChromeScriptingFiles {
+  target: ChromeInjectionTarget;
+  files: string[];
+}
+interface ChromeScriptingFunc<T> {
+  target: ChromeInjectionTarget;
+  func: () => T;
+}
 interface ChromeScripting {
-  executeScript(options: { target: { tabId: number }; files: string[] }): Promise<void>;
+  executeScript(script: ChromeScriptingFiles): Promise<void>;
+  executeScript<T>(script: ChromeScriptingFunc<T>): Promise<Array<{ result: T }>>;
 }
 
 interface ChromeStorageArea {

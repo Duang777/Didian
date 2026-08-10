@@ -1,4 +1,4 @@
-import type { CaptureResult, ExtensionSettings, HistoryItem } from "../shared/types";
+import type { CaptureResult, ExtensionSettings, HistoryItem, DetectSelectionResponse } from "../shared/types";
 import { el, clear, faviconImg, formatRelativeTime } from "./dom";
 import { t, getLang, setLang, type Lang } from "./i18n";
 
@@ -38,6 +38,7 @@ const els = {
   statusDot: ref<HTMLSpanElement>("status-dot"),
   message: ref<HTMLSpanElement>("message"),
   settingsToggle: ref<HTMLButtonElement>("settings-toggle"),
+  captureHint: ref<HTMLParagraphElement>("capture-hint"),
   langToggle: ref<HTMLButtonElement>("lang-toggle"),
 };
 
@@ -115,6 +116,7 @@ async function initLang(): Promise<void> {
     await setLocal(LANG_KEY, next);
     applyLangButton();
     applyI18n();
+    updateCaptureHint(lastHasSelection);
   });
 }
 
@@ -172,6 +174,21 @@ async function saveSettings(): Promise<void> {
   setStatus(t("status.saved"), "success");
   closeSettings();
   refreshConnectionState();
+}
+
+// ---------- Selection hint ----------
+let lastHasSelection = false;
+
+function detectSelection(): Promise<boolean> {
+  return sendMessage<DetectSelectionResponse>({ type: "detect-selection" })
+    .then((res) => res?.hasSelection ?? false)
+    .catch(() => false);
+}
+
+function updateCaptureHint(hasSelection: boolean): void {
+  lastHasSelection = hasSelection;
+  els.captureHint.textContent = t(hasSelection ? "capture.hint.selection" : "capture.hint.page");
+  els.captureHint.dataset.scope = hasSelection ? "selection" : "page";
 }
 
 // ---------- Capture ----------
@@ -332,6 +349,7 @@ async function init(): Promise<void> {
   await loadSettings();
   const history = await loadHistory();
   renderHistory(history);
+  updateCaptureHint(await detectSelection());
   wireEvents();
 }
 

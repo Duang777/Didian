@@ -68,7 +68,12 @@ export interface HistoryItem {
 export type PopupToBackgroundMessage =
   | { type: "capture-current-tab" }
   | { type: "save-settings"; settings: ExtensionSettings }
-  | { type: "load-settings" };
+  | { type: "load-settings" }
+  | { type: "detect-selection" };
+
+export interface DetectSelectionResponse {
+  hasSelection: boolean;
+}
 
 export type ContentToBackgroundMessage = {
   type: "didian-page-capture";
