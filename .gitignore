@@ -68,3 +68,8 @@ server/server
 data/
 .kilo
 .idea
+
+# agent workspace + local noise (never track these)
+.workbuddy/
+didian-ai-product-creative-package.zip
+docs\ 2/
