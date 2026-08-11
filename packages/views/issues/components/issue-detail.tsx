@@ -188,6 +188,44 @@ function shortDate(date: string | null): string {
   return formatDateOnly(date, { month: "short", day: "numeric" }, "en-US");
 }
 
+function capabilityRunLabel(status: string): string {
+  switch (status) {
+    case "queued":
+      return "Queued";
+    case "running":
+      return "Running";
+    case "succeeded":
+      return "Succeeded";
+    case "failed":
+      return "Failed";
+    case "cancelled":
+      return "Cancelled";
+    default:
+      return status || "No runs";
+  }
+}
+
+function capabilityRunClassName(status: string): string {
+  switch (status) {
+    case "queued":
+      return "border-amber-200 bg-amber-50 text-amber-800";
+    case "running":
+      return "border-blue-200 bg-blue-50 text-blue-800";
+    case "succeeded":
+      return "border-emerald-200 bg-emerald-50 text-emerald-800";
+    case "failed":
+      return "border-red-200 bg-red-50 text-red-800";
+    case "cancelled":
+      return "border-muted bg-muted text-muted-foreground";
+    default:
+      return "border-muted bg-muted text-muted-foreground";
+  }
+}
+
+function shortTaskID(id: string): string {
+  return id ? id.slice(0, 8) : "task";
+}
+
 type ActivityT = ReturnType<typeof useT<"issues">>["t"];
 
 function statusLabel(status: string, t: ActivityT): string {
@@ -1686,8 +1724,19 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
                 <div key={skill.link_id} className="rounded-md border bg-background px-2.5 py-2">
                   <div className="flex items-start gap-2">
                     <Sparkles className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0">
-                      <div className="truncate text-xs font-medium">{skill.name}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <div className="truncate text-xs font-medium">{skill.name}</div>
+                        {skill.latest_run ? (
+                          <span className={cn("shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-medium", capabilityRunClassName(skill.latest_run.status))}>
+                            {capabilityRunLabel(skill.latest_run.status)}
+                          </span>
+                        ) : (
+                          <span className="shrink-0 rounded-full border bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            Ready
+                          </span>
+                        )}
+                      </div>
                       <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-muted-foreground">
                         {skill.capability || skill.description || skill.trigger}
                       </p>
@@ -1698,6 +1747,29 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
                     {skill.source && <span className="rounded-sm bg-muted px-1.5 py-0.5">{skill.source}</span>}
                     {skill.source_domain && <span className="rounded-sm bg-muted px-1.5 py-0.5">{skill.source_domain}</span>}
                   </div>
+                  {skill.latest_run && (
+                    <div className="mt-2 rounded-sm border bg-muted/30 px-2 py-1.5 text-[11px] leading-4">
+                      <div className="flex items-center justify-between gap-2 text-muted-foreground">
+                        <span>Latest runtime use</span>
+                        <span className="shrink-0 tabular-nums">{shortDate(skill.latest_run.completed_at ?? skill.latest_run.started_at ?? skill.latest_run.queued_at)}</span>
+                      </div>
+                      {(skill.latest_run.result_summary || skill.latest_run.error) && (
+                        <p className={cn("mt-1 line-clamp-2", skill.latest_run.error ? "text-red-700" : "text-foreground")}>
+                          {skill.latest_run.error || skill.latest_run.result_summary}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {(skill.runs?.length ?? 0) > 1 && (
+                    <div className="mt-2 space-y-1 border-t pt-2">
+                      {(skill.runs ?? []).slice(0, 3).map((run) => (
+                        <div key={run.id} className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                          <span className="min-w-0 truncate">{shortTaskID(run.task_id)}</span>
+                          <span className="shrink-0">{capabilityRunLabel(run.status)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

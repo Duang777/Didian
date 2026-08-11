@@ -587,6 +587,23 @@ type IssuePersonalSkill struct {
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 }
 
+type IssuePersonalSkillRun struct {
+	ID                   pgtype.UUID        `json:"id"`
+	WorkspaceID          pgtype.UUID        `json:"workspace_id"`
+	IssueID              pgtype.UUID        `json:"issue_id"`
+	IssuePersonalSkillID pgtype.UUID        `json:"issue_personal_skill_id"`
+	PersonalSkillID      pgtype.UUID        `json:"personal_skill_id"`
+	TaskID               pgtype.UUID        `json:"task_id"`
+	Status               string             `json:"status"`
+	ResultSummary        string             `json:"result_summary"`
+	Error                string             `json:"error"`
+	QueuedAt             pgtype.Timestamptz `json:"queued_at"`
+	StartedAt            pgtype.Timestamptz `json:"started_at"`
+	CompletedAt          pgtype.Timestamptz `json:"completed_at"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+}
+
 type IssuePullRequest struct {
 	IssueID       pgtype.UUID        `json:"issue_id"`
 	PullRequestID pgtype.UUID        `json:"pull_request_id"`

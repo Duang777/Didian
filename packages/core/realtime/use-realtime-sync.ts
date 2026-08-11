@@ -121,6 +121,13 @@ export function refetchPendingChatAggregate(
   qc.invalidateQueries({ queryKey: chatKeys.pendingTasks(wsId) });
 }
 
+function invalidateIssueTaskDetail(qc: QueryClient, issueId?: string) {
+  if (!issueId) return;
+  const wsId = getCurrentWsId();
+  if (!wsId) return;
+  qc.invalidateQueries({ queryKey: issueKeys.detail(wsId, issueId) });
+}
+
 export function applyChatDoneToCache(
   qc: QueryClient,
   payload: ChatDonePayload,
@@ -984,6 +991,7 @@ export function useRealtimeSync(
     // when reconnect replays the event for an already-running task).
     const unsubTaskQueued = ws.on("task:queued", (p) => {
       const payload = p as TaskQueuedPayload;
+      invalidateIssueTaskDetail(qc, payload.issue_id);
       if (!payload.chat_session_id) return;
       qc.setQueryData<ChatPendingTask>(
         chatKeys.pendingTask(payload.chat_session_id),
@@ -1004,6 +1012,7 @@ export function useRealtimeSync(
     // taskMessages → "Thinking · Ns".
     const unsubTaskDispatch = ws.on("task:dispatch", (p) => {
       const payload = p as TaskDispatchPayload;
+      invalidateIssueTaskDetail(qc, payload.issue_id);
       if (!payload.chat_session_id) return;
       qc.setQueryData<ChatPendingTask>(
         chatKeys.pendingTask(payload.chat_session_id),
@@ -1022,6 +1031,7 @@ export function useRealtimeSync(
     // would stay parked even after the daemon resumed work.
     const unsubTaskRunning = ws.on("task:running", (p) => {
       const payload = p as TaskRunningPayload;
+      invalidateIssueTaskDetail(qc, payload.issue_id);
       if (!payload.chat_session_id) return;
       qc.setQueryData<ChatPendingTask>(
         chatKeys.pendingTask(payload.chat_session_id),
@@ -1042,6 +1052,7 @@ export function useRealtimeSync(
       "task:waiting_local_directory",
       (p) => {
         const payload = p as TaskWaitingLocalDirectoryPayload;
+        invalidateIssueTaskDetail(qc, payload.issue_id);
         if (!payload.chat_session_id) return;
         qc.setQueryData<ChatPendingTask>(
           chatKeys.pendingTask(payload.chat_session_id),
@@ -1064,6 +1075,7 @@ export function useRealtimeSync(
     // message page along with clearing pending.
     const unsubTaskCancelled = ws.on("task:cancelled", (p) => {
       const payload = p as TaskCancelledPayload;
+      invalidateIssueTaskDetail(qc, payload.issue_id);
       if (!payload.chat_session_id) return;
       chatWsLogger.info("task:cancelled (global, chat)", {
         task_id: payload.task_id,
@@ -1076,6 +1088,7 @@ export function useRealtimeSync(
 
     const unsubTaskCompleted = ws.on("task:completed", (p) => {
       const payload = p as TaskCompletedPayload;
+      invalidateIssueTaskDetail(qc, payload.issue_id);
       if (!payload.chat_session_id) return; // issue tasks handled elsewhere
       chatWsLogger.info("task:completed (global, chat)", {
         task_id: payload.task_id,
@@ -1092,6 +1105,7 @@ export function useRealtimeSync(
 
     const unsubTaskFailed = ws.on("task:failed", (p) => {
       const payload = p as TaskFailedPayload;
+      invalidateIssueTaskDetail(qc, payload.issue_id);
       if (!payload.chat_session_id) return;
       chatWsLogger.warn("task:failed (global, chat)", {
         task_id: payload.task_id,

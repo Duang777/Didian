@@ -32,6 +32,28 @@ export interface IssueReaction {
 export type IssueMetadataValue = string | number | boolean;
 export type IssueMetadata = Record<string, IssueMetadataValue>;
 
+export type IssuePersonalSkillRunStatus =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+export interface IssuePersonalSkillRun {
+  id: string;
+  issue_personal_skill_id: string;
+  personal_skill_id: string;
+  task_id: string;
+  agent_id: string;
+  status: IssuePersonalSkillRunStatus;
+  task_status: string;
+  result_summary: string;
+  error: string;
+  queued_at: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+}
+
 export interface IssuePersonalSkill {
   link_id: string;
   issue_id: string;
@@ -54,6 +76,8 @@ export interface IssuePersonalSkill {
   risk_notes: string[];
   enabled: boolean;
   use_count: number;
+  latest_run?: IssuePersonalSkillRun | null;
+  runs?: IssuePersonalSkillRun[];
 }
 
 export interface Issue {

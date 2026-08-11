@@ -432,6 +432,21 @@ export const IssueTriggerPreviewSchema = z.object({
 // to {} so consumers never need to nil-guard `issue.metadata`.
 const IssueMetadataSchema = z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({});
 
+const IssuePersonalSkillRunSchema = z.object({
+  id: z.string().default(""),
+  issue_personal_skill_id: z.string().default(""),
+  personal_skill_id: z.string().default(""),
+  task_id: z.string().default(""),
+  agent_id: z.string().default(""),
+  status: z.enum(["queued", "running", "succeeded", "failed", "cancelled"]).default("queued"),
+  task_status: z.string().default(""),
+  result_summary: z.string().default(""),
+  error: z.string().default(""),
+  queued_at: z.string().default(""),
+  started_at: z.string().nullable().optional(),
+  completed_at: z.string().nullable().optional(),
+}).loose();
+
 const IssuePersonalSkillSchema = z.object({
   link_id: z.string().default(""),
   issue_id: z.string().default(""),
@@ -454,6 +469,8 @@ const IssuePersonalSkillSchema = z.object({
   risk_notes: z.array(z.string()).optional().default([]),
   enabled: z.boolean().default(false),
   use_count: z.number().default(0),
+  latest_run: IssuePersonalSkillRunSchema.nullable().optional(),
+  runs: z.array(IssuePersonalSkillRunSchema).optional().default([]),
 }).loose();
 
 export const IssueSchema = z.object({

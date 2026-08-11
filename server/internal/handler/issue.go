@@ -72,27 +72,44 @@ type IssueResponse struct {
 }
 
 type IssuePersonalSkillResponse struct {
-	LinkID           string   `json:"link_id"`
-	IssueID          string   `json:"issue_id"`
-	PersonalSkillID  string   `json:"personal_skill_id"`
-	SelectedBy       *string  `json:"selected_by"`
-	Source           string   `json:"source"`
-	UsageNote        string   `json:"usage_note"`
-	LinkedAt         string   `json:"linked_at"`
-	Name             string   `json:"name"`
-	Description      string   `json:"description"`
-	Capability       string   `json:"capability"`
-	PageType         string   `json:"page_type"`
-	Trigger          string   `json:"trigger"`
-	ExpectedInput    string   `json:"expected_input"`
-	ExpectedOutput   string   `json:"expected_output"`
-	Instructions     string   `json:"instructions"`
-	SourceURL        string   `json:"source_url"`
-	SourceDomain     string   `json:"source_domain"`
-	EvidenceSnippets []string `json:"evidence_snippets"`
-	RiskNotes        []string `json:"risk_notes"`
-	Enabled          bool     `json:"enabled"`
-	UseCount         int32    `json:"use_count"`
+	LinkID           string                          `json:"link_id"`
+	IssueID          string                          `json:"issue_id"`
+	PersonalSkillID  string                          `json:"personal_skill_id"`
+	SelectedBy       *string                         `json:"selected_by"`
+	Source           string                          `json:"source"`
+	UsageNote        string                          `json:"usage_note"`
+	LinkedAt         string                          `json:"linked_at"`
+	Name             string                          `json:"name"`
+	Description      string                          `json:"description"`
+	Capability       string                          `json:"capability"`
+	PageType         string                          `json:"page_type"`
+	Trigger          string                          `json:"trigger"`
+	ExpectedInput    string                          `json:"expected_input"`
+	ExpectedOutput   string                          `json:"expected_output"`
+	Instructions     string                          `json:"instructions"`
+	SourceURL        string                          `json:"source_url"`
+	SourceDomain     string                          `json:"source_domain"`
+	EvidenceSnippets []string                        `json:"evidence_snippets"`
+	RiskNotes        []string                        `json:"risk_notes"`
+	Enabled          bool                            `json:"enabled"`
+	UseCount         int32                           `json:"use_count"`
+	LatestRun        *IssuePersonalSkillRunResponse  `json:"latest_run,omitempty"`
+	Runs             []IssuePersonalSkillRunResponse `json:"runs,omitempty"`
+}
+
+type IssuePersonalSkillRunResponse struct {
+	ID                   string  `json:"id"`
+	IssuePersonalSkillID string  `json:"issue_personal_skill_id"`
+	PersonalSkillID      string  `json:"personal_skill_id"`
+	TaskID               string  `json:"task_id"`
+	AgentID              string  `json:"agent_id"`
+	Status               string  `json:"status"`
+	TaskStatus           string  `json:"task_status"`
+	ResultSummary        string  `json:"result_summary"`
+	Error                string  `json:"error"`
+	QueuedAt             string  `json:"queued_at"`
+	StartedAt            *string `json:"started_at,omitempty"`
+	CompletedAt          *string `json:"completed_at,omitempty"`
 }
 
 // validIssueStatuses / validIssuePriorities mirror the CHECK constraints on
@@ -162,6 +179,23 @@ func issuePersonalSkillToResponse(row db.ListIssuePersonalSkillsRow) IssuePerson
 		RiskNotes:        unmarshalStringSlice(row.RiskNotes),
 		Enabled:          row.Enabled,
 		UseCount:         row.UseCount,
+	}
+}
+
+func issuePersonalSkillRunToResponse(row db.ListIssuePersonalSkillRunsRow) IssuePersonalSkillRunResponse {
+	return IssuePersonalSkillRunResponse{
+		ID:                   uuidToString(row.ID),
+		IssuePersonalSkillID: uuidToString(row.IssuePersonalSkillID),
+		PersonalSkillID:      uuidToString(row.PersonalSkillID),
+		TaskID:               uuidToString(row.TaskID),
+		AgentID:              uuidToString(row.AgentID),
+		Status:               row.Status,
+		TaskStatus:           row.TaskStatus,
+		ResultSummary:        row.ResultSummary,
+		Error:                row.Error,
+		QueuedAt:             timestampToString(row.QueuedAt),
+		StartedAt:            timestampToPtr(row.StartedAt),
+		CompletedAt:          timestampToPtr(row.CompletedAt),
 	}
 }
 
@@ -1727,6 +1761,29 @@ func (h *Handler) GetIssue(w http.ResponseWriter, r *http.Request) {
 		resp.PersonalSkills = make([]IssuePersonalSkillResponse, len(personalSkills))
 		for i, skill := range personalSkills {
 			resp.PersonalSkills[i] = issuePersonalSkillToResponse(skill)
+		}
+
+		personalSkillRuns, err := h.Queries.ListIssuePersonalSkillRuns(r.Context(), db.ListIssuePersonalSkillRunsParams{
+			IssueID:     issue.ID,
+			WorkspaceID: issue.WorkspaceID,
+		})
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to list mission capability usage")
+			return
+		}
+		runsByLinkID := make(map[string][]IssuePersonalSkillRunResponse, len(resp.PersonalSkills))
+		for _, run := range personalSkillRuns {
+			linkID := uuidToString(run.IssuePersonalSkillID)
+			runsByLinkID[linkID] = append(runsByLinkID[linkID], issuePersonalSkillRunToResponse(run))
+		}
+		for i := range resp.PersonalSkills {
+			runs := runsByLinkID[resp.PersonalSkills[i].LinkID]
+			if len(runs) == 0 {
+				continue
+			}
+			resp.PersonalSkills[i].Runs = runs
+			latest := runs[0]
+			resp.PersonalSkills[i].LatestRun = &latest
 		}
 	}
 

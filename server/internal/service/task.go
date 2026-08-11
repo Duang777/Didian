@@ -132,6 +132,7 @@ func truncateForSummary(s string, maxRunes int) string {
 
 const (
 	taskAnalyticsContextCacheMax = 4096
+	capabilityRunSummaryMaxLen   = 280
 	// claimResponseRecoveryWindow must exceed daemon client.Timeout for
 	// /tasks/claim (30s) plus /tasks/{id}/start (30s) plus scheduling slack.
 	// Longer pre-start work is protected by prepareLeaseDuration instead of
@@ -139,6 +140,39 @@ const (
 	claimResponseRecoveryWindow = 90 * time.Second
 	prepareLeaseDuration        = 45 * time.Second
 )
+
+func personalCapabilityIDsFromContext(raw []byte) []pgtype.UUID {
+	if len(raw) == 0 {
+		return nil
+	}
+	var capabilities []PersonalCapabilityTaskContext
+	if err := json.Unmarshal(raw, &capabilities); err != nil {
+		return nil
+	}
+	seen := make(map[string]struct{}, len(capabilities))
+	ids := make([]pgtype.UUID, 0, len(capabilities))
+	for _, capability := range capabilities {
+		id, err := util.ParseUUID(strings.TrimSpace(capability.ID))
+		if err != nil || !id.Valid {
+			continue
+		}
+		key := util.UUIDToString(id)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		ids = append(ids, id)
+	}
+	return ids
+}
+
+func capabilityRunResultSummary(result []byte) string {
+	var payload protocol.TaskCompletedPayload
+	if err := json.Unmarshal(result, &payload); err != nil {
+		return ""
+	}
+	return truncateForSummary(util.UnescapeBackslashEscapes(payload.Output), capabilityRunSummaryMaxLen)
+}
 
 // buildCommentTriggerSummary fetches the comment content and truncates
 // it for storage on the task row. Returns an invalid pgtype.Text when
@@ -328,6 +362,93 @@ func (s *TaskService) buildPersonalCapabilitiesContext(ctx context.Context, issu
 		return nil
 	}
 	return payload
+}
+
+func (s *TaskService) createQueuedPersonalCapabilityRuns(ctx context.Context, issue db.Issue, task db.AgentTaskQueue, personalCapabilities []byte) {
+	if s == nil || s.Queries == nil || !issue.ID.Valid || !issue.WorkspaceID.Valid || !task.ID.Valid {
+		return
+	}
+	ids := personalCapabilityIDsFromContext(personalCapabilities)
+	if len(ids) == 0 {
+		return
+	}
+	if _, err := s.Queries.CreateIssuePersonalSkillRunsForTask(ctx, db.CreateIssuePersonalSkillRunsForTaskParams{
+		TaskID:           task.ID,
+		IssueID:          issue.ID,
+		WorkspaceID:      issue.WorkspaceID,
+		PersonalSkillIds: ids,
+	}); err != nil {
+		slog.Warn("failed to create queued mission capability run records",
+			"task_id", util.UUIDToString(task.ID),
+			"issue_id", util.UUIDToString(issue.ID),
+			"error", err,
+		)
+	}
+}
+
+func (s *TaskService) markPersonalCapabilityRunsRunning(ctx context.Context, task db.AgentTaskQueue) {
+	if s == nil || s.Queries == nil || !task.ID.Valid {
+		return
+	}
+	if _, err := s.Queries.MarkIssuePersonalSkillRunsRunningForTask(ctx, task.ID); err != nil {
+		slog.Warn("failed to mark mission capability runs running",
+			"task_id", util.UUIDToString(task.ID),
+			"issue_id", util.UUIDToString(task.IssueID),
+			"error", err,
+		)
+	}
+}
+
+func (s *TaskService) markPersonalCapabilityRunsSucceeded(ctx context.Context, task db.AgentTaskQueue, result []byte) {
+	if s == nil || s.Queries == nil || !task.ID.Valid {
+		return
+	}
+	if _, err := s.Queries.MarkIssuePersonalSkillRunsSucceededForTask(ctx, db.MarkIssuePersonalSkillRunsSucceededForTaskParams{
+		TaskID:        task.ID,
+		ResultSummary: capabilityRunResultSummary(result),
+	}); err != nil {
+		slog.Warn("failed to mark mission capability runs succeeded",
+			"task_id", util.UUIDToString(task.ID),
+			"issue_id", util.UUIDToString(task.IssueID),
+			"error", err,
+		)
+	}
+}
+
+func (s *TaskService) markPersonalCapabilityRunsFailed(ctx context.Context, task db.AgentTaskQueue, errMsg string) {
+	if s == nil || s.Queries == nil || !task.ID.Valid {
+		return
+	}
+	if _, err := s.Queries.MarkIssuePersonalSkillRunsFailedForTask(ctx, db.MarkIssuePersonalSkillRunsFailedForTaskParams{
+		TaskID: task.ID,
+		Error:  truncateForSummary(errMsg, capabilityRunSummaryMaxLen),
+	}); err != nil {
+		slog.Warn("failed to mark mission capability runs failed",
+			"task_id", util.UUIDToString(task.ID),
+			"issue_id", util.UUIDToString(task.IssueID),
+			"error", err,
+		)
+	}
+}
+
+func (s *TaskService) markPersonalCapabilityRunsCancelled(ctx context.Context, task db.AgentTaskQueue, reason string) {
+	if s == nil || s.Queries == nil || !task.ID.Valid {
+		return
+	}
+	reason = strings.TrimSpace(reason)
+	if reason == "" {
+		reason = "Task cancelled"
+	}
+	if _, err := s.Queries.MarkIssuePersonalSkillRunsCancelledForTask(ctx, db.MarkIssuePersonalSkillRunsCancelledForTaskParams{
+		TaskID: task.ID,
+		Error:  truncateForSummary(reason, capabilityRunSummaryMaxLen),
+	}); err != nil {
+		slog.Warn("failed to mark mission capability runs cancelled",
+			"task_id", util.UUIDToString(task.ID),
+			"issue_id", util.UUIDToString(task.IssueID),
+			"error", err,
+		)
+	}
 }
 
 // resolveOriginatorFromTriggerComment returns the top-of-chain HUMAN user
@@ -832,6 +953,7 @@ func (s *TaskService) enqueueIssueTaskWithCommentPlan(ctx context.Context, issue
 		"agent_id", util.UUIDToString(issue.AssigneeID),
 		"force_fresh_session", forceFreshSession,
 	)
+	s.createQueuedPersonalCapabilityRuns(ctx, issue, task, personalCapabilities)
 	// Order matters: broadcast first, notify daemon second. notifyTaskAvailable
 	// kicks an in-process channel that the daemon picks up over HTTP and
 	// claims; the claim path then emits its own task:dispatch. Doing the
@@ -926,6 +1048,7 @@ func (s *TaskService) enqueueMentionTaskWithCommentPlan(ctx context.Context, iss
 	}
 
 	slog.Info("mention task enqueued", "task_id", util.UUIDToString(task.ID), "issue_id", util.UUIDToString(issue.ID), "agent_id", util.UUIDToString(agentID), "is_leader_task", isLeader)
+	s.createQueuedPersonalCapabilityRuns(ctx, issue, task, personalCapabilities)
 	// See EnqueueTaskForIssue for ordering rationale.
 	s.broadcastTaskEvent(ctx, protocol.EventTaskQueued, task)
 	s.NotifyTaskEnqueued(ctx, task)
@@ -1507,6 +1630,7 @@ func (s *TaskService) CancelTaskWithResult(ctx context.Context, taskID pgtype.UU
 	}
 
 	slog.Info("task cancelled", "task_id", util.UUIDToString(task.ID), "issue_id", util.UUIDToString(task.IssueID))
+	s.markPersonalCapabilityRunsCancelled(ctx, task, "Task cancelled")
 	s.captureTaskCancelled(ctx, task)
 	cancelledChatMessage := s.finalizeCancelledChatMessage(ctx, task)
 
@@ -1893,6 +2017,7 @@ func (s *TaskService) StartTask(ctx context.Context, taskID pgtype.UUID) (*db.Ag
 	s.cancelDeferredEscalationsForTask(ctx, task.ID)
 
 	slog.Info("task started", "task_id", util.UUIDToString(task.ID), "issue_id", util.UUIDToString(task.IssueID))
+	s.markPersonalCapabilityRunsRunning(ctx, task)
 	s.captureTaskStarted(ctx, task)
 	// Tell every connected workspace WS client that this task transitioned
 	// (dispatched | waiting_local_directory) → running. Without this, the
@@ -2089,6 +2214,7 @@ func (s *TaskService) CompleteTask(ctx context.Context, taskID pgtype.UUID, resu
 	}
 
 	slog.Info("task completed", "task_id", util.UUIDToString(task.ID), "issue_id", util.UUIDToString(task.IssueID))
+	s.markPersonalCapabilityRunsSucceeded(ctx, task, result)
 	s.captureTaskCompleted(ctx, task)
 
 	// Invariant: every completed issue task must have at least one agent
@@ -2368,6 +2494,7 @@ func (s *TaskService) FailTask(ctx context.Context, taskID pgtype.UUID, errMsg, 
 	}
 
 	slog.Warn("task failed", "task_id", util.UUIDToString(task.ID), "issue_id", util.UUIDToString(task.IssueID), "error", errMsg, "failure_reason", failureReason)
+	s.markPersonalCapabilityRunsFailed(ctx, task, errMsg)
 	s.captureTaskFailed(ctx, task)
 
 	// The auto-retry child (if any) was created inside the transaction above so
