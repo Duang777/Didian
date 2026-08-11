@@ -84,6 +84,21 @@ type TaskWakeupNotifier interface {
 	NotifyTaskAvailable(runtimeID, taskID string)
 }
 
+type PersonalCapabilityTaskContext struct {
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Description    string `json:"description,omitempty"`
+	Capability     string `json:"capability,omitempty"`
+	PageType       string `json:"page_type,omitempty"`
+	Trigger        string `json:"trigger,omitempty"`
+	ExpectedInput  string `json:"expected_input,omitempty"`
+	ExpectedOutput string `json:"expected_output,omitempty"`
+	Instructions   string `json:"instructions,omitempty"`
+	SourceURL      string `json:"source_url,omitempty"`
+	SourceDomain   string `json:"source_domain,omitempty"`
+	UsageNote      string `json:"usage_note,omitempty"`
+}
+
 // triggerSummaryMaxLen caps the snapshot length so the row stays cheap to
 // transmit (it ends up in every task list response). 200 is enough for a
 // recognisable preview of a one-paragraph comment.
@@ -261,6 +276,58 @@ func (s *TaskService) buildRuntimeMCPOverlay(ctx context.Context, originatorUser
 		data.ConnectedApps = raw
 	}
 	return data
+}
+
+func (s *TaskService) buildPersonalCapabilitiesContext(ctx context.Context, issue db.Issue) []byte {
+	if s == nil || s.Queries == nil || !issue.ID.Valid || !issue.WorkspaceID.Valid {
+		return nil
+	}
+	rows, err := s.Queries.ListIssuePersonalSkills(ctx, db.ListIssuePersonalSkillsParams{
+		IssueID:     issue.ID,
+		WorkspaceID: issue.WorkspaceID,
+	})
+	if err != nil {
+		slog.Warn("failed to load issue personal capabilities for task context",
+			"issue_id", util.UUIDToString(issue.ID),
+			"error", err,
+		)
+		return nil
+	}
+	if len(rows) == 0 {
+		return nil
+	}
+	capabilities := make([]PersonalCapabilityTaskContext, 0, len(rows))
+	for _, row := range rows {
+		if !row.Enabled {
+			continue
+		}
+		capabilities = append(capabilities, PersonalCapabilityTaskContext{
+			ID:             util.UUIDToString(row.PersonalSkillID),
+			Name:           row.Name,
+			Description:    row.Description,
+			Capability:     row.Capability,
+			PageType:       row.PageType,
+			Trigger:        row.Trigger,
+			ExpectedInput:  row.ExpectedInput,
+			ExpectedOutput: row.ExpectedOutput,
+			Instructions:   row.Instructions,
+			SourceURL:      row.SourceUrl.String,
+			SourceDomain:   row.SourceDomain.String,
+			UsageNote:      row.UsageNote,
+		})
+	}
+	if len(capabilities) == 0 {
+		return nil
+	}
+	payload, err := json.Marshal(capabilities)
+	if err != nil {
+		slog.Warn("failed to marshal issue personal capabilities for task context",
+			"issue_id", util.UUIDToString(issue.ID),
+			"error", err,
+		)
+		return nil
+	}
+	return payload
 }
 
 // resolveOriginatorFromTriggerComment returns the top-of-chain HUMAN user
@@ -735,6 +802,7 @@ func (s *TaskService) enqueueIssueTaskWithCommentPlan(ctx context.Context, issue
 
 	originatorUserID := s.resolveOriginatorForIssueTask(ctx, issue, triggerCommentID)
 	runtimeMCPOverlay := s.buildRuntimeMCPOverlay(ctx, originatorUserID, agent)
+	personalCapabilities := s.buildPersonalCapabilitiesContext(ctx, issue)
 	task, err := s.Queries.CreateAgentTask(ctx, db.CreateAgentTaskParams{
 		AgentID:              issue.AssigneeID,
 		RuntimeID:            agent.RuntimeID,
@@ -750,7 +818,8 @@ func (s *TaskService) enqueueIssueTaskWithCommentPlan(ctx context.Context, issue
 		RuntimeConnectedApps: runtimeMCPOverlay.ConnectedApps,
 		// Stamp the reviewed head so dedup can distinguish this run's target
 		// from a later request against a new HEAD (TEN-356).
-		HeadSha: headShaText(s.ResolveIssueReviewSHA(ctx, issue.ID)),
+		HeadSha:              headShaText(s.ResolveIssueReviewSHA(ctx, issue.ID)),
+		PersonalCapabilities: personalCapabilities,
 	})
 	if err != nil {
 		slog.Error("task enqueue failed", "issue_id", util.UUIDToString(issue.ID), "error", err)
@@ -830,6 +899,7 @@ func (s *TaskService) enqueueMentionTaskWithCommentPlan(ctx context.Context, iss
 
 	originatorUserID := s.resolveOriginatorForIssueTask(ctx, issue, triggerCommentID)
 	runtimeMCPOverlay := s.buildRuntimeMCPOverlay(ctx, originatorUserID, agent)
+	personalCapabilities := s.buildPersonalCapabilitiesContext(ctx, issue)
 	task, err := s.Queries.CreateAgentTask(ctx, db.CreateAgentTaskParams{
 		AgentID:              agentID,
 		RuntimeID:            agent.RuntimeID,
@@ -847,7 +917,8 @@ func (s *TaskService) enqueueMentionTaskWithCommentPlan(ctx context.Context, iss
 		RuntimeConnectedApps: runtimeMCPOverlay.ConnectedApps,
 		// Stamp the reviewed head so dedup can distinguish this run's target
 		// from a later request against a new HEAD (TEN-356).
-		HeadSha: headShaText(s.ResolveIssueReviewSHA(ctx, issue.ID)),
+		HeadSha:              headShaText(s.ResolveIssueReviewSHA(ctx, issue.ID)),
+		PersonalCapabilities: personalCapabilities,
 	})
 	if err != nil {
 		slog.Error("mention task enqueue failed", "issue_id", util.UUIDToString(issue.ID), "agent_id", util.UUIDToString(agentID), "error", err)

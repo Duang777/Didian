@@ -188,6 +188,12 @@ func (h *Handler) CreateAIInboxMission(w http.ResponseWriter, r *http.Request) {
 		ActorID:          creatorID,
 		AnalyticsAgentID: firstNonNilString(planningAgentID),
 		Platform:         func() string { p, _, _ := middleware.ClientMetadataFromContext(r.Context()); return p }(),
+		AfterCreate: func(ctx context.Context, issue db.Issue) error {
+			if len(selectedSkillIDs) == 0 {
+				return nil
+			}
+			return h.linkAIInboxMissionPersonalSkills(ctx, workspaceID, issue.ID, creatorUUID, selectedSkillIDs)
+		},
 		BroadcastPayload: func(issue db.Issue, atts []db.Attachment) map[string]any {
 			return map[string]any{"issue": issueToResponse(issue, prefix)}
 		},
@@ -207,14 +213,6 @@ func (h *Handler) CreateAIInboxMission(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to create mission")
 		return
 	}
-	if len(selectedSkillIDs) > 0 {
-		if err := h.linkAIInboxMissionPersonalSkills(r.Context(), workspaceID, res.Issue.ID, creatorUUID, selectedSkillIDs); err != nil {
-			slog.Warn("link ai inbox mission personal skills failed", append(logger.RequestAttrs(r), "error", err, "workspace_id", uuidToString(workspaceID), "issue_id", uuidToString(res.Issue.ID))...)
-			writeError(w, http.StatusInternalServerError, "failed to link selected capabilities")
-			return
-		}
-	}
-
 	writeJSON(w, http.StatusCreated, CreateAIInboxMissionResponse{
 		Issue:           issueToResponse(res.Issue, prefix),
 		PlanningStatus:  planningStatus,

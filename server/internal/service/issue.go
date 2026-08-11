@@ -102,6 +102,12 @@ type IssueCreateOpts struct {
 	// daemon / lark / autopilot). Derived from middleware's client
 	// metadata at the handler layer.
 	Platform string
+
+	// AfterCreate runs after the issue row is committed and attachments are
+	// linked, but before the issue-created broadcast and automatic agent enqueue.
+	// AI Inbox uses this to persist selected personal capabilities so the first
+	// local runtime task can receive them in agent_task_queue.context.
+	AfterCreate func(ctx context.Context, issue db.Issue) error
 }
 
 // ErrActiveDuplicate signals that the duplicate guard found an active
@@ -273,6 +279,11 @@ func (s *IssueService) Create(ctx context.Context, p IssueCreateParams, opts Iss
 	}
 
 	attachments := s.linkAttachments(ctx, issue, p.AttachmentIDs)
+	if opts.AfterCreate != nil {
+		if err := opts.AfterCreate(ctx, issue); err != nil {
+			return IssueCreateResult{}, fmt.Errorf("after create: %w", err)
+		}
+	}
 
 	actorID := opts.ActorID
 	if actorID == "" {

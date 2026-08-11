@@ -39,6 +39,36 @@ Close the loop from captured knowledge to Mission execution:
 - Teach Mission creation and rerun/handoff paths to preserve the capability context.
 - Keep issue description human-readable and use context JSON as the runtime contract.
 
+## Runtime Context Contract
+
+Issue-linked local agent tasks may carry selected personal capabilities in
+`agent_task_queue.context.personal_capabilities`.
+
+```json
+{
+  "personal_capabilities": [
+    {
+      "id": "personal-skill-id",
+      "name": "Capability name",
+      "description": "Short human-readable summary",
+      "capability": "What this capability helps the agent do",
+      "page_type": "github_repo",
+      "trigger": "When to use it",
+      "expected_input": "Inputs the user or Mission should provide",
+      "expected_output": "Outputs the runtime should produce",
+      "instructions": "Reusable execution guidance",
+      "source_url": "https://example.com/source",
+      "source_domain": "example.com",
+      "usage_note": "Why this Mission selected it"
+    }
+  ]
+}
+```
+
+The Mission description must not be used as the primary transport for selected
+capabilities. It can mention user intent, but runtime tooling should read the
+structured context first.
+
 ## Acceptance
 
 - Creating a Mission from AI Inbox with selected capabilities persists relations and shows them on Mission detail.

@@ -196,7 +196,11 @@ VALUES (
     sqlc.narg(squad_id),
     CASE
         WHEN COALESCE(sqlc.narg('head_sha')::text, '') <> ''
-        THEN jsonb_build_object('head_sha', sqlc.narg('head_sha')::text)
+          OR sqlc.narg('personal_capabilities')::jsonb IS NOT NULL
+        THEN jsonb_strip_nulls(jsonb_build_object(
+            'head_sha', NULLIF(sqlc.narg('head_sha')::text, ''),
+            'personal_capabilities', sqlc.narg('personal_capabilities')::jsonb
+        ))
         ELSE NULL
     END,
     sqlc.narg(originator_user_id),

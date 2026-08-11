@@ -12,7 +12,9 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/didian-ai/didian/server/pkg/db/generated"
 	"github.com/didian-ai/didian/server/pkg/llm"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func TestAnalyzeAIInboxFallsBackToLocalUnderstanding(t *testing.T) {
@@ -130,6 +132,83 @@ func TestCreateAIInboxMissionAssignsOwnedOnlineCodexAgent(t *testing.T) {
 	})
 }
 
+func TestCreateAIInboxMissionPassesPersonalSkillsToRuntimeContext(t *testing.T) {
+	if testHandler == nil || testPool == nil {
+		t.Skip("handler test fixture not available")
+	}
+
+	_, agentID := seedOwnedCodexBrowserMemoryAgent(t)
+	skill := seedAIInboxPersonalSkill(t)
+	title := "AI Inbox Skill Runtime " + strconv.FormatInt(time.Now().UnixNano(), 10)
+
+	w := httptest.NewRecorder()
+	testHandler.CreateAIInboxMission(w, newRequest(http.MethodPost, "/api/ai-inbox/missions", map[string]any{
+		"title":                       title,
+		"description":                 "Use the selected capability as structured runtime context.",
+		"selected_personal_skill_ids": []string{skill.ID},
+	}))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("CreateAIInboxMission: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var resp CreateAIInboxMissionResponse
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	t.Cleanup(func() {
+		ctx := context.Background()
+		testPool.Exec(ctx, `DELETE FROM agent_task_queue WHERE issue_id = $1`, resp.Issue.ID)
+		testPool.Exec(ctx, `DELETE FROM issue_personal_skill WHERE issue_id = $1`, resp.Issue.ID)
+		testPool.Exec(ctx, `DELETE FROM issue WHERE id = $1`, resp.Issue.ID)
+	})
+
+	var linkedCount int
+	if err := testPool.QueryRow(context.Background(), `
+		SELECT count(*) FROM issue_personal_skill
+		WHERE issue_id = $1 AND personal_skill_id = $2
+	`, resp.Issue.ID, skill.ID).Scan(&linkedCount); err != nil {
+		t.Fatalf("count linked personal skill: %v", err)
+	}
+	if linkedCount != 1 {
+		t.Fatalf("linked personal skill count = %d, want 1", linkedCount)
+	}
+
+	var rawContext []byte
+	if err := testPool.QueryRow(context.Background(), `
+		SELECT context FROM agent_task_queue
+		WHERE issue_id = $1 AND agent_id = $2 AND status = 'queued'
+		LIMIT 1
+	`, resp.Issue.ID, agentID).Scan(&rawContext); err != nil {
+		t.Fatalf("load queued task context: %v", err)
+	}
+	var taskContext struct {
+		PersonalCapabilities []struct {
+			ID             string `json:"id"`
+			Name           string `json:"name"`
+			Capability     string `json:"capability"`
+			PageType       string `json:"page_type"`
+			ExpectedInput  string `json:"expected_input"`
+			ExpectedOutput string `json:"expected_output"`
+			Instructions   string `json:"instructions"`
+			SourceURL      string `json:"source_url"`
+			SourceDomain   string `json:"source_domain"`
+		} `json:"personal_capabilities"`
+	}
+	if err := json.Unmarshal(rawContext, &taskContext); err != nil {
+		t.Fatalf("decode task context %s: %v", string(rawContext), err)
+	}
+	if len(taskContext.PersonalCapabilities) != 1 {
+		t.Fatalf("personal_capabilities = %+v, want exactly one", taskContext.PersonalCapabilities)
+	}
+	got := taskContext.PersonalCapabilities[0]
+	if got.ID != skill.ID || got.Name != skill.Name || got.Capability != skill.Capability {
+		t.Fatalf("capability context = %+v, want seeded skill %+v", got, skill)
+	}
+	if got.ExpectedInput == "" || got.ExpectedOutput == "" || got.Instructions == "" || got.SourceURL == "" {
+		t.Fatalf("capability context missing runtime fields: %+v", got)
+	}
+}
+
 func TestCreateAIInboxMissionSucceedsWithoutOwnedCodexAgent(t *testing.T) {
 	if testHandler == nil || testPool == nil {
 		t.Skip("handler test fixture not available")
@@ -171,6 +250,48 @@ func TestCreateAIInboxMissionSucceedsWithoutOwnedCodexAgent(t *testing.T) {
 		testPool.Exec(ctx, `DELETE FROM agent_task_queue WHERE issue_id = $1`, resp.Issue.ID)
 		testPool.Exec(ctx, `DELETE FROM issue WHERE id = $1`, resp.Issue.ID)
 	})
+}
+
+type aiInboxPersonalSkillFixture struct {
+	ID         string
+	Name       string
+	Capability string
+}
+
+func seedAIInboxPersonalSkill(t *testing.T) aiInboxPersonalSkillFixture {
+	t.Helper()
+	suffix := strconv.FormatInt(time.Now().UnixNano(), 10)
+	name := "Browser Capability " + suffix
+	capability := "Use a browser capture to evaluate whether a repo should become a reusable workflow."
+	skill, err := testHandler.Queries.CreatePersonalSkill(context.Background(), db.CreatePersonalSkillParams{
+		WorkspaceID:      parseUUID(testWorkspaceID),
+		ProposalID:       pgtype.UUID{},
+		Name:             name,
+		Description:      "Structured capability fixture for AI Inbox runtime context.",
+		Capability:       capability,
+		PageType:         "github_repo",
+		Trigger:          "When a Mission asks Codex to assess a bookmarked repository.",
+		ExpectedInput:    "Repository URL, user goal, evaluation focus.",
+		ExpectedOutput:   "Adopt / Pilot / Defer recommendation with checks and risks.",
+		Instructions:     "Read upstream project facts first, then produce a reusable evaluation result with evidence.",
+		SourceUrl:        strToText("https://github.com/example/repo"),
+		SourceDomain:     strToText("github.com"),
+		EvidenceSnippets: []byte(`["README and release metadata are useful evidence."]`),
+		RiskNotes:        []byte(`["Do not rely on stale repository metadata."]`),
+		Enabled:          true,
+		CreatedBy:        parseUUID(testUserID),
+	})
+	if err != nil {
+		t.Fatalf("create personal skill: %v", err)
+	}
+	t.Cleanup(func() {
+		testPool.Exec(context.Background(), `DELETE FROM personal_skill WHERE id = $1`, skill.ID)
+	})
+	return aiInboxPersonalSkillFixture{
+		ID:         uuidToString(skill.ID),
+		Name:       skill.Name,
+		Capability: skill.Capability,
+	}
 }
 
 func createAIInboxAnalyzeCapture(t *testing.T) string {
