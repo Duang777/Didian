@@ -3534,6 +3534,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		AgentName:                        agentName,
 		AgentInstructions:                instructions,
 		AgentSkills:                      convertSkillsForEnv(skills),
+		PersonalCapabilities:             convertPersonalCapabilitiesForEnv(task.PersonalCapabilities),
 		Repos:                            convertReposForEnv(task.Repos),
 		ProjectID:                        task.ProjectID,
 		ProjectTitle:                     task.ProjectTitle,
@@ -4173,6 +4174,30 @@ func convertBrowserMemoryForEnv(memory *BrowserMemoryData) *execenv.BrowserMemor
 		ReadableText: memory.ReadableText,
 		Links:        links,
 	}
+}
+
+func convertPersonalCapabilitiesForEnv(capabilities []PersonalCapabilityTaskData) []execenv.PersonalCapabilityForEnv {
+	if len(capabilities) == 0 {
+		return nil
+	}
+	out := make([]execenv.PersonalCapabilityForEnv, 0, len(capabilities))
+	for _, capability := range capabilities {
+		out = append(out, execenv.PersonalCapabilityForEnv{
+			ID:             capability.ID,
+			Name:           capability.Name,
+			Description:    capability.Description,
+			Capability:     capability.Capability,
+			PageType:       capability.PageType,
+			Trigger:        capability.Trigger,
+			ExpectedInput:  capability.ExpectedInput,
+			ExpectedOutput: capability.ExpectedOutput,
+			Instructions:   capability.Instructions,
+			SourceURL:      capability.SourceURL,
+			SourceDomain:   capability.SourceDomain,
+			UsageNote:      capability.UsageNote,
+		})
+	}
+	return out
 }
 
 // executeAndDrain runs a backend, drains its message stream (forwarding to the

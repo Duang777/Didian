@@ -51,6 +51,25 @@ type BrowserMemoryLinkForEnv struct {
 	Title string `json:"title,omitempty"`
 }
 
+// PersonalCapabilityForEnv is a Mission-selected reusable capability delivered
+// to the local runtime. It is intentionally compact: the full source page stays
+// in Didian, while the execution brief gets only the direction and usage
+// contract needed for this run.
+type PersonalCapabilityForEnv struct {
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Description    string `json:"description,omitempty"`
+	Capability     string `json:"capability,omitempty"`
+	PageType       string `json:"page_type,omitempty"`
+	Trigger        string `json:"trigger,omitempty"`
+	ExpectedInput  string `json:"expected_input,omitempty"`
+	ExpectedOutput string `json:"expected_output,omitempty"`
+	Instructions   string `json:"instructions,omitempty"`
+	SourceURL      string `json:"source_url,omitempty"`
+	SourceDomain   string `json:"source_domain,omitempty"`
+	UsageNote      string `json:"usage_note,omitempty"`
+}
+
 // PrepareParams holds all inputs needed to set up an execution environment.
 type PrepareParams struct {
 	WorkspacesRoot string // base path for all envs (e.g., ~/didian_workspaces)
@@ -106,6 +125,7 @@ type TaskContextForEnv struct {
 	AgentName               string
 	AgentInstructions       string // agent identity/persona instructions, injected into CLAUDE.md
 	AgentSkills             []SkillContextForEnv
+	PersonalCapabilities    []PersonalCapabilityForEnv
 	Repos                   []RepoContextForEnv     // workspace repos available for checkout
 	ProjectID               string                  // issue's project, when present
 	ProjectTitle            string                  // human-readable project title

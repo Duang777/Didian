@@ -449,6 +449,88 @@ func TestWriteContextFilesOmitsSkillsWhenEmpty(t *testing.T) {
 	}
 }
 
+func TestWriteContextFilesPersonalCapabilities(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+
+	ctx := TaskContextForEnv{
+		IssueID: "mission-1",
+		PersonalCapabilities: []PersonalCapabilityForEnv{
+			{
+				ID:             "cap-1",
+				Name:           "Repo Adoption Reviewer",
+				Capability:     "Evaluate whether a repository is suitable to adopt.",
+				UsageNote:      "Selected from AI Inbox before Mission creation.",
+				Trigger:        "When a Mission asks whether to adopt a GitHub repository.",
+				ExpectedInput:  "Repository URL and project context.",
+				ExpectedOutput: "Adopt / Pilot / Defer / Reject recommendation.",
+				SourceURL:      "https://github.com/spider-rs/spider",
+				SourceDomain:   "github.com",
+			},
+		},
+	}
+
+	if err := writeContextFiles(dir, "codex", ctx, nil); err != nil {
+		t.Fatalf("writeContextFiles failed: %v", err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(dir, ".agent_context", "issue_context.md"))
+	if err != nil {
+		t.Fatalf("read issue_context.md: %v", err)
+	}
+	s := string(content)
+	for _, want := range []string{
+		"## Selected Personal Capabilities",
+		"Repo Adoption Reviewer",
+		".agent_context/personal_capabilities.json",
+	} {
+		if !strings.Contains(s, want) {
+			t.Errorf("issue context missing %q\n---\n%s", want, s)
+		}
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, ".agent_context", "personal_capabilities.json"))
+	if err != nil {
+		t.Fatalf("read personal_capabilities.json: %v", err)
+	}
+	var payload personalCapabilitiesContextFile
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		t.Fatalf("unmarshal personal_capabilities.json: %v", err)
+	}
+	if len(payload.Capabilities) != 1 {
+		t.Fatalf("capabilities len = %d, want 1", len(payload.Capabilities))
+	}
+	got := payload.Capabilities[0]
+	if got.ID != "cap-1" || got.Name != "Repo Adoption Reviewer" || got.SourceURL != "https://github.com/spider-rs/spider" {
+		t.Fatalf("unexpected capability payload: %#v", got)
+	}
+}
+
+func TestRuntimeBriefMentionsSelectedPersonalCapabilities(t *testing.T) {
+	t.Parallel()
+
+	out := buildMetaSkillContent("codex", TaskContextForEnv{
+		IssueID: "mission-1",
+		PersonalCapabilities: []PersonalCapabilityForEnv{
+			{
+				ID:        "cap-1",
+				Name:      "Repo Adoption Reviewer",
+				UsageNote: "Use this to decide whether the repo should be adopted.",
+			},
+		},
+	})
+
+	for _, want := range []string{
+		"## Selected Personal Capabilities",
+		"Repo Adoption Reviewer",
+		".agent_context/personal_capabilities.json",
+	} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("runtime brief missing %q\n---\n%s", want, out)
+		}
+	}
+}
+
 func TestWriteContextFilesAutopilotRunOnly(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()

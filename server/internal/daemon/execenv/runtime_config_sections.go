@@ -287,6 +287,31 @@ func writeProjectContext(b *strings.Builder, ctx TaskContextForEnv) {
 	}
 }
 
+func writeSelectedPersonalCapabilities(b *strings.Builder, ctx TaskContextForEnv) {
+	if len(ctx.PersonalCapabilities) == 0 {
+		return
+	}
+	b.WriteString("## Selected Personal Capabilities\n\n")
+	b.WriteString("This Mission selected reusable personal capabilities. Read `.agent_context/personal_capabilities.json` for the structured contract before planning or executing the task.\n\n")
+	for _, capability := range ctx.PersonalCapabilities {
+		name := strings.TrimSpace(capability.Name)
+		if name == "" {
+			name = strings.TrimSpace(capability.ID)
+		}
+		if name == "" {
+			continue
+		}
+		if usage := strings.TrimSpace(capability.UsageNote); usage != "" {
+			fmt.Fprintf(b, "- **%s** — %s\n", name, usage)
+		} else if summary := strings.TrimSpace(capability.Capability); summary != "" {
+			fmt.Fprintf(b, "- **%s** — %s\n", name, summary)
+		} else {
+			fmt.Fprintf(b, "- **%s**\n", name)
+		}
+	}
+	b.WriteString("\n")
+}
+
 // writeIssueMetadata emits the Issue Metadata discipline section
 // (compressed). The dispatcher gates by kind.hasIssueContext(); this
 // helper does not re-check.
@@ -567,6 +592,7 @@ func buildMetaSkillContentSlim(provider string, ctx TaskContextForEnv) string {
 
 	if kind.hasIssueContext() {
 		writeProjectContext(&b, ctx)
+		writeSelectedPersonalCapabilities(&b, ctx)
 		writeIssueMetadata(&b)
 	}
 

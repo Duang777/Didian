@@ -6,6 +6,29 @@ import (
 	"github.com/didian-ai/didian/server/internal/daemon/execenv"
 )
 
+func TestParseTaskPersonalCapabilities(t *testing.T) {
+	raw := []byte(`{
+		"head_sha": "abc123",
+		"personal_capabilities": [
+			{
+				"id": "cap-1",
+				"name": "Repo Adoption Reviewer",
+				"capability": "Evaluate a GitHub repository before adoption.",
+				"source_url": "https://github.com/spider-rs/spider"
+			},
+			{"id": "", "name": ""}
+		]
+	}`)
+
+	got := parseTaskPersonalCapabilities(raw)
+	if len(got) != 1 {
+		t.Fatalf("capabilities len = %d, want 1", len(got))
+	}
+	if got[0].ID != "cap-1" || got[0].Name != "Repo Adoption Reviewer" || got[0].SourceURL != "https://github.com/spider-rs/spider" {
+		t.Fatalf("unexpected capability: %#v", got[0])
+	}
+}
+
 // TestRelativeWorkDir covers the privacy-safe display derivation that
 // agent-transcript dialogs render in the work_dir chip. Two regression
 // concerns drive the table:

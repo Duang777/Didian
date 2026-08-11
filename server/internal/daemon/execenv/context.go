@@ -170,6 +170,12 @@ func writeContextFiles(workDir, provider string, ctx TaskContextForEnv, manifest
 		}
 	}
 
+	if len(ctx.PersonalCapabilities) > 0 {
+		if err := writePersonalCapabilityContextFiles(contextDir, ctx.PersonalCapabilities, manifest); err != nil {
+			return fmt.Errorf("write personal capability context files: %w", err)
+		}
+	}
+
 	if len(ctx.AgentSkills) > 0 {
 		skillsDir, err := resolveSkillsDir(workDir, provider, manifest)
 		if err != nil {
@@ -686,7 +692,56 @@ func renderIssueContext(provider string, ctx TaskContextForEnv) string {
 		b.WriteString("\n")
 	}
 
+	writePersonalCapabilityIssueContext(&b, ctx.PersonalCapabilities)
+
 	return b.String()
+}
+
+type personalCapabilitiesContextFile struct {
+	Capabilities []PersonalCapabilityForEnv `json:"capabilities"`
+}
+
+func writePersonalCapabilityContextFiles(contextDir string, capabilities []PersonalCapabilityForEnv, manifest *sidecarManifest) error {
+	payload := personalCapabilitiesContextFile{Capabilities: capabilities}
+	data, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal personal capabilities json: %w", err)
+	}
+	path := filepath.Join(contextDir, "personal_capabilities.json")
+	if err := recordWriteFile(path, data, 0o644, manifest); err != nil {
+		if errors.Is(err, errPathPreExists) {
+			// A pre-existing file may be user-authored in local_directory mode.
+			// The runtime brief and issue_context.md still list the selected
+			// capabilities, so collision degrades to brief-only mode instead of
+			// clobbering a path the sidecar cleanup cannot prove it owns.
+			return nil
+		}
+		return err
+	}
+	return nil
+}
+
+func writePersonalCapabilityIssueContext(b *strings.Builder, capabilities []PersonalCapabilityForEnv) {
+	if len(capabilities) == 0 {
+		return
+	}
+	b.WriteString("## Selected Personal Capabilities\n\n")
+	b.WriteString("This Mission selected reusable capabilities. Read `.agent_context/personal_capabilities.json` for the structured contract before deciding how to execute the task.\n\n")
+	for _, capability := range capabilities {
+		name := strings.TrimSpace(capability.Name)
+		if name == "" {
+			name = strings.TrimSpace(capability.ID)
+		}
+		if name == "" {
+			continue
+		}
+		if summary := strings.TrimSpace(capability.Capability); summary != "" {
+			fmt.Fprintf(b, "- **%s** — %s\n", name, summary)
+		} else {
+			fmt.Fprintf(b, "- **%s**\n", name)
+		}
+	}
+	b.WriteString("\n")
 }
 
 type browserCaptureContextFile struct {

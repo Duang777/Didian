@@ -36,6 +36,9 @@ Close the loop from captured knowledge to Mission execution:
 ### Slice 3: Runtime Protocol
 
 - Add selected capability payload to agent task `context`.
+- Include selected capabilities in daemon claim responses.
+- Write selected capabilities to `.agent_context/personal_capabilities.json`.
+- Mention selected capabilities in `issue_context.md` and the provider runtime brief.
 - Teach Mission creation and rerun/handoff paths to preserve the capability context.
 - Keep issue description human-readable and use context JSON as the runtime contract.
 
@@ -69,9 +72,20 @@ The Mission description must not be used as the primary transport for selected
 capabilities. It can mention user intent, but runtime tooling should read the
 structured context first.
 
+When a local daemon claims the task, the same capability array is delivered in
+the claim response as `personal_capabilities`, then written into the task
+workdir:
+
+- `.agent_context/personal_capabilities.json` contains the structured contract.
+- `.agent_context/issue_context.md` lists the selected capability names and
+  points the agent to the JSON file.
+- The provider runtime brief also points to the JSON file so the capability
+  context is discoverable even before the agent opens sidecar files.
+
 ## Acceptance
 
 - Creating a Mission from AI Inbox with selected capabilities persists relations and shows them on Mission detail.
 - Existing Missions without capabilities still render normally.
 - Browser capture still works without LLM configured.
 - The agent task row contains structured `personal_capabilities` when created from AI Inbox with selections.
+- Local daemon task setup writes selected capabilities into `.agent_context/personal_capabilities.json` and references them from the runtime brief.
