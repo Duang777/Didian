@@ -68,35 +68,35 @@ type BrowserCaptureDedupeResponse struct {
 }
 
 type BrowserCaptureResponse struct {
-	ID              string                      `json:"id"`
-	WorkspaceID     string                      `json:"workspace_id"`
-	CreatorID       string                      `json:"creator_id"`
-	SourceType      string                      `json:"source_type"`
-	Source          string                      `json:"source"`
-	CaptureScope    string                      `json:"capture_scope"`
-	SourceTabID     *string                     `json:"source_tab_id"`
-	URL             string                      `json:"url"`
-	NormalizedURL   string                      `json:"normalized_url"`
-	Title           string                      `json:"title"`
-	Domain          string                      `json:"domain"`
-	FaviconURL      *string                     `json:"favicon_url"`
-	Description     *string                     `json:"description"`
-	PreviewImageURL *string                     `json:"preview_image_url"`
-	SelectedText    *string                     `json:"selected_text"`
-	ReadableText    *string                     `json:"readable_text"`
-	Links           []BrowserCaptureLinkRequest `json:"links"`
-	Status          string                      `json:"status"`
-	MetadataStatus  string                      `json:"metadata_status"`
-	ArchiveStatus   string                      `json:"archive_status"`
-	SummaryStatus   string                      `json:"summary_status"`
-	EmbeddingStatus string                      `json:"embedding_status"`
-	MemoryState     string                      `json:"memory_state"`
-	FailureReason   *string                     `json:"failure_reason"`
-	Memory          *PageMemoryResponse         `json:"memory,omitempty"`
+	ID               string                      `json:"id"`
+	WorkspaceID      string                      `json:"workspace_id"`
+	CreatorID        string                      `json:"creator_id"`
+	SourceType       string                      `json:"source_type"`
+	Source           string                      `json:"source"`
+	CaptureScope     string                      `json:"capture_scope"`
+	SourceTabID      *string                     `json:"source_tab_id"`
+	URL              string                      `json:"url"`
+	NormalizedURL    string                      `json:"normalized_url"`
+	Title            string                      `json:"title"`
+	Domain           string                      `json:"domain"`
+	FaviconURL       *string                     `json:"favicon_url"`
+	Description      *string                     `json:"description"`
+	PreviewImageURL  *string                     `json:"preview_image_url"`
+	SelectedText     *string                     `json:"selected_text"`
+	ReadableText     *string                     `json:"readable_text"`
+	Links            []BrowserCaptureLinkRequest `json:"links"`
+	Status           string                      `json:"status"`
+	MetadataStatus   string                      `json:"metadata_status"`
+	ArchiveStatus    string                      `json:"archive_status"`
+	SummaryStatus    string                      `json:"summary_status"`
+	EmbeddingStatus  string                      `json:"embedding_status"`
+	MemoryState      string                      `json:"memory_state"`
+	FailureReason    *string                     `json:"failure_reason"`
+	Memory           *PageMemoryResponse         `json:"memory,omitempty"`
 	SkillOpportunity *SkillOpportunityResponse   `json:"skillOpportunity,omitempty"`
-	CapturedAt      string                      `json:"captured_at"`
-	CreatedAt       string                      `json:"created_at"`
-	UpdatedAt       string                      `json:"updated_at"`
+	CapturedAt       string                      `json:"captured_at"`
+	CreatedAt        string                      `json:"created_at"`
+	UpdatedAt        string                      `json:"updated_at"`
 }
 
 type PageMemoryResponse struct {
@@ -159,7 +159,7 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	skillOpportunityJSON := buildSkillOpportunityJSON(normalized.req)
+	skillOpportunityJSON := h.buildSkillOpportunityJSON(r.Context(), normalized.req)
 
 	var dedupe BrowserCaptureDedupeResponse
 	existing, err := h.Queries.FindCapturedSourceDuplicate(r.Context(), db.FindCapturedSourceDuplicateParams{
@@ -170,11 +170,11 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		capture := existing
 		updated, updateErr := h.Queries.UpdateCapturedSourcePreviewMetadata(r.Context(), db.UpdateCapturedSourcePreviewMetadataParams{
-			ID:              existing.ID,
-			WorkspaceID:     workspaceID,
-			FaviconUrl:      optionalText(normalized.req.FaviconURL),
-			Description:     optionalText(normalized.req.Description),
-			PreviewImageUrl: optionalText(normalized.req.PreviewImageURL),
+			ID:               existing.ID,
+			WorkspaceID:      workspaceID,
+			FaviconUrl:       optionalText(normalized.req.FaviconURL),
+			Description:      optionalText(normalized.req.Description),
+			PreviewImageUrl:  optionalText(normalized.req.PreviewImageURL),
 			SkillOpportunity: skillOpportunityJSON,
 		})
 		if updateErr == nil {
@@ -220,32 +220,32 @@ func (h *Handler) CreateBrowserCapture(w http.ResponseWriter, r *http.Request) {
 	}
 
 	capture, err := h.Queries.CreateCapturedSource(r.Context(), db.CreateCapturedSourceParams{
-		WorkspaceID:     workspaceID,
-		CreatorID:       userUUID,
-		SourceType:      normalized.req.SourceType,
-		Source:          normalized.req.Source,
-		CaptureScope:    normalized.req.CaptureScope,
-		SourceTabID:     optionalText(normalized.req.SourceTabID),
-		Url:             normalized.req.URL,
-		NormalizedUrl:   normalized.normalizedURL,
-		Title:           normalized.req.Title,
-		Domain:          normalized.req.Domain,
-		FaviconUrl:      optionalText(normalized.req.FaviconURL),
-		Description:     optionalText(normalized.req.Description),
-		PreviewImageUrl: optionalText(normalized.req.PreviewImageURL),
+		WorkspaceID:      workspaceID,
+		CreatorID:        userUUID,
+		SourceType:       normalized.req.SourceType,
+		Source:           normalized.req.Source,
+		CaptureScope:     normalized.req.CaptureScope,
+		SourceTabID:      optionalText(normalized.req.SourceTabID),
+		Url:              normalized.req.URL,
+		NormalizedUrl:    normalized.normalizedURL,
+		Title:            normalized.req.Title,
+		Domain:           normalized.req.Domain,
+		FaviconUrl:       optionalText(normalized.req.FaviconURL),
+		Description:      optionalText(normalized.req.Description),
+		PreviewImageUrl:  optionalText(normalized.req.PreviewImageURL),
 		SkillOpportunity: skillOpportunityJSON,
-		SelectedText:    optionalText(normalized.req.SelectedText),
-		ReadableText:    optionalText(normalized.req.ReadableText),
-		Links:           normalized.linksJSON,
-		TextHash:        optionalText(normalized.textHash),
-		PageHash:        optionalText(normalized.pageHash),
-		Status:          "captured",
-		MetadataStatus:  "pending",
-		ArchiveStatus:   "skipped",
-		SummaryStatus:   "pending",
-		EmbeddingStatus: "skipped",
-		MemoryState:     "active",
-		CapturedAt:      timeToTimestamptz(normalized.capturedAt),
+		SelectedText:     optionalText(normalized.req.SelectedText),
+		ReadableText:     optionalText(normalized.req.ReadableText),
+		Links:            normalized.linksJSON,
+		TextHash:         optionalText(normalized.textHash),
+		PageHash:         optionalText(normalized.pageHash),
+		Status:           "captured",
+		MetadataStatus:   "pending",
+		ArchiveStatus:    "skipped",
+		SummaryStatus:    "pending",
+		EmbeddingStatus:  "skipped",
+		MemoryState:      "active",
+		CapturedAt:       timeToTimestamptz(normalized.capturedAt),
 	})
 	if err != nil {
 		slog.Warn("CreateCapturedSource failed", append(logger.RequestAttrs(r), "error", err)...)
@@ -642,34 +642,34 @@ func browserCaptureToResponse(c db.CapturedSource) BrowserCaptureResponse {
 		}
 	}
 	return BrowserCaptureResponse{
-		ID:              uuidToString(c.ID),
-		WorkspaceID:     uuidToString(c.WorkspaceID),
-		CreatorID:       uuidToString(c.CreatorID),
-		SourceType:      c.SourceType,
-		Source:          c.Source,
-		CaptureScope:    c.CaptureScope,
-		SourceTabID:     textToPtr(c.SourceTabID),
-		URL:             c.Url,
-		NormalizedURL:   c.NormalizedUrl,
-		Title:           c.Title,
-		Domain:          c.Domain,
-		FaviconURL:      textToPtr(c.FaviconUrl),
-		Description:     textToPtr(c.Description),
-		PreviewImageURL: textToPtr(c.PreviewImageUrl),
-		SelectedText:    textToPtr(c.SelectedText),
-		ReadableText:    textToPtr(c.ReadableText),
-		Links:           links,
-		Status:          c.Status,
-		MetadataStatus:  c.MetadataStatus,
-		ArchiveStatus:   c.ArchiveStatus,
-		SummaryStatus:   c.SummaryStatus,
-		EmbeddingStatus: c.EmbeddingStatus,
-		MemoryState:     c.MemoryState,
-		FailureReason:   textToPtr(c.FailureReason),
+		ID:               uuidToString(c.ID),
+		WorkspaceID:      uuidToString(c.WorkspaceID),
+		CreatorID:        uuidToString(c.CreatorID),
+		SourceType:       c.SourceType,
+		Source:           c.Source,
+		CaptureScope:     c.CaptureScope,
+		SourceTabID:      textToPtr(c.SourceTabID),
+		URL:              c.Url,
+		NormalizedURL:    c.NormalizedUrl,
+		Title:            c.Title,
+		Domain:           c.Domain,
+		FaviconURL:       textToPtr(c.FaviconUrl),
+		Description:      textToPtr(c.Description),
+		PreviewImageURL:  textToPtr(c.PreviewImageUrl),
+		SelectedText:     textToPtr(c.SelectedText),
+		ReadableText:     textToPtr(c.ReadableText),
+		Links:            links,
+		Status:           c.Status,
+		MetadataStatus:   c.MetadataStatus,
+		ArchiveStatus:    c.ArchiveStatus,
+		SummaryStatus:    c.SummaryStatus,
+		EmbeddingStatus:  c.EmbeddingStatus,
+		MemoryState:      c.MemoryState,
+		FailureReason:    textToPtr(c.FailureReason),
 		SkillOpportunity: skillOpportunity,
-		CapturedAt:      timestampToString(c.CapturedAt),
-		CreatedAt:       timestampToString(c.CreatedAt),
-		UpdatedAt:       timestampToString(c.UpdatedAt),
+		CapturedAt:       timestampToString(c.CapturedAt),
+		CreatedAt:        timestampToString(c.CreatedAt),
+		UpdatedAt:        timestampToString(c.UpdatedAt),
 	}
 }
 

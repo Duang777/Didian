@@ -249,6 +249,7 @@ const SkillOpportunitySchema = z.object({
   proposedTitle: z.string().default(""),
   proposedCapability: z.string().default(""),
   whyUseful: z.string().default(""),
+  directionQuestions: z.array(z.string()).optional().default([]),
   triggerExamples: z.array(z.string()).optional().default([]),
   expectedInputs: z.array(z.string()).optional().default([]),
   expectedOutputs: z.array(z.string()).optional().default([]),

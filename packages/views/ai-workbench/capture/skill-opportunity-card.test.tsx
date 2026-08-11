@@ -10,6 +10,7 @@ const sample: SkillOpportunity = {
   proposedTitle: "解读 GitHub 仓库",
   proposedCapability: "把一个 GitHub 仓库的 README 和结构总结成上手指南。",
   whyUseful: "你经常收藏开源项目，但很少回头看。",
+  directionQuestions: ["主要用于选型还是上手？"],
   triggerExamples: ["帮我看下这个仓库在做什么"],
   expectedInputs: ["仓库 URL"],
   expectedOutputs: ["上手指南"],
@@ -28,6 +29,7 @@ describe("SkillOpportunityCard", () => {
     expect(screen.getByText("开源仓库")).toBeTruthy();
     expect(screen.getByText("github.com")).toBeTruthy();
     expect(screen.getByText("高")).toBeTruthy();
+    expect(screen.getByText("主要用于选型还是上手？")).toBeTruthy();
   });
 
   it("disables generate button and shows pending copy when onGenerate is omitted", () => {

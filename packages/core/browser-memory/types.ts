@@ -17,6 +17,7 @@ export interface SkillOpportunity {
   proposedTitle: string;
   proposedCapability: string;
   whyUseful: string;
+  directionQuestions: string[];
   triggerExamples: string[];
   expectedInputs: string[];
   expectedOutputs: string[];

@@ -1,30 +1,49 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/didian-ai/didian/server/pkg/llm"
 )
 
 type SkillOpportunityResponse struct {
-	ShouldSuggest         bool     `json:"shouldSuggest"`
-	Confidence            float64  `json:"confidence"`
-	PageType              string   `json:"pageType"`
-	ProposedTitle         string   `json:"proposedTitle"`
-	ProposedCapability    string   `json:"proposedCapability"`
-	WhyUseful             string   `json:"whyUseful"`
-	TriggerExamples       []string `json:"triggerExamples"`
-	ExpectedInputs        []string `json:"expectedInputs"`
-	ExpectedOutputs       []string `json:"expectedOutputs"`
-	ReusableWorkflowScore float64  `json:"reusableWorkflowScore"`
-	InstructionDensityScore float64 `json:"instructionDensityScore"`
-	FutureUseScore        float64  `json:"futureUseScore"`
-	EvidenceSnippets      []string `json:"evidenceSnippets"`
-	RiskNotes             []string `json:"riskNotes"`
+	ShouldSuggest           bool     `json:"shouldSuggest"`
+	Confidence              float64  `json:"confidence"`
+	PageType                string   `json:"pageType"`
+	ProposedTitle           string   `json:"proposedTitle"`
+	ProposedCapability      string   `json:"proposedCapability"`
+	WhyUseful               string   `json:"whyUseful"`
+	DirectionQuestions      []string `json:"directionQuestions"`
+	TriggerExamples         []string `json:"triggerExamples"`
+	ExpectedInputs          []string `json:"expectedInputs"`
+	ExpectedOutputs         []string `json:"expectedOutputs"`
+	ReusableWorkflowScore   float64  `json:"reusableWorkflowScore"`
+	InstructionDensityScore float64  `json:"instructionDensityScore"`
+	FutureUseScore          float64  `json:"futureUseScore"`
+	EvidenceSnippets        []string `json:"evidenceSnippets"`
+	RiskNotes               []string `json:"riskNotes"`
 }
 
-func buildSkillOpportunityJSON(req CreateBrowserCaptureRequest) []byte {
+func (h *Handler) buildSkillOpportunityJSON(ctx context.Context, req CreateBrowserCaptureRequest) []byte {
+	if h != nil && h.LLM != nil && h.LLM.Enabled() {
+		if opportunity, err := h.buildSkillOpportunityWithLLM(ctx, req); err == nil {
+			if opportunity == nil || !opportunity.ShouldSuggest {
+				return nil
+			}
+			if payload, err := json.Marshal(opportunity); err == nil {
+				return payload
+			}
+		}
+	}
+	return buildLocalSkillOpportunityJSON(req)
+}
+
+func buildLocalSkillOpportunityJSON(req CreateBrowserCaptureRequest) []byte {
 	opportunity := buildSkillOpportunity(req)
 	if opportunity == nil {
 		return nil
@@ -34,6 +53,21 @@ func buildSkillOpportunityJSON(req CreateBrowserCaptureRequest) []byte {
 		return nil
 	}
 	return payload
+}
+
+func (h *Handler) buildSkillOpportunityWithLLM(ctx context.Context, req CreateBrowserCaptureRequest) (*SkillOpportunityResponse, error) {
+	if h.LLM == nil || !h.LLM.Enabled() {
+		return nil, llm.ErrNotConfigured
+	}
+	text, err := h.LLM.GenerateText(ctx, "", skillOpportunitySystemPrompt(), skillOpportunityUserPrompt(req))
+	if err != nil {
+		return nil, err
+	}
+	var parsed SkillOpportunityResponse
+	if err := json.Unmarshal([]byte(strings.TrimSpace(text)), &parsed); err != nil {
+		return nil, err
+	}
+	return normalizeSkillOpportunity(parsed, req), nil
 }
 
 func buildSkillOpportunity(req CreateBrowserCaptureRequest) *SkillOpportunityResponse {
@@ -53,21 +87,69 @@ func buildSkillOpportunity(req CreateBrowserCaptureRequest) *SkillOpportunityRes
 	}
 
 	return &SkillOpportunityResponse{
-		ShouldSuggest:          true,
-		Confidence:             confidence,
-		PageType:               pageType,
-		ProposedTitle:          proposedSkillTitle(pageType, req),
-		ProposedCapability:     proposedSkillCapability(pageType),
-		WhyUseful:              proposedSkillWhyUseful(pageType),
-		TriggerExamples:        proposedSkillTriggerExamples(pageType, req),
-		ExpectedInputs:         proposedSkillInputs(pageType),
-		ExpectedOutputs:        proposedSkillOutputs(pageType),
-		ReusableWorkflowScore:  reusableWorkflowScore,
+		ShouldSuggest:           true,
+		Confidence:              confidence,
+		PageType:                pageType,
+		ProposedTitle:           proposedSkillTitle(pageType, req),
+		ProposedCapability:      proposedSkillCapability(pageType),
+		WhyUseful:               proposedSkillWhyUseful(pageType),
+		DirectionQuestions:      proposedSkillDirectionQuestions(pageType),
+		TriggerExamples:         proposedSkillTriggerExamples(pageType, req),
+		ExpectedInputs:          proposedSkillInputs(pageType),
+		ExpectedOutputs:         proposedSkillOutputs(pageType),
+		ReusableWorkflowScore:   reusableWorkflowScore,
 		InstructionDensityScore: instructionDensityScore,
-		FutureUseScore:         futureUseScore,
-		EvidenceSnippets:       evidenceSnippets,
-		RiskNotes:              proposedSkillRiskNotes(pageType),
+		FutureUseScore:          futureUseScore,
+		EvidenceSnippets:        evidenceSnippets,
+		RiskNotes:               proposedSkillRiskNotes(pageType),
 	}
+}
+
+func skillOpportunitySystemPrompt() string {
+	return strings.Join([]string{
+		"You judge whether a saved web page should become a reusable Didian personal capability.",
+		"Return exactly one JSON object using camelCase keys matching: shouldSuggest, confidence, pageType, proposedTitle, proposedCapability, whyUseful, directionQuestions, triggerExamples, expectedInputs, expectedOutputs, reusableWorkflowScore, instructionDensityScore, futureUseScore, evidenceSnippets, riskNotes.",
+		"Allowed pageType: technical_doc, github_repo, tutorial, blog, paper, product_page, unknown.",
+		"Only suggest when the page can become a repeatable workflow for a local coding/research agent, not just a one-off summary.",
+		"directionQuestions must ask 2-4 concrete questions the user should answer before generating the capability.",
+		"Do not include markdown fences or extra commentary.",
+	}, "\n")
+}
+
+func skillOpportunityUserPrompt(req CreateBrowserCaptureRequest) string {
+	return fmt.Sprintf(
+		"URL: %s\nTitle: %s\nDomain: %s\nDescription: %s\nSelected text: %s\nReadable text preview: %s\n",
+		req.URL,
+		req.Title,
+		req.Domain,
+		req.Description,
+		truncateTrimmed(req.SelectedText, 900),
+		truncateTrimmed(req.ReadableText, 1800),
+	)
+}
+
+func normalizeSkillOpportunity(opp SkillOpportunityResponse, req CreateBrowserCaptureRequest) *SkillOpportunityResponse {
+	if !opp.ShouldSuggest {
+		return &SkillOpportunityResponse{ShouldSuggest: false}
+	}
+	opp.PageType = normalizeSkillOpportunityPageType(opp.PageType, req)
+	opp.Confidence = clampOpportunityScore(opp.Confidence)
+	opp.ReusableWorkflowScore = clampOpportunityScore(opp.ReusableWorkflowScore)
+	opp.InstructionDensityScore = clampOpportunityScore(opp.InstructionDensityScore)
+	opp.FutureUseScore = clampOpportunityScore(opp.FutureUseScore)
+	opp.ProposedTitle = truncateTrimmed(firstNonEmpty(opp.ProposedTitle, proposedSkillTitle(opp.PageType, req)), 120)
+	opp.ProposedCapability = truncateTrimmed(firstNonEmpty(opp.ProposedCapability, proposedSkillCapability(opp.PageType)), 240)
+	opp.WhyUseful = truncateTrimmed(firstNonEmpty(opp.WhyUseful, proposedSkillWhyUseful(opp.PageType)), 360)
+	opp.DirectionQuestions = normalizeStringList(opp.DirectionQuestions, proposedSkillDirectionQuestions(opp.PageType), 4, 140)
+	opp.TriggerExamples = normalizeStringList(opp.TriggerExamples, proposedSkillTriggerExamples(opp.PageType, req), 4, 120)
+	opp.ExpectedInputs = normalizeStringList(opp.ExpectedInputs, proposedSkillInputs(opp.PageType), 5, 80)
+	opp.ExpectedOutputs = normalizeStringList(opp.ExpectedOutputs, proposedSkillOutputs(opp.PageType), 5, 80)
+	opp.EvidenceSnippets = normalizeStringList(opp.EvidenceSnippets, collectSkillOpportunityEvidence(req), 4, 180)
+	opp.RiskNotes = normalizeStringList(opp.RiskNotes, proposedSkillRiskNotes(opp.PageType), 4, 160)
+	if opp.Confidence <= 0 {
+		opp.Confidence = roundSkillOpportunityScore((opp.ReusableWorkflowScore * 0.35) + (opp.InstructionDensityScore * 0.35) + (opp.FutureUseScore * 0.3))
+	}
+	return &opp
 }
 
 func inferSkillOpportunityPageType(req CreateBrowserCaptureRequest) string {
@@ -99,6 +181,16 @@ func inferSkillOpportunityPageType(req CreateBrowserCaptureRequest) string {
 		return "tutorial"
 	default:
 		return "unknown"
+	}
+}
+
+func normalizeSkillOpportunityPageType(pageType string, req CreateBrowserCaptureRequest) string {
+	pageType = strings.TrimSpace(pageType)
+	switch pageType {
+	case "technical_doc", "github_repo", "tutorial", "blog", "paper", "product_page":
+		return pageType
+	default:
+		return inferSkillOpportunityPageType(req)
 	}
 }
 
@@ -284,6 +376,58 @@ func proposedSkillRiskNotes(pageType string) []string {
 	default:
 		return []string{"文档版本可能更新，Skill 应保留来源 URL 以便后续重新生成。"}
 	}
+}
+
+func proposedSkillDirectionQuestions(pageType string) []string {
+	switch pageType {
+	case "github_repo":
+		return []string{"这个能力主要用于选型、上手，还是正式集成？", "需要重点检查哪些风险：license、维护活跃度、性能、部署成本，还是语言生态？", "希望输出 Adopt / Pilot / Defer / Reject 这类结论，还是生成上手计划？"}
+	case "tutorial":
+		return []string{"这个能力要服务哪种项目栈或运行环境？", "用户执行前需要提供哪些当前配置或错误信息？", "最终更需要步骤清单、自动化脚本，还是排障清单？"}
+	case "technical_doc":
+		return []string{"这个能力主要面向接入、排错，还是 API 查询？", "需要用户提供哪些项目上下文：框架、语言、鉴权方式，还是错误日志？", "输出更偏示例代码、环境变量清单，还是检查清单？"}
+	default:
+		return []string{"这个能力要解决哪个可重复任务？", "用户触发时需要提供哪些上下文？", "最终输出应该是什么格式？"}
+	}
+}
+
+func clampOpportunityScore(value float64) float64 {
+	switch {
+	case value < 0:
+		return 0
+	case value > 1:
+		return 1
+	default:
+		return roundSkillOpportunityScore(value)
+	}
+}
+
+func normalizeStringList(values, fallback []string, maxItems, maxLen int) []string {
+	out := make([]string, 0, maxItems)
+	seen := map[string]struct{}{}
+	appendValue := func(value string) {
+		if len(out) >= maxItems {
+			return
+		}
+		value = truncateTrimmed(normalizeSpace(value), maxLen)
+		if value == "" {
+			return
+		}
+		if _, ok := seen[value]; ok {
+			return
+		}
+		seen[value] = struct{}{}
+		out = append(out, value)
+	}
+	for _, value := range values {
+		appendValue(value)
+	}
+	if len(out) == 0 {
+		for _, value := range fallback {
+			appendValue(value)
+		}
+	}
+	return out
 }
 
 func collectSkillOpportunityEvidence(req CreateBrowserCaptureRequest) []string {

@@ -9,6 +9,7 @@ const COPY = {
   heading: "这个网页可以变成一个个人 Skill",
   capabilityLabel: "它能帮你做什么",
   whyLabel: "为什么值得生成",
+  directionLabel: "生成前先确认",
   triggerLabel: "什么时候会用到",
   inputLabel: "需要你提供",
   outputLabel: "它会产出",
@@ -98,6 +99,7 @@ export function SkillOpportunityCard({
         </OpportunityBlock>
       ) : null}
 
+      <OpportunityList label={COPY.directionLabel} values={opportunity.directionQuestions} />
       <OpportunityList label={COPY.triggerLabel} values={opportunity.triggerExamples} quoted />
       <OpportunityChips label={COPY.inputLabel} values={opportunity.expectedInputs} />
       <OpportunityChips label={COPY.outputLabel} values={opportunity.expectedOutputs} />
