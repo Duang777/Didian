@@ -122,7 +122,7 @@ export function SkillDraftReviewPage({ proposalId }: { proposalId: string }) {
       const personalSkill = await confirmMutation.mutateAsync(proposalId);
       toast.success("已启用为个人 Skill");
       qc.invalidateQueries({ queryKey: ["browser-memory", wsId, "capture", proposal.captured_source_id] });
-      router.push(paths.workspace(slug).captureDetail(proposal.captured_source_id));
+      router.push(paths.workspace(slug).skillProposals());
       void personalSkill;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "启用失败");
@@ -163,6 +163,9 @@ export function SkillDraftReviewPage({ proposalId }: { proposalId: string }) {
               </Badge>
             ) : (
               <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => router.push(paths.workspace(slug).skillProposals())}>
+                  <Sparkles /> Skill Center
+                </Button>
                 <Button variant="outline" size="sm" onClick={handleSave} disabled={!dirty || isSaving}>
                   <Save /> {isSaving ? "保存中" : "保存草稿"}
                 </Button>

@@ -48,6 +48,7 @@ vi.mock("@didian/core/paths", () => ({
     workspace: (slug: string) => ({
       captureDetail: (id: string) => `/${slug}/captures/${id}`,
       aiInbox: () => `/${slug}/ai-inbox`,
+      skillProposals: () => `/${slug}/skill-proposals`,
       skillProposal: (id: string) => `/${slug}/skill-proposals/${id}`,
     }),
   },
@@ -84,7 +85,7 @@ describe("SkillDraftReviewPage", () => {
     renderPage();
     fireEvent.click(screen.getByText("启用为个人 Skill"));
     await waitFor(() => expect(confirmMutation.mutateAsync).toHaveBeenCalledWith("prop-1"));
-    await waitFor(() => expect(routerPush).toHaveBeenCalledWith("/ws-slug/captures/cap-1"));
+    await waitFor(() => expect(routerPush).toHaveBeenCalledWith("/ws-slug/skill-proposals"));
   });
 
   it("saves the draft when description is edited", async () => {
