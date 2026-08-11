@@ -15,7 +15,18 @@ import {
   useArchiveBrowserCapture,
   useRestoreBrowserCapture,
   type BrowserCapture,
+  type SkillOpportunityPageType,
 } from "@didian/core/browser-memory";
+import {
+  SkillOpportunityCard,
+} from "./skill-opportunity-card";
+import {
+  addSkillOpportunityMute,
+  isSkillOpportunityMuted,
+  loadSkillOpportunityMutes,
+  saveSkillOpportunityMutes,
+  type SkillOpportunityMutes,
+} from "./skill-opportunity-preferences";
 import { useWorkspaceId } from "@didian/core/hooks";
 import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
 import { Badge } from "@didian/ui/components/ui/badge";
@@ -69,6 +80,7 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
 
   const capture = captureQuery.data;
   const isArchived = capture?.memory_state === "archived";
+  const [mutes, setMutes] = useState<SkillOpportunityMutes>(() => loadSkillOpportunityMutes());
   const pendingMutation = archiveMutation.isPending || restoreMutation.isPending;
   const relatedCaptures = useMemo(() => {
     const all = relatedQuery.data?.captures ?? [];
@@ -96,6 +108,13 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "操作失败");
     }
+  }
+
+  function handleMutePageType(pageType: SkillOpportunityPageType) {
+    const next = addSkillOpportunityMute(mutes, "page_type", pageType);
+    setMutes(next);
+    saveSkillOpportunityMutes(next);
+    toast.success("已减少这类网页的 Skill 推荐");
   }
 
   return (
@@ -199,6 +218,15 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
                 </ul>
               </WorkbenchSection>
             )}
+
+            {capture.skillOpportunity && capture.skillOpportunity.shouldSuggest &&
+            !isSkillOpportunityMuted(mutes, capture.skillOpportunity.pageType, capture.domain) ? (
+              <SkillOpportunityCard
+                opportunity={capture.skillOpportunity}
+                domain={capture.domain}
+                onMutePageType={handleMutePageType}
+              />
+            ) : null}
 
             {capture.memory &&
             (capture.memory.summary || capture.memory.one_line_takeaway || capture.memory.key_points.length > 0) ? (
