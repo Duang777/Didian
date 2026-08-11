@@ -15,6 +15,7 @@
 - 新产品页面优先放在 `packages/views/ai-workbench/`。
 - 第一版主入口是 AI Inbox、Missions、Atlas、System。
 - 不把 AI Studio / Autopilot 做成 MVP 主页面；相关旧页面只作为 System / Advanced 兼容入口。
+- Skill Center 属于 System 侧的个人能力管理入口，承载收藏生成的草稿和个人 Skill 库，不替代旧 workspace Skills 资产页。
 - Mission 卡片：目标、状态、runtime、输入数、Review 数、artifact 预览、当前步骤。
 - Mission 详情：Inputs、Plan、Activity、Evidence、Review、Outputs、Related Atlas。
 - Runtime 展示：provider、版本、状态、最后心跳、当前任务。

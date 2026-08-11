@@ -106,6 +106,7 @@ vi.mock("@didian/core/paths", () => ({
     chat: () => "/acme/chat",
     missions: () => "/acme/missions",
     atlas: () => "/acme/atlas",
+    skillProposals: () => "/acme/skill-proposals",
     aiStudio: () => "/acme/ai-studio",
     autopilot: () => "/acme/autopilot",
     system: () => "/acme/system",
@@ -319,13 +320,29 @@ describe("personal nav — Chat", () => {
 });
 
 describe("workspace IA nav", () => {
-  it("shows the AI workbench modules as first-level navigation", () => {
+  beforeEach(() => {
+    navigation.current.pathname = "/acme/issues";
+  });
+
+  it("shows the AI workbench modules and Skill Center entry", () => {
     const { container } = render(<AppSidebar />);
 
     expect(container.querySelector('button[data-href="/acme/ai-inbox"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/missions"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/atlas"]')).not.toBeNull();
+    expect(container.querySelector('button[data-href="/acme/skill-proposals"]')).not.toBeNull();
     expect(container.querySelector('button[data-href="/acme/system"]')).not.toBeNull();
+  });
+
+  it("highlights the Skill Center nav entry on proposal routes", () => {
+    navigation.current.pathname = "/acme/skill-proposals/prop-1";
+
+    const { container } = render(<AppSidebar />);
+
+    expect(container.querySelector('button[data-href="/acme/skill-proposals"]')).toHaveAttribute(
+      "data-active",
+      "true",
+    );
   });
 
   it("keeps AI Studio and Autopilot out of MVP first-level navigation", () => {

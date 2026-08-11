@@ -17,9 +17,9 @@
 - `ai-inbox`：万能输入、capture card、AI 理解面板、创建 Mission。
 - `missions`：Mission 队列和 Codex Run 执行现场。
 - `atlas`：Collection、Resource、Evidence、Ask Atlas。
-- `system`：Runtime、Settings、Advanced 入口。
+- `system`：Runtime、Settings、Advanced 入口，以及 Skill Center 这类个人能力管理入口。
 
-MVP 不新增 AI Studio / Autopilot 主页面。Agents/Skills/Squads/Autopilots 只从 System / Advanced 或旧兼容路由进入。
+MVP 不新增 AI Studio / Autopilot 主页面。Agents/Skills/Squads/Autopilots 只从 System / Advanced 或旧兼容路由进入；Skill Center 只管理收藏生成的个人能力，不替代 workspace Skills 资产页。
 
 ## 边界
 

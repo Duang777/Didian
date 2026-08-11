@@ -29,6 +29,7 @@ import {
   SquarePen,
   X,
   Network,
+  Sparkles,
 } from "lucide-react";
 import { WorkspaceAvatar } from "../workspace/workspace-avatar";
 import { ActorAvatar } from "@didian/ui/components/common/actor-avatar";
@@ -110,6 +111,7 @@ type NavKey =
   | "chat"
   | "missions"
   | "atlas"
+  | "skillProposals"
   | "system";
 
 // Static schema (key + icon) — labels resolved at render via useT("layout").
@@ -118,6 +120,7 @@ type NavLabelKey =
   | "chat"
   | "missions"
   | "atlas"
+  | "skill_center"
   | "system";
 
 const personalNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
@@ -132,6 +135,7 @@ const workspaceNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[]
 
 const configureNav: { key: NavKey; labelKey: NavLabelKey; icon: typeof Inbox }[] = [
   { key: "system", labelKey: "system", icon: Settings },
+  { key: "skillProposals", labelKey: "skill_center", icon: Sparkles },
 ];
 
 function DraftDot() {
