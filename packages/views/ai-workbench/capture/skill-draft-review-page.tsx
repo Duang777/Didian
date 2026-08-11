@@ -1,7 +1,7 @@
 "use client";
+/* eslint-disable i18next/no-literal-string -- AI Workbench experimental pages keep product copy colocated until locale extraction. */
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Save, Sparkles } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWorkspaceId } from "@didian/core/hooks";
@@ -25,6 +25,7 @@ import { Input } from "@didian/ui/components/ui/input";
 import { Label } from "@didian/ui/components/ui/label";
 import { Textarea } from "@didian/ui/components/ui/textarea";
 import { toast } from "sonner";
+import { useNavigation } from "../../navigation";
 import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
 import {
   SKILL_OPPORTUNITY_PAGE_TYPE_LABEL,
@@ -45,7 +46,7 @@ function pageTypeLabel(pageType: string): string {
 }
 
 export function SkillDraftReviewPage({ proposalId }: { proposalId: string }) {
-  const router = useRouter();
+  const router = useNavigation();
   const slug = useRequiredWorkspaceSlug();
   const wsId = useWorkspaceId();
   const qc = useQueryClient();

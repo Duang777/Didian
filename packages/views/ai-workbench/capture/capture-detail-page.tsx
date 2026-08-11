@@ -1,7 +1,7 @@
 "use client";
+/* eslint-disable i18next/no-literal-string -- AI Workbench experimental pages keep product copy colocated until locale extraction. */
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Archive,
@@ -30,12 +30,12 @@ import {
 } from "./skill-opportunity-preferences";
 import { useWorkspaceId } from "@didian/core/hooks";
 import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
-import { useRouter } from "next/navigation";
 import { Badge } from "@didian/ui/components/ui/badge";
 import { Button } from "@didian/ui/components/ui/button";
 import { Skeleton } from "@didian/ui/components/ui/skeleton";
 import { DidianIcon } from "@didian/ui/components/common/didian-icon";
 import { toast } from "sonner";
+import { AppLink, useNavigation } from "../../navigation";
 import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
 
 const COPY = {
@@ -75,7 +75,7 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
   const archiveMutation = useArchiveBrowserCapture();
   const restoreMutation = useRestoreBrowserCapture();
   const createProposal = useCreateSkillProposal();
-  const router = useRouter();
+  const router = useNavigation();
   const relatedQuery = useQuery({
     queryKey: ["browser-memory", wsId, "related-captures", captureId],
     queryFn: () => api.listBrowserCaptures({ limit: 12 }),
@@ -288,7 +288,7 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
                 <ul className="grid gap-1.5">
                   {relatedCaptures.map((rel) => (
                     <li key={rel.id}>
-                      <Link
+                      <AppLink
                         href={paths.workspace(workspaceSlug).captureDetail(rel.id)}
                         className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-2 text-sm transition-colors hover:bg-muted"
                       >
@@ -298,7 +298,7 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
                           <span className="shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] text-muted-foreground">同域</span>
                         ) : null}
                         <span className="hidden shrink-0 truncate text-xs text-muted-foreground sm:inline">{rel.domain}</span>
-                      </Link>
+                      </AppLink>
                     </li>
                   ))}
                 </ul>

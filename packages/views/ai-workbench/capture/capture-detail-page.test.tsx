@@ -67,16 +67,13 @@ vi.mock("@didian/core/paths", async () => {
   };
 });
 
-vi.mock("next/link", () => ({
-  default: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
+vi.mock("../../navigation", () => ({
+  AppLink: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
     <a href={href} className={className} data-testid="related-link">
       {children}
     </a>
   ),
-}));
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useNavigation: () => ({ push: vi.fn() }),
 }));
 
 describe("CaptureDetailPage related captures", () => {

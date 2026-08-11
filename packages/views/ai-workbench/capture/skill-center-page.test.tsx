@@ -74,8 +74,8 @@ vi.mock("@didian/core/paths", () => ({
   },
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: routerPush }),
+vi.mock("../../navigation", () => ({
+  useNavigation: () => ({ push: routerPush }),
 }));
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable i18next/no-literal-string -- AI Workbench experimental pages keep product copy colocated until locale extraction. */
 
 import { Sparkles } from "lucide-react";
 import type { SkillOpportunity, SkillOpportunityPageType } from "@didian/core/browser-memory";

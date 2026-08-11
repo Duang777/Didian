@@ -1,7 +1,7 @@
 "use client";
+/* eslint-disable i18next/no-literal-string -- AI Workbench experimental pages keep product copy colocated until locale extraction. */
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   BookOpenText,
@@ -23,6 +23,7 @@ import {
   type SkillProposal,
 } from "@didian/core/browser-memory";
 import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
+import { useNavigation } from "../../navigation";
 import { Badge } from "@didian/ui/components/ui/badge";
 import { Button } from "@didian/ui/components/ui/button";
 import {
@@ -307,7 +308,7 @@ function EmptyPanel({
 }
 
 export function SkillCenterPage() {
-  const router = useRouter();
+  const router = useNavigation();
   const slug = useRequiredWorkspaceSlug();
 
   const [search, setSearch] = useState("");
@@ -319,8 +320,8 @@ export function SkillCenterPage() {
   const deletePersonalSkillMutation = useDeletePersonalSkill();
   const usePersonalSkillMutation = useUsePersonalSkill();
 
-  const proposals = proposalsQuery.data ?? [];
-  const personalSkills = skillsQuery.data ?? [];
+  const proposals = useMemo(() => proposalsQuery.data ?? [], [proposalsQuery.data]);
+  const personalSkills = useMemo(() => skillsQuery.data ?? [], [skillsQuery.data]);
 
   const normalizedQuery = search.trim().toLowerCase();
   const visibleProposals = useMemo(
@@ -366,7 +367,7 @@ export function SkillCenterPage() {
     }
   }
 
-  async function useSkill(skill: PersonalSkill) {
+  async function recordSkillUse(skill: PersonalSkill) {
     try {
       await usePersonalSkillMutation.mutateAsync(skill.id);
       toast.success("已记录一次使用");
@@ -476,7 +477,7 @@ export function SkillCenterPage() {
                 <PersonalSkillCard
                   key={skill.id}
                   skill={skill}
-                  onUse={() => void useSkill(skill)}
+                  onUse={() => void recordSkillUse(skill)}
                   onOpenProposal={
                     skill.proposal_id
                       ? () => router.push(paths.workspace(slug).skillProposal(skill.proposal_id))
@@ -524,4 +525,3 @@ export function SkillCenterPage() {
     </WorkbenchShell>
   );
 }
-
