@@ -431,6 +431,30 @@ export const IssueTriggerPreviewSchema = z.object({
 // to {} so consumers never need to nil-guard `issue.metadata`.
 const IssueMetadataSchema = z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({});
 
+const IssuePersonalSkillSchema = z.object({
+  link_id: z.string().default(""),
+  issue_id: z.string().default(""),
+  personal_skill_id: z.string().default(""),
+  selected_by: z.string().nullable().optional(),
+  source: z.string().default(""),
+  usage_note: z.string().default(""),
+  linked_at: z.string().default(""),
+  name: z.string().default(""),
+  description: z.string().default(""),
+  capability: z.string().default(""),
+  page_type: z.string().default(""),
+  trigger: z.string().default(""),
+  expected_input: z.string().default(""),
+  expected_output: z.string().default(""),
+  instructions: z.string().default(""),
+  source_url: z.string().default(""),
+  source_domain: z.string().default(""),
+  evidence_snippets: z.array(z.string()).optional().default([]),
+  risk_notes: z.array(z.string()).optional().default([]),
+  enabled: z.boolean().default(false),
+  use_count: z.number().default(0),
+}).loose();
+
 export const IssueSchema = z.object({
   id: z.string(),
   workspace_id: z.string(),
@@ -455,6 +479,7 @@ export const IssueSchema = z.object({
   metadata: IssueMetadataSchema,
   reactions: z.array(z.unknown()).optional(),
   labels: z.array(z.unknown()).optional(),
+  personal_skills: z.array(IssuePersonalSkillSchema).optional().default([]),
   created_at: z.string(),
   updated_at: z.string(),
 }).loose();

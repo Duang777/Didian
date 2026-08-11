@@ -576,6 +576,17 @@ type IssueLabel struct {
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
+type IssuePersonalSkill struct {
+	ID              pgtype.UUID        `json:"id"`
+	WorkspaceID     pgtype.UUID        `json:"workspace_id"`
+	IssueID         pgtype.UUID        `json:"issue_id"`
+	PersonalSkillID pgtype.UUID        `json:"personal_skill_id"`
+	SelectedBy      pgtype.UUID        `json:"selected_by"`
+	Source          string             `json:"source"`
+	UsageNote       string             `json:"usage_note"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
 type IssuePullRequest struct {
 	IssueID       pgtype.UUID        `json:"issue_id"`
 	PullRequestID pgtype.UUID        `json:"pull_request_id"`

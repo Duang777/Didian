@@ -362,7 +362,7 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByText("已选")).toBeInTheDocument();
   });
 
-  it("writes selected personal skills into mission handoff and records usage after creation", async () => {
+  it("sends selected personal skills as structured Mission capability ids", async () => {
     const user = userEvent.setup();
     listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
     listPersonalSkills.mockResolvedValue([personalSkillFixture()]);
@@ -377,12 +377,12 @@ describe("AiInboxPage browser captures", () => {
     await user.click(within(screen.getByRole("dialog", { name: "收藏输入链接？" })).getByRole("button", { name: "暂不收藏，继续创建" }));
 
     await waitFor(() => expect(createAiInboxMission).toHaveBeenCalledTimes(1));
+    expect(createAiInboxMission.mock.calls[0]?.[0]).toMatchObject({
+      selectedPersonalSkillIds: ["skill-1"],
+    });
     const description = createAiInboxMission.mock.calls[0]?.[0]?.description as string;
-    expect(description).toContain("## 使用的个人能力");
-    expect(description).toContain("### browser-use 尽调助手");
-    expect(description).toContain("检查 README、安装方式、license、维护信号和集成风险，并给出采用建议。");
-    expect(description).toContain("先刷新 README、license、release 和 examples");
-    await waitFor(() => expect(usePersonalSkill).toHaveBeenCalledWith("ws-test", "skill-1"));
+    expect(description).not.toContain("## 使用的个人能力");
+    expect(usePersonalSkill).not.toHaveBeenCalled();
   });
 
   it("creates a mission only from the typed input and keeps existing captures out of mission context", async () => {

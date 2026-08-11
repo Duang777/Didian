@@ -25,7 +25,6 @@ import {
   useCreateBrowserCapture,
   usePersonalSkills,
   useRestoreBrowserCapture,
-  useUsePersonalSkill,
   type BrowserCaptureMemoryState,
   type PersonalSkill,
 } from "@didian/core/browser-memory";
@@ -106,7 +105,6 @@ export function AiInboxPage() {
   const createMission = useMutation({ mutationFn: api.createAiInboxMission });
   const createBrowserCapture = useCreateBrowserCapture();
   const personalSkillsQuery = usePersonalSkills(true);
-  const usePersonalSkillMutation = useUsePersonalSkill();
   const capturesQuery = useQuery({
     ...browserCapturesOptions(wsId, { limit: 12, offset: 0, state: captureState, q: trimmedCaptureQuery || undefined }),
     refetchInterval: 5_000,
@@ -122,10 +120,6 @@ export function AiInboxPage() {
     () => recommendPersonalSkills(personalSkillsQuery.data ?? [], { input: trimmedInput, inputUrls, understanding }),
     [personalSkillsQuery.data, trimmedInput, inputUrls, understanding],
   );
-  const selectedSkills = useMemo(() => {
-    const skillsById = new Map((personalSkillsQuery.data ?? []).map((skill) => [skill.id, skill]));
-    return selectedSkillIds.map((id) => skillsById.get(id)).filter((skill): skill is PersonalSkill => Boolean(skill));
-  }, [personalSkillsQuery.data, selectedSkillIds]);
   const canCreateMission = trimmedInput.length > 0;
 
   async function handleCreateMission() {
@@ -144,14 +138,14 @@ export function AiInboxPage() {
     try {
       const mission = await createMission.mutateAsync({
         title: missionTitleForInput(understanding.suggestedMissionTitle, inputUrls, trimmedInput),
-        description: buildMissionDescription({ input: trimmedInput, inputUrls, understanding, collectionDecision, workspacePreview, selectedSkills }),
+        description: buildMissionDescription({ input: trimmedInput, inputUrls, understanding, collectionDecision, workspacePreview }),
         understanding,
+        selectedPersonalSkillIds: selectedSkillIds,
       });
       if (!mission.issue.id) {
         throw new Error("创建 Mission 失败：服务端没有返回 Mission ID");
       }
       refreshMissionQueries();
-      recordSelectedSkillUsage(selectedSkills, usePersonalSkillMutation.mutateAsync);
       const missionHref = paths.workspace(workspaceSlug).issueDetail(mission.issue.id);
       setCreatedMission({ id: mission.issue.id, href: missionHref, title: mission.issue.title, state: "created" });
       if (mission.planningStatus === "queued") {
@@ -821,14 +815,12 @@ function buildMissionDescription({
   understanding,
   collectionDecision,
   workspacePreview,
-  selectedSkills,
 }: {
   input: string;
   inputUrls: string[];
   understanding: AiUnderstanding;
   collectionDecision?: InputUrlCollectionDecision;
   workspacePreview: WorkspacePreview;
-  selectedSkills: PersonalSkill[];
 }) {
   const sections = [
     aiInboxLeadCopy({ input, inputUrls, understanding }),
@@ -845,10 +837,6 @@ function buildMissionDescription({
     "## Atlas Workspace",
     workspaceHandoffCopy(workspacePreview),
   ];
-
-  if (selectedSkills.length > 0) {
-    sections.push("", "## 使用的个人能力", ...selectedSkills.flatMap(skillMissionHandoffCopy));
-  }
 
   if (input) {
     sections.push("", "## 输入", input);
@@ -868,33 +856,6 @@ function buildMissionDescription({
   }
 
   return sections.join("\n");
-}
-
-function skillMissionHandoffCopy(skill: PersonalSkill): string[] {
-  const lines = [
-    `### ${skill.name}`,
-    `- 能力：${skill.capability || skill.description}`,
-    `- 触发：${skill.trigger || "用户已在 AI Inbox 手动选择"}`,
-    `- 期望输入：${skill.expected_input || "当前 Mission 输入、链接和 Atlas Workspace 上下文"}`,
-    `- 期望输出：${skill.expected_output || "可执行结论与后续建议"}`,
-  ];
-  if (skill.source_url) lines.push(`- 来源：${skill.source_url}`);
-  if (skill.instructions) {
-    lines.push("", "执行时优先遵守以下能力说明：", "", "```text", skill.instructions.trim(), "```");
-  }
-  return lines;
-}
-
-function recordSelectedSkillUsage(
-  selectedSkills: PersonalSkill[],
-  recordUse: (id: string) => Promise<unknown>,
-) {
-  if (selectedSkills.length === 0) return;
-  void Promise.allSettled(selectedSkills.map((skill) => recordUse(skill.id))).then((results) => {
-    if (results.some((result) => result.status === "rejected")) {
-      toast.error("Mission 已创建，但个人能力使用次数记录失败。");
-    }
-  });
 }
 
 function workspacePreviewForInput(input: string, inputUrls: string[], understanding: AiUnderstanding): WorkspacePreview {

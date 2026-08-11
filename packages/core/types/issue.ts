@@ -32,6 +32,30 @@ export interface IssueReaction {
 export type IssueMetadataValue = string | number | boolean;
 export type IssueMetadata = Record<string, IssueMetadataValue>;
 
+export interface IssuePersonalSkill {
+  link_id: string;
+  issue_id: string;
+  personal_skill_id: string;
+  selected_by?: string | null;
+  source: string;
+  usage_note: string;
+  linked_at: string;
+  name: string;
+  description: string;
+  capability: string;
+  page_type: string;
+  trigger: string;
+  expected_input: string;
+  expected_output: string;
+  instructions: string;
+  source_url: string;
+  source_domain: string;
+  evidence_snippets: string[];
+  risk_notes: string[];
+  enabled: boolean;
+  use_count: number;
+}
+
 export interface Issue {
   id: string;
   workspace_id: string;
@@ -60,6 +84,7 @@ export interface Issue {
   metadata: IssueMetadata;
   reactions?: IssueReaction[];
   labels?: Label[];
+  personal_skills?: IssuePersonalSkill[];
   created_at: string;
   updated_at: string;
 }

@@ -38,9 +38,10 @@ type AnalyzeAIInboxResponse struct {
 }
 
 type CreateAIInboxMissionRequest struct {
-	Title         string                `json:"title"`
-	Description   string                `json:"description"`
-	Understanding *AIInboxUnderstanding `json:"understanding,omitempty"`
+	Title                    string                `json:"title"`
+	Description              string                `json:"description"`
+	Understanding            *AIInboxUnderstanding `json:"understanding,omitempty"`
+	SelectedPersonalSkillIDs []string              `json:"selected_personal_skill_ids,omitempty"`
 }
 
 type CreateAIInboxMissionResponse struct {
@@ -150,6 +151,10 @@ func (h *Handler) CreateAIInboxMission(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "description is too long")
 		return
 	}
+	selectedSkillIDs, ok := h.validateAIInboxPersonalSkillSelection(w, r, workspaceID, req.SelectedPersonalSkillIDs)
+	if !ok {
+		return
+	}
 
 	planningStatus := "no_codex_agent"
 	var planningAgentID *string
@@ -202,12 +207,78 @@ func (h *Handler) CreateAIInboxMission(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to create mission")
 		return
 	}
+	if len(selectedSkillIDs) > 0 {
+		if err := h.linkAIInboxMissionPersonalSkills(r.Context(), workspaceID, res.Issue.ID, creatorUUID, selectedSkillIDs); err != nil {
+			slog.Warn("link ai inbox mission personal skills failed", append(logger.RequestAttrs(r), "error", err, "workspace_id", uuidToString(workspaceID), "issue_id", uuidToString(res.Issue.ID))...)
+			writeError(w, http.StatusInternalServerError, "failed to link selected capabilities")
+			return
+		}
+	}
 
 	writeJSON(w, http.StatusCreated, CreateAIInboxMissionResponse{
 		Issue:           issueToResponse(res.Issue, prefix),
 		PlanningStatus:  planningStatus,
 		PlanningAgentID: planningAgentID,
 	})
+}
+
+func (h *Handler) validateAIInboxPersonalSkillSelection(w http.ResponseWriter, r *http.Request, workspaceID pgtype.UUID, rawIDs []string) ([]pgtype.UUID, bool) {
+	if len(rawIDs) == 0 {
+		return nil, true
+	}
+	if len(rawIDs) > 12 {
+		writeError(w, http.StatusBadRequest, "too many selected personal skills")
+		return nil, false
+	}
+	seen := map[string]struct{}{}
+	out := make([]pgtype.UUID, 0, len(rawIDs))
+	for _, raw := range rawIDs {
+		raw = strings.TrimSpace(raw)
+		if raw == "" {
+			continue
+		}
+		if _, exists := seen[raw]; exists {
+			continue
+		}
+		seen[raw] = struct{}{}
+		id, err := util.ParseUUID(raw)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "invalid selected personal skill id")
+			return nil, false
+		}
+		skill, err := h.Queries.GetPersonalSkill(r.Context(), db.GetPersonalSkillParams{
+			ID:          id,
+			WorkspaceID: workspaceID,
+		})
+		if err != nil || !skill.Enabled {
+			writeError(w, http.StatusBadRequest, "selected personal skill not found")
+			return nil, false
+		}
+		out = append(out, id)
+	}
+	return out, true
+}
+
+func (h *Handler) linkAIInboxMissionPersonalSkills(ctx context.Context, workspaceID, issueID, selectedBy pgtype.UUID, skillIDs []pgtype.UUID) error {
+	for _, skillID := range skillIDs {
+		if _, err := h.Queries.CreateIssuePersonalSkill(ctx, db.CreateIssuePersonalSkillParams{
+			WorkspaceID:     workspaceID,
+			IssueID:         issueID,
+			PersonalSkillID: skillID,
+			SelectedBy:      selectedBy,
+			Source:          "ai_inbox",
+			UsageNote:       "Selected from AI Inbox before Mission creation.",
+		}); err != nil {
+			return err
+		}
+		if _, err := h.Queries.IncrementPersonalSkillUse(ctx, db.IncrementPersonalSkillUseParams{
+			ID:          skillID,
+			WorkspaceID: workspaceID,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (h *Handler) loadAIInboxCaptureContext(ctx context.Context, workspaceID pgtype.UUID, ids []string) ([]aiInboxCaptureContext, error) {

@@ -1617,7 +1617,12 @@ export class ApiClient {
   async createAiInboxMission(data: CreateAiInboxMissionRequest): Promise<CreateAiInboxMissionResponse> {
     const raw = await this.fetch<unknown>("/api/ai-inbox/missions", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        title: data.title,
+        description: data.description,
+        understanding: data.understanding,
+        selected_personal_skill_ids: data.selectedPersonalSkillIds,
+      }),
     });
     return parseWithFallback(raw, CreateAiInboxMissionResponseSchema, EMPTY_CREATE_AI_INBOX_MISSION_RESPONSE, {
       endpoint: "POST /api/ai-inbox/missions",

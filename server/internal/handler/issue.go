@@ -66,6 +66,33 @@ type IssueResponse struct {
 	// preserves whatever labels are already in cache. nil pointer = "field
 	// absent, do not touch"; non-nil (incl. empty slice) = authoritative list.
 	Labels *[]LabelResponse `json:"labels,omitempty"`
+	// PersonalSkills is the structured record of personal capabilities selected
+	// for this Mission. List endpoints omit it; detail endpoint loads it.
+	PersonalSkills []IssuePersonalSkillResponse `json:"personal_skills,omitempty"`
+}
+
+type IssuePersonalSkillResponse struct {
+	LinkID           string   `json:"link_id"`
+	IssueID          string   `json:"issue_id"`
+	PersonalSkillID  string   `json:"personal_skill_id"`
+	SelectedBy       *string  `json:"selected_by"`
+	Source           string   `json:"source"`
+	UsageNote        string   `json:"usage_note"`
+	LinkedAt         string   `json:"linked_at"`
+	Name             string   `json:"name"`
+	Description      string   `json:"description"`
+	Capability       string   `json:"capability"`
+	PageType         string   `json:"page_type"`
+	Trigger          string   `json:"trigger"`
+	ExpectedInput    string   `json:"expected_input"`
+	ExpectedOutput   string   `json:"expected_output"`
+	Instructions     string   `json:"instructions"`
+	SourceURL        string   `json:"source_url"`
+	SourceDomain     string   `json:"source_domain"`
+	EvidenceSnippets []string `json:"evidence_snippets"`
+	RiskNotes        []string `json:"risk_notes"`
+	Enabled          bool     `json:"enabled"`
+	UseCount         int32    `json:"use_count"`
 }
 
 // validIssueStatuses / validIssuePriorities mirror the CHECK constraints on
@@ -109,6 +136,32 @@ func issueToResponse(i db.Issue, issuePrefix string) IssueResponse {
 		CreatedAt:     timestampToString(i.CreatedAt),
 		UpdatedAt:     timestampToString(i.UpdatedAt),
 		Metadata:      parseIssueMetadata(i.Metadata),
+	}
+}
+
+func issuePersonalSkillToResponse(row db.ListIssuePersonalSkillsRow) IssuePersonalSkillResponse {
+	return IssuePersonalSkillResponse{
+		LinkID:           uuidToString(row.LinkID),
+		IssueID:          uuidToString(row.IssueID),
+		PersonalSkillID:  uuidToString(row.PersonalSkillID),
+		SelectedBy:       uuidToPtr(row.SelectedBy),
+		Source:           row.Source,
+		UsageNote:        row.UsageNote,
+		LinkedAt:         timestampToString(row.LinkedAt),
+		Name:             row.Name,
+		Description:      row.Description,
+		Capability:       row.Capability,
+		PageType:         row.PageType,
+		Trigger:          row.Trigger,
+		ExpectedInput:    row.ExpectedInput,
+		ExpectedOutput:   row.ExpectedOutput,
+		Instructions:     row.Instructions,
+		SourceURL:        row.SourceUrl.String,
+		SourceDomain:     row.SourceDomain.String,
+		EvidenceSnippets: unmarshalStringSlice(row.EvidenceSnippets),
+		RiskNotes:        unmarshalStringSlice(row.RiskNotes),
+		Enabled:          row.Enabled,
+		UseCount:         row.UseCount,
 	}
 }
 
@@ -1659,6 +1712,21 @@ func (h *Handler) GetIssue(w http.ResponseWriter, r *http.Request) {
 		resp.Attachments = make([]AttachmentResponse, len(attachments))
 		for i, a := range attachments {
 			resp.Attachments[i] = h.attachmentToResponse(a)
+		}
+	}
+
+	personalSkills, err := h.Queries.ListIssuePersonalSkills(r.Context(), db.ListIssuePersonalSkillsParams{
+		IssueID:     issue.ID,
+		WorkspaceID: issue.WorkspaceID,
+	})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to list mission capabilities")
+		return
+	}
+	if len(personalSkills) > 0 {
+		resp.PersonalSkills = make([]IssuePersonalSkillResponse, len(personalSkills))
+		for i, skill := range personalSkills {
+			resp.PersonalSkills[i] = issuePersonalSkillToResponse(skill)
 		}
 	}
 

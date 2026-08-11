@@ -142,6 +142,7 @@ export interface CreateAiInboxMissionRequest {
   title: string;
   description: string;
   understanding?: AiInboxUnderstanding;
+  selectedPersonalSkillIds?: string[];
 }
 
 export interface CreateAiInboxMissionResponse {
@@ -223,4 +224,3 @@ export interface UpdatePersonalSkillRequest {
   instructions?: string;
   enabled?: boolean;
 }
-

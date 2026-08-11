@@ -20,6 +20,7 @@ import {
   Pin,
   PinOff,
   Plus,
+  Sparkles,
   Tag,
   Unlink,
   Users,
@@ -748,6 +749,7 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [parentIssueOpen, setParentIssueOpen] = useState(true);
   const [pullRequestsOpen, setPullRequestsOpen] = useState(true);
+  const [capabilitiesOpen, setCapabilitiesOpen] = useState(true);
   const [metadataOpen, setMetadataOpen] = useState(false);
   const [tokenUsageOpen, setTokenUsageOpen] = useState(true);
   const githubSettings = useGitHubSettings();
@@ -1662,6 +1664,44 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
             <ChevronRight className={`!size-3 shrink-0 stroke-[2.5] text-muted-foreground transition-transform ${pullRequestsOpen ? "rotate-90" : ""}`} />
           </button>
           {pullRequestsOpen && <div className="pl-2"><PullRequestList issueId={id} /></div>}
+        </div>
+      )}
+
+      {(issue.personal_skills?.length ?? 0) > 0 && (
+        <div>
+          <button
+            type="button"
+            className={`mb-2 flex w-full items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors hover:bg-accent/70 ${capabilitiesOpen ? "" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setCapabilitiesOpen(!capabilitiesOpen)}
+          >
+            Capabilities
+            <span className="tabular-nums text-muted-foreground">
+              · {issue.personal_skills?.length ?? 0}
+            </span>
+            <ChevronRight className={`!size-3 shrink-0 stroke-[2.5] text-muted-foreground transition-transform ${capabilitiesOpen ? "rotate-90" : ""}`} />
+          </button>
+          {capabilitiesOpen && (
+            <div className="grid gap-2 pl-2">
+              {(issue.personal_skills ?? []).map((skill) => (
+                <div key={skill.link_id} className="rounded-md border bg-background px-2.5 py-2">
+                  <div className="flex items-start gap-2">
+                    <Sparkles className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0">
+                      <div className="truncate text-xs font-medium">{skill.name}</div>
+                      <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-muted-foreground">
+                        {skill.capability || skill.description || skill.trigger}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5 pl-5 text-[11px] text-muted-foreground">
+                    {skill.page_type && <span className="rounded-sm bg-muted px-1.5 py-0.5">{skill.page_type}</span>}
+                    {skill.source && <span className="rounded-sm bg-muted px-1.5 py-0.5">{skill.source}</span>}
+                    {skill.source_domain && <span className="rounded-sm bg-muted px-1.5 py-0.5">{skill.source_domain}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
