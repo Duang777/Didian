@@ -143,8 +143,13 @@ import type {
   CreateAiInboxMissionResponse,
   CreateBrowserCaptureRequest,
   CreateBrowserCaptureResponse,
+  CreateSkillProposalRequest,
   ListBrowserCapturesParams,
   ListBrowserCapturesResponse,
+  PersonalSkill,
+  SkillProposal,
+  UpdatePersonalSkillRequest,
+  UpdateSkillProposalRequest,
 } from "../browser-memory/types";
 import type { OnboardingCompletionPath } from "../onboarding/types";
 import type { CreateFeedbackResponse, FeedbackKind } from "../feedback/types";
@@ -243,6 +248,14 @@ import {
   EMPTY_ANALYZE_AI_INBOX_RESPONSE,
   CreateAiInboxMissionResponseSchema,
   EMPTY_CREATE_AI_INBOX_MISSION_RESPONSE,
+  SkillProposalSchema,
+  EMPTY_SKILL_PROPOSAL,
+  PersonalSkillSchema,
+  EMPTY_PERSONAL_SKILL,
+  ListSkillProposalsResponseSchema,
+  EMPTY_LIST_SKILL_PROPOSALS,
+  ListPersonalSkillsResponseSchema,
+  EMPTY_LIST_PERSONAL_SKILLS,
 } from "./schemas";
 
 /** Identifies the calling client to the server.
@@ -1609,6 +1622,99 @@ export class ApiClient {
     return parseWithFallback(raw, CreateAiInboxMissionResponseSchema, EMPTY_CREATE_AI_INBOX_MISSION_RESPONSE, {
       endpoint: "POST /api/ai-inbox/missions",
     });
+  }
+
+  // Skill Opportunity V2 — personal-skill drafts + enabled skills.
+  // Workspace is resolved server-side from the X-Workspace-Slug header, but the
+  // workspace id is also carried in the path for the membership middleware.
+  async createSkillProposal(workspaceId: string, data: CreateSkillProposalRequest): Promise<SkillProposal> {
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/skill-proposals`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return parseWithFallback(raw, SkillProposalSchema, EMPTY_SKILL_PROPOSAL, {
+      endpoint: "POST /api/workspaces/:ws/skill-proposals",
+    });
+  }
+
+  async listSkillProposals(workspaceId: string, status?: SkillProposal["status"]): Promise<SkillProposal[]> {
+    const search = new URLSearchParams();
+    if (status) search.set("status", status);
+    const suffix = search.toString() ? `?${search.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/skill-proposals${suffix}`);
+    return parseWithFallback(raw, ListSkillProposalsResponseSchema, EMPTY_LIST_SKILL_PROPOSALS, {
+      endpoint: "GET /api/workspaces/:ws/skill-proposals",
+    });
+  }
+
+  async getSkillProposal(workspaceId: string, id: string): Promise<SkillProposal> {
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/skill-proposals/${id}`);
+    return parseWithFallback(raw, SkillProposalSchema, EMPTY_SKILL_PROPOSAL, {
+      endpoint: "GET /api/workspaces/:ws/skill-proposals/:id",
+    });
+  }
+
+  async updateSkillProposal(workspaceId: string, id: string, data: UpdateSkillProposalRequest): Promise<SkillProposal> {
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/skill-proposals/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    return parseWithFallback(raw, SkillProposalSchema, EMPTY_SKILL_PROPOSAL, {
+      endpoint: "PUT /api/workspaces/:ws/skill-proposals/:id",
+    });
+  }
+
+  async confirmSkillProposal(workspaceId: string, id: string): Promise<PersonalSkill> {
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/skill-proposals/${id}/confirm`, {
+      method: "POST",
+    });
+    return parseWithFallback(raw, PersonalSkillSchema, EMPTY_PERSONAL_SKILL, {
+      endpoint: "POST /api/workspaces/:ws/skill-proposals/:id/confirm",
+    });
+  }
+
+  async deleteSkillProposal(workspaceId: string, id: string): Promise<void> {
+    await this.fetch(`/api/workspaces/${workspaceId}/skill-proposals/${id}`, { method: "DELETE" });
+  }
+
+  async listPersonalSkills(workspaceId: string, enabled?: boolean): Promise<PersonalSkill[]> {
+    const search = new URLSearchParams();
+    if (enabled !== undefined) search.set("enabled", String(enabled));
+    const suffix = search.toString() ? `?${search.toString()}` : "";
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/personal-skills${suffix}`);
+    return parseWithFallback(raw, ListPersonalSkillsResponseSchema, EMPTY_LIST_PERSONAL_SKILLS, {
+      endpoint: "GET /api/workspaces/:ws/personal-skills",
+    });
+  }
+
+  async getPersonalSkill(workspaceId: string, id: string): Promise<PersonalSkill> {
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/personal-skills/${id}`);
+    return parseWithFallback(raw, PersonalSkillSchema, EMPTY_PERSONAL_SKILL, {
+      endpoint: "GET /api/workspaces/:ws/personal-skills/:id",
+    });
+  }
+
+  async updatePersonalSkill(workspaceId: string, id: string, data: UpdatePersonalSkillRequest): Promise<PersonalSkill> {
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/personal-skills/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    return parseWithFallback(raw, PersonalSkillSchema, EMPTY_PERSONAL_SKILL, {
+      endpoint: "PUT /api/workspaces/:ws/personal-skills/:id",
+    });
+  }
+
+  async usePersonalSkill(workspaceId: string, id: string): Promise<PersonalSkill> {
+    const raw = await this.fetch<unknown>(`/api/workspaces/${workspaceId}/personal-skills/${id}/use`, {
+      method: "POST",
+    });
+    return parseWithFallback(raw, PersonalSkillSchema, EMPTY_PERSONAL_SKILL, {
+      endpoint: "POST /api/workspaces/:ws/personal-skills/:id/use",
+    });
+  }
+
+  async deletePersonalSkill(workspaceId: string, id: string): Promise<void> {
+    await this.fetch(`/api/workspaces/${workspaceId}/personal-skills/${id}`, { method: "DELETE" });
   }
 
   async archiveAllInbox(): Promise<{ count: number }> {

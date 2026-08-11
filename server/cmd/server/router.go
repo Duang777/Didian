@@ -819,9 +819,25 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					// Custom runtime profiles — listing/reading is member-visible
 					// (the Runtime page renders for everyone; create/edit/delete
 					// are admin-gated below).
-					r.Get("/runtime-profiles", h.ListRuntimeProfiles)
-					r.Get("/runtime-profiles/{profileId}", h.GetRuntimeProfile)
+				r.Get("/runtime-profiles", h.ListRuntimeProfiles)
+				r.Get("/runtime-profiles/{profileId}", h.GetRuntimeProfile)
+				// Skill Opportunity V2 — personal skill drafts + enabled skills.
+				r.Route("/skill-proposals", func(r chi.Router) {
+					r.Get("/", h.ListSkillProposals)
+					r.Post("/", h.CreateSkillProposalHandler)
+					r.Get("/{proposalId}", h.GetSkillProposalHandler)
+					r.Put("/{proposalId}", h.UpdateSkillProposalHandler)
+					r.Post("/{proposalId}/confirm", h.ConfirmSkillProposal)
+					r.Delete("/{proposalId}", h.DeleteSkillProposalHandler)
 				})
+				r.Route("/personal-skills", func(r chi.Router) {
+					r.Get("/", h.ListPersonalSkills)
+					r.Get("/{skillId}", h.GetPersonalSkillHandler)
+					r.Put("/{skillId}", h.UpdatePersonalSkillHandler)
+					r.Post("/{skillId}/use", h.UsePersonalSkill)
+					r.Delete("/{skillId}", h.DeletePersonalSkillHandler)
+				})
+			})
 				// Admin-level access
 				r.Group(func(r chi.Router) {
 					r.Use(middleware.RequireWorkspaceRoleFromURL(queries, "id", "owner", "admin"))

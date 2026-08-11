@@ -44,6 +44,8 @@ export interface SkillOpportunityCardProps {
   domain?: string | null;
   /** V2 接入 Skill 草稿生成后传入；未传时按钮展示为待上线状态，不做假成功 */
   onGenerate?: () => void;
+  /** 生成请求进行中，按钮置灰并显示加载态 */
+  isGenerating?: boolean;
   onKeepAsKnowledge?: () => void;
   onMutePageType?: (pageType: SkillOpportunityPageType) => void;
 }
@@ -52,6 +54,7 @@ export function SkillOpportunityCard({
   opportunity,
   domain,
   onGenerate,
+  isGenerating,
   onKeepAsKnowledge,
   onMutePageType,
 }: SkillOpportunityCardProps) {
@@ -127,11 +130,11 @@ export function SkillOpportunityCard({
         <Button
           size="sm"
           type="button"
-          disabled={!canGenerate}
+          disabled={!canGenerate || isGenerating}
           title={canGenerate ? undefined : COPY.generatePending}
           onClick={() => onGenerate?.()}
         >
-          {COPY.generate}
+          {isGenerating ? "生成中…" : COPY.generate}
         </Button>
         <Button size="sm" variant="outline" type="button" onClick={() => onKeepAsKnowledge?.()}>
           {COPY.keepAsKnowledge}

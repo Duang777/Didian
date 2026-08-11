@@ -33,6 +33,8 @@ import type {
   CreateAiInboxMissionResponse,
   CreateBrowserCaptureResponse,
   ListBrowserCapturesResponse,
+  PersonalSkill,
+  SkillProposal,
 } from "../browser-memory/types";
 
 export interface AppConfigResponse {
@@ -1375,3 +1377,107 @@ export const CreateBillingPortalSessionResponseSchema = z.object({
 export const EMPTY_CREATE_BILLING_PORTAL_SESSION_RESPONSE: CreateBillingPortalSessionResponse = {
   url: "",
 };
+
+// ---------------------------------------------------------------------------
+// Skill Opportunity V2 — personal-skill drafts + enabled skills
+// ---------------------------------------------------------------------------
+
+export const SkillProposalSchema = z.object({
+  id: z.string().default(""),
+  workspace_id: z.string().default(""),
+  captured_source_id: z.string().default(""),
+  proposed_title: z.string().default(""),
+  proposed_capability: z.string().default(""),
+  page_type: z.string().default(""),
+  confidence: z.number().default(0),
+  why_useful: z.string().default(""),
+  trigger_examples: z.array(z.string()).optional().default([]),
+  expected_inputs: z.array(z.string()).optional().default([]),
+  expected_outputs: z.array(z.string()).optional().default([]),
+  reusable_workflow_score: z.number().nullable().optional(),
+  instruction_density_score: z.number().nullable().optional(),
+  future_use_score: z.number().nullable().optional(),
+  evidence_snippets: z.array(z.string()).optional().default([]),
+  risk_notes: z.array(z.string()).optional().default([]),
+  draft_description: z.string().default(""),
+  draft_trigger: z.string().default(""),
+  draft_instructions: z.string().default(""),
+  status: z.enum(["pending", "draft", "confirmed", "rejected"]).default("pending"),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const EMPTY_SKILL_PROPOSAL: SkillProposal = {
+  id: "",
+  workspace_id: "",
+  captured_source_id: "",
+  proposed_title: "",
+  proposed_capability: "",
+  page_type: "",
+  confidence: 0,
+  why_useful: "",
+  trigger_examples: [],
+  expected_inputs: [],
+  expected_outputs: [],
+  reusable_workflow_score: null,
+  instruction_density_score: null,
+  future_use_score: null,
+  evidence_snippets: [],
+  risk_notes: [],
+  draft_description: "",
+  draft_trigger: "",
+  draft_instructions: "",
+  status: "pending",
+  created_at: "",
+  updated_at: "",
+};
+
+export const PersonalSkillSchema = z.object({
+  id: z.string().default(""),
+  workspace_id: z.string().default(""),
+  proposal_id: z.string().default(""),
+  name: z.string().default(""),
+  description: z.string().default(""),
+  capability: z.string().default(""),
+  page_type: z.string().default(""),
+  trigger: z.string().default(""),
+  expected_input: z.string().default(""),
+  expected_output: z.string().default(""),
+  instructions: z.string().default(""),
+  source_url: z.string().default(""),
+  source_domain: z.string().default(""),
+  evidence_snippets: z.array(z.string()).optional().default([]),
+  risk_notes: z.array(z.string()).optional().default([]),
+  enabled: z.boolean().default(false),
+  use_count: z.number().default(0),
+  created_at: z.string().default(""),
+  updated_at: z.string().default(""),
+}).loose();
+
+export const EMPTY_PERSONAL_SKILL: PersonalSkill = {
+  id: "",
+  workspace_id: "",
+  proposal_id: "",
+  name: "",
+  description: "",
+  capability: "",
+  page_type: "",
+  trigger: "",
+  expected_input: "",
+  expected_output: "",
+  instructions: "",
+  source_url: "",
+  source_domain: "",
+  evidence_snippets: [],
+  risk_notes: [],
+  enabled: false,
+  use_count: 0,
+  created_at: "",
+  updated_at: "",
+};
+
+export const ListSkillProposalsResponseSchema = z.array(SkillProposalSchema).default([]);
+export const ListPersonalSkillsResponseSchema = z.array(PersonalSkillSchema).default([]);
+
+export const EMPTY_LIST_SKILL_PROPOSALS: SkillProposal[] = [];
+export const EMPTY_LIST_PERSONAL_SKILLS: PersonalSkill[] = [];

@@ -149,3 +149,78 @@ export interface CreateAiInboxMissionResponse {
   planningStatus: "queued" | "no_codex_agent" | string;
   planningAgentId?: string;
 }
+
+// ---- Skill Opportunity V2 (personal-skill drafts + enabled skills) ----
+
+export type SkillProposalStatus = "pending" | "draft" | "confirmed" | "rejected";
+
+export interface SkillProposal {
+  id: string;
+  workspace_id: string;
+  captured_source_id: string;
+  proposed_title: string;
+  proposed_capability: string;
+  page_type: string;
+  confidence: number;
+  why_useful: string;
+  trigger_examples: string[];
+  expected_inputs: string[];
+  expected_outputs: string[];
+  reusable_workflow_score: number | null;
+  instruction_density_score: number | null;
+  future_use_score: number | null;
+  evidence_snippets: string[];
+  risk_notes: string[];
+  draft_description: string;
+  draft_trigger: string;
+  draft_instructions: string;
+  status: SkillProposalStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PersonalSkill {
+  id: string;
+  workspace_id: string;
+  proposal_id: string;
+  name: string;
+  description: string;
+  capability: string;
+  page_type: string;
+  trigger: string;
+  expected_input: string;
+  expected_output: string;
+  instructions: string;
+  source_url: string;
+  source_domain: string;
+  evidence_snippets: string[];
+  risk_notes: string[];
+  enabled: boolean;
+  use_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateSkillProposalRequest {
+  capture_id: string;
+}
+
+export interface UpdateSkillProposalRequest {
+  draft_description?: string;
+  draft_trigger?: string;
+  draft_instructions?: string;
+  status?: SkillProposalStatus;
+}
+
+export interface UpdatePersonalSkillRequest {
+  name?: string;
+  description?: string;
+  capability?: string;
+  page_type?: string;
+  trigger?: string;
+  expected_input?: string;
+  expected_output?: string;
+  instructions?: string;
+  enabled?: boolean;
+}
+

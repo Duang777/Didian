@@ -609,6 +609,18 @@ type IssueToLabel struct {
 	LabelID pgtype.UUID `json:"label_id"`
 }
 
+type KnowledgeRelation struct {
+	ID           pgtype.UUID        `json:"id"`
+	WorkspaceID  pgtype.UUID        `json:"workspace_id"`
+	FromType     string             `json:"from_type"`
+	FromID       pgtype.UUID        `json:"from_id"`
+	ToType       string             `json:"to_type"`
+	ToID         pgtype.UUID        `json:"to_id"`
+	RelationType string             `json:"relation_type"`
+	Strength     pgtype.Float8      `json:"strength"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
 type LarkBindingToken struct {
 	TokenHash      string             `json:"token_hash"`
 	WorkspaceID    pgtype.UUID        `json:"workspace_id"`
@@ -737,6 +749,29 @@ type PersonalAccessToken struct {
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
+type PersonalSkill struct {
+	ID               pgtype.UUID        `json:"id"`
+	WorkspaceID      pgtype.UUID        `json:"workspace_id"`
+	ProposalID       pgtype.UUID        `json:"proposal_id"`
+	Name             string             `json:"name"`
+	Description      string             `json:"description"`
+	Capability       string             `json:"capability"`
+	PageType         string             `json:"page_type"`
+	Trigger          string             `json:"trigger"`
+	ExpectedInput    string             `json:"expected_input"`
+	ExpectedOutput   string             `json:"expected_output"`
+	Instructions     string             `json:"instructions"`
+	SourceUrl        pgtype.Text        `json:"source_url"`
+	SourceDomain     pgtype.Text        `json:"source_domain"`
+	EvidenceSnippets []byte             `json:"evidence_snippets"`
+	RiskNotes        []byte             `json:"risk_notes"`
+	Enabled          bool               `json:"enabled"`
+	UseCount         int32              `json:"use_count"`
+	CreatedBy        pgtype.UUID        `json:"created_by"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
 type PinnedItem struct {
 	ID          pgtype.UUID        `json:"id"`
 	WorkspaceID pgtype.UUID        `json:"workspace_id"`
@@ -807,6 +842,32 @@ type SkillFile struct {
 	Content   string             `json:"content"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+type SkillProposal struct {
+	ID                      pgtype.UUID        `json:"id"`
+	WorkspaceID             pgtype.UUID        `json:"workspace_id"`
+	CapturedSourceID        pgtype.UUID        `json:"captured_source_id"`
+	ProposedTitle           string             `json:"proposed_title"`
+	ProposedCapability      string             `json:"proposed_capability"`
+	PageType                string             `json:"page_type"`
+	Confidence              float64            `json:"confidence"`
+	WhyUseful               string             `json:"why_useful"`
+	TriggerExamples         []byte             `json:"trigger_examples"`
+	ExpectedInputs          []byte             `json:"expected_inputs"`
+	ExpectedOutputs         []byte             `json:"expected_outputs"`
+	ReusableWorkflowScore   pgtype.Float8      `json:"reusable_workflow_score"`
+	InstructionDensityScore pgtype.Float8      `json:"instruction_density_score"`
+	FutureUseScore          pgtype.Float8      `json:"future_use_score"`
+	EvidenceSnippets        []byte             `json:"evidence_snippets"`
+	RiskNotes               []byte             `json:"risk_notes"`
+	DraftDescription        string             `json:"draft_description"`
+	DraftTrigger            string             `json:"draft_trigger"`
+	DraftInstructions       string             `json:"draft_instructions"`
+	Status                  string             `json:"status"`
+	CreatedBy               pgtype.UUID        `json:"created_by"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Squad struct {

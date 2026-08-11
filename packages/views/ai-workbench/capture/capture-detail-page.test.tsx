@@ -75,6 +75,10 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 describe("CaptureDetailPage related captures", () => {
   beforeEach(() => {
     queryClient.clear();

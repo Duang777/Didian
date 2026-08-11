@@ -13,6 +13,7 @@ import {
 import { api } from "@didian/core/api";
 import {
   useArchiveBrowserCapture,
+  useCreateSkillProposal,
   useRestoreBrowserCapture,
   type BrowserCapture,
   type SkillOpportunityPageType,
@@ -29,6 +30,7 @@ import {
 } from "./skill-opportunity-preferences";
 import { useWorkspaceId } from "@didian/core/hooks";
 import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
+import { useRouter } from "next/navigation";
 import { Badge } from "@didian/ui/components/ui/badge";
 import { Button } from "@didian/ui/components/ui/button";
 import { Skeleton } from "@didian/ui/components/ui/skeleton";
@@ -72,6 +74,8 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
   });
   const archiveMutation = useArchiveBrowserCapture();
   const restoreMutation = useRestoreBrowserCapture();
+  const createProposal = useCreateSkillProposal();
+  const router = useRouter();
   const relatedQuery = useQuery({
     queryKey: ["browser-memory", wsId, "related-captures", captureId],
     queryFn: () => api.listBrowserCaptures({ limit: 12 }),
@@ -115,6 +119,21 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
     setMutes(next);
     saveSkillOpportunityMutes(next);
     toast.success("已减少这类网页的 Skill 推荐");
+  }
+
+  function handleGenerate() {
+    if (!capture) return;
+    createProposal.mutate(
+      { capture_id: capture.id },
+      {
+        onSuccess: (proposal) => {
+          router.push(paths.workspace(workspaceSlug).skillProposal(proposal.id));
+        },
+        onError: (err) => {
+          toast.error(err instanceof Error ? err.message : "生成 Skill 草稿失败");
+        },
+      },
+    );
   }
 
   return (
@@ -224,6 +243,8 @@ export function CaptureDetailPage({ captureId }: { captureId: string }) {
               <SkillOpportunityCard
                 opportunity={capture.skillOpportunity}
                 domain={capture.domain}
+                onGenerate={handleGenerate}
+                isGenerating={createProposal.isPending}
                 onMutePageType={handleMutePageType}
               />
             ) : null}
