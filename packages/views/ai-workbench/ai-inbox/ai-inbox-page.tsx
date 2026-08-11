@@ -2,9 +2,33 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Archive, CheckCircle2, Clock3, ExternalLink, FileText, Folder, Inbox, Loader2, RefreshCw, RotateCcw, Search, SendHorizontal } from "lucide-react";
+import {
+  AlertCircle,
+  Archive,
+  CheckCircle2,
+  Clock3,
+  ExternalLink,
+  FileText,
+  Folder,
+  Inbox,
+  Loader2,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  SendHorizontal,
+  Sparkles,
+} from "lucide-react";
 import { ApiError, api, DuplicateIssueErrorBodySchema, parseWithFallback, type DuplicateIssueErrorBody } from "@didian/core/api";
-import { browserCapturesOptions, useArchiveBrowserCapture, useCreateBrowserCapture, useRestoreBrowserCapture, type BrowserCaptureMemoryState } from "@didian/core/browser-memory";
+import {
+  browserCapturesOptions,
+  useArchiveBrowserCapture,
+  useCreateBrowserCapture,
+  usePersonalSkills,
+  useRestoreBrowserCapture,
+  useUsePersonalSkill,
+  type BrowserCaptureMemoryState,
+  type PersonalSkill,
+} from "@didian/core/browser-memory";
 import { useWorkspaceId } from "@didian/core/hooks";
 import { issueKeys } from "@didian/core/issues/queries";
 import { paths, useRequiredWorkspaceSlug } from "@didian/core/paths";
@@ -44,6 +68,9 @@ const AI_INBOX_COPY = {
   collectAndCreate: "收藏并创建 Mission",
   workspacePreview: "Atlas Workspace Preview",
   workspacePreviewDescription: "创建 Mission 时会作为 Agent 工作区交接",
+  skillSuggestions: "匹配到个人能力",
+  skillSuggestionsDescription: "可选。选中后会写入 Mission 交接，并让本地 Codex 优先按这个能力执行。",
+  skillSuggestionsLoading: "正在检查个人能力…",
 } as const;
 type InputUrlCollectionDecision = "saved" | "skipped";
 
@@ -51,6 +78,12 @@ type WorkspacePreview = {
   rootPath: string;
   files: string[];
   contextScopes: string[];
+};
+
+type PersonalSkillRecommendation = {
+  skill: PersonalSkill;
+  score: number;
+  reasons: string[];
 };
 
 export function AiInboxPage() {
@@ -63,6 +96,7 @@ export function AiInboxPage() {
   const [createdMission, setCreatedMission] = useState<{ id: string; href: string; title: string; state: "created" | "duplicate" } | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [collectPromptUrls, setCollectPromptUrls] = useState<string[]>([]);
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const trimmedCaptureQuery = captureQuery.trim();
   const trimmedInput = input.trim();
   const fallbackUnderstanding = useMemo(() => inferAiUnderstanding(input), [input]);
@@ -71,6 +105,8 @@ export function AiInboxPage() {
   const workspacePreview = useMemo(() => workspacePreviewForInput(trimmedInput, inputUrls, understanding), [trimmedInput, inputUrls, understanding]);
   const createMission = useMutation({ mutationFn: api.createAiInboxMission });
   const createBrowserCapture = useCreateBrowserCapture();
+  const personalSkillsQuery = usePersonalSkills(true);
+  const usePersonalSkillMutation = useUsePersonalSkill();
   const capturesQuery = useQuery({
     ...browserCapturesOptions(wsId, { limit: 12, offset: 0, state: captureState, q: trimmedCaptureQuery || undefined }),
     refetchInterval: 5_000,
@@ -82,6 +118,14 @@ export function AiInboxPage() {
     [capturesQuery.data?.captures],
   );
   const captureColumns = useMemo(() => splitIntoColumns(inboxInputs, 2), [inboxInputs]);
+  const personalSkillRecommendations = useMemo(
+    () => recommendPersonalSkills(personalSkillsQuery.data ?? [], { input: trimmedInput, inputUrls, understanding }),
+    [personalSkillsQuery.data, trimmedInput, inputUrls, understanding],
+  );
+  const selectedSkills = useMemo(() => {
+    const skillsById = new Map((personalSkillsQuery.data ?? []).map((skill) => [skill.id, skill]));
+    return selectedSkillIds.map((id) => skillsById.get(id)).filter((skill): skill is PersonalSkill => Boolean(skill));
+  }, [personalSkillsQuery.data, selectedSkillIds]);
   const canCreateMission = trimmedInput.length > 0;
 
   async function handleCreateMission() {
@@ -100,13 +144,14 @@ export function AiInboxPage() {
     try {
       const mission = await createMission.mutateAsync({
         title: missionTitleForInput(understanding.suggestedMissionTitle, inputUrls, trimmedInput),
-        description: buildMissionDescription({ input: trimmedInput, inputUrls, understanding, collectionDecision, workspacePreview }),
+        description: buildMissionDescription({ input: trimmedInput, inputUrls, understanding, collectionDecision, workspacePreview, selectedSkills }),
         understanding,
       });
       if (!mission.issue.id) {
         throw new Error("创建 Mission 失败：服务端没有返回 Mission ID");
       }
       refreshMissionQueries();
+      recordSelectedSkillUsage(selectedSkills, usePersonalSkillMutation.mutateAsync);
       const missionHref = paths.workspace(workspaceSlug).issueDetail(mission.issue.id);
       setCreatedMission({ id: mission.issue.id, href: missionHref, title: mission.issue.title, state: "created" });
       if (mission.planningStatus === "queued") {
@@ -151,6 +196,10 @@ export function AiInboxPage() {
     if (collectPromptUrls.length === 0 || createMission.isPending || createBrowserCapture.isPending) return;
     setCollectPromptUrls([]);
     await createMissionFromInput("skipped");
+  }
+
+  function toggleSelectedSkill(id: string) {
+    setSelectedSkillIds((current) => current.includes(id) ? current.filter((skillId) => skillId !== id) : [...current, id]);
   }
 
   return (
@@ -201,6 +250,13 @@ export function AiInboxPage() {
               </div>
             </div>
           )}
+          <PersonalSkillSuggestions
+            inputReady={trimmedInput.length > 0}
+            isLoading={personalSkillsQuery.isLoading}
+            recommendations={personalSkillRecommendations}
+            selectedSkillIds={selectedSkillIds}
+            onToggle={toggleSelectedSkill}
+          />
           {trimmedInput.length > 0 && <WorkspacePreviewPanel preview={workspacePreview} />}
         </WorkbenchSection>
       </div>
@@ -293,6 +349,80 @@ export function AiInboxPage() {
   );
 }
 
+function PersonalSkillSuggestions({
+  inputReady,
+  isLoading,
+  recommendations,
+  selectedSkillIds,
+  onToggle,
+}: {
+  inputReady: boolean;
+  isLoading: boolean;
+  recommendations: PersonalSkillRecommendation[];
+  selectedSkillIds: string[];
+  onToggle: (id: string) => void;
+}) {
+  if (!inputReady) return null;
+  if (isLoading) {
+    return (
+      <div className="mt-3 rounded-md border bg-background p-3 text-sm text-muted-foreground" role="status">
+        <div className="flex items-center gap-2">
+          <Loader2 className="size-3.5 animate-spin" />
+          {AI_INBOX_COPY.skillSuggestionsLoading}
+        </div>
+      </div>
+    );
+  }
+  if (recommendations.length === 0) return null;
+
+  return (
+    <div className="mt-3 rounded-md border bg-background p-3 text-sm">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 font-medium">
+          <Sparkles className="size-4 text-muted-foreground" />
+          {AI_INBOX_COPY.skillSuggestions}
+        </div>
+        <span className="text-xs text-muted-foreground">{AI_INBOX_COPY.skillSuggestionsDescription}</span>
+      </div>
+      <div className="mt-3 grid gap-2">
+        {recommendations.map(({ skill, reasons }) => {
+          const selected = selectedSkillIds.includes(skill.id);
+          return (
+            <button
+              key={skill.id}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => onToggle(skill.id)}
+              className={selected
+                ? "rounded-md border border-primary/50 bg-primary/10 p-3 text-left transition-colors"
+                : "rounded-md border bg-muted/20 p-3 text-left transition-colors hover:border-foreground/20 hover:bg-muted/30"}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium">{skill.name}</div>
+                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{skill.capability || skill.description}</p>
+                </div>
+                <Badge variant={selected ? "default" : "outline"} className="shrink-0">
+                  {selected ? "已选" : "可选"}
+                </Badge>
+              </div>
+              {reasons.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {reasons.slice(0, 3).map((reason) => (
+                    <span key={reason} className="rounded-sm bg-background px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                      {reason}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function BrowserCaptureCard({ item, archivedView }: { item: AiInboxInput; archivedView: boolean }) {
   const status = browserCaptureStatusView(item);
   const StatusIcon = status.icon;
@@ -365,6 +495,118 @@ function BrowserCaptureCard({ item, archivedView }: { item: AiInboxInput; archiv
 
 function splitIntoColumns<T>(items: T[], columnCount: number): T[][] {
   return Array.from({ length: columnCount }, (_, columnIndex) => items.filter((_, itemIndex) => itemIndex % columnCount === columnIndex));
+}
+
+function recommendPersonalSkills(
+  skills: PersonalSkill[],
+  {
+    input,
+    inputUrls,
+    understanding,
+  }: {
+    input: string;
+    inputUrls: string[];
+    understanding: AiUnderstanding;
+  },
+): PersonalSkillRecommendation[] {
+  const haystack = [
+    input,
+    understanding.intent,
+    understanding.suggestedMissionTitle,
+    ...inputUrls,
+    ...inputUrls.map(formatInputUrlLabel),
+  ].join(" ").toLowerCase();
+  if (!haystack.trim()) return [];
+
+  return skills
+    .filter((skill) => skill.enabled)
+    .map((skill) => scorePersonalSkill(skill, haystack, inputUrls, understanding))
+    .filter((recommendation) => recommendation.score >= 20)
+    .sort((a, b) => b.score - a.score || b.skill.use_count - a.skill.use_count || a.skill.name.localeCompare(b.skill.name))
+    .slice(0, 3);
+}
+
+function scorePersonalSkill(
+  skill: PersonalSkill,
+  haystack: string,
+  inputUrls: string[],
+  understanding: AiUnderstanding,
+): PersonalSkillRecommendation {
+  let score = 0;
+  const reasons: string[] = [];
+  const sourceDomain = skill.source_domain.toLowerCase();
+  const sourceHostMatched = inputUrls.some((url) => urlHost(url).endsWith(sourceDomain));
+  if (sourceDomain && (sourceHostMatched || haystack.includes(sourceDomain))) {
+    score += 50;
+    reasons.push(`来源匹配 ${skill.source_domain}`);
+  }
+
+  const pageType = skill.page_type.toLowerCase();
+  if (pageType !== "" && inferredInputPageTypes(inputUrls).includes(pageType)) {
+    score += 18;
+    reasons.push(`类型匹配 ${skill.page_type}`);
+  }
+
+  const triggerTokens = tokenizeSkillText(skill.trigger);
+  const triggerHits = countTokenHits(triggerTokens, haystack);
+  if (triggerHits > 0) {
+    score += Math.min(30, triggerHits * 10);
+    reasons.push("触发词匹配");
+  }
+
+  const capabilityTokens = tokenizeSkillText(`${skill.name} ${skill.description} ${skill.capability}`);
+  const capabilityHits = countTokenHits(capabilityTokens, haystack);
+  if (capabilityHits > 0) {
+    score += Math.min(24, capabilityHits * 6);
+    reasons.push("能力描述匹配");
+  }
+
+  if (skill.expected_output && tokenizeSkillText(skill.expected_output).some((token) => haystack.includes(token))) {
+    score += 8;
+    reasons.push("产出目标匹配");
+  }
+
+  if (skill.use_count > 0) score += Math.min(8, skill.use_count);
+  if (understanding.intent === "compare" && /compare|对比|评估|选型/.test(skill.capability + skill.description + skill.trigger)) {
+    score += 10;
+    reasons.push("任务意图匹配");
+  }
+
+  return { skill, score, reasons: Array.from(new Set(reasons)) };
+}
+
+function tokenizeSkillText(text: string): string[] {
+  return Array.from(
+    new Set(
+      text
+        .toLowerCase()
+        .split(/[^a-z0-9\u4e00-\u9fa5]+/u)
+        .map((token) => token.trim())
+        .filter((token) => token.length >= 2),
+    ),
+  );
+}
+
+function countTokenHits(tokens: string[], haystack: string): number {
+  return tokens.reduce((total, token) => total + (haystack.includes(token) ? 1 : 0), 0);
+}
+
+function inferredInputPageTypes(inputUrls: string[]): string[] {
+  const types = inputUrls.map((url) => {
+    const host = urlHost(url);
+    if (host === "github.com") return "github_repo";
+    if (/docs?|developer|api/.test(host)) return "technical_doc";
+    return "";
+  });
+  return Array.from(new Set(types.filter(Boolean)));
+}
+
+function urlHost(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return "";
+  }
 }
 
 function CaptureFavicon({ src }: { src?: string | null }) {
@@ -579,12 +821,14 @@ function buildMissionDescription({
   understanding,
   collectionDecision,
   workspacePreview,
+  selectedSkills,
 }: {
   input: string;
   inputUrls: string[];
   understanding: AiUnderstanding;
   collectionDecision?: InputUrlCollectionDecision;
   workspacePreview: WorkspacePreview;
+  selectedSkills: PersonalSkill[];
 }) {
   const sections = [
     aiInboxLeadCopy({ input, inputUrls, understanding }),
@@ -601,6 +845,10 @@ function buildMissionDescription({
     "## Atlas Workspace",
     workspaceHandoffCopy(workspacePreview),
   ];
+
+  if (selectedSkills.length > 0) {
+    sections.push("", "## 使用的个人能力", ...selectedSkills.flatMap(skillMissionHandoffCopy));
+  }
 
   if (input) {
     sections.push("", "## 输入", input);
@@ -620,6 +868,33 @@ function buildMissionDescription({
   }
 
   return sections.join("\n");
+}
+
+function skillMissionHandoffCopy(skill: PersonalSkill): string[] {
+  const lines = [
+    `### ${skill.name}`,
+    `- 能力：${skill.capability || skill.description}`,
+    `- 触发：${skill.trigger || "用户已在 AI Inbox 手动选择"}`,
+    `- 期望输入：${skill.expected_input || "当前 Mission 输入、链接和 Atlas Workspace 上下文"}`,
+    `- 期望输出：${skill.expected_output || "可执行结论与后续建议"}`,
+  ];
+  if (skill.source_url) lines.push(`- 来源：${skill.source_url}`);
+  if (skill.instructions) {
+    lines.push("", "执行时优先遵守以下能力说明：", "", "```text", skill.instructions.trim(), "```");
+  }
+  return lines;
+}
+
+function recordSelectedSkillUsage(
+  selectedSkills: PersonalSkill[],
+  recordUse: (id: string) => Promise<unknown>,
+) {
+  if (selectedSkills.length === 0) return;
+  void Promise.allSettled(selectedSkills.map((skill) => recordUse(skill.id))).then((results) => {
+    if (results.some((result) => result.status === "rejected")) {
+      toast.error("Mission 已创建，但个人能力使用次数记录失败。");
+    }
+  });
 }
 
 function workspacePreviewForInput(input: string, inputUrls: string[], understanding: AiUnderstanding): WorkspacePreview {

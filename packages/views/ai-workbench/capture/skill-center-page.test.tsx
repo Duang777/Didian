@@ -103,7 +103,7 @@ describe("SkillCenterPage", () => {
 
   it("opens the review page from a draft card", async () => {
     renderPage();
-    fireEvent.click(screen.getAllByText("打开审阅")[0]);
+    fireEvent.click(screen.getAllByText("打开审阅").at(0)!);
     await waitFor(() =>
       expect(routerPush).toHaveBeenCalledWith("/ws-slug/skill-proposals/prop-1"),
     );
@@ -111,7 +111,7 @@ describe("SkillCenterPage", () => {
 
   it("records a use event for a personal skill", async () => {
     renderPage();
-    fireEvent.click(screen.getAllByText("使用一次")[0]);
+    fireEvent.click(screen.getAllByText("使用一次").at(0)!);
     await waitFor(() => expect(skillUse.mutateAsync).toHaveBeenCalledWith("skill-1"));
   });
 });

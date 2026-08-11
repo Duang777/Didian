@@ -23,12 +23,22 @@ const { ApiError } = vi.hoisted(() => {
   return { ApiError: ApiErrorImpl };
 });
 
-const { archiveBrowserCapture, createAiInboxMission, createBrowserCapture, listBrowserCaptures, restoreBrowserCapture } = vi.hoisted(() => ({
+const {
+  archiveBrowserCapture,
+  createAiInboxMission,
+  createBrowserCapture,
+  listBrowserCaptures,
+  listPersonalSkills,
+  restoreBrowserCapture,
+  usePersonalSkill,
+} = vi.hoisted(() => ({
   archiveBrowserCapture: vi.fn(),
   createAiInboxMission: vi.fn(),
   createBrowserCapture: vi.fn(),
   listBrowserCaptures: vi.fn(),
+  listPersonalSkills: vi.fn(),
   restoreBrowserCapture: vi.fn(),
+  usePersonalSkill: vi.fn(),
 }));
 
 const { navigationPush, toastFn, toastError, toastSuccess } = vi.hoisted(() => ({
@@ -43,7 +53,15 @@ vi.mock("@didian/core/api", async () => {
   return {
     ...actual,
     ApiError,
-    api: { archiveBrowserCapture, createAiInboxMission, createBrowserCapture, listBrowserCaptures, restoreBrowserCapture },
+    api: {
+      archiveBrowserCapture,
+      createAiInboxMission,
+      createBrowserCapture,
+      listBrowserCaptures,
+      listPersonalSkills,
+      restoreBrowserCapture,
+      usePersonalSkill,
+    },
   };
 });
 
@@ -128,18 +146,47 @@ function memoryFixture(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function personalSkillFixture(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "skill-1",
+    workspace_id: "ws-test",
+    proposal_id: "proposal-1",
+    name: "browser-use 尽调助手",
+    description: "评估 browser-use 类 GitHub repo 是否适合接入项目。",
+    capability: "检查 README、安装方式、license、维护信号和集成风险，并给出采用建议。",
+    page_type: "github_repo",
+    trigger: "GitHub repo 选型 评估 browser-use 集成",
+    expected_input: "项目背景、技术栈、评估关注点",
+    expected_output: "采用建议、上手步骤、风险清单",
+    instructions: "先刷新 README、license、release 和 examples，再输出 Adopt / Pilot / Defer / Reject。",
+    source_url: "https://github.com/browser-use/browser-use",
+    source_domain: "github.com",
+    evidence_snippets: ["GitHub 仓库经常被收藏用于选型。"],
+    risk_notes: [],
+    enabled: true,
+    use_count: 2,
+    created_at: "2026-07-14T02:42:00.000Z",
+    updated_at: "2026-07-14T02:42:00.000Z",
+    ...overrides,
+  };
+}
+
 describe("AiInboxPage browser captures", () => {
   beforeEach(() => {
     listBrowserCaptures.mockReset();
     archiveBrowserCapture.mockReset();
     createAiInboxMission.mockReset();
     createBrowserCapture.mockReset();
+    listPersonalSkills.mockReset();
     restoreBrowserCapture.mockReset();
+    usePersonalSkill.mockReset();
     navigationPush.mockReset();
     toastFn.mockReset();
     toastError.mockReset();
     toastSuccess.mockReset();
     createBrowserCapture.mockResolvedValue({ capture: captureFixture(), captureId: "capture-new", status: "captured", memoryStatus: "pending", dedupe: { isDuplicate: false, existingCaptureId: null } });
+    listPersonalSkills.mockResolvedValue([]);
+    usePersonalSkill.mockResolvedValue(personalSkillFixture());
   });
 
   it("renders browser capture cards from the real browser-captures API", async () => {
@@ -277,6 +324,65 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByText("sources/browser-use.md")).toBeInTheDocument();
     expect(screen.queryByText("outputs/项目对比表.md")).not.toBeInTheDocument();
     expect(screen.getByText("当前 Workspace")).toBeInTheDocument();
+  });
+
+  it("suggests enabled personal skills for matching mission input", async () => {
+    const user = userEvent.setup();
+    listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
+    listPersonalSkills.mockResolvedValue([
+      personalSkillFixture(),
+      personalSkillFixture({
+        id: "skill-disabled",
+        name: "Disabled helper",
+        enabled: false,
+      }),
+      personalSkillFixture({
+        id: "skill-docs",
+        name: "Stagehand 文档整理",
+        source_domain: "docs.stagehand.dev",
+        page_type: "technical_doc",
+        trigger: "stagehand docs examples",
+        capability: "总结 Stagehand 文档。",
+        use_count: 0,
+      }),
+    ]);
+
+    renderPage();
+
+    await user.type(screen.getByLabelText("AI Inbox input"), "https://github.com/browser-use/browser-use 帮我评估这个 GitHub repo 是否适合接入");
+
+    await waitFor(() => expect(screen.getByText("匹配到个人能力")).toBeInTheDocument());
+    expect(screen.getByRole("button", { name: /browser-use 尽调助手/ })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByText("Disabled helper")).not.toBeInTheDocument();
+    expect(screen.getByText("来源匹配 github.com")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /browser-use 尽调助手/ }));
+
+    expect(screen.getByRole("button", { name: /browser-use 尽调助手/ })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("已选")).toBeInTheDocument();
+  });
+
+  it("writes selected personal skills into mission handoff and records usage after creation", async () => {
+    const user = userEvent.setup();
+    listBrowserCaptures.mockResolvedValue({ captures: [], total: 0 });
+    listPersonalSkills.mockResolvedValue([personalSkillFixture()]);
+    createAiInboxMission.mockResolvedValue({ issue: { id: "mission-skill", title: "评估 browser-use" }, planningStatus: "queued", planningAgentId: "agent-1" });
+
+    renderPage();
+
+    await user.type(screen.getByLabelText("AI Inbox input"), "https://github.com/browser-use/browser-use 帮我评估这个 GitHub repo 是否适合接入");
+    await waitFor(() => expect(screen.getByText("匹配到个人能力")).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: /browser-use 尽调助手/ }));
+    await user.click(screen.getByRole("button", { name: "创建 Mission" }));
+    await user.click(within(screen.getByRole("dialog", { name: "收藏输入链接？" })).getByRole("button", { name: "暂不收藏，继续创建" }));
+
+    await waitFor(() => expect(createAiInboxMission).toHaveBeenCalledTimes(1));
+    const description = createAiInboxMission.mock.calls[0]?.[0]?.description as string;
+    expect(description).toContain("## 使用的个人能力");
+    expect(description).toContain("### browser-use 尽调助手");
+    expect(description).toContain("检查 README、安装方式、license、维护信号和集成风险，并给出采用建议。");
+    expect(description).toContain("先刷新 README、license、release 和 examples");
+    await waitFor(() => expect(usePersonalSkill).toHaveBeenCalledWith("ws-test", "skill-1"));
   });
 
   it("creates a mission only from the typed input and keeps existing captures out of mission context", async () => {
