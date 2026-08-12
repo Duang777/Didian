@@ -793,6 +793,44 @@ describe("IssueDetail (shared)", () => {
     });
   });
 
+  it("renders structured Mission capability usage records", async () => {
+    mockApiObj.listIssueSkills.mockResolvedValue({
+      skills: [
+        {
+          id: "usage-1",
+          workspace_id: "ws-1",
+          issue_id: "issue-1",
+          skill_id: "skill-1",
+          skill_name: "资料整理助手",
+          skill_description: "把收藏资源整理成主题和下一步行动。",
+          task_id: "task-1",
+          agent_id: "agent-1",
+          agent_name: "Codex Local",
+          runtime_id: "runtime-1",
+          runtime_name: "MacBook 本地运行时",
+          source: "capture_origin",
+          status: "used",
+          reason: "Created from browser capture: AI Agent 资料包",
+          skill_version: null,
+          created_by: "user-1",
+          created_at: "2026-01-18T00:00:00Z",
+          updated_at: "2026-01-18T00:05:00Z",
+        },
+      ],
+      total: 1,
+    });
+
+    renderIssueDetail();
+
+    await screen.findByText("资料整理助手");
+    expect(screen.getByText("已使用")).toBeInTheDocument();
+    expect(screen.getByText("来自收藏能力")).toBeInTheDocument();
+    expect(screen.getByText("由 Codex Local 注入")).toBeInTheDocument();
+    expect(screen.getByText("运行于 MacBook 本地运行时")).toBeInTheDocument();
+    expect(screen.getByText("Created from browser capture: AI Agent 资料包")).toBeInTheDocument();
+    expect(screen.queryByText("used")).not.toBeInTheDocument();
+  });
+
   it("renders comments from timeline", async () => {
     renderIssueDetail();
 

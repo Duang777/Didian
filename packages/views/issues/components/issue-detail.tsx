@@ -203,6 +203,39 @@ function issueSkillStatusClass(status: IssueSkillUsage["status"]) {
   }
 }
 
+function issueSkillStatusLabel(status: IssueSkillUsage["status"]): string {
+  switch (status) {
+    case "planned":
+      return "待使用";
+    case "injected":
+      return "已注入";
+    case "used":
+      return "已使用";
+    case "failed":
+      return "使用失败";
+    case "skipped":
+      return "已跳过";
+    default:
+      return status;
+  }
+}
+
+function issueSkillSourceLabel(source: IssueSkillUsage["source"]): string {
+  switch (source) {
+    case "capture_origin":
+      return "来自收藏能力";
+    case "recommendation":
+      return "平台推荐";
+    case "slash_command":
+      return "命令触发";
+    case "agent_default":
+      return "Agent 默认能力";
+    case "manual":
+    default:
+      return "手动选择";
+  }
+}
+
 function IssueSkillsSectionContent({
   skills,
   skillHref,
@@ -235,7 +268,7 @@ function IssueSkillsSectionContent({
               {skill.skill_name || "Untitled Skill"}
             </AppLink>
             <span className={cn("shrink-0 rounded border px-1.5 py-0.5 text-[10px] leading-3", issueSkillStatusClass(skill.status))}>
-              {skill.status}
+              {issueSkillStatusLabel(skill.status)}
             </span>
             {skill.status === "planned" && onRemovePlanned && (
               <button
@@ -250,13 +283,14 @@ function IssueSkillsSectionContent({
               </button>
             )}
           </div>
-          {(skill.agent_name || skill.runtime_name || skill.reason) && (
-            <div className="mt-1 line-clamp-2 text-[11px] leading-4 text-muted-foreground">
-              {skill.agent_name && <span>{skill.agent_name}</span>}
-              {skill.agent_name && skill.runtime_name && <span>{" · "}</span>}
-              {skill.runtime_name && <span>{skill.runtime_name}</span>}
-              {(skill.agent_name || skill.runtime_name) && skill.reason && <span>{" · "}</span>}
-              {skill.reason && <span>{skill.reason}</span>}
+          {(skill.source || skill.agent_name || skill.runtime_name || skill.reason) && (
+            <div className="mt-1 grid gap-0.5 text-[11px] leading-4 text-muted-foreground">
+              <div className="flex flex-wrap gap-x-1.5 gap-y-0.5">
+                <span>{issueSkillSourceLabel(skill.source)}</span>
+                {skill.agent_name && <span>由 {skill.agent_name} 注入</span>}
+                {skill.runtime_name && <span>运行于 {skill.runtime_name}</span>}
+              </div>
+              {skill.reason && <div className="line-clamp-2">{skill.reason}</div>}
             </div>
           )}
         </div>
