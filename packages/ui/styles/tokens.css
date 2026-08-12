@@ -39,6 +39,10 @@
     --color-popover: var(--popover);
     --color-card-foreground: var(--card-foreground);
     --color-card: var(--card);
+    --color-dialog-rail: var(--dialog-rail);
+    --color-dialog-footer: var(--dialog-footer);
+    --color-dialog-surface: var(--dialog-surface);
+    --color-dialog-border: var(--dialog-border);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
     --radius-sm: calc(var(--radius) * 0.6);
@@ -69,6 +73,14 @@
     --border: oklch(0.945 0.003 286.32);
     --input: oklch(0.92 0.004 286.32);
     --ring: oklch(0.705 0.015 286.067);
+    --dialog-surface: oklch(0.992 0.006 82);
+    --dialog-footer: oklch(0.968 0.014 82);
+    --dialog-rail: oklch(0.94 0.022 82);
+    --dialog-border: oklch(0.865 0.018 78);
+    --dialog-overlay: oklch(0.22 0.018 70 / 18%);
+    --dialog-shadow:
+        0 24px 70px oklch(0.30 0.03 70 / 14%),
+        0 2px 10px oklch(0.30 0.03 70 / 8%);
     /* Brand-derived blue gradient (h=255 = brand hue). chart-1 equals brand
        so the most important series visually anchors to the product colour;
        chart-2..5 step lighter + less saturated so a stacked bar reads
@@ -123,6 +135,14 @@
     --border: oklch(1 0 0 / 6%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.552 0.016 285.938);
+    --dialog-surface: oklch(0.24 0.012 55);
+    --dialog-footer: oklch(0.21 0.011 55);
+    --dialog-rail: oklch(0.31 0.014 55);
+    --dialog-border: oklch(1 0 0 / 10%);
+    --dialog-overlay: oklch(0.08 0.006 50 / 58%);
+    --dialog-shadow:
+        0 28px 80px oklch(0 0 0 / 42%),
+        0 2px 12px oklch(0 0 0 / 28%);
     /* Dark mode mirrors light mode's "primary → secondary" gradient on the
        brand hue, but flips the lightness curve: the most important series
        is the brightest (so it pops on the dark background) and trailing

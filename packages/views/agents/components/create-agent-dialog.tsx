@@ -461,12 +461,9 @@ export function CreateAgentDialog({
           </div>
         </div>
 
-        {/* Inline footer instead of <DialogFooter>: the shipped
-            DialogFooter applies `-mx-4 -mb-4` assuming a padded
-            DialogContent (default `p-4`). Our DialogContent uses
-            `p-0`, so those negative margins push the footer outside
-            the dialog. A plain flex row anchored by `border-t` keeps
-            the visual rhythm without the overflow bug. */}
+        {/* Inline footer instead of <DialogFooter>: the shared footer applies
+            negative margins assuming a padded DialogContent. Our DialogContent
+            uses `p-0`, so a plain bordered row avoids overflow. */}
         <div className="flex items-center justify-end gap-2 border-t bg-background px-5 py-3">
           <Button variant="ghost" onClick={onClose}>
             {t(($) => $.create_dialog.cancel)}

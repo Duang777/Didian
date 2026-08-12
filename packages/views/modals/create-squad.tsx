@@ -224,9 +224,9 @@ export function CreateSquadModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* Inline footer — see CreateAgentDialog: shadcn DialogFooter applies
-            negative margins assuming a padded DialogContent. Our content is
-            p-0, so a plain bordered row is the right call. */}
+        {/* Inline footer — see CreateAgentDialog: the shared DialogFooter
+            assumes padded DialogContent. Our content is p-0, so a plain
+            bordered row is the right call. */}
         <div className="flex items-center justify-end gap-2 border-t bg-background px-5 py-3">
           <Button variant="ghost" onClick={onClose}>
             {t(($) => $.create_squad.cancel)}
