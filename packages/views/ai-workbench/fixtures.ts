@@ -84,7 +84,7 @@ function browserMemoryStatus(capture: BrowserCapture): Pick<AiInboxInput, "enric
   if (status === "ready") {
     return {
       enrichmentStatus: "ready",
-      enrichmentLabel: "AI ready",
+      enrichmentLabel: "已整理",
       enrichmentDescription: "已整理",
       failureReason: null,
     };
@@ -92,22 +92,22 @@ function browserMemoryStatus(capture: BrowserCapture): Pick<AiInboxInput, "enric
   if (status === "processing") {
     return {
       enrichmentStatus: "processing",
-      enrichmentLabel: "AI processing",
-      enrichmentDescription: "AI 正在整理",
+      enrichmentLabel: "正在整理",
+      enrichmentDescription: "本地 AI 正在整理",
       failureReason: null,
     };
   }
   if (status === "failed" || capture.summary_status === "failure" || capture.status === "failed") {
     return {
       enrichmentStatus: "failed",
-      enrichmentLabel: "AI failed",
+      enrichmentLabel: "整理失败",
       enrichmentDescription: "整理失败",
       failureReason: capture.failure_reason ?? null,
     };
   }
   return {
     enrichmentStatus: "pending",
-    enrichmentLabel: "AI pending",
+    enrichmentLabel: "待整理",
     enrichmentDescription: "等待整理",
     failureReason: null,
   };

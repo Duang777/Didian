@@ -29,7 +29,7 @@ import { Markdown } from "../../common/markdown";
 const createMissionLabel = "创建 Mission";
 const saveToAtlasLabel = "保存到 Atlas";
 const captureCurrentPageLabel = "使用扩展收藏当前页";
-const personalSkillSuggestionLabel = "能力候选";
+const personalSkillSuggestionLabel = "可做成能力";
 const generateSkillLabel = "生成能力";
 const recommendSkillDirectionLabel = "让 Codex 判断";
 const makeBookmarkSkillLabel = "先让 Codex 判断";
@@ -1168,7 +1168,7 @@ function SkillOpportunityPanel({
             <div className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-muted-foreground" role="status">
               <Clock3 className="mt-0.5 size-3.5 shrink-0 text-primary" />
               <span>
-                {directionAnalysis.planningStatus === "queued" ? "Codex 正在判断能力方向" : "方向判断已准备好"}
+                {directionAnalysis.planningStatus === "queued" ? "Codex 正在帮你看这条收藏适合做成什么能力" : "方向判断已准备好"}
                 <span className="text-muted-foreground">，在弹窗里确认后再生成。</span>
               </span>
             </div>
@@ -1250,10 +1250,10 @@ function SkillOpportunityEvidence({ opportunity }: { opportunity: SkillOpportuni
 
 function skillOpportunityAssessmentText(opportunity: SkillOpportunity | null | undefined): string {
   if (!opportunity) {
-    return "这个收藏暂时还没有足够强的自动线索。你可以主动让 Codex 先判断是否适合沉淀成能力，再确认方向。";
+    return "这个收藏暂时还没有足够强的自动线索。你可以先让 Codex 判断它适不适合做成能力，再确认具体方向。";
   }
   if (!opportunity.shouldSuggest) {
-    return `${opportunity.whyUseful} 先确认它真正要服务的重复任务，避免生成成泛泛摘要。`;
+    return `${opportunity.whyUseful} 先确认它真正要服务的重复任务，避免生成成泛泛的整理结果。`;
   }
   return `这个 ${formatSkillOpportunityPageType(opportunity.pageType)} 看起来有可复用线索。先让本地 Codex 阅读链接，再确认最适合沉淀成什么能力。${opportunity.whyUseful}`;
 }
@@ -1537,7 +1537,7 @@ function browserCaptureStatusView(item: AiInboxInput) {
   switch (item.enrichmentStatus) {
     case "ready":
       return {
-        label: "AI ready",
+        label: "已整理",
         description: item.enrichmentDescription ?? "已整理",
         icon: CheckCircle2,
         variant: "secondary" as const,
@@ -1546,8 +1546,8 @@ function browserCaptureStatusView(item: AiInboxInput) {
       };
     case "processing":
       return {
-        label: "AI processing",
-        description: item.enrichmentDescription ?? "AI 正在整理",
+        label: "正在整理",
+        description: item.enrichmentDescription ?? "本地 AI 正在整理",
         icon: Loader2,
         variant: "outline" as const,
         className: "text-primary",
@@ -1555,7 +1555,7 @@ function browserCaptureStatusView(item: AiInboxInput) {
       };
     case "failed":
       return {
-        label: "AI failed",
+        label: "整理失败",
         description: item.enrichmentDescription ?? "整理失败",
         icon: AlertCircle,
         variant: "destructive" as const,
@@ -1565,7 +1565,7 @@ function browserCaptureStatusView(item: AiInboxInput) {
     case "pending":
     default:
       return {
-        label: "AI pending",
+        label: "待整理",
         description: item.enrichmentDescription ?? "等待整理",
         icon: Clock3,
         variant: "outline" as const,

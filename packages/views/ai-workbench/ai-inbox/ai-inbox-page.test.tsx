@@ -229,10 +229,10 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.queryByText("AI 理解")).not.toBeInTheDocument();
     expect(screen.getByText("已有收藏")).toBeInTheDocument();
     expect(screen.getByText("AI takeaway explains why this page matters.")).toBeInTheDocument();
-    expect(screen.getByText("AI ready")).toBeInTheDocument();
-    expect(screen.getByText("AI processing")).toBeInTheDocument();
-    expect(screen.getByText("AI failed")).toBeInTheDocument();
-    expect(screen.getByText("AI pending")).toBeInTheDocument();
+    expect(screen.getAllByText("已整理").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("正在整理").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("整理失败").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("待整理").length).toBeGreaterThan(0);
     expect(screen.getByText("browser memory invalid output")).toBeInTheDocument();
     expect(screen.queryByText("The selected quote explains why this page was saved.")).not.toBeInTheDocument();
     expect(screen.getAllByText("example.com").length).toBeGreaterThan(0);
@@ -311,7 +311,7 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
-    expect(screen.getByText("能力候选")).toBeInTheDocument();
+    expect(screen.getByText("可做成能力")).toBeInTheDocument();
     expect(screen.getByText("Stripe Checkout 接入助手")).toBeInTheDocument();
     expect(screen.getByText(/接入步骤、请求示例/)).toBeInTheDocument();
     expect(screen.getByText("Docs")).toBeInTheDocument();
@@ -448,7 +448,7 @@ describe("AiInboxPage browser captures", () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText("AI workflow notes")).toBeInTheDocument());
-    expect(screen.queryByText("能力候选")).not.toBeInTheDocument();
+    expect(screen.queryByText("可做成能力")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "先让 Codex 判断" }));
 
