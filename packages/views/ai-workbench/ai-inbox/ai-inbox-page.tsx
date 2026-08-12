@@ -43,7 +43,7 @@ const codexOfflineMessage = "当前没有可用 Codex agent。你可以先直接
 const noSkillOpportunityMessage = "这个收藏暂时没有足够的可复用线索。你可以在弹窗里补充想要的能力方向，再让 Codex 重新判断。";
 const sourceFetchFailedMessage = "来源页面暂时读取失败。你可以刷新收藏，或先手动填写能力方向。";
 type InputUrlCollectionDecision = "saved" | "skipped";
-type SkillGenerationState = "created" | "duplicate" | "draft" | "generated";
+type SkillGenerationState = "queued" | "refining" | "ready" | "failed" | "duplicate";
 type SkillGenerationMission = { id?: string; href?: string; title?: string; skillId?: string; skillHref: string; skillName: string; state: SkillGenerationState };
 type SkillDirectionAnalysis = { id: string; title: string; state: "created" | "duplicate"; planningStatus: string; userNeed?: string };
 type SkillUsageMission = { id: string; href: string; title: string };
@@ -315,7 +315,7 @@ export function AiInboxPage() {
           skillId: mission.skill.id,
           skillHref: paths.workspace(workspaceSlug).skillDetail(mission.skill.id),
           skillName: mission.skill.name,
-          state: mission.planningStatus === "existing" ? skillGenerationStateForSkill(mission.skill) : "created",
+          state: mission.planningStatus === "queued" ? "queued" : skillGenerationStateForSkill(mission.skill),
         },
       }));
       setSkillDraftFlow(null);
@@ -1078,7 +1078,7 @@ function SkillOpportunityPanel({
   onUseGeneratedSkill?: () => void;
   onDeleteGeneratedSkill?: () => void;
 }) {
-  const canUseGeneratedSkill = Boolean(mission?.skillId && onUseGeneratedSkill);
+  const canUseGeneratedSkill = Boolean(mission?.skillId && onUseGeneratedSkill && (mission.state === "ready" || mission.state === "duplicate"));
   const canDeleteGeneratedSkill = Boolean(mission?.skillId && onDeleteGeneratedSkill);
   return (
     <div className="border-t bg-accent/25 px-3 py-3">
@@ -1455,7 +1455,10 @@ function skillOriginCaptureId(skill: SkillSummary): string | null {
 function skillGenerationStateForSkill(skill: Pick<SkillSummary, "config">): SkillGenerationState {
   const generation = recordValue(skill.config, "generation");
   const status = generation ? recordValue(generation, "status") : null;
-  return status === "agent_refined" ? "generated" : "draft";
+  if (status === "agent_refined" || status === "ready" || status === "generated") return "ready";
+  if (status === "failed") return "failed";
+  if (status === "queued" || status === "processing" || status === "generating") return "queued";
+  return "refining";
 }
 
 function recordValue(value: unknown, key: string): unknown {
@@ -1466,16 +1469,20 @@ function recordValue(value: unknown, key: string): unknown {
 function skillActionLabel({ isGenerating, mission }: { isGenerating: boolean; mission?: SkillGenerationMission }) {
   if (isGenerating) return "创建中";
   if (!mission) return generateSkillLabel;
-  if (mission.state === "generated") return "已生成";
-  if (mission.state === "draft") return "生成中";
-  return "已创建";
+  if (mission.state === "ready") return "已入库";
+  if (mission.state === "failed") return "生成失败";
+  if (mission.state === "duplicate") return "已存在";
+  if (mission.state === "queued") return "生成中";
+  return "待完善";
 }
 
 function skillStatusText(mission: SkillGenerationMission) {
-  if (mission.state === "generated") return "能力已生成并保存在能力库。";
-  if (mission.state === "draft") return "能力已创建，等待本地 agent 完善。";
+  if (mission.state === "ready") return "能力已生成并保存在能力库。";
+  if (mission.state === "failed") return "能力生成失败，可以删除后重新生成。";
+  if (mission.state === "queued") return "本地 Codex 正在生成能力，完成后会写入能力库。";
+  if (mission.state === "refining") return "能力草稿已入库，等待本地 Codex 完善。";
   if (mission.state === "duplicate") return "能力已在库中，并找到已有生成任务。";
-  return "能力已写入库，本地 agent 的完善任务已创建。";
+  return "能力状态已更新。";
 }
 
 function skillUsageMissionTitle(item: AiInboxInput, mission: Pick<SkillGenerationMission, "skillName">) {

@@ -363,10 +363,11 @@ describe("AiInboxPage browser captures", () => {
       }),
     }));
     expect(toastSuccess).toHaveBeenCalledWith("能力生成任务已创建，本地 Codex 会按你确认的方向生成并写入能力库。");
-    expect(screen.getByRole("status")).toHaveTextContent("能力已写入库");
+    expect(screen.getByRole("status")).toHaveTextContent("本地 Codex 正在生成能力，完成后会写入能力库。");
     expect(screen.getByRole("link", { name: "打开能力" })).toHaveAttribute("href", "/acme/skills/skill-1");
     expect(screen.getByRole("link", { name: "查看生成 Mission" })).toHaveAttribute("href", "/acme/issues/skill-mission-1");
-    expect(screen.queryByRole("button", { name: "已创建" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "用能力创建 Mission" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "已存在" })).not.toBeInTheDocument();
   }, 10_000);
 
   it("shows generated capability state from the persisted capability library after refresh", async () => {
@@ -417,8 +418,46 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByRole("link", { name: "打开能力" })).toHaveAttribute("href", "/acme/skills/skill-persisted");
     expect(screen.queryByRole("link", { name: "查看生成 Mission" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "生成能力" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "已生成" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "已入库" })).not.toBeInTheDocument();
     expect(createBrowserCaptureSkillGenerationMission).not.toHaveBeenCalled();
+  });
+
+  it("shows failed capability generation state from the persisted capability library", async () => {
+    listBrowserCaptures.mockResolvedValue({
+      captures: [
+        captureFixture({
+          url: "https://docs.stripe.com/payments/checkout",
+          normalized_url: "https://docs.stripe.com/payments/checkout",
+          title: "Stripe Checkout documentation",
+          domain: "docs.stripe.com",
+          readable_text: "Install the SDK, configure API keys, create a checkout session, handle webhooks, and test common errors.",
+          memory: memoryFixture({ status: "ready" }),
+        }),
+      ],
+      total: 1,
+    });
+    listSkills.mockResolvedValue([
+      {
+        id: "skill-failed",
+        workspace_id: "ws-test",
+        name: "Stripe Checkout 接入助手",
+        description: "根据项目栈生成接入步骤、请求示例、环境变量清单和常见错误排查。",
+        config: {
+          origin: { type: "browser_capture", capture_id: "capture-1" },
+          generation: { type: "browser_capture_skill_generation", status: "failed" },
+        },
+        created_by: "user-1",
+        created_at: "2026-07-14T02:42:00.000Z",
+        updated_at: "2026-07-14T02:43:00.000Z",
+      },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("Stripe Checkout documentation")).toBeInTheDocument());
+    expect(screen.getByRole("status")).toHaveTextContent("能力生成失败，可以删除后重新生成。");
+    expect(screen.queryByRole("button", { name: "用能力创建 Mission" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "删除能力" })).toBeEnabled();
   });
 
   it("lets users request an ability from a bookmark without an automatic recommendation", async () => {
@@ -565,7 +604,7 @@ describe("AiInboxPage browser captures", () => {
     await waitFor(() => expect(deleteSkill).toHaveBeenCalledWith("skill-persisted"));
     expect(toastSuccess).toHaveBeenCalledWith("能力已删除，可以重新生成。");
     expect(screen.queryByText("能力已生成并保存在能力库。")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "已生成" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "已入库" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "先让 Codex 判断" })).toBeEnabled();
   });
 
