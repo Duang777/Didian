@@ -126,7 +126,7 @@ export default function MyIssues() {
 
   return (
     <View className="flex-1 bg-background">
-      <Header title="My Issues" right={<HeaderActions />} />
+      <Header title="My Missions" right={<HeaderActions />} />
       <ScopeToolbar
         scopes={SCOPES}
         scope={scope}
@@ -151,7 +151,7 @@ export default function MyIssues() {
       ) : error ? (
         <View className="px-4 gap-3 pt-4">
           <Text className="text-sm text-destructive">
-            Failed to load issues:{" "}
+            Failed to load Missions:{" "}
             {error instanceof Error ? error.message : "unknown error"}
           </Text>
           <Button variant="outline" onPress={() => refetch()}>
@@ -162,7 +162,7 @@ export default function MyIssues() {
         <EmptyState
           message={
             hasActiveFilters
-              ? "No issues match the current filters."
+              ? "No Missions match the current filters."
               : emptyMessageForScope(scope)
           }
         />
@@ -363,11 +363,10 @@ function EmptyState({ message }: { message: string }) {
 function emptyMessageForScope(scope: MyIssuesScope): string {
   switch (scope) {
     case "assigned":
-      return "No issues assigned to you.";
+      return "No Missions assigned to you.";
     case "created":
-      return "You haven't created any issues.";
+      return "You haven't created any Missions.";
     case "agents":
-      return "No issues assigned to your agents or squads yet.";
+      return "No Missions assigned to your agents or squads yet.";
   }
 }
-

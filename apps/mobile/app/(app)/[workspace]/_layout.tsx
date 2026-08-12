@@ -135,7 +135,7 @@ export default function WorkspaceLayout() {
         <Stack.Screen
           name="issue/[id]"
           options={{
-            title: "Issue",
+            title: "Mission",
             headerBackTitle: "Back",
           }}
         />
@@ -157,7 +157,7 @@ export default function WorkspaceLayout() {
         <Stack.Screen
           name="issue/[id]/edit"
           options={{
-            title: "Edit Issue",
+            title: "Edit Mission",
             presentation: "modal",
             headerLeft: () => <ModalCloseButton />,
           }}
@@ -281,7 +281,7 @@ export default function WorkspaceLayout() {
           name="new-project-picker/priority"
           options={SHEET_OPTIONS}
         />
-        {/* Shared filter sheet for My Issues and the workspace Issues page —
+        {/* Shared filter sheet for My Missions and the workspace Missions page —
             chooses the right view-store via `?scope=my|all` URL param. */}
         <Stack.Screen name="issues-filter" options={SHEET_OPTIONS} />
         {/* Chat session-switch sheet. */}
@@ -291,7 +291,7 @@ export default function WorkspaceLayout() {
         <Stack.Screen name="switch-workspace" options={SHEET_OPTIONS} />
         <Stack.Screen
           name="more/issues"
-          options={{ title: "Issues", headerBackTitle: "Back" }}
+          options={{ title: "Missions", headerBackTitle: "Back" }}
         />
         <Stack.Screen
           name="more/projects"
@@ -320,7 +320,7 @@ export default function WorkspaceLayout() {
         <Stack.Screen
           name="new-issue"
           options={{
-            title: "New Issue",
+            title: "New Mission",
             presentation: "modal",
             headerLeft: () => <ModalCloseButton />,
           }}

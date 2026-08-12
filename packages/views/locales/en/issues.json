@@ -1,10 +1,10 @@
 {
   "page": {
-    "breadcrumb_title": "Issues",
+    "breadcrumb_title": "Missions",
     "breadcrumb_workspace_fallback": "Workspace",
-    "empty_title": "No issues yet",
-    "empty_hint": "Create an issue to get started.",
-    "move_failed": "Failed to move issue"
+    "empty_title": "No Missions yet",
+    "empty_hint": "Create a Mission to get started.",
+    "move_failed": "Failed to move Mission"
   },
   "status": {
     "backlog": "Backlog",
@@ -28,11 +28,11 @@
   },
   "scope": {
     "all_label": "All",
-    "all_description": "All issues in this workspace",
+    "all_description": "All Missions in this workspace",
     "members_label": "Members",
-    "members_description": "Issues assigned to team members",
+    "members_description": "Missions assigned to team members",
     "agents_label": "Agents",
-    "agents_description": "Issues assigned to AI agents"
+    "agents_description": "Missions assigned to AI agents"
   },
   "filters": {
     "tooltip": "Filter",
@@ -60,8 +60,8 @@
     "members_group": "Members",
     "agents_group": "Agents",
     "squads_group": "Squads",
-    "issue_count_one": "{{count}} issue",
-    "issue_count_other": "{{count}} issues",
+    "issue_count_one": "{{count}} Mission",
+    "issue_count_other": "{{count}} Missions",
     "reset": "Reset all filters",
     "active_count_one": "{{count}} filter",
     "active_count_other": "{{count}} filters"
@@ -75,7 +75,7 @@
     "descending_title": "Descending",
     "group_status": "Status",
     "group_assignee": "Assignee",
-    "group_parent": "Parent issue",
+    "group_parent": "Parent Mission",
     "group_project": "Project",
     "sort_manual": "Manual",
     "sort_priority": "Priority",
@@ -90,8 +90,8 @@
     "card_due_date": "Due date",
     "card_project": "Project",
     "card_labels": "Labels",
-    "card_child_progress": "Sub-issue progress",
-    "show_sub_issues": "Show sub-issues"
+    "card_child_progress": "Sub-Mission progress",
+    "show_sub_issues": "Show sub-Missions"
   },
   "view": {
     "tooltip_board": "Board view",
@@ -105,78 +105,78 @@
     "swimlane": "Swimlane"
   },
   "gantt": {
-    "header_issue": "Issue",
+    "header_issue": "Mission",
     "zoom_day": "Day",
     "zoom_week": "Week",
     "zoom_month": "Month",
     "show_completed": "Show completed",
-    "empty": "No scheduled issues yet — set a start or due date on any issue to see it on the timeline.",
+    "empty": "No scheduled Missions yet — set a start or due date on any Mission to see it on the timeline.",
     "inverted_dates_warning": "Start date is after due date — bar shown from min to max."
   },
   "actor_issues": {
     "scope": {
       "assigned": {
         "label": "Assigned",
-        "description": "Issues assigned to this member or agent"
+        "description": "Missions assigned to this member or agent"
       },
       "created": {
         "label": "Created",
-        "description": "Issues created by this member or agent"
+        "description": "Missions created by this member or agent"
       }
     },
     "empty": {
       "assigned": {
-        "title": "No assigned issues",
-        "description": "Issues assigned here will appear in this view."
+        "title": "No assigned Missions",
+        "description": "Missions assigned here will appear in this view."
       },
       "created": {
-        "title": "No created issues",
-        "description": "Issues created here will appear in this view."
+        "title": "No created Missions",
+        "description": "Missions created here will appear in this view."
       }
     },
-    "search_placeholder": "Search issues...",
-    "search_empty": "No issues match your search."
+    "search_placeholder": "Search Missions...",
+    "search_empty": "No Missions match your search."
   },
   "list": {
-    "empty_status": "No issues",
-    "add_issue_tooltip": "Add issue"
+    "empty_status": "No Missions",
+    "add_issue_tooltip": "Add Mission"
   },
   "swimlane": {
     "no_parent": "No parent",
     "other_parents": "Other parents",
     "no_project": "No project",
     "no_assignee": "Unassigned",
-    "open_parent": "Open parent issue",
+    "open_parent": "Open parent Mission",
     "toggle_collapse": "Toggle lane"
   },
   "board": {
     "hidden_columns_label": "Hidden columns",
     "hide_column": "Hide column",
     "show_column": "Show column",
-    "add_issue_tooltip": "Add issue",
-    "empty_column": "No issues",
-    "empty_grouping": "No matching issues",
+    "add_issue_tooltip": "Add Mission",
+    "empty_column": "No Missions",
+    "empty_grouping": "No matching Missions",
     "ordered_by": "Board ordered by {{field}}"
   },
   "detail": {
-    "not_found": "This issue does not exist or has been deleted in this workspace.",
+    "not_found": "This Mission does not exist or has been deleted in this workspace.",
     "breadcrumb_project_unknown": "Unknown project",
-    "back_to_issues": "Back to Issues",
-    "title_placeholder": "Issue title",
+    "back_to_issues": "Back to Missions",
+    "title_placeholder": "Mission title",
     "desc_placeholder": "Add description...",
-    "sub_issues_label": "Sub-issues",
-    "sub_issue_of": "Sub-issue of",
-    "add_sub_issues": "Add sub-issues",
-    "add_sub_issue_tooltip": "Add sub-issue",
-    "add_sub_issue_aria": "Add sub-issue",
+    "sub_issues_label": "Sub-Missions",
+    "sub_issue_of": "Sub-Mission of",
+    "add_sub_issues": "Add sub-Missions",
+    "add_sub_issue_tooltip": "Add sub-Mission",
+    "add_sub_issue_aria": "Add sub-Mission",
     "section_properties": "Properties",
-    "section_parent_issue": "Parent issue",
+    "section_parent_issue": "Parent Mission",
     "section_pull_requests": "Pull requests",
     "section_metadata": "Metadata",
     "section_details": "Details",
     "section_token_usage": "Token usage",
     "pull_requests_loading": "Loading…",
-    "pull_requests_empty": "No linked pull requests yet. Reference this issue's identifier in a PR's branch name, title, or body to auto-link it.",
+    "pull_requests_empty": "No linked pull requests yet. Reference this Mission's identifier in a PR's branch name, title, or body to auto-link it.",
     "pull_request_state_open": "Open",
     "pull_request_state_draft": "Draft",
     "pull_request_state_merged": "Merged",
@@ -230,26 +230,26 @@
     "thread_nav_label": "Jump to comment thread",
     "sidebar_tooltip": "Toggle sidebar",
     "find": {
-      "placeholder": "Find in issue...",
+      "placeholder": "Find in Mission...",
       "count": "{{current}}/{{total}}",
       "no_matches": "No matches",
       "previous": "Previous match",
       "next": "Next match",
       "close": "Close find"
     },
-    "update_failed": "Failed to update issue",
+    "update_failed": "Failed to update Mission",
     "link_copied": "Link copied",
     "link_copy_failed": "Failed to copy link",
     "workdir_path_copied": "Workdir path copied",
     "workdir_path_copy_failed": "Failed to copy workdir path",
-    "workdir_path_unavailable": "No local workdir yet — issue has not been run by a local agent"
+    "workdir_path_unavailable": "No local workdir yet — Mission has not been run by a local agent"
   },
   "timeline": {
     "loading": "Loading..."
   },
   "activity": {
-    "created": "created this issue",
-    "self_assigned": "self-assigned this issue",
+    "created": "created this Mission",
+    "self_assigned": "self-assigned this Mission",
     "assigned_to": "assigned to {{name}}",
     "removed_assignee": "removed assignee",
     "changed_assignee": "changed assignee",
@@ -259,7 +259,7 @@
     "start_date_removed": "removed start date",
     "due_date_set": "set due date to {{date}}",
     "due_date_removed": "removed due date",
-    "title_renamed": "renamed this issue from \"{{from}}\" to \"{{to}}\"",
+    "title_renamed": "renamed this Mission from \"{{from}}\" to \"{{to}}\"",
     "description_updated": "updated the description",
     "task_completed_one": "completed the task",
     "task_completed_other": "completed the task ({{count}} times)",
@@ -405,21 +405,21 @@
     "priority": "Priority",
     "assignee": "Assignee",
     "delete": "Delete",
-    "update_success_one": "Updated {{count}} issue",
-    "update_success_other": "Updated {{count}} issues",
-    "update_failed": "Failed to update issues",
-    "delete_success_one": "Deleted {{count}} issue",
-    "delete_success_other": "Deleted {{count}} issues",
-    "delete_failed": "Failed to delete issues",
-    "delete_dialog_title_one": "Delete {{count}} issue?",
-    "delete_dialog_title_other": "Delete {{count}} issues?",
-    "delete_dialog_desc_one": "This action cannot be undone. This will permanently delete the selected issue and all associated data.",
-    "delete_dialog_desc_other": "This action cannot be undone. This will permanently delete the selected issues and all associated data.",
-    "delete_dialog_warning": "Any workspace member can delete issues.",
+    "update_success_one": "Updated {{count}} Mission",
+    "update_success_other": "Updated {{count}} Missions",
+    "update_failed": "Failed to update Missions",
+    "delete_success_one": "Deleted {{count}} Mission",
+    "delete_success_other": "Deleted {{count}} Missions",
+    "delete_failed": "Failed to delete Missions",
+    "delete_dialog_title_one": "Delete {{count}} Mission?",
+    "delete_dialog_title_other": "Delete {{count}} Missions?",
+    "delete_dialog_desc_one": "This action cannot be undone. This will permanently delete the selected Mission and all associated data.",
+    "delete_dialog_desc_other": "This action cannot be undone. This will permanently delete the selected Missions and all associated data.",
+    "delete_dialog_warning": "Any workspace member can delete Missions.",
     "cancel": "Cancel"
   },
   "card": {
-    "update_failed": "Failed to update issue",
+    "update_failed": "Failed to update Mission",
     "updated_ago": "Updated {{time}}"
   },
   "actions": {
@@ -442,12 +442,12 @@
     "copy_link": "Copy link",
     "copy_workdir_path": "Copy local workdir path",
     "relations": "Relations",
-    "create_sub_issue": "Create sub-issue",
-    "set_parent_issue": "Set parent issue...",
-    "remove_parent_issue": "Remove parent issue",
-    "remove_parent_issue_success": "Removed parent issue",
-    "add_sub_issue": "Add sub-issue...",
-    "delete_issue": "Delete issue"
+    "create_sub_issue": "Create sub-Mission",
+    "set_parent_issue": "Set parent Mission...",
+    "remove_parent_issue": "Remove parent Mission",
+    "remove_parent_issue_success": "Removed parent Mission",
+    "add_sub_issue": "Add sub-Mission...",
+    "delete_issue": "Delete Mission"
   },
   "pickers": {
     "filter_options_aria": "Filter options",
@@ -477,7 +477,7 @@
     }
   },
   "labels_panel": {
-    "intro": "Create and manage labels to categorize issues across your workspace.",
+    "intro": "Create and manage labels to categorize Missions across your workspace.",
     "new_placeholder": "New label name…",
     "new_aria": "New label name",
     "add_action": "Add",
@@ -492,7 +492,7 @@
     "cancel_aria": "Cancel",
     "delete_dialog_title": "Delete label?",
     "delete_dialog_desc_prefix": "The label ",
-    "delete_dialog_desc_suffix": " will be removed from all issues. This cannot be undone.",
+    "delete_dialog_desc_suffix": " will be removed from all Missions. This cannot be undone.",
     "delete_dialog_cancel": "Cancel",
     "delete_dialog_confirm": "Delete",
     "create_failed": "Failed to create label",
@@ -501,7 +501,7 @@
   },
   "backlog_hint": {
     "title": "Agent is paused in Backlog",
-    "description": "This issue is parked, so the assigned agent will wait. Move it to Todo when you want the agent to start.",
+    "description": "This Mission is parked, so the assigned agent will wait. Move it to Todo when you want the agent to start.",
     "row_backlog_label": "Backlog",
     "row_backlog_hint": "keeps the agent paused",
     "row_todo_label": "Todo",

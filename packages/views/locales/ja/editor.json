@@ -23,9 +23,9 @@
       "task_list": "タスクリスト"
     },
     "sub_issue": {
-      "tooltip": "選択範囲からサブイシューを作成",
+      "tooltip": "選択範囲からサブMissionを作成",
       "created": "{{identifier}} を作成しました",
-      "create_failed": "サブイシューを作成できませんでした"
+      "create_failed": "サブMissionを作成できませんでした"
     }
   },
   "image": {
@@ -55,7 +55,7 @@
   },
   "mention": {
     "group_users": "ユーザー",
-    "group_issues": "イシュー",
+    "group_issues": "Mission",
     "all_members": "すべてのメンバー",
     "searching": "検索中...",
     "no_results": "結果なし",

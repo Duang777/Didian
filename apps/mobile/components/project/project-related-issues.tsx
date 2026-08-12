@@ -65,7 +65,7 @@ export function ProjectRelatedIssues({ projectId }: Props) {
     return (
       <View className="px-4 py-6 gap-3">
         <Text className="text-sm text-destructive">
-          Failed to load issues:{" "}
+          Failed to load Missions:{" "}
           {error instanceof Error ? error.message : "unknown error"}
         </Text>
         <Button variant="outline" onPress={() => refetch()}>
@@ -78,7 +78,7 @@ export function ProjectRelatedIssues({ projectId }: Props) {
   if ((data?.length ?? 0) === 0) {
     return (
       <View className="px-4 py-6">
-        <Text className="text-sm text-muted-foreground">No issues yet.</Text>
+        <Text className="text-sm text-muted-foreground">No Missions yet.</Text>
       </View>
     );
   }

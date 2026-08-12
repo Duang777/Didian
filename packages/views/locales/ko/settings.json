@@ -61,24 +61,24 @@
   },
   "notifications": {
     "title": "인박스 알림",
-    "description": "어떤 이벤트가 인박스 알림을 만들지 제어합니다. 음소거한 이벤트 유형은 조용히 걸러지지만, 이슈를 직접 열면 계속 볼 수 있습니다.",
+    "description": "어떤 이벤트가 인박스 알림을 만들지 제어합니다. 음소거한 이벤트 유형은 조용히 걸러지지만, Mission을 직접 열면 계속 볼 수 있습니다.",
     "toast_failed": "알림 설정을 업데이트하지 못했습니다",
     "groups": {
       "assignments": {
         "label": "할당",
-        "description": "이슈에 할당되거나 할당 해제될 때"
+        "description": "Mission에 할당되거나 할당 해제될 때"
       },
       "status_changes": {
         "label": "상태 변경",
-        "description": "팔로우 중인 이슈의 상태가 바뀔 때(예: 할 일, 진행 중, 완료)"
+        "description": "팔로우 중인 Mission의 상태가 바뀔 때(예: 할 일, 진행 중, 완료)"
       },
       "comments": {
         "label": "댓글 및 멘션",
-        "description": "팔로우 중인 이슈에 새 댓글이 달리거나 누군가 나를 @멘션할 때"
+        "description": "팔로우 중인 Mission에 새 댓글이 달리거나 누군가 나를 @멘션할 때"
       },
       "updates": {
         "label": "우선순위 및 마감일",
-        "description": "팔로우 중인 이슈의 우선순위나 마감일이 바뀔 때"
+        "description": "팔로우 중인 Mission의 우선순위나 마감일이 바뀔 때"
       },
       "agent_activity": {
         "label": "에이전트 활동",
@@ -147,10 +147,10 @@
     "context_label": "맥락",
     "context_placeholder": "이 워크스페이스에서 작업하는 AI 에이전트가 알아야 할 배경 정보와 맥락",
     "slug_label": "슬러그",
-    "issue_prefix_label": "이슈 접두사",
-    "issue_prefix_hint": "{{example}} 같은 이슈 번호에 사용됩니다.",
-    "prefix_confirm_title": "이슈 접두사를 변경할까요?",
-    "prefix_confirm_description": "모든 이슈 번호가 {{oldPrefix}}-N에서 {{newPrefix}}-N으로 다시 매겨집니다. Pull request 제목, 브랜치 이름, 문서와 채팅의 링크처럼 {{oldPrefix}}-N을 사용하는 외부 참조는 더 이상 연결되지 않습니다.",
+    "issue_prefix_label": "Mission 접두사",
+    "issue_prefix_hint": "{{example}} 같은 Mission 번호에 사용됩니다.",
+    "prefix_confirm_title": "Mission 접두사를 변경할까요?",
+    "prefix_confirm_description": "모든 Mission 번호가 {{oldPrefix}}-N에서 {{newPrefix}}-N으로 다시 매겨집니다. Pull request 제목, 브랜치 이름, 문서와 채팅의 링크처럼 {{oldPrefix}}-N을 사용하는 외부 참조는 더 이상 연결되지 않습니다.",
     "save": "저장",
     "saving": "저장하는 중...",
     "manage_hint": "관리자와 소유자만 워크스페이스 설정을 업데이트할 수 있습니다.",
@@ -176,7 +176,7 @@
   },
   "delete_workspace_dialog": {
     "title": "워크스페이스 삭제",
-    "description": "이 작업은 되돌릴 수 없습니다. 모든 이슈, 에이전트, 데이터가 영구 삭제됩니다.",
+    "description": "이 작업은 되돌릴 수 없습니다. 모든 Mission, 에이전트, 데이터가 영구 삭제됩니다.",
     "type_to_confirm_prefix": "확인하려면 아래에",
     "type_to_confirm_suffix": "을(를) 입력하세요.",
     "cancel": "취소",
@@ -195,8 +195,8 @@
     "master_description_off": "GitHub 기능이 꺼져 있습니다. PR 사이드바, Co-authored-by 트레일러, 자동 연결이 일시 중지됩니다. 백엔드 데이터는 삭제되지 않습니다.",
     "section_connection": "연결",
     "connection_title": "GitHub App",
-    "connection_description_prefix": "이슈를 Pull request에 자동으로 연결합니다. 브랜치, 제목 또는 본문에",
-    "connection_description_suffix": "이(가) 있는 PR이 병합되면 해당 이슈가",
+    "connection_description_prefix": "Mission을 Pull request에 자동으로 연결합니다. 브랜치, 제목 또는 본문에",
+    "connection_description_suffix": "이(가) 있는 PR이 병합되면 해당 Mission가",
     "connection_description_done": "완료",
     "connection_identifier_example": "MUL-123",
     "connected_to": "{{login}}에 연결됨",
@@ -220,12 +220,12 @@
     "toast_disconnected": "GitHub App 연결을 해제했습니다",
     "section_features": "기능",
     "feature_pr_sidebar_label": "Pull request 사이드바",
-    "feature_pr_sidebar_description": "연결된 Pull request를 이슈 상세 사이드바에 표시합니다.",
+    "feature_pr_sidebar_description": "연결된 Pull request를 Mission 상세 사이드바에 표시합니다.",
     "feature_co_author_label": "Co-authored-by 트레일러",
     "feature_co_author_description_prefix": "에이전트가 작성한 커밋에",
     "feature_co_author_description_suffix": "을(를) 추가합니다.",
-    "feature_auto_link_label": "이슈와 PR 자동 연결",
-    "feature_auto_link_description": "PR 제목, 본문, 브랜치 이름을 이슈 식별자와 대조해 자동으로 연결합니다.",
+    "feature_auto_link_label": "Mission와 PR 자동 연결",
+    "feature_auto_link_description": "PR 제목, 본문, 브랜치 이름을 Mission 식별자와 대조해 자동으로 연결합니다.",
     "section_repositories": "저장소",
     "repositories_shortcut_label": "저장소 URL은 저장소 탭에 있습니다",
     "repositories_shortcut_link": "저장소 관리 →",
@@ -304,13 +304,13 @@
       },
       "member": {
         "label": "멤버",
-        "description": "이슈 생성 및 작업"
+        "description": "Mission 생성 및 작업"
       }
     }
   },
   "lark": {
     "section_title": "Lark",
-    "page_description": "각 Didian 에이전트를 Lark(飞书) PersonalAgent 봇에 연결하세요. 멤버는 봇과 1:1로 대화하거나, 그룹에서 @ 멘션하거나, /issue 를 입력해 새 Didian 이슈를 만들 수 있습니다.",
+    "page_description": "각 Didian 에이전트를 Lark(飞书) PersonalAgent 봇에 연결하세요. 멤버는 봇과 1:1로 대화하거나, 그룹에서 @ 멘션하거나, /issue 를 입력해 새 Didian Mission을 만들 수 있습니다.",
     "not_enabled_title": "Lark 연동이 비활성화되어 있어요",
     "not_enabled_description_prefix": "Lark 봇 설치를 활성화하려면 서버에",
     "not_enabled_description_suffix": "을(를) 설정하세요.",
@@ -415,7 +415,7 @@
   },
   "slack": {
     "section_title": "Slack",
-    "page_description": "각 Didian 에이전트를 전용 Slack 봇에 연결하세요. 멤버는 봇과 1:1로 대화하거나, 채널에서 @ 멘션하거나, /issue 를 입력해 새 Didian 이슈를 만들 수 있습니다.",
+    "page_description": "각 Didian 에이전트를 전용 Slack 봇에 연결하세요. 멤버는 봇과 1:1로 대화하거나, 채널에서 @ 멘션하거나, /issue 를 입력해 새 Didian Mission을 만들 수 있습니다.",
     "not_enabled_title": "Slack 연동이 활성화되지 않았어요",
     "not_enabled_description_prefix": "서버에서",
     "not_enabled_description_suffix": "를 설정하면 Slack 봇 설치가 활성화됩니다.",

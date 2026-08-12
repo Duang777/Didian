@@ -559,7 +559,7 @@ describe("IssuesPage (shared)", () => {
     expect(mockListIssues).not.toHaveBeenCalled();
   });
 
-  it("shows the 'Issues' section header without a workspace prefix", async () => {
+  it("shows the 'Missions' section header without a workspace prefix", async () => {
     mockListIssues.mockImplementation((params: any) =>
       Promise.resolve({
         issues: mockIssues.filter((i) => i.status === params?.status),
@@ -569,7 +569,7 @@ describe("IssuesPage (shared)", () => {
 
     renderWithQuery(<IssuesPage />);
 
-    await screen.findByText("Issues");
+    await screen.findByText("Missions");
     // The list header is now `icon + title`, matching the other list pages.
     // The workspace/org name is no longer rendered as a breadcrumb prefix.
     expect(screen.queryByText("Test WS")).not.toBeInTheDocument();
@@ -580,8 +580,8 @@ describe("IssuesPage (shared)", () => {
 
     renderWithQuery(<IssuesPage />);
 
-    await screen.findByText("No issues yet");
-    expect(screen.getByText("Create an issue to get started.")).toBeInTheDocument();
+    await screen.findByText("No Missions yet");
+    expect(screen.getByText("Create a Mission to get started.")).toBeInTheDocument();
   });
 
   it("shows scope tab buttons", async () => {

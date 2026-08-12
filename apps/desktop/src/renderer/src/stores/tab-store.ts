@@ -233,14 +233,14 @@ function pinnedBoundary(tabs: Tab[]): number {
   return i;
 }
 
-/** Default entry point for a workspace — its issues list. */
+/** Default entry point for a workspace — its Mission list. */
 function defaultPathFor(slug: string): string {
   return `/${slug}/issues`;
 }
 
 function defaultTabFor(slug: string): Tab {
   const path = defaultPathFor(slug);
-  return makeTab(path, "Issues", resolveRouteIcon(path));
+  return makeTab(path, "Missions", resolveRouteIcon(path));
 }
 
 // ---------------------------------------------------------------------------
@@ -324,7 +324,7 @@ export const useTabStore = create<TabStore>()(
             desiredPath && sanitizeTabPath(desiredPath) === desiredPath
               ? desiredPath
               : defaultPathFor(slug);
-          const tab = makeTab(seedPath, "Issues", resolveRouteIcon(seedPath));
+          const tab = makeTab(seedPath, "Missions", resolveRouteIcon(seedPath));
           set({
             activeWorkspaceSlug: slug,
             byWorkspace: {
@@ -351,7 +351,7 @@ export const useTabStore = create<TabStore>()(
               });
               return;
             }
-            const tab = makeTab(clean, "Issues", resolveRouteIcon(clean));
+            const tab = makeTab(clean, "Missions", resolveRouteIcon(clean));
             set({
               activeWorkspaceSlug: slug,
               byWorkspace: {

@@ -23,9 +23,9 @@
       "task_list": "체크리스트"
     },
     "sub_issue": {
-      "tooltip": "선택 영역으로 하위 이슈 만들기",
+      "tooltip": "선택 영역으로 하위 Mission 만들기",
       "created": "{{identifier}} 생성됨",
-      "create_failed": "하위 이슈를 만들지 못했습니다"
+      "create_failed": "하위 Mission을 만들지 못했습니다"
     }
   },
   "image": {
@@ -55,7 +55,7 @@
   },
   "mention": {
     "group_users": "사용자",
-    "group_issues": "이슈",
+    "group_issues": "Mission",
     "all_members": "모든 멤버",
     "searching": "검색 중...",
     "no_results": "결과 없음",

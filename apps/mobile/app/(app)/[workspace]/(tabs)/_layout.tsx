@@ -93,7 +93,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="my-issues"
           options={{
-            title: "My Issues",
+            title: "My Missions",
             tabBarIcon: ({ color, size, focused }) => (
               <Image
                 source={focused ? "sf:checklist" : "sf:checklist.unchecked"}

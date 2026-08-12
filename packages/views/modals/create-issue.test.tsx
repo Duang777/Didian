@@ -433,10 +433,10 @@ describe("CreateIssueModal", () => {
 
     renderModal(<CreateIssueModal onClose={onClose} />);
 
-    fireEvent.change(screen.getByPlaceholderText("Issue title"), {
+    fireEvent.change(screen.getByPlaceholderText("Mission title"), {
       target: { value: "  Ship create issue regression coverage  " },
     });
-    await user.click(screen.getByRole("button", { name: "Create Issue" }));
+    await user.click(screen.getByRole("button", { name: "Create Mission" }));
 
     await waitFor(() => {
       expect(mockCreateIssue).toHaveBeenCalledWith({
@@ -464,11 +464,11 @@ describe("CreateIssueModal", () => {
 
     render(renderToast("toast-1"));
 
-    expect(screen.getByText("Issue created")).toBeInTheDocument();
+    expect(screen.getByText("Mission created")).toBeInTheDocument();
     expect(screen.getByText(/TES-123/)).toBeInTheDocument();
     expect(screen.getByText(/Ship create issue regression coverage/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "View issue" }));
+    await user.click(screen.getByRole("button", { name: "View Mission" }));
 
     expect(mockPush).toHaveBeenCalledWith("/ws-test/issues/issue-123");
     expect(mockToastDismiss).toHaveBeenCalledWith("toast-1");
@@ -481,9 +481,9 @@ describe("CreateIssueModal", () => {
 
     renderModal(<CreateIssueModal onClose={onClose} />);
 
-    await user.type(screen.getByPlaceholderText("Issue title"), "First follow-up issue");
+    await user.type(screen.getByPlaceholderText("Mission title"), "First follow-up issue");
     await user.type(screen.getByPlaceholderText("Add description..."), "Description to clear");
-    await user.click(screen.getByRole("button", { name: "Create Issue" }));
+    await user.click(screen.getByRole("button", { name: "Create Mission" }));
 
     await waitFor(() => {
       expect(mockCreateIssue).toHaveBeenCalledWith({
@@ -502,7 +502,7 @@ describe("CreateIssueModal", () => {
     });
 
     expect(onClose).not.toHaveBeenCalled();
-    expect(screen.getByPlaceholderText("Issue title")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Mission title")).toHaveValue("");
     expect(screen.getByPlaceholderText("Add description...")).toHaveValue("");
     expect(mockSetDraft).toHaveBeenCalledWith({
       title: "",
@@ -574,7 +574,7 @@ describe("CreateIssueModal", () => {
       "1",
     );
 
-    await user.click(screen.getByRole("button", { name: "Create Issue" }));
+    await user.click(screen.getByRole("button", { name: "Create Mission" }));
 
     await waitFor(() => {
       expect(mockCreateIssue).toHaveBeenCalledWith(
@@ -640,7 +640,7 @@ describe("CreateIssueModal", () => {
       />,
     );
 
-    await user.type(screen.getByPlaceholderText("Issue title"), "Refactor auth");
+    await user.type(screen.getByPlaceholderText("Mission title"), "Refactor auth");
     await user.click(screen.getByRole("button", { name: /Switch to Agent/i }));
 
     expect(onSwitchMode).toHaveBeenCalledTimes(1);
@@ -673,8 +673,8 @@ describe("CreateIssueModal", () => {
     );
 
     renderModal(<CreateIssueModal onClose={onClose} />);
-    await user.type(screen.getByPlaceholderText("Issue title"), "Login bug");
-    await user.click(screen.getByRole("button", { name: "Create Issue" }));
+    await user.type(screen.getByPlaceholderText("Mission title"), "Login bug");
+    await user.click(screen.getByRole("button", { name: "Create Mission" }));
 
     await waitFor(() => expect(mockToastCustom).toHaveBeenCalledTimes(1));
     expect(mockToastError).not.toHaveBeenCalled();
@@ -684,11 +684,11 @@ describe("CreateIssueModal", () => {
     expect(typeof renderToast).toBe("function");
     render(renderToast("toast-dup"));
 
-    expect(screen.getByText("Duplicate issue")).toBeInTheDocument();
+    expect(screen.getByText("Duplicate Mission")).toBeInTheDocument();
     expect(screen.getByText(/MUL-7/)).toBeInTheDocument();
     expect(screen.getByText(/Login bug/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "View existing issue" }));
+    await user.click(screen.getByRole("button", { name: "View existing Mission" }));
     expect(mockPush).toHaveBeenCalledWith("/ws-test/issues/issue-dup");
     expect(mockToastDismiss).toHaveBeenCalledWith("toast-dup");
   });
@@ -706,8 +706,8 @@ describe("CreateIssueModal", () => {
     );
 
     renderModal(<CreateIssueModal onClose={vi.fn()} />);
-    await user.type(screen.getByPlaceholderText("Issue title"), "Login bug");
-    await user.click(screen.getByRole("button", { name: "Create Issue" }));
+    await user.type(screen.getByPlaceholderText("Mission title"), "Login bug");
+    await user.click(screen.getByRole("button", { name: "Create Mission" }));
 
     await waitFor(() => expect(mockToastError).toHaveBeenCalledTimes(1));
     expect(mockToastError).toHaveBeenCalledWith("Backend says title is taken");
@@ -721,8 +721,8 @@ describe("CreateIssueModal", () => {
     mockCreateIssue.mockRejectedValue(new Error("Server is overloaded, try again"));
 
     renderModal(<CreateIssueModal onClose={vi.fn()} />);
-    await user.type(screen.getByPlaceholderText("Issue title"), "Anything");
-    await user.click(screen.getByRole("button", { name: "Create Issue" }));
+    await user.type(screen.getByPlaceholderText("Mission title"), "Anything");
+    await user.click(screen.getByRole("button", { name: "Create Mission" }));
 
     await waitFor(() => expect(mockToastError).toHaveBeenCalledTimes(1));
     expect(mockToastError).toHaveBeenCalledWith("Server is overloaded, try again");
@@ -735,11 +735,11 @@ describe("CreateIssueModal", () => {
     mockCreateIssue.mockRejectedValue("network exploded");
 
     renderModal(<CreateIssueModal onClose={vi.fn()} />);
-    await user.type(screen.getByPlaceholderText("Issue title"), "Anything");
-    await user.click(screen.getByRole("button", { name: "Create Issue" }));
+    await user.type(screen.getByPlaceholderText("Mission title"), "Anything");
+    await user.click(screen.getByRole("button", { name: "Create Mission" }));
 
     await waitFor(() => expect(mockToastError).toHaveBeenCalledTimes(1));
-    expect(mockToastError).toHaveBeenCalledWith("Failed to create issue");
+    expect(mockToastError).toHaveBeenCalledWith("Failed to create Mission");
   });
 
   it("forwards the picked project when switching to agent mode", async () => {
@@ -756,7 +756,7 @@ describe("CreateIssueModal", () => {
       />,
     );
 
-    await user.type(screen.getByPlaceholderText("Issue title"), "Refactor auth");
+    await user.type(screen.getByPlaceholderText("Mission title"), "Refactor auth");
 
     await user.click(screen.getByRole("button", { name: /Switch to Agent/i }));
 
@@ -798,7 +798,7 @@ describe("CreateIssueModal", () => {
       />,
     );
 
-    await user.type(screen.getByPlaceholderText("Issue title"), "Refactor auth");
+    await user.type(screen.getByPlaceholderText("Mission title"), "Refactor auth");
     await user.click(screen.getByRole("button", { name: /Switch to Agent/i }));
 
     expect(onSwitchMode).toHaveBeenCalledTimes(1);
@@ -877,7 +877,7 @@ describe("CreateIssueModal", () => {
       />,
     );
 
-    await user.type(screen.getByPlaceholderText("Issue title"), "Update");
+    await user.type(screen.getByPlaceholderText("Mission title"), "Update");
     await user.type(screen.getByPlaceholderText("Add description..."), "Some body");
 
     mockSetDraft.mockClear();

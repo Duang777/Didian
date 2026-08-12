@@ -121,7 +121,7 @@ export default function IssueDetail() {
     options.push("Edit details");
     if (issueLink) options.push("Copy link");
     if (issueLink) options.push("Open on web");
-    options.push("Delete issue");
+    options.push("Delete Mission");
     const destructiveIndex = options.length - 1;
     ActionSheetIOS.showActionSheetWithOptions(
       {
@@ -142,7 +142,7 @@ export default function IssueDetail() {
           Clipboard.setStringAsync(issueLink);
         } else if (label === "Open on web" && issueLink) {
           Linking.openURL(issueLink);
-        } else if (label === "Delete issue") {
+        } else if (label === "Delete Mission") {
           confirmDelete(issue, () =>
             deleteIssue.mutate(issue.id, {
               onSuccess: () => router.back(),
@@ -157,7 +157,7 @@ export default function IssueDetail() {
     <View className="flex-1 bg-background">
       <Stack.Screen
         options={{
-          title: issue?.identifier ?? "Issue",
+          title: issue?.identifier ?? "Mission",
           headerBackTitle: "Back",
           headerRight: issue
             ? () => (
@@ -169,7 +169,7 @@ export default function IssueDetail() {
                   <IconButton
                     name="ellipsis-horizontal"
                     onPress={onPressMore}
-                    accessibilityLabel="Issue actions"
+                    accessibilityLabel="Mission actions"
                   />
                 </View>
               )
@@ -183,7 +183,7 @@ export default function IssueDetail() {
       ) : detail.error || !issue ? (
         <View className="flex-1 items-center justify-center px-6 gap-3">
           <Text className="text-sm text-destructive text-center">
-            Failed to load issue:{" "}
+            Failed to load Mission:{" "}
             {detail.error instanceof Error
               ? detail.error.message
               : "not found"}
@@ -212,7 +212,7 @@ export default function IssueDetail() {
 
 function confirmDelete(issue: Issue, onConfirm: () => void) {
   Alert.alert(
-    "Delete issue?",
+    "Delete Mission?",
     `${issue.identifier} and its comments, reactions, and attachments will be permanently deleted. This cannot be undone.`,
     [
       { text: "Cancel", style: "cancel" },

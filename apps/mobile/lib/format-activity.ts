@@ -62,7 +62,7 @@ export function formatActivity(
   const details = (entry.details ?? {}) as Record<string, string>;
   switch (entry.action) {
     case "created":
-      return "created the issue";
+      return "created the Mission";
     case "status_changed":
       return `changed status: ${statusName(details.from)} → ${statusName(details.to)}`;
     case "priority_changed":
@@ -126,4 +126,3 @@ export function formatActivity(
       return entry.action ?? "";
   }
 }
-

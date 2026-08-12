@@ -61,24 +61,24 @@
   },
   "notifications": {
     "title": "インボックス通知",
-    "description": "どのイベントがインボックス通知を生成するかを制御します。ミュートしたイベントタイプは静かにフィルタされますが、イシューを直接開けば引き続き確認できます。",
+    "description": "どのイベントがインボックス通知を生成するかを制御します。ミュートしたイベントタイプは静かにフィルタされますが、Missionを直接開けば引き続き確認できます。",
     "toast_failed": "通知設定を更新できませんでした",
     "groups": {
       "assignments": {
         "label": "担当の割り当て",
-        "description": "イシューの担当者に割り当てられたとき、または解除されたとき"
+        "description": "Missionの担当者に割り当てられたとき、または解除されたとき"
       },
       "status_changes": {
         "label": "ステータス変更",
-        "description": "フォロー中のイシューのステータスが変わったとき（例: todo、in progress、done）"
+        "description": "フォロー中のMissionのステータスが変わったとき（例: todo、in progress、done）"
       },
       "comments": {
         "label": "コメントとメンション",
-        "description": "フォロー中のイシューに新しいコメントが付いたとき、または誰かがあなたを @メンションしたとき"
+        "description": "フォロー中のMissionに新しいコメントが付いたとき、または誰かがあなたを @メンションしたとき"
       },
       "updates": {
         "label": "優先度と期限",
-        "description": "フォロー中のイシューの優先度や期限が変わったとき"
+        "description": "フォロー中のMissionの優先度や期限が変わったとき"
       },
       "agent_activity": {
         "label": "エージェントのアクティビティ",
@@ -143,10 +143,10 @@
     "context_label": "コンテキスト",
     "context_placeholder": "このワークスペースで作業する AI エージェント向けの背景情報とコンテキスト",
     "slug_label": "スラッグ",
-    "issue_prefix_label": "イシュー接頭辞",
-    "issue_prefix_hint": "{{example}} のようなイシュー番号に使用されます。",
-    "prefix_confirm_title": "イシュー接頭辞を変更しますか？",
-    "prefix_confirm_description": "すべてのイシュー番号が {{oldPrefix}}-N から {{newPrefix}}-N に振り直されます。Pull request のタイトル、ブランチ名、ドキュメントやチャットのリンクなど、{{oldPrefix}}-N を使用している外部参照は解決されなくなります。",
+    "issue_prefix_label": "Mission接頭辞",
+    "issue_prefix_hint": "{{example}} のようなMission番号に使用されます。",
+    "prefix_confirm_title": "Mission接頭辞を変更しますか？",
+    "prefix_confirm_description": "すべてのMission番号が {{oldPrefix}}-N から {{newPrefix}}-N に振り直されます。Pull request のタイトル、ブランチ名、ドキュメントやチャットのリンクなど、{{oldPrefix}}-N を使用している外部参照は解決されなくなります。",
     "save": "保存",
     "saving": "保存中...",
     "manage_hint": "ワークスペース設定を更新できるのは admin と owner のみです。",
@@ -176,7 +176,7 @@
   },
   "delete_workspace_dialog": {
     "title": "ワークスペースを削除",
-    "description": "この操作は元に戻せません。すべてのイシュー、エージェント、データが完全に削除されます。",
+    "description": "この操作は元に戻せません。すべてのMission、エージェント、データが完全に削除されます。",
     "type_to_confirm_prefix": "確認するには、下に",
     "type_to_confirm_suffix": " と入力してください。",
     "cancel": "キャンセル",
@@ -195,8 +195,8 @@
     "master_description_off": "GitHub 機能はオフです。PR サイドバー、Co-authored-by トレーラー、自動リンクが一時停止されています。バックエンドのデータは削除されません。",
     "section_connection": "接続",
     "connection_title": "GitHub App",
-    "connection_description_prefix": "イシューを Pull request に自動でリンクします。ブランチ、タイトル、または本文に",
-    "connection_description_suffix": "を含む PR がマージされると、対応するイシューが次のステータスに移動します:",
+    "connection_description_prefix": "Missionを Pull request に自動でリンクします。ブランチ、タイトル、または本文に",
+    "connection_description_suffix": "を含む PR がマージされると、対応するMissionが次のステータスに移動します:",
     "connection_description_done": "完了",
     "connection_identifier_example": "MUL-123",
     "connected_to": "{{login}} に接続済み",
@@ -220,12 +220,12 @@
     "toast_disconnected": "GitHub App の接続を解除しました",
     "section_features": "機能",
     "feature_pr_sidebar_label": "Pull request サイドバー",
-    "feature_pr_sidebar_description": "リンクされた Pull request をイシュー詳細サイドバーに表示します。",
+    "feature_pr_sidebar_description": "リンクされた Pull request をMission詳細サイドバーに表示します。",
     "feature_co_author_label": "Co-authored-by トレーラー",
     "feature_co_author_description_prefix": "エージェントが作成したコミットに",
     "feature_co_author_description_suffix": "を追加します。",
-    "feature_auto_link_label": "イシューと PR を自動リンク",
-    "feature_auto_link_description": "PR のタイトル、本文、ブランチ名をイシュー識別子と照合し、自動でリンクを作成します。",
+    "feature_auto_link_label": "Missionと PR を自動リンク",
+    "feature_auto_link_description": "PR のタイトル、本文、ブランチ名をMission識別子と照合し、自動でリンクを作成します。",
     "section_repositories": "リポジトリ",
     "repositories_shortcut_label": "リポジトリ URL はリポジトリタブにあります",
     "repositories_shortcut_link": "リポジトリを管理 →",
@@ -233,7 +233,7 @@
   },
   "lark": {
     "section_title": "Lark",
-    "page_description": "各 Didian エージェントを Lark (飞书) PersonalAgent ボットに接続します。メンバーはボットに DM したり、グループで @ メンションしたり、/issue と入力して新しい Didian イシューを起こすことができます。",
+    "page_description": "各 Didian エージェントを Lark (飞书) PersonalAgent ボットに接続します。メンバーはボットに DM したり、グループで @ メンションしたり、/issue と入力して新しい Didian Missionを起こすことができます。",
     "not_enabled_title": "Lark 連携が有効化されていません",
     "not_enabled_description_prefix": "Lark ボットの設置を有効化するにはサーバーに",
     "not_enabled_description_suffix": "を設定してください。",
@@ -338,7 +338,7 @@
   },
   "slack": {
     "section_title": "Slack",
-    "page_description": "各 Didian エージェントを専用の Slack ボットに接続します。メンバーはボットに DM したり、チャンネルで @メンションしたり、/issue と入力して新しい Didian イシューを起こすことができます。",
+    "page_description": "各 Didian エージェントを専用の Slack ボットに接続します。メンバーはボットに DM したり、チャンネルで @メンションしたり、/issue と入力して新しい Didian Missionを起こすことができます。",
     "not_enabled_title": "Slack 連携が有効になっていません",
     "not_enabled_description_prefix": "サーバーで",
     "not_enabled_description_suffix": "を設定すると Slack ボットのインストールが有効になります。",
@@ -452,7 +452,7 @@
       },
       "member": {
         "label": "メンバー",
-        "description": "イシューの作成と作業"
+        "description": "Missionの作成と作業"
       }
     }
   }

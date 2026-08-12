@@ -8,17 +8,17 @@
   },
   "create_workspace": {
     "title": "新しいワークスペースを作成",
-    "description": "ワークスペースは、チームがプロジェクトやイシューに取り組む共有環境です。"
+    "description": "ワークスペースは、チームがプロジェクトやMissionに取り組む共有環境です。"
   },
   "delete_issue": {
-    "title": "イシューを削除",
-    "description": "このイシューとすべてのコメントが完全に削除されます。この操作は元に戻せません。",
-    "hint": "ワークスペースのメンバーであれば誰でもイシューを削除できます。",
+    "title": "Missionを削除",
+    "description": "このMissionとすべてのコメントが完全に削除されます。この操作は元に戻せません。",
+    "hint": "ワークスペースのメンバーであれば誰でもMissionを削除できます。",
     "cancel": "キャンセル",
     "confirm": "削除",
     "deleting": "削除中...",
-    "toast_deleted": "イシューを削除しました",
-    "toast_delete_failed": "イシューを削除できませんでした"
+    "toast_deleted": "Missionを削除しました",
+    "toast_delete_failed": "Missionを削除できませんでした"
   },
   "feedback": {
     "title": "フィードバック",
@@ -33,30 +33,30 @@
     "github_hint_link": "GitHub"
   },
   "issue_picker": {
-    "search_placeholder": "イシューを検索...",
+    "search_placeholder": "Missionを検索...",
     "searching": "検索中...",
-    "no_results": "イシューが見つかりません。",
-    "prompt_to_search": "イシューを検索するには入力してください"
+    "no_results": "Missionが見つかりません。",
+    "prompt_to_search": "Missionを検索するには入力してください"
   },
   "set_parent": {
-    "title": "親イシューを設定",
-    "description": "このイシューの親に設定するイシューを検索してください",
-    "toast_failed": "イシューを更新できませんでした",
-    "toast_success": "{{identifier}} を親イシューに設定しました"
+    "title": "親Missionを設定",
+    "description": "このMissionの親に設定するMissionを検索してください",
+    "toast_failed": "Missionを更新できませんでした",
+    "toast_success": "{{identifier}} を親Missionに設定しました"
   },
   "add_child": {
-    "title": "サブイシューを追加",
-    "description": "サブイシューとして追加するイシューを検索してください",
-    "toast_failed": "サブイシューを追加できませんでした",
-    "toast_success": "{{identifier}} をサブイシューとして追加しました"
+    "title": "サブMissionを追加",
+    "description": "サブMissionとして追加するMissionを検索してください",
+    "toast_failed": "サブMissionを追加できませんでした",
+    "toast_success": "{{identifier}} をサブMissionとして追加しました"
   },
   "run_confirm": {
     "title_assign": "割り当てて開始しますか？",
     "checking": "確認中…",
-    "will_start_named": "割り当てると、{{name}} がすぐにこのイシューの作業を開始します。",
+    "will_start_named": "割り当てると、{{name}} がすぐにこのMissionの作業を開始します。",
     "will_start_named_squad": "割り当てると、{{name}} のリーダーが内容を評価し、タスクの割り振りを開始します。",
-    "will_start": "{{count}} 件のイシューの作業をすぐに開始します。",
-    "will_start_squad": "{{count}} 件のイシューをスクワッドのリーダーに渡し、評価して割り振ります。",
+    "will_start": "{{count}} 件のMissionの作業をすぐに開始します。",
+    "will_start_squad": "{{count}} 件のMissionをスクワッドのリーダーに渡し、評価して割り振ります。",
     "nothing_assign": "割り当て済み — バックログ中は作業を開始しません。",
     "note_label": "引き継ぎメモ（任意）",
     "note_placeholder": "範囲・重点・触れてほしくない点などを一言で…",
@@ -141,46 +141,46 @@
     "local_hint": "他のマシンのエージェントはこのパスを参照できず、起動に失敗します。共有作業にはリポジトリを使用してください。"
   },
   "create_issue": {
-    "sr_manual": "新規イシュー",
-    "sr_agent": "イシューをクイック作成",
+    "sr_manual": "新規Mission",
+    "sr_agent": "Missionをクイック作成",
     "manual_breadcrumb": "手動で作成",
     "agent_breadcrumb": "エージェントで作成",
-    "title_placeholder": "イシューのタイトル",
+    "title_placeholder": "Missionのタイトル",
     "description_placeholder": "説明を追加...",
     "more_options_aria": "その他のオプション",
     "title_required": "作成するにはタイトルを入力してください",
-    "submit": "イシューを作成",
+    "submit": "Missionを作成",
     "submitting": "作成中...",
-    "toast_created": "イシューを作成しました",
-    "view_issue": "イシューを表示",
-    "toast_failed": "イシューを作成できませんでした",
-    "toast_duplicate_title": "重複イシュー",
-    "toast_duplicate_view": "既存のイシューを表示",
-    "toast_link_subissues_all_failed": "サブイシューをリンクできませんでした",
-    "toast_link_subissues_partial": "サブイシュー {{total}} 件中 {{failed}} 件をリンクできませんでした",
+    "toast_created": "Missionを作成しました",
+    "view_issue": "Missionを表示",
+    "toast_failed": "Missionを作成できませんでした",
+    "toast_duplicate_title": "重複Mission",
+    "toast_duplicate_view": "既存のMissionを表示",
+    "toast_link_subissues_all_failed": "サブMissionをリンクできませんでした",
+    "toast_link_subissues_partial": "サブMission {{total}} 件中 {{failed}} 件をリンクできませんでした",
     "toast_link_labels_failed": "ラベルを付けられませんでした",
     "switch_to_agent": "エージェントに切り替え",
-    "switch_to_agent_tooltip": "エージェントで作成に切り替えます。一行で説明すれば、エージェントがイシューを作成します",
+    "switch_to_agent_tooltip": "エージェントで作成に切り替えます。一行で説明すれば、エージェントがMissionを作成します",
     "switch_to_manual": "手動に切り替え",
     "switch_to_manual_tooltip": "手動作成に切り替えます。フィールドを自分で入力します",
     "create_another": "もう 1 つ作成",
     "remove_parent_aria": "親を削除",
-    "remove_subissue_aria": "サブイシュー {{identifier}} を削除",
-    "subissue_of": "{{identifier}} のサブイシュー",
-    "subissue_chip": "サブイシュー: {{identifier}}",
+    "remove_subissue_aria": "サブMission {{identifier}} を削除",
+    "subissue_of": "{{identifier}} のサブMission",
+    "subissue_chip": "サブMission: {{identifier}}",
     "parent_with_id": "親: {{identifier}}",
     "set_due_date": "期限を設定...",
     "set_start_date": "開始日を設定...",
-    "set_parent": "親イシューを設定...",
-    "add_subissue": "サブイシューを追加...",
+    "set_parent": "親Missionを設定...",
+    "add_subissue": "サブMissionを追加...",
     "remove_parent": "親を削除",
     "set_parent_picker": {
-      "title": "親イシューを設定",
-      "description": "新しいイシューの親に設定するイシューを検索してください"
+      "title": "親Missionを設定",
+      "description": "新しいMissionの親に設定するMissionを検索してください"
     },
     "add_subissue_picker": {
-      "title": "サブイシューを追加",
-      "description": "新しいイシューのサブイシューとして追加するイシューを検索してください"
+      "title": "サブMissionを追加",
+      "description": "新しいMissionのサブMissionとして追加するMissionを検索してください"
     },
     "agent": {
       "created_by": "作成者",
@@ -203,7 +203,7 @@
       "error_agent_unavailable_fallback": "エージェントを利用できません。別のエージェントを選択してください。",
       "error_daemon_version": "このエージェントのデーモン CLI（{{current}}）が必要なバージョン {{min}} を下回っています。エージェントで作成を使用するには、デーモンをアップグレードしてください。",
       "error_unknown": "送信できませんでした。再試行してください。",
-      "sub_issue_of": "{{identifier}} のサブイシュー"
+      "sub_issue_of": "{{identifier}} のサブMission"
     }
   }
 }

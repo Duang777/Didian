@@ -411,7 +411,7 @@ export default function SearchModal() {
       }
     }
     if (results.issues.length > 0) {
-      items.push({ kind: "header", key: "h-issues", title: "Issues" });
+      items.push({ kind: "header", key: "h-issues", title: "Missions" });
       for (const it of results.issues) {
         items.push({ kind: "issue", key: `i-${it.id}`, issue: it, query: trimmedQuery });
       }
@@ -451,7 +451,7 @@ export default function SearchModal() {
           <TextInput
             value={query}
             onChangeText={handleChange}
-            placeholder="Search issues and projects"
+            placeholder="Search Missions and projects"
             placeholderTextColor="#a1a1aa"
             autoFocus
             autoCorrect={false}
@@ -483,7 +483,7 @@ export default function SearchModal() {
             ) : !trimmedQuery && recentIssues.length === 0 ? (
               <View className="items-center justify-center py-12 px-6">
                 <Text className="text-sm text-muted-foreground text-center">
-                  Type to search issues and projects.
+                  Type to search Missions and projects.
                 </Text>
               </View>
             ) : null

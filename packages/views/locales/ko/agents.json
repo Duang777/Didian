@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "에이전트",
-    "tagline": "이슈를 맡고, 댓글을 남기고, 상태를 업데이트하는 AI 팀원입니다.",
+    "tagline": "Mission을 맡고, 댓글을 남기고, 상태를 업데이트하는 AI 팀원입니다.",
     "learn_more": "자세히 보기 →",
     "new_agent": "새 에이전트",
     "search_placeholder": "에이전트 검색...",
@@ -40,7 +40,7 @@
   },
   "empty": {
     "title": "아직 에이전트가 없습니다",
-    "description": "팀원에게 하듯 에이전트를 만들고 이슈를 할당하세요. 로컬 에이전트는 내 기기에서, 클라우드 에이전트는 Didian 런타임에서 실행됩니다."
+    "description": "팀원에게 하듯 에이전트를 만들고 Mission을 할당하세요. 로컬 에이전트는 내 기기에서, 클라우드 에이전트는 Didian 런타임에서 실행됩니다."
   },
   "no_matches": {
     "title": "일치하는 결과 없음",
@@ -412,18 +412,18 @@
       "success_pct": "성공률 {{percent}}%",
       "avg_duration": "평균 {{value}}",
       "failed_count": "{{count}}회 실패",
-      "source_issue": "이슈",
+      "source_issue": "Mission",
       "source_chat": "채팅",
       "source_autopilot": "오토파일럿",
       "source_untracked": "추적 안 됨",
       "source_quick_create": "빠른 생성",
-      "source_creating_issue": "이슈 생성 중",
+      "source_creating_issue": "Mission 생성 중",
       "source_chat_session": "채팅 세션",
       "source_autopilot_run": "오토파일럿 실행",
-      "issue_short_fallback": "이슈 {{prefix}}...",
+      "issue_short_fallback": "Mission {{prefix}}...",
       "triggered_by": "트리거한 사람",
-      "open_issue_aria": "이슈 열기",
-      "open_issue_tooltip": "이슈 열기",
+      "open_issue_aria": "Mission 열기",
+      "open_issue_tooltip": "Mission 열기",
       "transcript_tooltip": "트랜스크립트 보기",
       "cancel_task_aria": "작업 취소",
       "cancel_task_tooltip": "작업 취소",

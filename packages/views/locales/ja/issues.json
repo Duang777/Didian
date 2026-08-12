@@ -1,10 +1,10 @@
 {
   "page": {
-    "breadcrumb_title": "イシュー",
+    "breadcrumb_title": "Mission",
     "breadcrumb_workspace_fallback": "ワークスペース",
-    "empty_title": "まだイシューがありません",
-    "empty_hint": "イシューを作成して始めましょう。",
-    "move_failed": "イシューを移動できませんでした"
+    "empty_title": "まだMissionがありません",
+    "empty_hint": "Missionを作成して始めましょう。",
+    "move_failed": "Missionを移動できませんでした"
   },
   "status": {
     "backlog": "バックログ",
@@ -28,11 +28,11 @@
   },
   "scope": {
     "all_label": "すべて",
-    "all_description": "このワークスペースのすべてのイシュー",
+    "all_description": "このワークスペースのすべてのMission",
     "members_label": "メンバー",
-    "members_description": "チームメンバーに割り当てられたイシュー",
+    "members_description": "チームメンバーに割り当てられたMission",
     "agents_label": "エージェント",
-    "agents_description": "AI エージェントに割り当てられたイシュー"
+    "agents_description": "AI エージェントに割り当てられたMission"
   },
   "filters": {
     "tooltip": "フィルター",
@@ -60,7 +60,7 @@
     "members_group": "メンバー",
     "agents_group": "エージェント",
     "squads_group": "スクワッド",
-    "issue_count_other": "イシュー {{count}} 件",
+    "issue_count_other": "Mission {{count}} 件",
     "reset": "すべてのフィルターをリセット",
     "active_count_other": "フィルター {{count}} 件"
   },
@@ -73,7 +73,7 @@
     "descending_title": "降順",
     "group_status": "ステータス",
     "group_assignee": "担当者",
-    "group_parent": "親イシュー",
+    "group_parent": "親Mission",
     "group_project": "プロジェクト",
     "sort_manual": "手動",
     "sort_priority": "優先度",
@@ -88,8 +88,8 @@
     "card_due_date": "期限",
     "card_project": "プロジェクト",
     "card_labels": "ラベル",
-    "card_child_progress": "サブイシューの進捗",
-    "show_sub_issues": "サブイシューを表示"
+    "card_child_progress": "サブMissionの進捗",
+    "show_sub_issues": "サブMissionを表示"
   },
   "view": {
     "tooltip_board": "ボード表示",
@@ -103,78 +103,78 @@
     "swimlane": "スイムレーン"
   },
   "gantt": {
-    "header_issue": "イシュー",
+    "header_issue": "Mission",
     "zoom_day": "日",
     "zoom_week": "週",
     "zoom_month": "月",
     "show_completed": "完了済みを表示",
-    "empty": "スケジュールされたイシューがまだありません。いずれかのイシューに開始日または期限を設定すると、タイムラインに表示されます。",
+    "empty": "スケジュールされたMissionがまだありません。いずれかのMissionに開始日または期限を設定すると、タイムラインに表示されます。",
     "inverted_dates_warning": "開始日が期限より後になっています。バーは早い日付から遅い日付まで表示されます。"
   },
   "actor_issues": {
     "scope": {
       "assigned": {
         "label": "割り当て済み",
-        "description": "このメンバーまたはエージェントに割り当てられたイシュー"
+        "description": "このメンバーまたはエージェントに割り当てられたMission"
       },
       "created": {
         "label": "作成済み",
-        "description": "このメンバーまたはエージェントが作成したイシュー"
+        "description": "このメンバーまたはエージェントが作成したMission"
       }
     },
     "empty": {
       "assigned": {
-        "title": "割り当てられたイシューはありません",
-        "description": "ここに割り当てられたイシューがこの表示に表示されます。"
+        "title": "割り当てられたMissionはありません",
+        "description": "ここに割り当てられたMissionがこの表示に表示されます。"
       },
       "created": {
-        "title": "作成したイシューはありません",
-        "description": "ここで作成したイシューがこの表示に表示されます。"
+        "title": "作成したMissionはありません",
+        "description": "ここで作成したMissionがこの表示に表示されます。"
       }
     },
-    "search_placeholder": "イシューを検索...",
-    "search_empty": "検索条件に一致するイシューがありません。"
+    "search_placeholder": "Missionを検索...",
+    "search_empty": "検索条件に一致するMissionがありません。"
   },
   "list": {
-    "empty_status": "イシューなし",
-    "add_issue_tooltip": "イシューを追加"
+    "empty_status": "Missionなし",
+    "add_issue_tooltip": "Missionを追加"
   },
   "swimlane": {
-    "no_parent": "親イシューなし",
-    "other_parents": "その他の親イシュー",
+    "no_parent": "親Missionなし",
+    "other_parents": "その他の親Mission",
     "no_project": "プロジェクトなし",
     "no_assignee": "未割り当て",
-    "open_parent": "親イシューを開く",
+    "open_parent": "親Missionを開く",
     "toggle_collapse": "レーンの開閉"
   },
   "board": {
     "hidden_columns_label": "非表示の列",
     "hide_column": "列を非表示",
     "show_column": "列を表示",
-    "add_issue_tooltip": "イシューを追加",
-    "empty_column": "イシューなし",
-    "empty_grouping": "一致するイシューがありません",
+    "add_issue_tooltip": "Missionを追加",
+    "empty_column": "Missionなし",
+    "empty_grouping": "一致するMissionがありません",
     "ordered_by": "{{field}} 順に並べたボード"
   },
   "detail": {
-    "not_found": "このイシューはこのワークスペースに存在しないか、削除されています。",
+    "not_found": "このMissionはこのワークスペースに存在しないか、削除されています。",
     "breadcrumb_project_unknown": "不明なプロジェクト",
-    "back_to_issues": "イシューに戻る",
-    "title_placeholder": "イシューのタイトル",
+    "back_to_issues": "Missionに戻る",
+    "title_placeholder": "Missionのタイトル",
     "desc_placeholder": "説明を追加...",
-    "sub_issues_label": "サブイシュー",
-    "sub_issue_of": "親イシュー",
-    "add_sub_issues": "サブイシューを追加",
-    "add_sub_issue_tooltip": "サブイシューを追加",
-    "add_sub_issue_aria": "サブイシューを追加",
+    "sub_issues_label": "サブMission",
+    "sub_issue_of": "親Mission",
+    "add_sub_issues": "サブMissionを追加",
+    "add_sub_issue_tooltip": "サブMissionを追加",
+    "add_sub_issue_aria": "サブMissionを追加",
     "section_properties": "プロパティ",
-    "section_parent_issue": "親イシュー",
+    "section_parent_issue": "親Mission",
     "section_pull_requests": "Pull requests",
     "section_metadata": "メタデータ",
     "section_details": "詳細",
     "section_token_usage": "トークン使用量",
     "pull_requests_loading": "読み込み中...",
-    "pull_requests_empty": "まだリンクされた Pull request がありません。PR のブランチ名、タイトル、または本文にこのイシューの識別子を入れると、自動的にリンクされます。",
+    "pull_requests_empty": "まだリンクされた Pull request がありません。PR のブランチ名、タイトル、または本文にこのMissionの識別子を入れると、自動的にリンクされます。",
     "pull_request_state_open": "オープン",
     "pull_request_state_draft": "ドラフト",
     "pull_request_state_merged": "マージ済み",
@@ -227,26 +227,26 @@
     "thread_nav_label": "スレッドへ移動",
     "sidebar_tooltip": "サイドバーの開閉",
     "find": {
-      "placeholder": "イシュー内を検索...",
+      "placeholder": "Mission内を検索...",
       "count": "{{current}}/{{total}}",
       "no_matches": "一致なし",
       "previous": "前の一致",
       "next": "次の一致",
       "close": "検索を閉じる"
     },
-    "update_failed": "イシューを更新できませんでした",
+    "update_failed": "Missionを更新できませんでした",
     "link_copied": "リンクをコピーしました",
     "link_copy_failed": "リンクをコピーできませんでした",
     "workdir_path_copied": "作業ディレクトリのパスをコピーしました",
     "workdir_path_copy_failed": "作業ディレクトリのパスをコピーできませんでした",
-    "workdir_path_unavailable": "まだローカルの作業ディレクトリがありません。ローカルエージェントがこのイシューを実行していません"
+    "workdir_path_unavailable": "まだローカルの作業ディレクトリがありません。ローカルエージェントがこのMissionを実行していません"
   },
   "timeline": {
     "loading": "読み込み中..."
   },
   "activity": {
-    "created": "このイシューを作成しました",
-    "self_assigned": "このイシューを自分に割り当てました",
+    "created": "このMissionを作成しました",
+    "self_assigned": "このMissionを自分に割り当てました",
     "assigned_to": "{{name}} に割り当てました",
     "removed_assignee": "担当者を削除しました",
     "changed_assignee": "担当者を変更しました",
@@ -256,7 +256,7 @@
     "start_date_removed": "開始日を削除しました",
     "due_date_set": "期限を {{date}} に設定しました",
     "due_date_removed": "期限を削除しました",
-    "title_renamed": "このイシューのタイトルを \"{{from}}\" から \"{{to}}\" に変更しました",
+    "title_renamed": "このMissionのタイトルを \"{{from}}\" から \"{{to}}\" に変更しました",
     "description_updated": "説明を更新しました",
     "task_completed_other": "タスクを完了しました（{{count}} 回）",
     "task_failed_other": "タスクが失敗しました（{{count}} 回）",
@@ -388,17 +388,17 @@
     "priority": "優先度",
     "assignee": "担当者",
     "delete": "削除",
-    "update_success_other": "イシュー {{count}} 件を更新しました",
-    "update_failed": "イシューを更新できませんでした",
-    "delete_success_other": "イシュー {{count}} 件を削除しました",
-    "delete_failed": "イシューを削除できませんでした",
-    "delete_dialog_title_other": "イシュー {{count}} 件を削除しますか？",
-    "delete_dialog_desc_other": "この操作は元に戻せません。選択したイシューと関連データがすべて完全に削除されます。",
-    "delete_dialog_warning": "ワークスペースのメンバーであれば誰でもイシューを削除できます。",
+    "update_success_other": "Mission {{count}} 件を更新しました",
+    "update_failed": "Missionを更新できませんでした",
+    "delete_success_other": "Mission {{count}} 件を削除しました",
+    "delete_failed": "Missionを削除できませんでした",
+    "delete_dialog_title_other": "Mission {{count}} 件を削除しますか？",
+    "delete_dialog_desc_other": "この操作は元に戻せません。選択したMissionと関連データがすべて完全に削除されます。",
+    "delete_dialog_warning": "ワークスペースのメンバーであれば誰でもMissionを削除できます。",
     "cancel": "キャンセル"
   },
   "card": {
-    "update_failed": "イシューを更新できませんでした",
+    "update_failed": "Missionを更新できませんでした",
     "updated_ago": "{{time}} に更新"
   },
   "actions": {
@@ -421,12 +421,12 @@
     "copy_link": "リンクをコピー",
     "copy_workdir_path": "ローカルの作業ディレクトリのパスをコピー",
     "relations": "関係",
-    "create_sub_issue": "サブイシューを作成",
-    "set_parent_issue": "親イシューを設定...",
-    "remove_parent_issue": "親イシューを解除",
-    "remove_parent_issue_success": "親イシューを解除しました",
-    "add_sub_issue": "サブイシューを追加...",
-    "delete_issue": "イシューを削除"
+    "create_sub_issue": "サブMissionを作成",
+    "set_parent_issue": "親Missionを設定...",
+    "remove_parent_issue": "親Missionを解除",
+    "remove_parent_issue_success": "親Missionを解除しました",
+    "add_sub_issue": "サブMissionを追加...",
+    "delete_issue": "Missionを削除"
   },
   "pickers": {
     "filter_options_aria": "フィルターオプション",
@@ -456,7 +456,7 @@
     }
   },
   "labels_panel": {
-    "intro": "ワークスペース全体でイシューを分類するラベルを作成・管理します。",
+    "intro": "ワークスペース全体でMissionを分類するラベルを作成・管理します。",
     "new_placeholder": "新しいラベル名...",
     "new_aria": "新しいラベル名",
     "add_action": "追加",
@@ -471,7 +471,7 @@
     "cancel_aria": "キャンセル",
     "delete_dialog_title": "ラベルを削除しますか？",
     "delete_dialog_desc_prefix": "ラベル ",
-    "delete_dialog_desc_suffix": " がすべてのイシューから削除されます。この操作は元に戻せません。",
+    "delete_dialog_desc_suffix": " がすべてのMissionから削除されます。この操作は元に戻せません。",
     "delete_dialog_cancel": "キャンセル",
     "delete_dialog_confirm": "削除",
     "create_failed": "ラベルを作成できませんでした",
@@ -480,7 +480,7 @@
   },
   "backlog_hint": {
     "title": "バックログではエージェントが一時停止します",
-    "description": "このイシューは保留中のため、割り当てられたエージェントは待機します。エージェントを開始したいときは未着手に移動してください。",
+    "description": "このMissionは保留中のため、割り当てられたエージェントは待機します。エージェントを開始したいときは未着手に移動してください。",
     "row_backlog_label": "バックログ",
     "row_backlog_hint": "エージェントを一時停止のままにします",
     "row_todo_label": "未着手",

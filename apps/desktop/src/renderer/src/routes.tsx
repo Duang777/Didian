@@ -121,12 +121,12 @@ export const appRoutes: RouteObject[] = [
           {
             path: "issues",
             element: <IssuesPage />,
-            handle: { title: "Issues" },
+            handle: { title: "Missions" },
           },
           {
             path: "issues/:id",
             element: <IssueDetailPage />,
-            handle: { title: "Issue" },
+            handle: { title: "Mission" },
           },
           {
             path: "projects",
@@ -151,7 +151,7 @@ export const appRoutes: RouteObject[] = [
           {
             path: "my-issues",
             element: <MyIssuesPage />,
-            handle: { title: "My Issues" },
+            handle: { title: "My Missions" },
           },
           {
             path: "runtimes",

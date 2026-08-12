@@ -26,7 +26,7 @@
     "progress": "Progress",
     "lead": "Lead",
     "created": "Created",
-    "issues": "Issues"
+    "issues": "Missions"
   },
   "status": {
     "planned": "Planned",
@@ -70,13 +70,13 @@
     "section_description": "Description",
     "description_placeholder": "Add description...",
     "description_hint": "Shared with agents as context for every task in this project.",
-    "empty_issues_title": "No issues linked",
-    "empty_issues_hint": "Create a new issue or assign existing ones to this project.",
-    "empty_issues_new_button": "New Issue",
-    "no_issues_yet": "No issues yet",
+    "empty_issues_title": "No Missions linked",
+    "empty_issues_hint": "Create a new Mission or assign existing ones to this project.",
+    "empty_issues_new_button": "New Mission",
+    "no_issues_yet": "No Missions yet",
     "toast_link_copied": "Link copied",
     "toast_project_deleted": "Project deleted",
-    "toast_move_issue_failed": "Failed to move issue"
+    "toast_move_issue_failed": "Failed to move Mission"
   },
   "resources": {
     "section_header": "Resources",
@@ -117,7 +117,7 @@
   },
   "delete_dialog": {
     "title": "Delete project",
-    "description": "This will delete the project. Issues will not be deleted but will be unlinked.",
+    "description": "This will delete the project. Missions will not be deleted but will be unlinked.",
     "confirm": "Delete",
     "cancel": "Cancel"
   },

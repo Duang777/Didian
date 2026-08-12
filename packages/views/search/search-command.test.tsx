@@ -262,7 +262,7 @@ describe("SearchCommand", () => {
     expect(screen.queryByPlaceholderText("Type a command or search...")).not.toBeInTheDocument();
   });
 
-  it("shows only New Issue by default and hides Pages / low-frequency commands until query", () => {
+  it("shows only New Mission by default and hides Pages / low-frequency commands until query", () => {
     renderSearch();
 
     expect(screen.queryByText("Pages")).not.toBeInTheDocument();
@@ -270,7 +270,7 @@ describe("SearchCommand", () => {
     // else (theme, copy, New Project) must be revealed by typing.
     expect(screen.getByText("Commands")).toBeInTheDocument();
     expect(
-      screen.getByText((_, el) => el?.textContent === "New Issue" && el?.tagName === "SPAN"),
+      screen.getByText((_, el) => el?.textContent === "New Mission" && el?.tagName === "SPAN"),
     ).toBeInTheDocument();
     expect(screen.queryByText("New Project")).not.toBeInTheDocument();
     expect(screen.queryByText("Switch to Light Theme")).not.toBeInTheDocument();
@@ -374,7 +374,7 @@ describe("SearchCommand", () => {
     expect(screen.getByText("MUL-2")).toBeInTheDocument();
   });
 
-  it("shows New Issue / New Project under Commands and triggers the modal store", async () => {
+  it("shows New Mission / New Project under Commands and triggers the modal store", async () => {
     const user = userEvent.setup();
     renderSearch();
 
@@ -384,7 +384,7 @@ describe("SearchCommand", () => {
     await waitFor(() => {
       expect(screen.getByText("Commands")).toBeInTheDocument();
       expect(
-        screen.getByText((_, el) => el?.textContent === "New Issue" && el?.tagName === "SPAN"),
+        screen.getByText((_, el) => el?.textContent === "New Mission" && el?.tagName === "SPAN"),
       ).toBeInTheDocument();
       expect(
         screen.getByText((_, el) => el?.textContent === "New Project" && el?.tagName === "SPAN"),
@@ -392,7 +392,7 @@ describe("SearchCommand", () => {
     });
 
     const newIssue = await screen.findByText(
-      (_, el) => el?.textContent === "New Issue" && el?.tagName === "SPAN",
+      (_, el) => el?.textContent === "New Mission" && el?.tagName === "SPAN",
     );
     await user.click(newIssue);
 
@@ -409,7 +409,7 @@ describe("SearchCommand", () => {
     await user.type(input, "copy");
 
     // Commands section may still be empty / absent.
-    expect(screen.queryByText("Copy Issue Link")).not.toBeInTheDocument();
+    expect(screen.queryByText("Copy Mission Link")).not.toBeInTheDocument();
   });
 
   it("copies issue link and identifier when on an issue detail route", async () => {
@@ -429,7 +429,7 @@ describe("SearchCommand", () => {
     await user.type(input, "copy");
 
     const linkItem = await screen.findByText(
-      (_, el) => el?.textContent === "Copy Issue Link" && el?.tagName === "SPAN",
+      (_, el) => el?.textContent === "Copy Mission Link" && el?.tagName === "SPAN",
     );
     await user.click(linkItem);
 

@@ -10,7 +10,7 @@ export function IssueDetailPage() {
   const wsId = useWorkspaceId();
   const { data: issue } = useQuery(issueDetailOptions(wsId, id!));
 
-  useDocumentTitle(issue ? `${issue.identifier}: ${issue.title}` : "Issue");
+  useDocumentTitle(issue ? `${issue.identifier}: ${issue.title}` : "Mission");
 
   if (!id) return null;
   // Render errors bubble to the root route errorElement (DesktopRouteErrorPage),

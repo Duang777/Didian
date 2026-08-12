@@ -30,7 +30,7 @@
     "archived": "Archived"
   },
   "execution_mode": {
-    "create_issue": "Create Issue",
+    "create_issue": "Create Mission",
     "run_only": "Run Only"
   },
   "relative_date": {
@@ -116,7 +116,7 @@
     "owner_note": "The creator and workspace admins always have access."
   },
   "run_status": {
-    "issue_created": "Issue Created",
+    "issue_created": "Mission Created",
     "running": "Running",
     "skipped": "Skipped",
     "completed": "Completed",
@@ -129,7 +129,7 @@
     "api": "API"
   },
   "run": {
-    "issue_linked": "Issue linked",
+    "issue_linked": "Mission linked",
     "view_log": "View execution log",
     "skipped_group": {
       "label": "Skipped",
@@ -272,7 +272,7 @@
     "no_project": "No project",
     "section_output_mode": "Output mode",
     "section_subscribers": "Subscribers",
-    "subscribers_hint": "Auto-subscribed to every issue this autopilot creates",
+    "subscribers_hint": "Auto-subscribed to every Mission this autopilot creates",
     "subscribers_empty": "No subscribers — add a teammate to notify them on every run",
     "subscribers_add": "Add subscriber",
     "subscribers_search_placeholder": "Search members by name…",
@@ -298,12 +298,12 @@
     "next_run_label": "Next run:",
     "output_modes": {
       "create_issue": {
-        "label": "Create issue",
-        "description": "Each run creates a tracked issue"
+        "label": "Create Mission",
+        "description": "Each run creates a tracked Mission"
       },
       "run_only": {
         "label": "Run only",
-        "description": "Silent run, no issue created"
+        "description": "Silent run, no Mission created"
       }
     },
     "frequency_long": {

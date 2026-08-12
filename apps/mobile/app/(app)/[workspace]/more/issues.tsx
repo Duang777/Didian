@@ -161,7 +161,7 @@ export default function IssuesPage() {
       ) : error ? (
         <View className="px-4 gap-3 pt-4">
           <Text className="text-sm text-destructive">
-            Failed to load issues:{" "}
+            Failed to load Missions:{" "}
             {error instanceof Error ? error.message : "unknown error"}
           </Text>
           <Button variant="outline" onPress={() => refetch()}>
@@ -172,7 +172,7 @@ export default function IssuesPage() {
         <EmptyState
           message={
             hasActiveFilters
-              ? "No issues match the current filters."
+              ? "No Missions match the current filters."
               : emptyMessageForScope(scope)
           }
         />
@@ -374,10 +374,10 @@ function EmptyState({ message }: { message: string }) {
 function emptyMessageForScope(scope: IssuesScope): string {
   switch (scope) {
     case "all":
-      return "No issues in this workspace.";
+      return "No Missions in this workspace.";
     case "members":
-      return "No issues assigned to a member.";
+      return "No Missions assigned to a member.";
     case "agents":
-      return "No issues assigned to agents or squads.";
+      return "No Missions assigned to agents or squads.";
   }
 }

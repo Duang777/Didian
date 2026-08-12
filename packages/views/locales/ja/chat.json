@@ -99,7 +99,7 @@
   "empty_state": {
     "first_time_title": "エージェントとチャット",
     "first_time_intro": "✨ エージェントはあなたのワークスペースを把握しています —",
-    "first_time_pillars": "イシュー、プロジェクト、スキル",
+    "first_time_pillars": "Mission、プロジェクト、スキル",
     "first_time_pillars_suffix": "。",
     "first_time_actions": "要約を頼んだり、今日の予定を立てたり、簡単なタスクを任せたりしてみましょう。",
     "returning_title_named": "こんにちは、{{name}} です",

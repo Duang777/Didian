@@ -473,7 +473,7 @@ describe("SwimLaneView", () => {
       />,
     );
 
-    const addButtons = screen.getAllByRole("button", { name: /add issue/i });
+    const addButtons = screen.getAllByRole("button", { name: /add Mission/i });
     expect(addButtons.length).toBeGreaterThan(0);
 
     fireEvent.click(addButtons[0]!);
@@ -492,7 +492,7 @@ describe("SwimLaneView", () => {
       />,
     );
 
-    const addButtons = screen.getAllByRole("button", { name: /add issue/i });
+    const addButtons = screen.getAllByRole("button", { name: /add Mission/i });
     fireEvent.click(addButtons[0]!);
 
     expect(onCreateIssue).toHaveBeenCalledWith(
@@ -512,7 +512,7 @@ describe("SwimLaneView", () => {
       />,
     );
 
-    const addButtons = screen.getAllByRole("button", { name: /add issue/i });
+    const addButtons = screen.getAllByRole("button", { name: /add Mission/i });
     fireEvent.click(addButtons[0]!);
 
     expect(onCreateIssue).toHaveBeenCalledWith(
@@ -569,7 +569,7 @@ describe("SwimLaneView", () => {
     const realLaneCount = 2;
     const visibleStatusCount = 7; // ALL_STATUSES default (cancelled included)
     expect(
-      screen.getAllByRole("button", { name: /add issue/i }).length,
+      screen.getAllByRole("button", { name: /add Mission/i }).length,
     ).toBe(realLaneCount * visibleStatusCount);
   });
 
@@ -644,7 +644,7 @@ describe("SwimLaneView", () => {
       />,
     );
 
-    const links = screen.getAllByRole("link", { name: "Open parent issue" });
+    const links = screen.getAllByRole("link", { name: "Open parent Mission" });
     expect(links).toHaveLength(1);
     expect(links[0]).toHaveAttribute("href", expect.stringContaining("parent-1"));
   });

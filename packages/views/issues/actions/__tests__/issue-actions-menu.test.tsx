@@ -164,11 +164,11 @@ describe("IssueActionsDropdown", () => {
     expect(screen.getByText("Due date")).toBeInTheDocument();
     expect(screen.getByText("Copy link")).toBeInTheDocument();
     expect(screen.getByText("Relations")).toBeInTheDocument();
-    expect(screen.getByText("Delete issue")).toBeInTheDocument();
+    expect(screen.getByText("Delete Mission")).toBeInTheDocument();
     // Relationship actions are hidden inside the "Relations" submenu by default.
     expect(screen.queryByText("Create sub-issue")).not.toBeInTheDocument();
-    expect(screen.queryByText("Set parent issue...")).not.toBeInTheDocument();
-    expect(screen.queryByText("Add sub-issue...")).not.toBeInTheDocument();
+    expect(screen.queryByText("Set parent Mission...")).not.toBeInTheDocument();
+    expect(screen.queryByText("Add sub-Mission...")).not.toBeInTheDocument();
   });
 
   it("clicking the Assignee item opens the shared AssigneePicker popover", async () => {
@@ -194,7 +194,7 @@ describe("IssueActionsDropdown", () => {
     expect(await screen.findByText("Test User")).toBeInTheDocument();
   });
 
-  it("shows 'Remove parent issue' in the Relations submenu only when the issue has a parent", async () => {
+  it("shows 'Remove parent Mission' in the Relations submenu only when the issue has a parent", async () => {
     const childIssue = { ...mockIssue, parent_issue_id: "parent-1" } as Issue;
     render(
       wrap(
@@ -208,10 +208,10 @@ describe("IssueActionsDropdown", () => {
     fireEvent.click(screen.getByTestId("trigger"));
     fireEvent.click(await screen.findByText("Relations"));
 
-    expect(await screen.findByText("Remove parent issue")).toBeInTheDocument();
+    expect(await screen.findByText("Remove parent Mission")).toBeInTheDocument();
   });
 
-  it("hides 'Remove parent issue' when the issue has no parent", async () => {
+  it("hides 'Remove parent Mission' when the issue has no parent", async () => {
     render(
       wrap(
         <IssueActionsDropdown
@@ -224,12 +224,12 @@ describe("IssueActionsDropdown", () => {
     fireEvent.click(screen.getByTestId("trigger"));
     fireEvent.click(await screen.findByText("Relations"));
 
-    // The sibling "Set parent issue..." proves the submenu opened.
-    expect(await screen.findByText("Set parent issue...")).toBeInTheDocument();
-    expect(screen.queryByText("Remove parent issue")).not.toBeInTheDocument();
+    // The sibling "Set parent Mission..." proves the submenu opened.
+    expect(await screen.findByText("Set parent Mission...")).toBeInTheDocument();
+    expect(screen.queryByText("Remove parent Mission")).not.toBeInTheDocument();
   });
 
-  it("clicking Delete issue opens the delete-confirm modal", async () => {
+  it("clicking Delete Mission opens the delete-confirm modal", async () => {
     render(
       wrap(
         <IssueActionsDropdown
@@ -241,7 +241,7 @@ describe("IssueActionsDropdown", () => {
     );
 
     fireEvent.click(screen.getByTestId("trigger"));
-    const del = await screen.findByText("Delete issue");
+    const del = await screen.findByText("Delete Mission");
     fireEvent.click(del);
 
     expect(mockOpenModal).toHaveBeenCalledWith("issue-delete-confirm", {
@@ -265,6 +265,6 @@ describe("IssueActionsContextMenu", () => {
     fireEvent.contextMenu(screen.getByTestId("row"));
 
     expect(await screen.findByText("Status")).toBeInTheDocument();
-    expect(screen.getByText("Delete issue")).toBeInTheDocument();
+    expect(screen.getByText("Delete Mission")).toBeInTheDocument();
   });
 });
