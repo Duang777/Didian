@@ -205,6 +205,7 @@ func writeAvailableCommands(b *strings.Builder) {
 	b.WriteString("- `didian issue status <id> <status>` — flip status (todo / in_progress / in_review / done / blocked / backlog / cancelled).\n")
 	b.WriteString("- `didian issue children <id> [--output json]` — list a parent's sub-issues grouped by stage.\n")
 	b.WriteString("- `didian issue comment add <issue-id> [--content \"...\" | --content-file <path> | --content-stdin] [--parent <comment-id>] [--attachment <path>]` — post a comment. Agent-authored bodies MUST use `--content-file`. `didian issue comment add --help` for full flags.\n")
+	b.WriteString("- `didian issue skill report <skill-id> --status used|skipped|failed [--reason \"...\"] [--metadata '{\"key\":\"value\"}']` — report whether an injected Mission capability was actually used. Inside daemon tasks, runtime/task IDs are read from env.\n")
 	b.WriteString("- `didian issue metadata list <issue-id> [--output json]` — list KV metadata.\n")
 	b.WriteString("- `didian issue metadata set <issue-id> --key <k> --value <v> [--type string|number|bool]` — pin or overwrite a key.\n")
 	b.WriteString("- `didian issue metadata delete <issue-id> --key <k>` — remove a key.\n")
@@ -456,6 +457,7 @@ func writeSkills(b *strings.Builder, provider string, ctx TaskContextForEnv) {
 			fmt.Fprintf(b, "- **%s**\n", skill.Name)
 		}
 	}
+	b.WriteString("\nIf you actually use, deliberately skip, or fail to apply a Mission-selected skill during this task, report that outcome with `didian issue skill report <skill-id> --status used|skipped|failed --reason \"...\"`. Do not report `used` merely because a skill was installed.\n")
 	b.WriteString("\n")
 }
 

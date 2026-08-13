@@ -3736,6 +3736,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 		"DIDIAN_TOKEN":        agentToken,
 		"DIDIAN_SERVER_URL":   d.cfg.ServerBaseURL,
 		"DIDIAN_DAEMON_PORT":  fmt.Sprintf("%d", d.cfg.HealthPort),
+		"DIDIAN_RUNTIME_ID":   task.RuntimeID,
 		"DIDIAN_WORKSPACE_ID": task.WorkspaceID,
 		"DIDIAN_AGENT_NAME":   agentName,
 		"DIDIAN_AGENT_ID":     task.AgentID,

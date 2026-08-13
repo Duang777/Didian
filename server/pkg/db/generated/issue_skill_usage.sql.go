@@ -281,6 +281,65 @@ func (q *Queries) MarkPlannedIssueSkillsInjected(ctx context.Context, arg MarkPl
 	return items, nil
 }
 
+const reportIssueSkillUsageStatusForTask = `-- name: ReportIssueSkillUsageStatusForTask :one
+UPDATE issue_skill_usage
+SET
+    status = $1,
+    reason = COALESCE(NULLIF($2::text, ''), reason),
+    metadata = COALESCE($3, metadata),
+    updated_at = now()
+WHERE workspace_id = $4
+  AND issue_id = $5
+  AND task_id = $6
+  AND runtime_id = $7
+  AND skill_id = $8
+  AND status IN ('injected', 'used', 'failed', 'skipped')
+RETURNING id, workspace_id, issue_id, skill_id, task_id, agent_id, runtime_id, source, status, reason, skill_version, metadata, created_by, created_at, updated_at
+`
+
+type ReportIssueSkillUsageStatusForTaskParams struct {
+	Status      string      `json:"status"`
+	Reason      string      `json:"reason"`
+	Metadata    []byte      `json:"metadata"`
+	WorkspaceID pgtype.UUID `json:"workspace_id"`
+	IssueID     pgtype.UUID `json:"issue_id"`
+	TaskID      pgtype.UUID `json:"task_id"`
+	RuntimeID   pgtype.UUID `json:"runtime_id"`
+	SkillID     pgtype.UUID `json:"skill_id"`
+}
+
+func (q *Queries) ReportIssueSkillUsageStatusForTask(ctx context.Context, arg ReportIssueSkillUsageStatusForTaskParams) (IssueSkillUsage, error) {
+	row := q.db.QueryRow(ctx, reportIssueSkillUsageStatusForTask,
+		arg.Status,
+		arg.Reason,
+		arg.Metadata,
+		arg.WorkspaceID,
+		arg.IssueID,
+		arg.TaskID,
+		arg.RuntimeID,
+		arg.SkillID,
+	)
+	var i IssueSkillUsage
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.IssueID,
+		&i.SkillID,
+		&i.TaskID,
+		&i.AgentID,
+		&i.RuntimeID,
+		&i.Source,
+		&i.Status,
+		&i.Reason,
+		&i.SkillVersion,
+		&i.Metadata,
+		&i.CreatedBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const upsertIssueSkillUsagePlanned = `-- name: UpsertIssueSkillUsagePlanned :one
 INSERT INTO issue_skill_usage (
     workspace_id, issue_id, skill_id, source, status, reason, created_by

@@ -15,6 +15,7 @@ func TestMain(m *testing.M) {
 		"DIDIAN_TASK_ID",
 		"DIDIAN_TOKEN",
 		"DIDIAN_DAEMON_PORT",
+		"DIDIAN_RUNTIME_ID",
 		"DIDIAN_WORKSPACE_ID",
 		"DIDIAN_SERVER_URL",
 	} {

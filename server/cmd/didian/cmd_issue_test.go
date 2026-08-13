@@ -638,6 +638,98 @@ func newIssueUsageTestCmd() *cobra.Command {
 	return cmd
 }
 
+func newIssueSkillReportTestCmd() *cobra.Command {
+	cmd := &cobra.Command{Use: "report"}
+	cmd.Flags().String("status", "used", "")
+	cmd.Flags().String("reason", "", "")
+	cmd.Flags().String("metadata", "", "")
+	cmd.Flags().String("runtime-id", "", "")
+	cmd.Flags().String("task-id", "", "")
+	cmd.Flags().String("output", "json", "")
+	return cmd
+}
+
+func TestRunIssueSkillReportUsesDaemonEnvAndPostsUsage(t *testing.T) {
+	var gotPath string
+	var gotBody map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		if r.Method != http.MethodPost {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+			t.Errorf("decode body: %v", err)
+		}
+		json.NewEncoder(w).Encode(map[string]any{
+			"skill_id":     "skill-123",
+			"skill_name":   "整理收藏资源",
+			"runtime_name": "Codex Local",
+			"status":       "used",
+			"reason":       "Applied the capability checklist",
+		})
+	}))
+	defer srv.Close()
+
+	t.Setenv("DIDIAN_SERVER_URL", srv.URL)
+	t.Setenv("DIDIAN_WORKSPACE_ID", "ws-1")
+	t.Setenv("DIDIAN_AGENT_ID", "agent-1")
+	t.Setenv("DIDIAN_TASK_ID", "task-456")
+	t.Setenv("DIDIAN_RUNTIME_ID", "runtime-123")
+	t.Setenv("DIDIAN_DAEMON_PORT", "18958")
+	t.Setenv("DIDIAN_TOKEN", "mat_task_token")
+
+	cmd := newIssueSkillReportTestCmd()
+	_ = cmd.Flags().Set("reason", "Applied the capability checklist")
+	_ = cmd.Flags().Set("metadata", `{"output":"checklist","steps":3}`)
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	err := runIssueSkillReport(cmd, []string{"skill-123"})
+	_ = w.Close()
+	os.Stdout = old
+	_, _ = io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("runIssueSkillReport: %v", err)
+	}
+
+	if gotPath != "/api/daemon/runtimes/runtime-123/tasks/task-456/skills/report" {
+		t.Fatalf("path = %q", gotPath)
+	}
+	if gotBody["skill_id"] != "skill-123" || gotBody["status"] != "used" || gotBody["reason"] != "Applied the capability checklist" {
+		t.Fatalf("unexpected body: %#v", gotBody)
+	}
+	metadata, _ := gotBody["metadata"].(map[string]any)
+	if metadata["output"] != "checklist" || metadata["steps"] != float64(3) {
+		t.Fatalf("unexpected metadata: %#v", metadata)
+	}
+}
+
+func TestRunIssueSkillReportRejectsInvalidStatus(t *testing.T) {
+	t.Setenv("DIDIAN_RUNTIME_ID", "runtime-123")
+	t.Setenv("DIDIAN_TASK_ID", "task-456")
+	cmd := newIssueSkillReportTestCmd()
+	_ = cmd.Flags().Set("status", "planned")
+	err := runIssueSkillReport(cmd, []string{"skill-123"})
+	if err == nil {
+		t.Fatal("runIssueSkillReport: expected invalid status error")
+	}
+	if !strings.Contains(err.Error(), "valid values: used, skipped, failed") {
+		t.Fatalf("error = %q", err.Error())
+	}
+}
+
+func TestParseIssueSkillReportMetadataRejectsNonObject(t *testing.T) {
+	cmd := newIssueSkillReportTestCmd()
+	_ = cmd.Flags().Set("metadata", `["not","object"]`)
+	_, err := parseIssueSkillReportMetadata(cmd)
+	if err == nil {
+		t.Fatal("parseIssueSkillReportMetadata: expected error")
+	}
+	if !strings.Contains(err.Error(), "JSON object") {
+		t.Fatalf("error = %q", err.Error())
+	}
+}
+
 func TestRunIssueUsageReturnsTokenSummaryAsJSON(t *testing.T) {
 	var gotPaths []string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

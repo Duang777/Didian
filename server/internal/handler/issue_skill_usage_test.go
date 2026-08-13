@@ -226,6 +226,144 @@ func TestFinalizeTaskClaimMarksIssueSkillInjected(t *testing.T) {
 	}
 }
 
+func insertHandlerTestRuntime(t *testing.T, name string) string {
+	t.Helper()
+
+	var runtimeID string
+	if err := testPool.QueryRow(context.Background(), `
+		INSERT INTO agent_runtime (
+			workspace_id, daemon_id, name, runtime_mode, provider, status, device_info, metadata, owner_id, last_seen_at
+		)
+		VALUES ($1, NULL, $2, 'cloud', 'test', 'online', $3, '{}'::jsonb, $4, now())
+		RETURNING id
+	`, testWorkspaceID, name, "Issue Skill Usage Test Runtime", testUserID).Scan(&runtimeID); err != nil {
+		t.Fatalf("create handler test runtime: %v", err)
+	}
+	t.Cleanup(func() {
+		testPool.Exec(context.Background(), `DELETE FROM agent_runtime WHERE id = $1`, runtimeID)
+	})
+	return runtimeID
+}
+
+func TestReportIssueSkillUsageMarksRuntimeActualUse(t *testing.T) {
+	issueID := createIssueSkillUsageTestIssue(t, "Issue Skill Usage Report")
+	skillID := insertHandlerTestSkill(t, "issue-skill-report-used", "skill body")
+	agentID := createHandlerTestAgent(t, "Issue Skill Usage Report Agent", nil)
+	taskID := createHandlerTestTaskForAgentOnIssue(t, agentID, issueID)
+	ctx := context.Background()
+
+	w := httptest.NewRecorder()
+	req := newRequest(http.MethodPost, "/api/issues/"+issueID+"/skills", map[string]any{
+		"skill_id": skillID,
+		"reason":   "Selected from Mission detail",
+	})
+	req = withURLParam(req, "id", issueID)
+	testHandler.AddIssueSkill(w, req)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("AddIssueSkill: expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+
+	_, err := testHandler.Queries.MarkPlannedIssueSkillsInjected(ctx, db.MarkPlannedIssueSkillsInjectedParams{
+		WorkspaceID: parseUUID(testWorkspaceID),
+		IssueID:     parseUUID(issueID),
+		TaskID:      parseUUID(taskID),
+		AgentID:     parseUUID(agentID),
+		RuntimeID:   parseUUID(testRuntimeID),
+	})
+	if err != nil {
+		t.Fatalf("mark injected: %v", err)
+	}
+
+	w = httptest.NewRecorder()
+	req = newDaemonTokenRequest(http.MethodPost, "/api/daemon/runtimes/"+testRuntimeID+"/tasks/"+taskID+"/skills/report", map[string]any{
+		"skill_id": skillID,
+		"status":   "used",
+		"reason":   "Used to structure the browser automation plan",
+		"metadata": map[string]any{
+			"evidence": "runtime-selected",
+		},
+	}, testWorkspaceID, "issue-skill-report-daemon")
+	req = withURLParams(req, "runtimeId", testRuntimeID, "taskId", taskID)
+	testHandler.ReportIssueSkillUsage(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("ReportIssueSkillUsage: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var reportResp IssueSkillUsageResponse
+	if err := json.NewDecoder(w.Body).Decode(&reportResp); err != nil {
+		t.Fatalf("decode report response: %v", err)
+	}
+	if reportResp.Status != "used" {
+		t.Fatalf("reported status = %q, want used", reportResp.Status)
+	}
+	if reportResp.Reason != "Used to structure the browser automation plan" {
+		t.Fatalf("reported reason = %q", reportResp.Reason)
+	}
+
+	w = httptest.NewRecorder()
+	req = newRequest(http.MethodGet, "/api/issues/"+issueID+"/skills", nil)
+	req = withURLParam(req, "id", issueID)
+	testHandler.ListIssueSkills(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("ListIssueSkills after report: expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var listResp struct {
+		Skills []IssueSkillUsageResponse `json:"skills"`
+		Total  int                       `json:"total"`
+	}
+	if err := json.NewDecoder(w.Body).Decode(&listResp); err != nil {
+		t.Fatalf("decode list response: %v", err)
+	}
+	if listResp.Total != 1 || len(listResp.Skills) != 1 {
+		t.Fatalf("expected one usage row, got %+v", listResp)
+	}
+	got := listResp.Skills[0]
+	if got.Status != "used" || got.TaskID == nil || *got.TaskID != taskID || got.RuntimeID == nil || *got.RuntimeID != testRuntimeID {
+		t.Fatalf("listed usage = status %s task %v runtime %v, want used/%s/%s", got.Status, got.TaskID, got.RuntimeID, taskID, testRuntimeID)
+	}
+	if got.Metadata == nil {
+		t.Fatalf("expected runtime metadata to be stored")
+	}
+}
+
+func TestReportIssueSkillUsageRejectsInvalidStatus(t *testing.T) {
+	issueID := createIssueSkillUsageTestIssue(t, "Issue Skill Usage Report Invalid Status")
+	skillID := insertHandlerTestSkill(t, "issue-skill-report-invalid-status", "skill body")
+	agentID := createHandlerTestAgent(t, "Issue Skill Usage Report Invalid Status Agent", nil)
+	taskID := createHandlerTestTaskForAgentOnIssue(t, agentID, issueID)
+
+	w := httptest.NewRecorder()
+	req := newDaemonTokenRequest(http.MethodPost, "/api/daemon/runtimes/"+testRuntimeID+"/tasks/"+taskID+"/skills/report", map[string]any{
+		"skill_id": skillID,
+		"status":   "suggested_update",
+	}, testWorkspaceID, "issue-skill-report-daemon")
+	req = withURLParams(req, "runtimeId", testRuntimeID, "taskId", taskID)
+	testHandler.ReportIssueSkillUsage(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("ReportIssueSkillUsage invalid status: expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestReportIssueSkillUsageRejectsDifferentRuntime(t *testing.T) {
+	issueID := createIssueSkillUsageTestIssue(t, "Issue Skill Usage Report Runtime Scope")
+	skillID := insertHandlerTestSkill(t, "issue-skill-report-runtime-scope", "skill body")
+	agentID := createHandlerTestAgent(t, "Issue Skill Usage Report Runtime Scope Agent", nil)
+	taskID := createHandlerTestTaskForAgentOnIssue(t, agentID, issueID)
+
+	otherRuntimeID := insertHandlerTestRuntime(t, "Issue Skill Usage Other Runtime")
+
+	w := httptest.NewRecorder()
+	req := newDaemonTokenRequest(http.MethodPost, "/api/daemon/runtimes/"+otherRuntimeID+"/tasks/"+taskID+"/skills/report", map[string]any{
+		"skill_id": skillID,
+		"status":   "used",
+	}, testWorkspaceID, "issue-skill-report-other-daemon")
+	req = withURLParams(req, "runtimeId", otherRuntimeID, "taskId", taskID)
+	testHandler.ReportIssueSkillUsage(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("ReportIssueSkillUsage other runtime: expected 404, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
 func createIssueSkillUsageTestIssue(t *testing.T, title string) string {
 	t.Helper()
 

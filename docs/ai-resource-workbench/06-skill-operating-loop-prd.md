@@ -128,13 +128,16 @@ Acceptance:
    - platform built-in Skills
    - Mission planned Skills
 4. Claim marks planned rows as `injected` with task, agent, and runtime IDs.
-5. Mission detail displays selected/injected Skills and status.
+5. Runtime reports actual outcome with `didian issue skill report <skill-id> --status used|skipped|failed --reason "..."`.
+6. Mission detail displays selected/injected Skills plus the runtime-reported outcome.
 
 Acceptance:
 
 - Mission-level Skill selection never mutates agent default Skills.
 - Duplicate Skill IDs are deduped before claim payload is sent.
 - Non-planned usage rows cannot be deleted as if they were ordinary form state.
+- `injected` means the runtime received the capability. `used`, `skipped`, and `failed` must come from runtime feedback, not UI inference.
+- Runtime feedback preserves task, agent, runtime, reason, timestamp, and optional structured metadata.
 
 ### Flow 5: Operate Skill Library
 
@@ -159,6 +162,7 @@ Acceptance:
 - `POST /api/browser-captures/{id}/skill-direction-mission`
 - `POST /api/browser-captures/{id}/skill-generation-mission`
 - `DELETE /api/skills/{id}`
+- `POST /api/daemon/runtimes/{runtimeId}/tasks/{taskId}/skills/report`
 
 ### Additive API Requirements
 
@@ -166,6 +170,8 @@ Acceptance:
 - Explicit diagnostics may request internal records via metadata filter.
 - Frontend cache helpers must also treat `metadata.didian_internal = true` as non-listable to protect against realtime leaks.
 - API clients should not need a new flag to hide internal rows; hiding is the default contract.
+- Daemon task environments provide `DIDIAN_RUNTIME_ID` and `DIDIAN_TASK_ID`, allowing `didian issue skill report` to default its scope without agent-authored UUID plumbing.
+- Runtime usage report accepts only `used`, `skipped`, and `failed`. `suggested_update` remains a future state until the database contract supports it explicitly.
 
 ## Data Model Notes
 
@@ -173,6 +179,7 @@ Acceptance:
 - Keep using `skill.config.origin.capture_id` and `skill.config.generation.direction` for generated provenance.
 - Internal analysis tasks can remain `issue` rows for execution reuse, but the user-facing product must not call them Missions.
 - Later usage feedback can extend `issue_skill_usage.metadata` before introducing a new table.
+- Actual runtime feedback is stored on `issue_skill_usage.status`, `reason`, and `metadata`. `planned` and `injected` are platform lifecycle states; `used`, `skipped`, and `failed` are runtime lifecycle states.
 
 ## UX Requirements
 
@@ -219,9 +226,10 @@ Acceptance:
 
 ### Phase 2: Make Skills Feel Used
 
-- Mission detail shows clearer Skill usage status and execution linkage.
+- Mission detail shows clearer Skill usage status and execution linkage. Done for selected/injected rows.
 - Claim prompt includes explicit Mission-selected Skill reasons.
-- Add tests for prompt text and `planned -> injected`.
+- Runtime brief documents `didian issue skill report <skill-id> --status used|skipped|failed` so local agents can report actual usage.
+- Add tests for prompt text, `planned -> injected`, and runtime-reported `used/skipped/failed`.
 
 ### Phase 3: Make Skills Operable
 

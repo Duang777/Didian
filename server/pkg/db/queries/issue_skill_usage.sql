@@ -83,3 +83,18 @@ WHERE workspace_id = $1
   AND issue_id = $2
   AND status = 'planned'
 RETURNING *;
+
+-- name: ReportIssueSkillUsageStatusForTask :one
+UPDATE issue_skill_usage
+SET
+    status = sqlc.arg('status'),
+    reason = COALESCE(NULLIF(sqlc.arg('reason')::text, ''), reason),
+    metadata = COALESCE(sqlc.arg('metadata'), metadata),
+    updated_at = now()
+WHERE workspace_id = sqlc.arg('workspace_id')
+  AND issue_id = sqlc.arg('issue_id')
+  AND task_id = sqlc.arg('task_id')
+  AND runtime_id = sqlc.arg('runtime_id')
+  AND skill_id = sqlc.arg('skill_id')
+  AND status IN ('injected', 'used', 'failed', 'skipped')
+RETURNING *;

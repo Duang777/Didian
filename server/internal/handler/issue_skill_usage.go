@@ -43,6 +43,13 @@ type AddIssueSkillRequest struct {
 	Reason  string `json:"reason"`
 }
 
+type ReportIssueSkillUsageRequest struct {
+	SkillID  string         `json:"skill_id"`
+	Status   string         `json:"status"`
+	Reason   string         `json:"reason"`
+	Metadata map[string]any `json:"metadata"`
+}
+
 func (h *Handler) ListIssueSkills(w http.ResponseWriter, r *http.Request) {
 	issue, ok := h.loadIssueForUser(w, r, chi.URLParam(r, "id"))
 	if !ok {
@@ -155,6 +162,90 @@ func (h *Handler) DeleteIssueSkill(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) ReportIssueSkillUsage(w http.ResponseWriter, r *http.Request) {
+	runtimeID := chi.URLParam(r, "runtimeId")
+	taskID := chi.URLParam(r, "taskId")
+
+	runtime, ok := h.requireDaemonRuntimeAccess(w, r, runtimeID)
+	if !ok {
+		return
+	}
+	task, taskWorkspaceID, ok := h.requireDaemonTaskAccessWithWorkspace(w, r, taskID)
+	if !ok {
+		return
+	}
+	if taskWorkspaceID != uuidToString(runtime.WorkspaceID) || uuidToString(task.RuntimeID) != runtimeID {
+		writeError(w, http.StatusNotFound, "task not found")
+		return
+	}
+	if !task.IssueID.Valid {
+		writeError(w, http.StatusBadRequest, "task is not attached to a mission")
+		return
+	}
+
+	var req ReportIssueSkillUsageRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	skillID, ok := parseUUIDOrBadRequest(w, strings.TrimSpace(req.SkillID), "skill_id")
+	if !ok {
+		return
+	}
+	status, ok := normalizeRuntimeReportedIssueSkillStatus(w, req.Status)
+	if !ok {
+		return
+	}
+
+	metadata, err := json.Marshal(req.Metadata)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid metadata")
+		return
+	}
+	if req.Metadata == nil {
+		metadata = nil
+	}
+
+	usage, err := h.Queries.ReportIssueSkillUsageStatusForTask(r.Context(), db.ReportIssueSkillUsageStatusForTaskParams{
+		WorkspaceID: runtime.WorkspaceID,
+		IssueID:     task.IssueID,
+		TaskID:      parseUUID(taskID),
+		RuntimeID:   runtime.ID,
+		SkillID:     skillID,
+		Status:      status,
+		Reason:      strings.TrimSpace(req.Reason),
+		Metadata:    metadata,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			writeError(w, http.StatusNotFound, "issue skill usage not found")
+			return
+		}
+		slog.Warn("ReportIssueSkillUsage failed", append(logger.RequestAttrs(r), "error", err, "task_id", taskID, "runtime_id", runtimeID)...)
+		writeError(w, http.StatusInternalServerError, "failed to report issue skill usage")
+		return
+	}
+
+	row, err := h.issueSkillUsageResponseByID(r, runtime.WorkspaceID, task.IssueID, usage.ID)
+	if err != nil {
+		slog.Warn("ReportIssueSkillUsage reload failed", append(logger.RequestAttrs(r), "error", err, "task_id", taskID, "runtime_id", runtimeID)...)
+		writeError(w, http.StatusInternalServerError, "failed to report issue skill usage")
+		return
+	}
+	writeJSON(w, http.StatusOK, row)
+}
+
+func normalizeRuntimeReportedIssueSkillStatus(w http.ResponseWriter, raw string) (string, bool) {
+	status := strings.TrimSpace(raw)
+	switch status {
+	case "used", "skipped", "failed":
+		return status, true
+	default:
+		writeError(w, http.StatusBadRequest, "invalid status")
+		return "", false
+	}
 }
 
 func normalizeIssueSkillUsageSource(w http.ResponseWriter, raw string) (string, bool) {

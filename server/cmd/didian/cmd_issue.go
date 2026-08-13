@@ -358,6 +358,22 @@ var issueSearchCmd = &cobra.Command{
 	RunE:  runIssueSearch,
 }
 
+// Skill usage subcommands are intentionally task-scoped: agents use this
+// during a daemon-run Mission to turn a planned/injected capability into an
+// actual runtime usage record.
+
+var issueSkillCmd = &cobra.Command{
+	Use:   "skill",
+	Short: "Report mission capability usage from a running task",
+}
+
+var issueSkillReportCmd = &cobra.Command{
+	Use:   "report <skill-id>",
+	Short: "Report that the running task used, skipped, or failed a mission capability",
+	Args:  exactArgs(1),
+	RunE:  runIssueSkillReport,
+}
+
 var validIssueStatuses = []string{
 	"backlog", "todo", "in_progress", "in_review", "done", "blocked", "cancelled",
 }
@@ -422,6 +438,7 @@ func init() {
 	issueCmd.AddCommand(issueRerunCmd)
 	issueCmd.AddCommand(issueCancelTaskCmd)
 	issueCmd.AddCommand(issueSearchCmd)
+	issueCmd.AddCommand(issueSkillCmd)
 
 	issueCommentCmd.AddCommand(issueCommentListCmd)
 	issueCommentCmd.AddCommand(issueCommentAddCmd)
@@ -432,6 +449,8 @@ func init() {
 	issueSubscriberCmd.AddCommand(issueSubscriberListCmd)
 	issueSubscriberCmd.AddCommand(issueSubscriberAddCmd)
 	issueSubscriberCmd.AddCommand(issueSubscriberRemoveCmd)
+
+	issueSkillCmd.AddCommand(issueSkillReportCmd)
 
 	// issue list
 	issueListCmd.Flags().String("output", "table", "Output format: table or json")
@@ -552,6 +571,14 @@ func init() {
 	issueSearchCmd.Flags().Int("limit", 20, "Maximum number of results to return")
 	issueSearchCmd.Flags().Bool("include-closed", false, "Include done and cancelled issues")
 	issueSearchCmd.Flags().String("output", "table", "Output format: table or json")
+
+	// issue skill report
+	issueSkillReportCmd.Flags().String("status", "used", "Capability usage status: used, skipped, or failed")
+	issueSkillReportCmd.Flags().String("reason", "", "Short reason or evidence for the reported status")
+	issueSkillReportCmd.Flags().String("metadata", "", "Optional JSON object with structured usage evidence")
+	issueSkillReportCmd.Flags().String("runtime-id", "", "Runtime ID; defaults to DIDIAN_RUNTIME_ID inside daemon tasks")
+	issueSkillReportCmd.Flags().String("task-id", "", "Task ID; defaults to DIDIAN_TASK_ID inside daemon tasks")
+	issueSkillReportCmd.Flags().String("output", "json", "Output format: table or json")
 
 	// issue subscriber list
 	issueSubscriberListCmd.Flags().String("output", "table", "Output format: table or json")
@@ -2758,6 +2785,81 @@ func formatAssignee(issue map[string]any, actors actorDisplayLookup) string {
 		return ""
 	}
 	return actors.actor(aType, aID)
+}
+
+func runIssueSkillReport(cmd *cobra.Command, args []string) error {
+	runtimeID := strings.TrimSpace(cli.FlagOrEnv(cmd, "runtime-id", "DIDIAN_RUNTIME_ID", ""))
+	if runtimeID == "" {
+		return fmt.Errorf("runtime ID is required; pass --runtime-id or run inside a daemon task with DIDIAN_RUNTIME_ID")
+	}
+	taskID := strings.TrimSpace(cli.FlagOrEnv(cmd, "task-id", "DIDIAN_TASK_ID", ""))
+	if taskID == "" {
+		return fmt.Errorf("task ID is required; pass --task-id or run inside a daemon task with DIDIAN_TASK_ID")
+	}
+	status, _ := cmd.Flags().GetString("status")
+	status = strings.TrimSpace(status)
+	if err := validateIssueSkillReportStatus(status); err != nil {
+		return err
+	}
+	reason, _ := cmd.Flags().GetString("reason")
+	metadata, err := parseIssueSkillReportMetadata(cmd)
+	if err != nil {
+		return err
+	}
+	client, err := newAPIClient(cmd)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := cli.APIContext(context.Background())
+	defer cancel()
+
+	var resp map[string]any
+	if err := client.ReportIssueSkillUsage(ctx, runtimeID, taskID, cli.ReportIssueSkillUsageRequest{
+		SkillID:  strings.TrimSpace(args[0]),
+		Status:   status,
+		Reason:   strings.TrimSpace(reason),
+		Metadata: metadata,
+	}, &resp); err != nil {
+		return fmt.Errorf("report mission capability usage: %w", err)
+	}
+
+	output, _ := cmd.Flags().GetString("output")
+	if output == "table" {
+		cli.PrintTable(os.Stdout, []string{"SKILL", "STATUS", "RUNTIME", "REASON"}, [][]string{{
+			strVal(resp, "skill_name"),
+			strVal(resp, "status"),
+			strVal(resp, "runtime_name"),
+			strVal(resp, "reason"),
+		}})
+		return nil
+	}
+	return cli.PrintJSON(os.Stdout, resp)
+}
+
+func validateIssueSkillReportStatus(status string) error {
+	switch status {
+	case "used", "skipped", "failed":
+		return nil
+	default:
+		return fmt.Errorf("invalid --status %q; valid values: used, skipped, failed", status)
+	}
+}
+
+func parseIssueSkillReportMetadata(cmd *cobra.Command) (map[string]any, error) {
+	raw, _ := cmd.Flags().GetString("metadata")
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil, nil
+	}
+	var metadata map[string]any
+	if err := json.Unmarshal([]byte(raw), &metadata); err != nil {
+		return nil, fmt.Errorf("parse --metadata JSON object: %w", err)
+	}
+	if metadata == nil {
+		return nil, nil
+	}
+	return metadata, nil
 }
 
 func truncateID(id string) string {

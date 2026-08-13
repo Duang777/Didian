@@ -68,6 +68,13 @@ type HTTPError struct {
 	Body       string
 }
 
+type ReportIssueSkillUsageRequest struct {
+	SkillID  string         `json:"skill_id"`
+	Status   string         `json:"status"`
+	Reason   string         `json:"reason,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
+}
+
 func (e *HTTPError) Error() string {
 	return fmt.Sprintf("%s %s returned %d: %s", e.Method, e.Path, e.StatusCode, strings.TrimSpace(e.Body))
 }
@@ -339,6 +346,10 @@ func (c *APIClient) PostJSON(ctx context.Context, path string, body any, out any
 		return nil
 	}
 	return json.NewDecoder(resp.Body).Decode(out)
+}
+
+func (c *APIClient) ReportIssueSkillUsage(ctx context.Context, runtimeID, taskID string, body ReportIssueSkillUsageRequest, out any) error {
+	return c.PostJSON(ctx, fmt.Sprintf("/api/daemon/runtimes/%s/tasks/%s/skills/report", runtimeID, taskID), body, out)
 }
 
 // PutJSON performs a PUT request with a JSON body.
