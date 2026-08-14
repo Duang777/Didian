@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/didian-ai/didian/server/internal/util"
@@ -79,6 +80,21 @@ func (s *TaskService) failBrowserMemoryEnrichment(ctx context.Context, qtx *db.Q
 	if err != nil {
 		return fmt.Errorf("parse browser memory capture id: %w", err)
 	}
+	if fallbackErr := completeBrowserMemoryWithLocalFallback(ctx, qtx, workspaceID, captureID); fallbackErr == nil {
+		slog.Warn("browser memory enrichment failed; local fallback completed",
+			"capture_id", bm.CaptureID,
+			"workspace_id", bm.WorkspaceID,
+			"error", errMsg,
+		)
+		return nil
+	} else {
+		slog.Warn("browser memory local fallback failed",
+			"capture_id", bm.CaptureID,
+			"workspace_id", bm.WorkspaceID,
+			"enrichment_error", errMsg,
+			"fallback_error", fallbackErr,
+		)
+	}
 	failure := strToText(errMsg)
 	if _, err := qtx.MarkPageMemoryEnrichmentFailed(ctx, db.MarkPageMemoryEnrichmentFailedParams{
 		CapturedSourceID: captureID,
@@ -94,6 +110,47 @@ func (s *TaskService) failBrowserMemoryEnrichment(ctx context.Context, qtx *db.Q
 		FailureReason: failure,
 	}); err != nil {
 		return fmt.Errorf("update browser capture enrichment failure status: %w", err)
+	}
+	return nil
+}
+
+func completeBrowserMemoryWithLocalFallback(ctx context.Context, qtx *db.Queries, workspaceID, captureID pgtype.UUID) error {
+	capture, err := qtx.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{
+		ID:          captureID,
+		WorkspaceID: workspaceID,
+	})
+	if err != nil {
+		return fmt.Errorf("load browser capture for local fallback: %w", err)
+	}
+	enrichment, err := LocalPageMemorySummarizer{}.SummarizePageMemory(ctx, capture)
+	if err != nil {
+		return fmt.Errorf("summarize browser capture locally: %w", err)
+	}
+	if enrichment.SearchText == "" {
+		enrichment.SearchText = buildBrowserMemoryEnrichmentSearchText(enrichment)
+	}
+	if _, err := qtx.UpdatePageMemoryEnrichment(ctx, db.UpdatePageMemoryEnrichmentParams{
+		CapturedSourceID: captureID,
+		WorkspaceID:      workspaceID,
+		Summary:          enrichment.Summary,
+		OneLineTakeaway:  enrichment.OneLineTakeaway,
+		KeyPoints:        mustJSONArray(enrichment.KeyPoints),
+		Topics:           mustJSONArray(enrichment.Topics),
+		Entities:         mustJSONArray(enrichment.Entities),
+		Keywords:         mustJSONArray(enrichment.Keywords),
+		SearchText:       enrichment.SearchText,
+		ModelProvider:    strToText(enrichment.ModelProvider),
+		ModelName:        strToText(enrichment.ModelName),
+	}); err != nil {
+		return fmt.Errorf("write local browser memory fallback: %w", err)
+	}
+	if _, err := qtx.UpdateCapturedSourceEnrichmentStatus(ctx, db.UpdateCapturedSourceEnrichmentStatusParams{
+		ID:            captureID,
+		WorkspaceID:   workspaceID,
+		SummaryStatus: "success",
+		FailureReason: pgtype.Text{},
+	}); err != nil {
+		return fmt.Errorf("mark local browser memory fallback ready: %w", err)
 	}
 	return nil
 }

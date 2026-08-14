@@ -128,7 +128,7 @@ func TestCompleteTaskWritesBrowserMemoryEnrichment(t *testing.T) {
 	}
 }
 
-func TestCompleteTaskMarksBrowserMemoryFailedOnInvalidOutput(t *testing.T) {
+func TestCompleteTaskMarksBrowserMemoryReadyWithLocalFallbackOnInvalidOutput(t *testing.T) {
 	pool := newHeadShaDedupPool(t)
 	ctx := context.Background()
 	q := db.New(pool)
@@ -153,23 +153,26 @@ func TestCompleteTaskMarksBrowserMemoryFailedOnInvalidOutput(t *testing.T) {
 		t.Fatalf("CompleteTask: %v", err)
 	}
 
-	taskAfter, err := q.GetAgentTask(ctx, task.ID)
-	if err != nil {
-		t.Fatalf("GetAgentTask: %v", err)
-	}
-	if taskAfter.Status != "completed" {
-		t.Fatalf("task status = %q, want completed", taskAfter.Status)
-	}
 	memory, err := q.GetPageMemory(ctx, db.GetPageMemoryParams{CapturedSourceID: fixture.capture.ID, WorkspaceID: fixture.workspaceID})
 	if err != nil {
 		t.Fatalf("GetPageMemory: %v", err)
 	}
-	if memory.Status != "failed" || !memory.FailureReason.Valid || !strings.Contains(memory.FailureReason.String, "browser memory invalid output") {
-		t.Fatalf("unexpected page_memory failure state: status=%q reason=%+v", memory.Status, memory.FailureReason)
+	if memory.Status != "ready" || memory.FailureReason.Valid || !memory.ModelProvider.Valid || memory.ModelProvider.String != localMemoryProvider {
+		t.Fatalf("unexpected page_memory fallback state: status=%q reason=%+v provider=%+v", memory.Status, memory.FailureReason, memory.ModelProvider)
+	}
+	if !strings.Contains(memory.Summary, "A useful page about browser memory tasks") {
+		t.Fatalf("summary = %q, want local fallback summary", memory.Summary)
+	}
+	capture, err := q.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{ID: fixture.capture.ID, WorkspaceID: fixture.workspaceID})
+	if err != nil {
+		t.Fatalf("GetCapturedSourceInWorkspace: %v", err)
+	}
+	if capture.SummaryStatus != "success" || capture.Status != "ready" || capture.FailureReason.Valid {
+		t.Fatalf("unexpected capture fallback state: status=%q summary=%q failure=%+v", capture.Status, capture.SummaryStatus, capture.FailureReason)
 	}
 }
 
-func TestFailTaskMarksBrowserMemoryEnrichmentFailed(t *testing.T) {
+func TestFailTaskFallsBackToLocalBrowserMemoryEnrichment(t *testing.T) {
 	pool := newHeadShaDedupPool(t)
 	ctx := context.Background()
 	q := db.New(pool)
@@ -189,15 +192,15 @@ func TestFailTaskMarksBrowserMemoryEnrichmentFailed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetPageMemory: %v", err)
 	}
-	if memory.Status != "failed" || !memory.FailureReason.Valid || memory.FailureReason.String != "model refused output" {
-		t.Fatalf("unexpected page_memory failure state: status=%q reason=%+v", memory.Status, memory.FailureReason)
+	if memory.Status != "ready" || memory.FailureReason.Valid || !memory.ModelProvider.Valid || memory.ModelProvider.String != localMemoryProvider {
+		t.Fatalf("unexpected page_memory fallback state: status=%q reason=%+v provider=%+v", memory.Status, memory.FailureReason, memory.ModelProvider)
 	}
 	capture, err := q.GetCapturedSourceInWorkspace(ctx, db.GetCapturedSourceInWorkspaceParams{ID: fixture.capture.ID, WorkspaceID: fixture.workspaceID})
 	if err != nil {
 		t.Fatalf("GetCapturedSourceInWorkspace: %v", err)
 	}
-	if capture.SummaryStatus != "failure" || capture.Status != "failed" {
-		t.Fatalf("unexpected capture state: status=%q summary=%q", capture.Status, capture.SummaryStatus)
+	if capture.SummaryStatus != "success" || capture.Status != "ready" || capture.FailureReason.Valid {
+		t.Fatalf("unexpected capture state: status=%q summary=%q failure=%+v", capture.Status, capture.SummaryStatus, capture.FailureReason)
 	}
 }
 
