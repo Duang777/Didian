@@ -146,7 +146,12 @@ export function AtlasPage({
   const [snapshot, setSnapshot] = useState(() => localStore.load(demoAtlasWorkspaces));
   const collection = demoAtlasCollections[0];
   const activeCollection = collection ?? demoAtlasCollections[0]!;
-  const workspace = snapshot.workspaces.find((item) => item.id === collection?.workspaceId) ?? snapshot.workspaces[0];
+  const workspaces = snapshot.workspaces;
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(() => {
+    const initial = workspaces.find((item) => item.id === collection?.workspaceId) ?? workspaces[0];
+    return initial?.id ?? "";
+  });
+  const workspace = workspaces.find((item) => item.id === selectedWorkspaceId) ?? workspaces[0];
   const [selectedPath, setSelectedPath] = useState("mission.md");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
@@ -307,6 +312,24 @@ export function AtlasPage({
     setSelectedPath(path);
   };
 
+  const contextEvidence = useMemo(() => {
+    if (workspace?.missionId === demoAtlasCollections[0]?.sourceMissionId) {
+      return demoAtlasCollections[0]!.resources;
+    }
+    // Non-demo workspaces (created from AI Inbox) don't have a fixture
+    // collection; derive evidence from the workspace's own source files.
+    return (workspace?.files ?? [])
+      .filter((file) => file.kind === "source" || file.kind === "evidence")
+      .slice(0, 6)
+      .map((file) => ({
+        id: `ctx-${file.id}`,
+        title: file.title,
+        evidence: file.content
+          ? [{ id: `ctx-ev-${file.id}`, label: file.path, source: file.sourceUrl ?? file.path, quote: firstMarkdownHeading(file.content) ?? file.content.slice(0, 120) }]
+          : [],
+      }));
+  }, [workspace]);
+
   const handleApplyAiEdit = async () => {
     const instruction = aiInstruction.trim();
     const selection = selectionAction?.text || selectedText;
@@ -408,7 +431,26 @@ export function AtlasPage({
                     </Button>
                   ) : null}
                   <div className="min-w-0">
-                    <div className="truncate text-[11px] text-muted-foreground">{workspaceTitle}</div>
+                    <div className="flex min-w-0 items-center gap-2">
+                      {workspaces.length > 1 ? (
+                        <select
+                          aria-label="Atlas Workspace"
+                          value={workspace?.id ?? ""}
+                          onChange={(event) => {
+                            setSelectedWorkspaceId(event.target.value);
+                            setSelectedPath("mission.md");
+                            setOpenPaths(["mission.md"]);
+                          }}
+                          className="h-6 max-w-56 truncate rounded-md border border-input bg-background px-1.5 text-[11px] text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                        >
+                          {workspaces.map((item) => (
+                            <option key={item.id} value={item.id}>{item.title || item.rootPath}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="truncate text-[11px] text-muted-foreground">{workspaceTitle}</div>
+                      )}
+                    </div>
                     <div className="flex min-w-0 items-center gap-2">
                       <h2 className="truncate text-base font-semibold">{selectedFile?.title}</h2>
                       <span className={cn("shrink-0 rounded-md border px-1.5 py-0.5 text-[11px]", selectedFileDirty ? "bg-amber-500/10 text-amber-700 dark:text-amber-300" : "text-muted-foreground")}>
@@ -591,20 +633,20 @@ export function AtlasPage({
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{ATLAS_COPY.contextTitle}</DialogTitle>
-            <DialogDescription>{activeCollection.summary}</DialogDescription>
+            <DialogDescription>{workspace?.summary ?? activeCollection.summary}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 md:grid-cols-3">
             <ContextRow label="Current file" value={selectedFile?.path ?? "-"} />
             <ContextRow label="Notebook files" value={String(files.length)} />
-            <ContextRow label="Imported from" value={activeCollection.sourceMissionId} />
+            <ContextRow label="Imported from" value={workspace?.missionId ?? activeCollection.sourceMissionId} />
           </div>
           <div className="space-y-2">
             <div className="text-sm font-medium">{ATLAS_COPY.evidence}</div>
             <div className="grid gap-2 md:grid-cols-2">
-              {activeCollection.resources.map((resource) => (
+              {contextEvidence.map((resource) => (
                 <div key={resource.id} className="rounded-md border bg-background p-2.5">
                   <div className="truncate text-sm font-medium">{resource.title}</div>
-                  {resource.evidence.map((evidence) => (
+                  {("evidence" in resource ? resource.evidence : []).map((evidence) => (
                     <p key={evidence.id} className="mt-1 line-clamp-3 text-xs text-muted-foreground">{evidence.quote}</p>
                   ))}
                 </div>
@@ -936,6 +978,14 @@ function renderMissionImport(ids: MissionImportOptionId[], sourceMissionId: stri
     return ["### 附件和链接", "- 导入附件、网页、PR 和外部资料链接。", "- 大文件只保留索引，不自动展开全文。"].join("\n");
   });
   return ["", "## 从 Mission 导入", "", ...sections].join("\n\n");
+}
+
+function firstMarkdownHeading(content: string): string | null {
+  for (const line of content.split(/\r?\n/)) {
+    const heading = line.trim();
+    if (/^#+\s+/.test(heading)) return heading.replace(/^#+\s+/, "");
+  }
+  return null;
 }
 
 function appendMarkdown(currentContent: string, addition: string) {

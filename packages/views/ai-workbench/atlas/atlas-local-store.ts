@@ -133,8 +133,10 @@ function updateWorkspaceFile(
 function mergeWithSeed(raw: unknown, seed: AtlasWorkspace[]): AtlasLocalSnapshot {
   if (!isSnapshot(raw)) return cloneSnapshot({ workspaces: seed });
   const storedById = new Map(raw.workspaces.map((workspace) => [workspace.id, workspace]));
+  const seeded: AtlasWorkspace[] = seed.map((workspace) => storedById.get(workspace.id) ?? workspace);
+  const extra = raw.workspaces.filter((workspace) => !seed.some((item) => item.id === workspace.id));
   return {
-    workspaces: seed.map((workspace) => storedById.get(workspace.id) ?? workspace),
+    workspaces: [...seeded, ...extra],
   };
 }
 
