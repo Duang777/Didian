@@ -17,6 +17,7 @@ import {
   Search,
   SendHorizontal,
   Sparkles,
+  Download,
 } from "lucide-react";
 import { ApiError, api, DuplicateIssueErrorBodySchema, parseWithFallback, type DuplicateIssueErrorBody } from "@didian/core/api";
 import {
@@ -40,10 +41,13 @@ import { Textarea } from "@didian/ui/components/ui/textarea";
 import { toast } from "sonner";
 import {
   browserCaptureRecordToInboxInput,
+  demoAtlasWorkspaces,
   inferAiUnderstanding,
+  missionToAtlasWorkspace,
 } from "../fixtures";
-import type { AiInboxInput, AiUnderstanding } from "../types";
+import type { AiInboxInput, AiUnderstanding, MissionView } from "../types";
 import { WorkbenchSection, WorkbenchShell } from "../workbench-shell";
+import { memoryAtlasLocalStore, type AtlasLocalSnapshot } from "../atlas/atlas-local-store";
 
 const createMissionLabel = "创建 Mission";
 const saveToAtlasLabel = "保存到 Atlas";
@@ -148,6 +152,14 @@ export function AiInboxPage() {
       refreshMissionQueries();
       const missionHref = paths.workspace(workspaceSlug).issueDetail(mission.issue.id);
       setCreatedMission({ id: mission.issue.id, href: missionHref, title: mission.issue.title, state: "created" });
+      // Auto-link the created Mission into Atlas Workspace so the demo loop
+      // (Mission -> Atlas) is visible without a backend Atlas API.
+      saveInputToAtlas({
+        input: trimmedInput,
+        inputUrls,
+        understanding,
+        workspacePreview,
+      });
       if (mission.planningStatus === "queued") {
         toast.success("Mission 已创建，Codex 已开始规划");
       } else {
@@ -192,6 +204,18 @@ export function AiInboxPage() {
     await createMissionFromInput("skipped");
   }
 
+  function handleSaveToAtlas() {
+    if ((!trimmedInput && inputUrls.length === 0) || createdMission) return;
+    const snapshot = saveInputToAtlas({
+      input: trimmedInput,
+      inputUrls,
+      understanding,
+      workspacePreview,
+    });
+    const count = snapshot.workspaces.length;
+    toast.success(`已保存到 Atlas（${count} 个 Workspace）。可在 Atlas 页查看。`);
+  }
+
   function toggleSelectedSkill(id: string) {
     setSelectedSkillIds((current) => current.includes(id) ? current.filter((skillId) => skillId !== id) : [...current, id]);
   }
@@ -215,8 +239,18 @@ export function AiInboxPage() {
               {createMission.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <SendHorizontal className="size-3.5" />}
               {createMission.isPending ? AI_INBOX_COPY.createPending : createdMission ? AI_INBOX_COPY.created : createMissionLabel}
             </Button>
-            <Button size="sm" variant="outline">{saveToAtlasLabel}</Button>
-            <Button size="sm" variant="ghost" type="button">{captureCurrentPageLabel}</Button>
+            <Button size="sm" variant="outline" type="button" onClick={() => void handleSaveToAtlas()} disabled={!trimmedInput && inputUrls.length === 0}>
+              {saveToAtlasLabel}
+            </Button>
+            <a
+              href="https://github.com/didian-ai/didian/releases/latest"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <Download className="size-3.5" />
+              {captureCurrentPageLabel}
+            </a>
           </div>
           {createdMission && (
             <div className="mt-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-200" role="status">
@@ -760,6 +794,77 @@ async function saveInputUrlsToBrowserCaptures(
   urls: string[],
 ) {
   await Promise.all(urls.map((url) => save(inputUrlToCaptureRequest(url))));
+}
+
+/** Persist the current AI Inbox input as a new Atlas Collection workspace. */
+function saveInputToAtlas({
+  input,
+  inputUrls,
+  understanding,
+  workspacePreview,
+}: {
+  input: string;
+  inputUrls: string[];
+  understanding: AiUnderstanding;
+  workspacePreview: WorkspacePreview;
+}): AtlasLocalSnapshot {
+  const current = memoryAtlasLocalStore.load(demoAtlasWorkspaces);
+  const mission = buildMissionViewFromInput({ input, inputUrls, understanding, workspacePreview });
+  const workspace = missionToAtlasWorkspace(mission);
+  const existing = current.workspaces.some((item) => item.id === workspace.id);
+  const next: AtlasLocalSnapshot = existing
+    ? current
+    : { workspaces: [...current.workspaces, workspace] };
+  memoryAtlasLocalStore.save(next);
+  return next;
+}
+
+function buildMissionViewFromInput({
+  input,
+  inputUrls,
+  understanding,
+  workspacePreview,
+}: {
+  input: string;
+  inputUrls: string[];
+  understanding: AiUnderstanding;
+  workspacePreview: WorkspacePreview;
+}): MissionView {
+  const inputs: AiInboxInput[] = inputUrls.length > 0
+    ? inputUrls.map((url, index) => ({
+        id: `source-url-${index}`,
+        kind: "url",
+        title: url,
+        preview: url,
+        source: formatInputUrlLabel(url),
+        sourceUrl: url,
+        confidence: 0.8,
+      }))
+    : input
+      ? [{
+          id: `source-text-${Date.now()}`,
+          kind: "text",
+          title: "用户输入",
+          preview: input,
+          source: "AI Inbox",
+          confidence: 0.7,
+        }]
+      : [];
+
+  return {
+    id: `mission-${Date.now()}`,
+    title: understanding.suggestedMissionTitle || "整理输入线索",
+    goal: understanding.summary,
+    state: "understanding",
+    inputs,
+    understanding,
+    plan: [],
+    reviewItems: [],
+    artifacts: [],
+    workspaceId: `workspace-${workspacePreview.rootPath}-${Date.now()}`,
+    relatedAtlasIds: [],
+    updatedAt: "刚刚",
+  };
 }
 
 function inputUrlToCaptureRequest(url: string): Parameters<typeof api.createBrowserCapture>[0] {
