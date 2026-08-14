@@ -361,6 +361,15 @@ func main() {
 		HeartbeatScheduler: heartbeatScheduler,
 	})
 
+	// Seed demo data if DEMO_MODE is enabled.
+	if os.Getenv("DEMO_MODE") == "true" {
+		slog.Info("DEMO_MODE enabled — seeding demo data")
+		if err := handler.SeedDemoData(ctx, queries); err != nil {
+			slog.Error("demo seed failed", "error", err)
+			os.Exit(1)
+		}
+	}
+
 	srv := &http.Server{
 		Addr:    ":" + port,
 		Handler: r,

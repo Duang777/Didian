@@ -684,9 +684,13 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 	r.With(authRL).Post("/auth/google", h.GoogleLogin)
 	r.Post("/auth/logout", h.Logout)
 
-	// Public API
-	r.Get("/api/config", h.GetConfig)
-	r.With(contactSalesRL).Post("/api/contact-sales", h.CreateContactSales)
+// Demo / development auth (returns a JWT for the demo user without
+		// email verification). Only available when DEMO_MODE=true.
+		r.Post("/auth/demo", h.DemoAuth)
+
+		// Public API
+		r.Get("/api/config", h.GetConfig)
+		r.With(contactSalesRL).Post("/api/contact-sales", h.CreateContactSales)
 
 	// Webhook ingress for autopilots. Outside the authenticated group on
 	// purpose: the bearer token in the URL path IS the credential. Workspace
