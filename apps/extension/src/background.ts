@@ -6,9 +6,20 @@ import type {
 } from "./shared/types";
 
 const DEFAULT_SETTINGS: ExtensionSettings = {
-  apiBaseUrl: "http://localhost:8080",
-  workspaceSlug: "",
+  apiBaseUrl: "http://localhost:18957",
+  workspaceSlug: "didian-submission-demo",
+  authToken: "",
 };
+
+const LEGACY_LOCAL_API_URLS = new Set([
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+  "http://localhost:13877",
+  "http://127.0.0.1:13877",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
+const LEGACY_WORKSPACE_SLUGS = new Set(["", "duang-test", "didian-test"]);
 
 type ContentCaptureResponse =
   | { ok: true; payload: BrowserCapturePayload }
@@ -18,45 +29,90 @@ function normalizeBaseUrl(value: string): string {
   return value.trim().replace(/\/+$/, "");
 }
 
-async function readCsrfToken(apiBaseUrl: string): Promise<string | null> {
-  const cookie = await chrome.cookies.get({ url: apiBaseUrl, name: "didian_csrf" });
-  return cookie?.value ?? null;
-}
-
 async function loadSettings(): Promise<ExtensionSettings> {
   const stored = await chrome.storage.sync.get<Partial<ExtensionSettings>>({ ...DEFAULT_SETTINGS });
-  return {
+  const loaded = {
     apiBaseUrl: normalizeBaseUrl(String(stored.apiBaseUrl || DEFAULT_SETTINGS.apiBaseUrl)),
-    workspaceSlug: String(stored.workspaceSlug || "").trim(),
+    workspaceSlug: String(stored.workspaceSlug || DEFAULT_SETTINGS.workspaceSlug).trim(),
+    authToken: String(stored.authToken || "").trim(),
   };
+  const migrated = {
+    apiBaseUrl: LEGACY_LOCAL_API_URLS.has(loaded.apiBaseUrl) ? DEFAULT_SETTINGS.apiBaseUrl : loaded.apiBaseUrl,
+    workspaceSlug: LEGACY_WORKSPACE_SLUGS.has(loaded.workspaceSlug) ? DEFAULT_SETTINGS.workspaceSlug : loaded.workspaceSlug,
+    authToken: loaded.authToken,
+  };
+  if (migrated.apiBaseUrl !== loaded.apiBaseUrl || migrated.workspaceSlug !== loaded.workspaceSlug) {
+    await chrome.storage.sync.set(migrated);
+    return migrated;
+  }
+  return loaded;
 }
 
 async function saveSettings(settings: ExtensionSettings): Promise<ExtensionSettings> {
+  const stored = await chrome.storage.sync.get<Partial<ExtensionSettings>>({ ...DEFAULT_SETTINGS });
   const next = {
     apiBaseUrl: normalizeBaseUrl(settings.apiBaseUrl),
     workspaceSlug: settings.workspaceSlug.trim(),
+    authToken: String(settings.authToken ?? stored.authToken ?? "").trim(),
   };
   await chrome.storage.sync.set(next);
   return next;
 }
 
-async function postCapture(payload: BrowserCapturePayload, settings: ExtensionSettings): Promise<CaptureResult> {
-  if (!settings.workspaceSlug) return { ok: false, error: "Workspace slug is required" };
-  if (!settings.apiBaseUrl) return { ok: false, error: "API base URL is required" };
-  const csrfToken = await readCsrfToken(settings.apiBaseUrl);
-  if (!csrfToken) return { ok: false, error: "Didian CSRF cookie not found. Log in to Didian and try again." };
-
-  const response = await fetch(`${settings.apiBaseUrl}/api/browser-captures`, {
+async function issueDemoToken(apiBaseUrl: string): Promise<string> {
+  const response = await fetch(`${apiBaseUrl}/auth/demo`, {
     method: "POST",
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
-      "X-Workspace-Slug": settings.workspaceSlug,
-      "X-CSRF-Token": csrfToken,
       "X-Client-Platform": "chrome-extension",
     },
-    body: JSON.stringify(payload),
   });
+  const body = await response.json().catch(() => ({})) as { token?: string; error?: string };
+  if (!response.ok || !body.token) {
+    throw new Error(body.error || `Demo login failed with HTTP ${response.status}`);
+  }
+  return body.token;
+}
+
+async function ensureAuthToken(settings: ExtensionSettings): Promise<string> {
+  if (settings.authToken) return settings.authToken;
+  const token = await issueDemoToken(settings.apiBaseUrl);
+  await chrome.storage.sync.set({ ...settings, authToken: token });
+  return token;
+}
+
+async function postCapture(payload: BrowserCapturePayload, settings: ExtensionSettings): Promise<CaptureResult> {
+  if (!settings.workspaceSlug) return { ok: false, error: "Workspace slug is required. For the local demo, use didian-submission-demo." };
+  if (!settings.apiBaseUrl) return { ok: false, error: "API base URL is required. For the local demo, use http://localhost:18957." };
+
+  let authToken: string;
+  try {
+    authToken = await ensureAuthToken(settings);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Demo login failed";
+    return { ok: false, error: `Cannot log in to the Didian demo at ${settings.apiBaseUrl}. ${message}` };
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${settings.apiBaseUrl}/api/browser-captures`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Authorization": `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+        "X-Workspace-Slug": settings.workspaceSlug,
+        "X-Client-Platform": "chrome-extension",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to fetch";
+    return {
+      ok: false,
+      error: `Cannot reach Didian API at ${settings.apiBaseUrl}. Start the local desktop service, then reload this extension. ${message}`,
+    };
+  }
 
   const body = await response.json().catch(() => ({})) as {
     captureId?: string;

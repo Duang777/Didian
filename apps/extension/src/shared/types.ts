@@ -25,6 +25,7 @@ export interface BrowserCapturePayload {
 export interface ExtensionSettings {
   apiBaseUrl: string;
   workspaceSlug: string;
+  authToken?: string;
 }
 
 export interface CaptureResult {
