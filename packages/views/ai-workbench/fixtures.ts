@@ -64,6 +64,42 @@ function truncateText(value: string | undefined, maxLength: number): string {
   return `${text.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
+function extractFailureReasonMessage(value: unknown): string | null {
+  if (typeof value === "string") return value.trim() || null;
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  for (const key of ["message", "error", "reason", "detail", "msg", "description"] as const) {
+    const nested = extractFailureReasonMessage(record[key]);
+    if (nested) return nested;
+  }
+  return null;
+}
+
+function normalizeFailureReason(value: string | null | undefined): string | null {
+  const raw = value?.trim();
+  if (!raw) return null;
+
+  let parsed: unknown = raw;
+  for (let i = 0; i < 2; i += 1) {
+    if (typeof parsed !== "string") break;
+    const trimmed = parsed.trim();
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) break;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch {
+      break;
+    }
+  }
+
+  const message = extractFailureReasonMessage(parsed) ?? raw;
+  const cleaned = message
+    .replace(/\s+/g, " ")
+    .replace(/\s*(?:\(|（)?request id[:：].*$/i, "")
+    .trim();
+  if (!cleaned) return null;
+  return cleaned.length > 140 ? `${cleaned.slice(0, 139).trimEnd()}…` : cleaned;
+}
+
 function displaySource(payload: BrowserCapturePayload): string {
   if (payload.domain) return payload.domain;
   try {
@@ -104,7 +140,7 @@ function browserMemoryStatus(capture: BrowserCapture): Pick<AiInboxInput, "enric
       enrichmentStatus: "failed",
       enrichmentLabel: "AI failed",
       enrichmentDescription: "整理失败",
-      failureReason: capture.failure_reason ?? null,
+      failureReason: normalizeFailureReason(capture.failure_reason),
     };
   }
   return {

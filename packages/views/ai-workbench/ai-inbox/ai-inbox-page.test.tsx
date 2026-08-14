@@ -223,7 +223,12 @@ describe("AiInboxPage browser captures", () => {
           readable_text: "Bad model output.",
           status: "failed",
           summary_status: "failure",
-          failure_reason: "browser memory invalid output",
+          failure_reason: JSON.stringify({
+            error: {
+              message: "分组 gpt-mix-paygo 下模型 auto 无可用渠道（billing）",
+            },
+            request_id: "req_browser_capture_demo",
+          }),
           memory: memoryFixture({ status: "failed" }),
         }),
         captureFixture({
@@ -248,7 +253,8 @@ describe("AiInboxPage browser captures", () => {
     expect(screen.getByText("AI processing")).toBeInTheDocument();
     expect(screen.getByText("AI failed")).toBeInTheDocument();
     expect(screen.getByText("AI pending")).toBeInTheDocument();
-    expect(screen.getByText("browser memory invalid output")).toBeInTheDocument();
+    expect(screen.getByText("分组 gpt-mix-paygo 下模型 auto 无可用渠道（billing）")).toBeInTheDocument();
+    expect(screen.queryByText(/\{"error"/)).not.toBeInTheDocument();
     expect(screen.queryByText("The selected quote explains why this page was saved.")).not.toBeInTheDocument();
     expect(screen.getAllByText("example.com").length).toBeGreaterThan(0);
     expect(screen.getAllByText("网页收藏").length).toBeGreaterThan(0);
