@@ -1,0 +1,56 @@
+# Didian
+
+> AI resource workbench — from browser tabs to structured, searchable, deduplicated resource libraries.
+
+Didian captures what you find in the browser before it disappears into downloads and bookmarks, dispatches it to a local AI agent runtime, and turns it into a structured, searchable, and traceable resource library — with human confirmation at every write step.
+
+## Quick Start
+
+```bash
+git clone https://github.com/didian-ai/didian.git
+cd didian
+pnpm install
+cp .env.example .env
+make setup
+make start
+```
+
+## Tech Stack
+
+- **Frontend:** React 19, Next.js 16, TypeScript 5, Tailwind CSS 4
+- **Desktop:** Electron
+- **Mobile:** Expo / React Native
+- **Backend:** Go 1.26, Chi router, sqlc, gorilla/websocket
+- **Database:** PostgreSQL
+- **State:** TanStack Query 5, Zustand 5
+- **Extension:** Chrome Extension (MV3)
+- **Adapters:** Mock Drive, Local Drive, cloud-drive interfaces
+
+## Project Structure
+
+```
+didian/
+├── apps/web/           # Next.js App Router platform
+├── apps/extension/     # Chrome extension — passive browser capture
+├── apps/desktop/       # Electron desktop app
+├── apps/mobile/        # Expo / React Native (iOS)
+├── server/             # Go API, task queue, WebSocket, daemon
+├── packages/core/      # Headless logic, schemas, API client, stores
+├── packages/ui/        # Reusable UI primitives
+├── packages/views/     # Shared product views
+├── packages/adapters/  # Drive adapter implementations
+└── tasks/              # Implementation plan and checklist
+```
+
+## Key Concepts
+
+- **AI Inbox** — Capture browser tabs, links, and downloads into resource tasks with full provenance
+- **Mission** — A resource task routed to a local Agent runtime with inspectable execution steps
+- **Atlas Workspace** — Structured, searchable, deduplicated resource library with agent-generated artifacts
+- **Local Daemon** — Detects Codex, Claude Code, Cursor Agent, and OpenCode from PATH; runs agents in isolated workdirs
+- **Human Confirmation Gate** — Review every proposed action before writing to the drive workspace
+- **Adapter-based Drive** — MockDriveAdapter for MVP; clean interface for local folder, cloud-drive, or MCP adapters
+
+## License
+
+Modified Apache License 2.0. See LICENSE file.
