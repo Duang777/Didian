@@ -1,56 +1,71 @@
-# Didian
+<div align="center">
 
-Didian is an AI resource workbench for turning scattered browser tabs, download links, bookmarks, and cloud-drive files into a structured, deduplicated, searchable resource library.
+# 🧩 Didian
 
-The product starts before files reach the drive. A user can capture the current browser context, create a resource task, route it to a local Agent runtime such as Codex, Claude Code, Cursor Agent, or OpenCode, review the proposed operations, and then write approved artifacts into a mock or connected drive workspace.
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Go](https://img.shields.io/badge/Go-1.26-00ADD8?style=for-the-badge&logo=go&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![License](https://img.shields.io/badge/License-Modified_Apache_2.0-8A2BE2?style=for-the-badge)
 
-**English | [简体中文](README.zh-CN.md)**
+**AI resource workbench — from browser tabs to structured, searchable, deduplicated resource libraries.**
 
-## Product Shape
+**[English](README.md) | [简体中文](README.zh-CN.md)**
 
-- **Browser-to-drive workflow**: capture tabs, pages, links, and local context before resources lose provenance.
-- **Local Agent runtime**: execute resource tasks on the user's machine through a daemon that detects available Agent CLIs and streams progress back to the workbench.
-- **Dynamic task graph**: show scanning, extraction, matching, merging, planning, confirmation, execution, indexing, and follow-up Q&A as explicit steps.
-- **Adapter-based drive layer**: use `MockDriveAdapter` for the MVP, with room for local-folder, browser-assisted, or official cloud-drive adapters later.
-- **Human confirmation gate**: require review before writing to a drive workspace; destructive operations are disabled for the MVP.
-- **Traceable artifacts**: generate resource indexes, comparison tables, reuse checklists, and next-step plans with source references.
+</div>
 
-## Architecture
+> Didian captures what you find in the browser before it disappears into downloads and bookmarks, dispatches it to a local AI agent runtime, and turns it into a structured, searchable, and traceable resource library — with human confirmation at every write step.
 
-```text
-Browser / Extension
-  -> Web Workbench
-  -> Go API + Task Queue
-  -> Local Daemon / Runtime
-  -> Codex / Claude Code / Cursor Agent / OpenCode
-  -> Artifacts + Proposed Actions
-  -> Mock Drive or Adapter-backed Workspace
-```
+<div align="center">
+  <img src="demo-recording/f2e10b0cfdc8f4935014e58e9e44dc1c.png" width="600" alt="Didian Mission Detail view — AI resource workspace with file tree, agent log, and evidence">
+  <br><br>
+  <a href="#-concept">Concept</a> · <a href="#-features">Features</a> · <a href="#-quick-start">Quick Start</a> · <a href="#-tech-stack">Tech Stack</a> · <a href="#-roadmap">Roadmap</a>
+</div>
 
-Core areas:
+---
 
-- `apps/web/`: Next.js platform wiring for the workbench.
-- `apps/extension/`: browser capture entry point.
-- `server/`: Go API, task queue, WebSocket, and daemon APIs.
-- `server/internal/daemon/`: local runtime execution lifecycle.
-- `packages/core/`: headless business logic, schemas, API client, hooks, and stores.
-- `packages/ui/`: reusable UI primitives.
-- `packages/views/`: shared product views for web and desktop.
-- `packages/adapters/`: drive adapter implementations.
-- `tasks/`: implementation plan and task checklist.
+## 💡 Concept
 
-## Development
+Didian is not a chatbot bolted onto a cloud drive. It is a full browser-to-drive resource workflow:
 
-Requirements: Node.js, pnpm, Go, Docker, and PostgreSQL-compatible local services as described by the project scripts.
+1. **Capture** — browser extension collects active tabs, links, downloads, bookmarks, and search results before the context is lost.
+2. **Dispatch** — the AI Inbox creates a Mission and routes it to a local Agent runtime (Codex, Claude Code, Cursor Agent, or OpenCode).
+3. **Execute** — the local daemon detects available CLIs, runs the agent in an isolated workdir, and streams progress — input, understanding, plan, execution log, evidence, review, artifacts, and memory — back to the workbench.
+4. **Review** — the user inspects evidence, proposed operations, and generated artifacts before approving any write. Destructive operations (delete, overwrite, batch move) are disabled for the MVP.
+5. **Index** — approved artifacts land in an Atlas Workspace: structured, deduplicated, and ready for follow-up Q&A with source provenance preserved.
+
+The first mile is the browser. The last mile is a structured, permanent memory.
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| **AI Inbox** | Capture browser tabs, links, and downloads into resource tasks with full provenance — URL, source tab, capture time, and surrounding context |
+| **Mission Workspace** | Dynamic task graph showing scan, extract, match, plan, confirm, execute, and index as explicit, inspectable steps |
+| **Local Agent Runtime** | Daemon auto-detects Codex, Claude Code, Cursor Agent, and OpenCode from `PATH` — no cloud lock-in, no data leaves your machine |
+| **Atlas Workspace** | Structured, searchable, deduplicated resource library with agent-generated artifacts, evidence, and decisions |
+| **Human Confirmation Gate** | Review every proposed action before writing to the drive workspace; destructive operations are blocked by default |
+| **Adapter-based Drive** | `MockDriveAdapter` for MVP development, with a clean interface for local folder, cloud-drive, or MCP adapters |
+| **Traceable Artifacts** | Resource indexes, comparison tables, reuse checklists, and next-step plans with source references and citations |
+| **Browser Extension** | Passive capture of active browser context — tabs, selected text, download links — before provenance is lost |
+
+---
+
+## 🚀 Quick Start
 
 ```bash
+git clone https://github.com/didian-ai/didian.git
+cd didian
 pnpm install
 cp .env.example .env
 make setup
 make start
 ```
 
-Useful checks:
+Verify the stack is running:
 
 ```bash
 pnpm typecheck
@@ -60,19 +75,31 @@ make test
 make check
 ```
 
-Read `CLAUDE.md` before code changes. It is the root engineering guide for local Agent work in this repository.
+<details>
+<summary>⚙️ Environment Variables</summary>
 
-## Connect Your Local Codex
+```bash
+cp .env.example .env
+```
 
-Didian does not run Codex in the browser. It dispatches work to a local daemon, and the daemon detects the `codex` CLI on your machine, registers a Codex runtime, and executes assigned Missions locally. The normal user path is CLI-first: run setup once, then keep the daemon running.
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `DIDIAN_CODEX_PATH` | Custom path to Codex binary | No |
+| `DIDIAN_CODEX_MODEL` | Daemon-wide default model for Codex | No |
 
-For a local self-hosted development server, start the web/API stack first, then run the setup flow:
+</details>
+
+<details>
+<summary>🔌 Connect Your Local Codex</summary>
+
+Didian dispatches work to a local daemon, which detects the `codex` CLI on your machine and executes Missions locally.
 
 ```bash
 didian setup self-host
 ```
 
-When developing from this repository before installing the CLI, run the same command through the source CLI:
+Or from source before the CLI is installed:
 
 ```bash
 cd server
@@ -81,32 +108,16 @@ go run ./cmd/didian setup self-host
 
 `setup self-host` configures `http://localhost:8080` as the API, `http://localhost:3000` as the app, opens the browser login flow, discovers your workspaces, and starts the daemon. The daemon auto-detects Codex from `PATH`; on macOS it also checks the Codex binary bundled in ChatGPT.app and Codex.app.
 
-Verify that setup found Codex:
+Verify the Codex runtime is online:
 
 ```bash
 didian daemon status
 didian runtime list --output json
 ```
 
-With the source CLI:
-
-```bash
-go run ./cmd/didian daemon status
-go run ./cmd/didian runtime list --output json
-```
-
 In the runtime output, the Codex row should have `provider` set to `codex` and `status` set to `online`. Once the Codex runtime is online and an Agent is bound to it, newly created Missions can be assigned to that Agent from the UI.
 
-If an already-created Mission is still unassigned, attach it to the Codex-backed Agent from the CLI:
-
-```bash
-didian agent list --output json
-didian issue update DID-8 --assignee-id <agent-id> --status todo
-```
-
-### Troubleshooting Codex Detection
-
-If `daemon status` shows only another agent, or `runtime list` shows the Codex runtime as `offline`, first restart the daemon after confirming Codex is available:
+**Troubleshooting.** If `daemon status` shows only another agent, or `runtime list` shows the Codex runtime as `offline`, restart the daemon:
 
 ```bash
 codex --version
@@ -114,33 +125,87 @@ didian daemon stop
 didian daemon start
 ```
 
-On macOS, if Codex is bundled inside ChatGPT.app and still is not detected, pin the path explicitly:
+On macOS, if Codex is bundled inside ChatGPT.app but still not detected, pin the path explicitly:
 
 ```bash
-didian daemon stop
-
 DIDIAN_CODEX_PATH=/Applications/ChatGPT.app/Contents/Resources/codex \
 didian daemon start
 ```
 
-The equivalent source-CLI debugging flow is:
+</details>
 
-```bash
-cd server
+---
 
-export DIDIAN_SERVER_URL=http://localhost:8080
-export DIDIAN_WORKSPACE_ID=<workspace-id>
+## 🏗️ Tech Stack
 
-DIDIAN_CODEX_PATH=/Applications/ChatGPT.app/Contents/Resources/codex \
-go run ./cmd/didian daemon start --foreground
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Next.js 16, TypeScript 5 |
+| Styling | Tailwind CSS 4, shadcn/ui, Base UI |
+| Desktop | Electron |
+| Mobile | Expo / React Native |
+| Backend | Go 1.26, Chi router, sqlc, gorilla/websocket |
+| Database | PostgreSQL |
+| State | TanStack Query 5, Zustand 5 |
+| Charts | Recharts 3 |
+| Extension | Chrome Extension (MV3) |
+
+<details>
+<summary>📁 Project Structure</summary>
+
+```
+didian/
+├── apps/
+│   ├── web/                   # Next.js App Router platform
+│   ├── extension/             # Chrome extension — passive browser capture
+│   ├── desktop/               # Electron desktop app
+│   └── mobile/                # Expo / React Native (iOS)
+├── server/
+│   ├── cmd/didian/            # CLI entry point
+│   ├── internal/daemon/       # Local runtime execution lifecycle
+│   ├── internal/handler/      # Chi router API handlers
+│   └── migrations/            # Database migrations
+├── packages/
+│   ├── core/                  # Headless logic, schemas, API client, hooks, stores
+│   ├── ui/                    # Reusable UI primitives (shadcn/ui)
+│   ├── views/                 # Shared product views for web and desktop
+│   └── adapters/              # Drive adapter implementations (Mock, Local, etc.)
+├── tasks/                     # Implementation plan and task checklist
+├── docs/                      # Product requirements, technical plans, and reviews
+├── demo-screenshots/          # Demo screenshots
+├── CLAUDE.md                  # Engineering guide for local AI agent work
+└── llms.txt                   # Plain-text README for LLM discoverability
 ```
 
-Keep `didian daemon start` running while you create or assign Missions. You can set `DIDIAN_CODEX_MODEL=<model-id>` to choose a daemon-wide default model.
+</details>
 
-## Status
+---
 
-Didian is in MVP build-out. The first milestones focus on the resource workbench shell, runtime visibility, browser capture payloads, local Agent execution, mock-drive writes, and artifact generation.
+## 🗺️ Roadmap
 
-## License
+- [x] AI Inbox — capture browser tabs, links, and downloads with provenance
+- [x] Mission Workspace — dynamic task graph with inspectable execution steps
+- [x] Atlas Workspace — structured, searchable, deduplicated resource library
+- [x] Local Agent runtime detection — Codex, Claude Code, Cursor Agent, OpenCode
+- [x] Flowix-style document workspace for Mission Detail
+- [x] Demo fixtures, screenshots, and recording
+- [x] Atlas workspace browser and re-entry
+- [ ] Browser extension — passive capture of active context
+- [ ] Search and full-text recall across Atlas collections
+- [ ] Cloud-drive adapter integration (Local Drive, official cloud APIs)
+- [ ] Mobile companion app
+- [ ] Real-time collaboration and multi-agent squads
 
-See [LICENSE](LICENSE).
+---
+
+## 🤝 Contributing
+
+Fork → `feature/name` → PR
+
+Read `CLAUDE.md` before contributing. It is the root engineering guide for local AI agent work in this repository and covers architecture, package boundaries, state management, and code conventions.
+
+---
+
+## 📄 License
+
+Didian. Licensed under a [modified Apache License 2.0](LICENSE).
