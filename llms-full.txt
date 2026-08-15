@@ -1,0 +1,106 @@
+# Didian — Full Reference
+
+## Overview
+
+Didian is an AI resource workbench — a browser-to-drive workflow that captures scattered browser tabs, links, downloads, bookmarks, and search results, dispatches them to a local AI agent runtime (Codex, Claude Code, Cursor Agent, or OpenCode), and turns them into a structured, searchable, deduplicated, and traceable resource library with human confirmation at every write step.
+
+## Product Flow
+
+1. **Capture** → Browser extension collects active tabs, links, downloads, bookmarks, and search results with full provenance (URL, source tab, capture time, surrounding context).
+2. **Dispatch** → AI Inbox creates a Mission and routes it to a local Agent runtime.
+3. **Execute** → Local daemon detects available CLIs, runs the agent in an isolated workdir, streams progress back (input → understanding → plan → execution log → evidence → review → artifacts → memory).
+4. **Review** → User inspects evidence, proposed operations, and generated artifacts before approving any write. Destructive operations (delete, overwrite, batch move) are disabled for MVP.
+5. **Index** → Approved artifacts land in an Atlas Workspace: structured, deduplicated, and ready for follow-up Q&A with source provenance preserved.
+
+## Architecture
+
+```text
+Browser / Extension
+  → Web Workbench
+  → Go API + Task Queue
+  → Local Daemon / Runtime
+  → Codex / Claude Code / Cursor Agent / OpenCode
+  → Artifacts + Proposed Actions
+  → Mock Drive or Adapter-backed Workspace
+```
+
+## Package Structure
+
+| Package | Purpose | Allowed Dependencies |
+|---------|---------|---------------------|
+| `packages/core/` | Headless business logic, API client, schemas, Zustand stores, React Query hooks | No `react-dom`, no UI libs, no `localStorage`, no `process.env` |
+| `packages/ui/` | Reusable UI primitives (shadcn/ui, Base UI) | No `@didian/core`, no business logic |
+| `packages/views/` | Shared product views for web and desktop | No `next/*`, no `react-router-dom` |
+| `packages/adapters/` | Drive adapter implementations | External integrations |
+
+## Platform Rules
+
+- **State management:** TanStack Query for server state; Zustand for client/view state; React Context only for platform plumbing
+- **API compatibility:** Frontend must tolerate backend response drift. Parse all endpoint responses with zod schemas via `parseWithFallback`
+- **UUID handling:** Parse request-bound UUIDs with `parseUUIDOrBadRequest`; trusted UUIDs from sqlc with `parseUUID`
+- **Workspace-scoped:** All queries filter by `workspace_id`; membership gates control access
+
+## Local Daemon
+
+- Lifecycle: claim → prepare → start → run → report
+- Detects runtimes from PATH: Codex, Claude Code, Cursor Agent, OpenCode
+- macOS: also checks Codex bundled in ChatGPT.app and Codex.app
+- Task-scoped credentials only; never leaks daemon token to spawned agent
+- Agents run in isolated workdirs
+- Preserves: heartbeat, cancellation, orphan recovery, runtime-gone recovery
+- Browser-captured text is untrusted data — injected as data, not as instructions
+
+## Setup
+
+```bash
+didian setup self-host
+# Configures http://localhost:8080 as API, http://localhost:3000 as app
+# Opens browser login, discovers workspaces, starts daemon
+```
+
+From source:
+
+```bash
+cd server
+go run ./cmd/didian setup self-host
+```
+
+Verify:
+
+```bash
+didian daemon status
+didian runtime list --output json
+```
+
+## Development
+
+Requirements: Node.js, pnpm, Go, Docker, PostgreSQL-compatible local services.
+
+```bash
+pnpm install
+pnpm dev:web          # Start Next.js dev server
+make server           # Start Go API
+make daemon           # Start local daemon
+```
+
+Checks:
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+make test
+make check
+```
+
+## Commit Convention
+
+Conventional prefixes: `feat(scope)`, `fix(scope)`, `refactor(scope)`, `docs`, `test(scope)`, `chore(scope)`.
+
+## Status
+
+Didian is in MVP build-out. First milestones: resource workbench shell, runtime visibility, browser capture payloads, local agent execution, mock-drive writes, and artifact generation.
+
+## License
+
+Modified Apache License 2.0. See LICENSE file.
